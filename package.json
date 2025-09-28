@@ -1,0 +1,24 @@
+{
+  "name": "lumina_frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "ng": "ng",
+  "start": "ng serve",  
+  "build": "ng build",
+  "watch": "ng build --watch --configuration development",
+  "test": "ng test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hungnm1337/lumina_frontend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hungnm1337/lumina_frontend/issues"
+  },
+  "homepage": "https://github.com/hungnm1337/lumina_frontend#readme"
+}
