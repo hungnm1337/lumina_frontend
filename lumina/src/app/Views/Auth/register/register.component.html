@@ -1,0 +1,173 @@
+<body class="min-h-screen bg-slate-50">
+  <!-- Top bar -->
+  <header class="w-full brand-gradient text-white">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+          <i class="fas fa-graduation-cap"></i>
+        </div>
+        <div>
+          <div class="text-xl font-extrabold tracking-wide">TOEIC Pro</div>
+          <div class="text-white/80 text-xs">Practice • Mock Test • AI Feedback</div>
+        </div>
+      </div>
+      <a routerLink="/login" class="text-white/90 text-sm hover:underline">
+        <i class="fas fa-right-to-bracket mr-1"></i>
+        Đăng nhập
+      </a>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="max-w-6xl mx-auto px-4 py-10">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+      <!-- Left: Hero -->
+      <div class="hidden md:flex relative rounded-2xl overflow-hidden shadow-lg">
+        <div class="absolute inset-0 brand-gradient"></div>
+        <img alt="Students learning" src="https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?q=80&w=1400&auto=format&fit=crop"
+          class="w-full h-full object-cover opacity-25">
+        <div class="relative p-8 md:p-10 text-white flex flex-col justify-between">
+          <div>
+            <div class="inline-flex items-center gap-2 bg-white/15 px-3 py-1 rounded-full text-sm">
+              <i class="fas fa-seedling"></i> <span>Miễn phí bắt đầu • Nâng cấp sau</span>
+            </div>
+            <h1 class="mt-5 text-3xl font-extrabold leading-tight">
+              Tạo tài khoản để đồng bộ tiến độ học và thi thử TOEIC
+            </h1>
+            <p class="mt-3 text-white/85">
+              Luyện Listening/Reading, Speaking/Writing với AI feedback, bảng xếp hạng, chứng chỉ hoàn thành.
+            </p>
+          </div>
+          <ul class="mt-6 space-y-3 text-white/90">
+            <li class="flex items-center gap-3"><i class="fas fa-check-circle text-emerald-300"></i> Lưu lịch sử & streak</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check-circle text-emerald-300"></i> Gợi ý học tập cá nhân hóa</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check-circle text-emerald-300"></i> Thi thử tuỳ chỉnh & chứng chỉ</li>
+          </ul>
+          <div class="mt-8 text-xs text-white/80">
+            © 2025 TOEIC Pro. All rights reserved.
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Register Card -->
+      <div class="glass rounded-2xl border border-white/60 shadow-xl p-6 md:p-8">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 rounded-xl brand-gradient text-white flex items-center justify-center">
+            <i class="fas fa-user-plus"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Tạo tài khoản mới</h2>
+            <p class="text-sm text-slate-500">Chỉ mất 1 phút để bắt đầu</p>
+          </div>
+        </div>
+
+        <!-- Register Form -->
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-4">
+          <div>
+            <label for="name" class="block text-sm font-medium text-slate-700 mb-1">Họ và tên</label>
+            <input id="name" formControlName="name" type="text" placeholder="Nguyễn Văn A"
+                   class="w-full rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2 outline-none">
+            @if (f['name'].invalid && (f['name'].dirty || f['name'].touched)) {
+              <div class="text-xs text-red-500 mt-1">
+                @if (f['name'].errors?.['required']) {
+                  <div>Họ và tên là bắt buộc.</div>
+                }
+              </div>
+            }
+          </div>
+
+          <div>
+            <label for="username" class="block text-sm font-medium text-slate-700 mb-1">Tên đăng nhập</label>
+            <input id="username" formControlName="username" type="text" placeholder="nguyenvana"
+                   class="w-full rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2 outline-none">
+            @if (f['username'].invalid && (f['username'].dirty || f['username'].touched)) {
+              <div class="text-xs text-red-500 mt-1">
+                @if (f['username'].errors?.['required']) {
+                  <div>Tên đăng nhập là bắt buộc.</div>
+                }
+                @if (f['username'].errors?.['pattern']) {
+                  <div>Tên đăng nhập chỉ chứa chữ, số, và ký tự ._-</div>
+                }
+              </div>
+            }
+          </div>
+
+          <div>
+            <label for="email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+            <input id="email" formControlName="email" type="email" placeholder="you@example.com"
+                   class="w-full rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2 outline-none">
+            @if (f['email'].invalid && (f['email'].dirty || f['email'].touched)) {
+              <div class="text-xs text-red-500 mt-1">
+                @if (f['email'].errors?.['required']) {
+                  <div>Email là bắt buộc.</div>
+                }
+                @if (f['email'].errors?.['email']) {
+                  <div>Email không đúng định dạng.</div>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <div class="flex items-center justify-between">
+                <label for="password" class="block text-sm font-medium text-slate-700 mb-1">Mật khẩu</label>
+                <button type="button" class="text-xs text-indigo-600 hover:underline" (click)="passwordVisible = !passwordVisible">
+                  <i class="far" [ngClass]="passwordVisible ? 'fa-eye-slash' : 'fa-eye'"></i> Ẩn/Hiện
+                </button>
+              </div>
+              <input id="password" formControlName="password" [type]="passwordVisible ? 'text' : 'password'" placeholder="Tối thiểu 6 ký tự"
+                     class="w-full rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2 outline-none">
+              @if (f['password'].invalid && (f['password'].dirty || f['password'].touched)) {
+                <div class="text-xs text-red-500 mt-1">
+                  @if (f['password'].errors?.['required']) {
+                    <div>Mật khẩu là bắt buộc.</div>
+                  }
+                  @if (f['password'].errors?.['minlength']) {
+                    <div>Mật khẩu phải có ít nhất 6 ký tự.</div>
+                  }
+                </div>
+              }
+              <!-- Strength meter -->
+              <div class="mt-2">
+                <div class="w-full bg-slate-200 meter">
+                  <div class="meter transition-all duration-300" [style.width]="passwordStrength.width" [ngClass]="passwordStrength.color"></div>
+                </div>
+                <div class="text-xs text-slate-500 mt-1">Độ mạnh: {{ passwordStrength.text }}</div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between">
+                <label for="confirmPassword" class="block text-sm font-medium text-slate-700 mb-1">Nhập lại mật khẩu</label>
+              </div>
+              <input id="confirmPassword" formControlName="confirmPassword" [type]="passwordVisible ? 'text' : 'password'" placeholder="Nhập lại mật khẩu"
+                     class="w-full rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2 outline-none">
+              @if (registerForm.errors?.['passwordMismatch'] && f['confirmPassword'].touched) {
+                <div class="text-xs text-red-500 mt-1">
+                  Mật khẩu nhập lại không khớp.
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- NÚT ĐĂNG KÝ -->
+          <button type="submit" [disabled]="isLoading || registerForm.invalid"
+                  class="w-full brand-gradient hover:opacity-95 text-white font-semibold rounded-lg px-4 py-2.5 shadow flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            @if (!isLoading) {
+              <i class="fas fa-user-plus"></i>
+            } @else {
+              <i class="fas fa-spinner animate-spin"></i>
+            }
+            <span  class="ml-2">{{ isLoading ? 'Đang xử lý...' : 'Đăng ký' }}</span>
+          </button>
+
+          <div class="text-center text-sm text-slate-600">
+            Đã có tài khoản?
+            <a routerLink="/login" class="text-indigo-600 font-semibold hover:underline">Đăng nhập</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</body>

@@ -1,0 +1,64 @@
+<body class="min-h-screen bg-slate-50">
+  <header class="w-full brand-gradient text-white">
+  </header>
+
+  <!-- Main -->
+  <main class="max-w-6xl mx-auto px-4 py-10">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+      <div class="hidden md:flex relative rounded-2xl overflow-hidden shadow-lg">
+      </div>
+
+      <div class="glass rounded-2xl border border-white/60 shadow-xl p-6 md:p-8">
+        
+        <div class="w-full flex items-center justify-center">
+  <div id="googleBtn"></div>
+</div>
+
+        <div class="my-5 divider text-sm">hoặc</div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Tên đăng nhập hoặc Email</label>
+            <input formControlName="username" type="text" placeholder="tendangnhap / you@example.com"
+                   class="w-full rounded-lg border ...">
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="block text-sm font-medium text-slate-700 mb-1">Mật khẩu</label>
+              <button type="button" class="text-xs text-indigo-600 hover:underline" (click)="togglePasswordVisibility()">
+                <i class="far" [ngClass]="passwordVisible ? 'fa-eye-slash' : 'fa-eye'"></i> Ẩn/Hiện
+              </button>
+            </div>
+            <div class="relative">
+              <input formControlName="password" [type]="passwordVisible ? 'text' : 'password'" required minlength="6" placeholder="••••••••"
+                     class="w-full rounded-lg border ...">
+              <i class="fas fa-key text-slate-400 absolute right-3 top-1/2 -translate-y-1/2"></i>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <label class="inline-flex items-center gap-2 text-sm text-slate-600">
+              <input formControlName="remember" type="checkbox" class="rounded border-slate-300 ...">
+              Ghi nhớ đăng nhập
+            </label>
+            <a routerLink="/forgot-password" class="text-sm text-indigo-600 hover:underline">Quên mật khẩu?</a>
+          </div>
+
+          <button type="submit" [disabled]="isLoading"
+                  class="w-full brand-gradient ...">
+            <i *ngIf="!isLoading" class="fas fa-right-to-bracket"></i>
+            <i *ngIf="isLoading" class="fas fa-spinner animate-spin"></i>
+            <span class="ml-2">{{ isLoading ? 'Đang xử lý...' : 'Đăng nhập' }}</span>
+          </button>
+
+          <div class="text-center text-sm text-slate-600">
+            Chưa có tài khoản?
+            <a routerLink="/register" class="text-indigo-600 font-semibold hover:underline">Đăng ký ngay</a>
+          </div>
+        </form>
+        
+      </div>
+    </div>
+  </main>
+</body>
