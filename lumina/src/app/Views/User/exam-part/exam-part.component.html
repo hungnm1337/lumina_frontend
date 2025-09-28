@@ -1,0 +1,135 @@
+<div class="max-w-6xl mx-auto p-8 min-h-screen bg-gradient-to-br from-slate-50 to-blue-100">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex flex-col items-center justify-center py-16">
+    <div class="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+    <p class="text-gray-600 text-lg">Đang tải thông tin bài thi...</p>
+  </div>
+
+  <!-- Exam Detail -->
+  <div *ngIf="!isLoading && examDetail" class="space-y-8">
+    <!-- Back Button -->
+    <div class="flex items-center">
+      <button (click)="goBack()"
+              class="flex items-center px-4 py-2 border-solid border border-gray-300 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Quay lại danh sách
+      </button>
+    </div>
+
+ <!-- Exam Info -->
+    <div class="bg-white rounded-2xl shadow-lg p-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">Thông tin bài thi</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-4">
+          <div class="flex items-center">
+            <i class="fas fa-id-card text-blue-500 w-6"></i>
+            <span class="ml-3 text-gray-600">ID bài thi:</span>
+            <span class="ml-2 font-semibold">{{ examDetail.examId }}</span>
+          </div>
+          <div class="flex items-center">
+            <i class="fas fa-tag text-green-500 w-6"></i>
+            <span class="ml-3 text-gray-600">Loại bài thi:</span>
+            <span class="ml-2 font-semibold">{{ examDetail.examType }}</span>
+          </div>
+          <div class="flex items-center">
+            <i class="fas fa-toggle-on text-purple-500 w-6"></i>
+            <span class="ml-3 text-gray-600">Trạng thái:</span>
+            <span class="ml-2 font-semibold" [class]="examDetail.isActive ? 'text-green-600' : 'text-red-600'">
+              {{ examDetail.isActive ? 'Hoạt động' : 'Tạm dừng' }}
+            </span>
+          </div>
+        </div>
+        <div class="space-y-4">
+          <div class="flex items-center">
+            <i class="fas fa-user text-orange-500 w-6"></i>
+            <span class="ml-3 text-gray-600">Người tạo:</span>
+            <span class="ml-2 font-semibold">{{ examDetail.createdByName }}</span>
+          </div>
+          <div class="flex items-center">
+            <i class="fas fa-calendar-alt text-red-500 w-6"></i>
+            <span class="ml-3 text-gray-600">Ngày tạo:</span>
+            <span class="ml-2 font-semibold">{{ formatDate(examDetail.createdAt) }}</span>
+          </div>
+          <div class="flex items-center">
+            <i class="fas fa-list text-indigo-500 w-6"></i>
+            <span class="ml-3 text-gray-600">Số phần:</span>
+            <span class="ml-2 font-semibold">{{ examDetail.examParts?.length || 0 }} phần</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Exam Parts -->
+    <div class="bg-white rounded-2xl shadow-lg p-8">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-gray-900">Các phần thi</h2>
+        <span class="text-sm text-gray-500">{{ examDetail.examParts?.length || 0 }} phần</span>
+      </div>
+
+      <!-- Parts Grid -->
+      <div *ngIf="examDetail.examParts && examDetail.examParts.length > 0"
+           class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div *ngFor="let part of examDetail.examParts"
+             class="border border-gray-200 rounded-xl p-6 hover:border-blue-300 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group "
+             (click)="startPart(part.partId)">
+
+          <!-- Part Header -->
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center">
+              <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-3 group-hover:bg-blue-200 transition-colors duration-300">
+                <span class="text-blue-600 font-bold text-lg">{{ part.orderIndex }}</span>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-900 text-lg">{{ part.partCode }}</h3>
+                <p class="text-sm text-gray-500">Phần {{ part.orderIndex }}</p>
+              </div>
+            </div>
+            <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-blue-50 transition-colors duration-300">
+              <i class="fas fa-play text-gray-400 group-hover:text-blue-500 text-sm"></i>
+            </div>
+          </div>
+
+          <!-- Part Content -->
+          <div class="mb-4">
+            <h4 class="font-medium text-gray-900 mb-2">{{ part.title }}</h4>
+            <p class="text-sm text-gray-600">Nhấp để bắt đầu làm bài</p>
+          </div>
+
+          <!-- Part Footer -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center text-xs text-gray-500">
+              <i class="fas fa-clock mr-1"></i>
+              <span>Thời gian: -- phút</span>
+            </div>
+            <button class="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-medium">
+              Vụt nuôn
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!examDetail.examParts || examDetail.examParts.length === 0"
+           class="text-center py-12">
+        <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-clipboard-list text-3xl text-gray-400"></i>
+        </div>
+        <p class="text-lg font-medium text-gray-500">Chưa có phần thi nào</p>
+      </div>
+    </div>
+
+
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && !examDetail" class="text-center py-16">
+    <div class="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+      <i class="fas fa-exclamation-triangle text-3xl text-red-500"></i>
+    </div>
+    <h2 class="text-2xl font-bold text-gray-900 mb-2">Không tìm thấy bài thi</h2>
+    <p class="text-gray-600 mb-6">Bài thi với ID {{ examId }} không tồn tại hoặc đã bị xóa.</p>
+    <button (click)="goBack()"
+            class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200">
+      Quay lại danh sách
+    </button>
+  </div>
+</div>
