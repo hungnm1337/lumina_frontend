@@ -13,7 +13,6 @@ import { AuthUserResponse } from '../../../Interfaces/auth.interfaces';
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
-
 export class HeaderComponent implements OnInit {
   currentUser$!: Observable<AuthUserResponse | null>;
   isDropdownOpen = false;
@@ -23,7 +22,8 @@ export class HeaderComponent implements OnInit {
   }
   constructor(
     private authService: AuthService,
-    private elementRef: ElementRef
+    private elementRef: ElementRef,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
