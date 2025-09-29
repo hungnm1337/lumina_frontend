@@ -1,0 +1,11 @@
+.card-hover {
+    transition: all 0.2s ease;
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+}
+.stats-card { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.revenue-card { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.users-card { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+.activity-card { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }

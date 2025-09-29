@@ -1,0 +1,26 @@
+<div id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-white shadow-lg sidebar-transition z-50 transform"
+    [ngClass]="isOpen ? 'translate-x-0' : '-translate-x-full'">
+    <div class="gradient-bg p-6 text-white">
+        <div class="flex items-center space-x-3">
+            <i class="fas fa-shield-alt text-2xl"></i>
+            <h1 class="text-xl font-bold">Admin Panel</h1>
+        </div>
+        <p class="text-sm opacity-90 mt-1">Quản trị hệ thống</p>
+    </div>
+
+    <nav class="mt-6">
+        <ng-container *ngFor="let group of navGroups">
+            <div class="px-4 mb-4 mt-2">
+                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ group.title }}</h3>
+            </div>
+            <a *ngFor="let item of group.items" [routerLink]="item.path" routerLinkActive="active"
+                class="nav-item flex items-center px-6 py-3 ...">
+
+                <i class="{{ item.icon }} w-5 text-center"></i>
+
+                <span class="ml-3">{{ item.name }}</span>
+
+            </a>
+        </ng-container>
+    </nav>
+</div>

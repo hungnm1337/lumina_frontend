@@ -3,3 +3,38 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+body {
+    box-sizing: border-box;
+}
+.sidebar-transition {
+    transition: all 0.3s ease;
+}
+.card-hover {
+    transition: all 0.2s ease;
+}
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+.gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.stats-card {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+.revenue-card {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+.users-card {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+.activity-card {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+/* Thêm style cho menu active nếu bạn chưa có */
+.nav-item.active {
+    @apply bg-blue-50 text-blue-600 font-semibold;
+}
