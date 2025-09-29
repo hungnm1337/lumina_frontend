@@ -1,0 +1,96 @@
+<body class="min-h-screen bg-slate-50">
+  <app-header></app-header>
+  <!-- Main -->
+  <main class="max-w-6xl mx-auto px-4 py-10">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+      <!-- Panel ảnh: thêm border + ẩn trên mobile nếu muốn gọn -->
+      <div
+        class="relative rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-lg hidden md:block"
+      >
+        <img
+          src="/assets/images/lumina-toeic.png"
+          alt="Lumina TOEIC"
+          class="w-full h-full object-cover"
+          loading="lazy"
+        />
+      </div>
+
+      <!-- Card form: dùng class theo SCSS để ăn style -->
+      <div class="auth-card glass p-6 md:p-8">
+        <div style=" margin: 20px 20px 20px 140px; font-weight: 500; font-size: larger; "><h1>Đăng nhập bằng Google</h1></div>
+        <div class="w-full flex items-center justify-center">
+          <div id="googleBtn"></div>
+        </div>
+
+        <div class="my-5 divider text-sm">hoặc</div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+          <!-- Username -->
+          <div class="field">
+            <label class="block">Tên đăng nhập </label>
+            <div class="input-wrap">
+              <input
+                formControlName="username"
+                type="text"
+                placeholder="tendangnhap / you@example.com"
+              />
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="field">
+            <label class="block">Mật khẩu</label>
+            <div class="input-wrap">
+              <input
+                formControlName="password"
+                [type]="passwordVisible ? 'text' : 'password'"
+                required
+                minlength="6"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                class="toggle-password"
+                (click)="togglePasswordVisibility()"
+                aria-label="Ẩn/Hiện mật khẩu"
+              >
+                <i
+                  class="far"
+                  [ngClass]="passwordVisible ? 'fa-eye-slash' : 'fa-eye'"
+                ></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Meta -->
+          <div class="auth-meta">
+            <label
+              class="inline-flex items-center gap-2 text-sm text-slate-600"
+            >
+              <input
+                formControlName="remember"
+                type="checkbox"
+                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+              />
+              Ghi nhớ đăng nhập
+            </label>
+            <a routerLink="/forgot-password">Quên mật khẩu?</a>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" [disabled]="isLoading" class="btn btn-primary">
+            <i *ngIf="!isLoading" class="fas fa-right-to-bracket"></i>
+            <i *ngIf="isLoading" class="fas fa-spinner animate-spin"></i>
+            <span>{{ isLoading ? "Đang xử lý..." : "Đăng nhập" }}</span>
+          </button>
+
+          <!-- Footer -->
+          <div class="auth-footer">
+            Chưa có tài khoản?
+            <a routerLink="/register">Đăng ký ngay</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</body>
