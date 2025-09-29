@@ -11,14 +11,14 @@ import { AuthService } from '../../../Services/Auth/auth.service';
 import { ToastService } from '../../../Services/Toast/toast.service';
 import { LoginRequest } from '../../../Interfaces/auth.interfaces';
 import { environment } from '../../../../environments/environment';
-
+import { HeaderComponent } from '../../Common/header/header.component';
 // Khai báo biến global 'google' để TypeScript không báo lỗi
 declare var google: any;
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule,HeaderComponent, RouterLink],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })

@@ -1,15 +1,26 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { AuthService } from '../../../Services/Auth/auth.service';
 import { ToastService } from '../../../Services/Toast/toast.service';
 import { RegisterRequest } from '../../../Interfaces/auth.interfaces';
+import { HeaderComponent } from '../../Common/header/header.component';
 
 /**
  * Custom validator to check that two fields match.
  */
-export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+export const passwordMatchValidator: ValidatorFn = (
+  control: AbstractControl
+): ValidationErrors | null => {
   const password = control.get('password');
   const confirmPassword = control.get('confirmPassword');
 
@@ -34,9 +45,9 @@ export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): V
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, HeaderComponent],
   templateUrl: './register.component.html',
-  styleUrl: './register.component.scss'
+  styleUrl: './register.component.scss',
 })
 export class RegisterComponent implements OnInit {
   registerForm!: FormGroup;
@@ -47,7 +58,7 @@ export class RegisterComponent implements OnInit {
   passwordStrength = {
     width: '0%',
     text: 'Yếu',
-    color: 'bg-red-500'
+    color: 'bg-red-500',
   };
 
   constructor(
@@ -58,23 +69,39 @@ export class RegisterComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.registerForm = this.fb.group({
-      name: ['', [Validators.required, Validators.maxLength(50)]],
-      username: ['', [
-        Validators.required,
-        Validators.minLength(3),
-        Validators.maxLength(20),
-        Validators.pattern('^[a-zA-Z0-9_.-]+$')
-      ]],
-      email: ['', [Validators.required, Validators.email, Validators.maxLength(50)]],
-      password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(100)]],
-      confirmPassword: ['', [Validators.required]],
-      // FormControl 'terms' đã được xóa bỏ hoàn toàn
-    }, {
-      validators: passwordMatchValidator
-    });
+    this.registerForm = this.fb.group(
+      {
+        name: ['', [Validators.required, Validators.maxLength(50)]],
+        username: [
+          '',
+          [
+            Validators.required,
+            Validators.minLength(3),
+            Validators.maxLength(20),
+            Validators.pattern('^[a-zA-Z0-9_.-]+$'),
+          ],
+        ],
+        email: [
+          '',
+          [Validators.required, Validators.email, Validators.maxLength(50)],
+        ],
+        password: [
+          '',
+          [
+            Validators.required,
+            Validators.minLength(6),
+            Validators.maxLength(100),
+          ],
+        ],
+        confirmPassword: ['', [Validators.required]],
+        // FormControl 'terms' đã được xóa bỏ hoàn toàn
+      },
+      {
+        validators: passwordMatchValidator,
+      }
+    );
 
-    this.f['password'].valueChanges.subscribe(value => {
+    this.f['password'].valueChanges.subscribe((value) => {
       this.updatePasswordStrength(value || '');
     });
   }
@@ -121,7 +148,7 @@ export class RegisterComponent implements OnInit {
     this.passwordStrength = {
       width: `${percentage}%`,
       text: text,
-      color: color
+      color: color,
     };
   }
 
@@ -139,13 +166,17 @@ export class RegisterComponent implements OnInit {
     this.authService.register(request).subscribe({
       next: (response) => {
         this.isLoading = false;
-        this.toastService.success(response.message || 'Đăng ký thành công! Vui lòng đăng nhập.');
+        this.toastService.success(
+          response.message || 'Đăng ký thành công! Vui lòng đăng nhập.'
+        );
         this.router.navigate(['/login']);
       },
       error: (err) => {
         this.isLoading = false;
-        this.toastService.error(err.error?.error || 'Đã có lỗi xảy ra. Vui lòng thử lại.');
-      }
+        this.toastService.error(
+          err.error?.error || 'Đã có lỗi xảy ra. Vui lòng thử lại.'
+        );
+      },
     });
   }
 }
