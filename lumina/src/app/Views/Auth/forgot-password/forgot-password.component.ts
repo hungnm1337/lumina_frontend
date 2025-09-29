@@ -16,6 +16,7 @@ import {
   ForgotPasswordRequest,
   ResetPasswordRequest,
 } from '../../../Interfaces/auth.interfaces';
+import { HeaderComponent } from "../../Common/header/header.component";
 
 export const passwordMatchValidator: ValidatorFn = (
   control: AbstractControl
@@ -30,7 +31,7 @@ export const passwordMatchValidator: ValidatorFn = (
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, HeaderComponent],
   templateUrl: './forgot-password.component.html',
   styleUrl: './forgot-password.component.scss',
 })

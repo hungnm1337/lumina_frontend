@@ -1,63 +1,95 @@
 <body class="min-h-screen bg-slate-50">
-  <header class="w-full brand-gradient text-white">
-  </header>
-
+  <app-header></app-header>
   <!-- Main -->
   <main class="max-w-6xl mx-auto px-4 py-10">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
-      <div class="hidden md:flex relative rounded-2xl overflow-hidden shadow-lg">
+      <!-- Panel ảnh: thêm border + ẩn trên mobile nếu muốn gọn -->
+      <div
+        class="relative rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-lg hidden md:block"
+      >
+        <img
+          src="/assets/images/lumina-toeic.png"
+          alt="Lumina TOEIC"
+          class="w-full h-full object-cover"
+          loading="lazy"
+        />
       </div>
 
-      <div class="glass rounded-2xl border border-white/60 shadow-xl p-6 md:p-8">
-        
+      <!-- Card form: dùng class theo SCSS để ăn style -->
+      <div class="auth-card glass p-6 md:p-8">
+        <div style=" margin: 20px 20px 20px 140px; font-weight: 500; font-size: larger; "><h1>Đăng nhập bằng Google</h1></div>
         <div class="w-full flex items-center justify-center">
-  <div id="googleBtn"></div>
-</div>
+          <div id="googleBtn"></div>
+        </div>
 
         <div class="my-5 divider text-sm">hoặc</div>
 
-        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">Tên đăng nhập hoặc Email</label>
-            <input formControlName="username" type="text" placeholder="tendangnhap / you@example.com"
-                   class="w-full rounded-lg border ...">
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+          <!-- Username -->
+          <div class="field">
+            <label class="block">Tên đăng nhập </label>
+            <div class="input-wrap">
+              <input
+                formControlName="username"
+                type="text"
+                placeholder="tendangnhap / you@example.com"
+              />
+            </div>
           </div>
 
-          <div>
-            <div class="flex items-center justify-between">
-              <label class="block text-sm font-medium text-slate-700 mb-1">Mật khẩu</label>
-              <button type="button" class="text-xs text-indigo-600 hover:underline" (click)="togglePasswordVisibility()">
-                <i class="far" [ngClass]="passwordVisible ? 'fa-eye-slash' : 'fa-eye'"></i> Ẩn/Hiện
+          <!-- Password -->
+          <div class="field">
+            <label class="block">Mật khẩu</label>
+            <div class="input-wrap">
+              <input
+                formControlName="password"
+                [type]="passwordVisible ? 'text' : 'password'"
+                required
+                minlength="6"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                class="toggle-password"
+                (click)="togglePasswordVisibility()"
+                aria-label="Ẩn/Hiện mật khẩu"
+              >
+                <i
+                  class="far"
+                  [ngClass]="passwordVisible ? 'fa-eye-slash' : 'fa-eye'"
+                ></i>
               </button>
             </div>
-            <div class="relative">
-              <input formControlName="password" [type]="passwordVisible ? 'text' : 'password'" required minlength="6" placeholder="••••••••"
-                     class="w-full rounded-lg border ...">
-              <i class="fas fa-key text-slate-400 absolute right-3 top-1/2 -translate-y-1/2"></i>
-            </div>
           </div>
 
-          <div class="flex items-center justify-between">
-            <label class="inline-flex items-center gap-2 text-sm text-slate-600">
-              <input formControlName="remember" type="checkbox" class="rounded border-slate-300 ...">
+          <!-- Meta -->
+          <div class="auth-meta">
+            <label
+              class="inline-flex items-center gap-2 text-sm text-slate-600"
+            >
+              <input
+                formControlName="remember"
+                type="checkbox"
+                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+              />
               Ghi nhớ đăng nhập
             </label>
-            <a routerLink="/forgot-password" class="text-sm text-indigo-600 hover:underline">Quên mật khẩu?</a>
+            <a routerLink="/forgot-password">Quên mật khẩu?</a>
           </div>
 
-          <button type="submit" [disabled]="isLoading"
-                  class="w-full brand-gradient ...">
+          <!-- Submit -->
+          <button type="submit" [disabled]="isLoading" class="btn btn-primary">
             <i *ngIf="!isLoading" class="fas fa-right-to-bracket"></i>
             <i *ngIf="isLoading" class="fas fa-spinner animate-spin"></i>
-            <span class="ml-2">{{ isLoading ? 'Đang xử lý...' : 'Đăng nhập' }}</span>
+            <span>{{ isLoading ? "Đang xử lý..." : "Đăng nhập" }}</span>
           </button>
 
-          <div class="text-center text-sm text-slate-600">
+          <!-- Footer -->
+          <div class="auth-footer">
             Chưa có tài khoản?
-            <a routerLink="/register" class="text-indigo-600 font-semibold hover:underline">Đăng ký ngay</a>
+            <a routerLink="/register">Đăng ký ngay</a>
           </div>
         </form>
-        
       </div>
     </div>
   </main>
