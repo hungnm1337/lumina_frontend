@@ -1,0 +1,26 @@
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+  @for (item of options; track $index) {
+    <label
+      class="flex items-center gap-3 p-3 rounded-md cursor-pointer transition border bg-white
+             hover:border-blue-400 hover:bg-blue-50 select-none
+            "
+      [ngClass]="{
+        'border-gray-200': selectedOption !== item,
+        'bg-green-500 border-green-500': selectedOption === item && item.isCorrect,
+        'bg-red-500 border-red-500': selectedOption === item && !item.isCorrect
+      }"
+    >
+      <input
+        class="h-4 w-4 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+        type="radio"
+        [id]="'option' + $index"
+        name="options"
+        [value]="item"
+        [checked]="selectedOption === item"
+        [disabled]="disabled"
+        (change)="onSelect(item)"
+      />
+      <span class="text-inherit" [class.opacity-60]="disabled">{{ item.content }}</span>
+    </label>
+  }
+</div>

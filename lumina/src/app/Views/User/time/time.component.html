@@ -1,0 +1,11 @@
+<div class="flex flex-col gap-2">
+  <div class="flex items-center justify-between text-sm text-gray-600">
+    <span>Thời gian còn lại: {{ remainingSeconds }}s</span>
+  </div>
+  <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+    <div
+      class="h-full bg-blue-500 transition-[width] duration-300 ease-linear"
+      [style.width]="progressPercent + '%'"
+    ></div>
+  </div>
+</div>

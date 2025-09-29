@@ -69,7 +69,7 @@ export class ExamPartComponent {
   startPart(partId: number): void {
     console.log('Starting part ID:', partId);
     // Navigate to part detail or start exam
-    // this.router.navigate(['/exam-part', this.examId, 'part', partId]);
+    this.router.navigate(['/homepage/user-dashboard/part', partId]);
   }
 
   goBack(): void {
