@@ -1,0 +1,15 @@
+@if (partInfo) {
+  <div class="bg-gray-50 border border-gray-200 rounded-lg p-5 my-4 shadow-sm">
+    <div class="border-b-2 border-blue-500 pb-3 mb-4">
+      <h2 class="text-blue-600 text-2xl font-semibold mb-2">{{ partInfo.title }}</h2>
+      <div class="flex flex-wrap items-center gap-3 text-sm text-gray-600">
+        <span class=" px-2 py-1 rounded font-medium">PartCode: {{ partInfo.partCode }}</span>
+        <span class=" px-2 py-1 rounded font-medium">Thứ tự: {{ partInfo.orderIndex }}</span>
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="text-center p-10 text-gray-500 italic">
+    <p>Loading part information...</p>
+  </div>
+}
