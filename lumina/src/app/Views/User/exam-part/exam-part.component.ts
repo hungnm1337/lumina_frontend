@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ExamDTO, ExamService } from '../../../Services/Exam/exam.service';
+import { ExamService } from '../../../Services/Exam/exam.service';
+import { ExamDTO } from '../../../Interfaces/exam.interfaces';
 
 @Component({
   selector: 'app-exam-part',

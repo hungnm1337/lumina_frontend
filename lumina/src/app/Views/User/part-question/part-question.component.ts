@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ExamPartDTO,ExamService,QuestionDTO } from '../../../Services/Exam/exam.service';
+import { ExamService } from '../../../Services/Exam/exam.service';
 import { PartDetailComponent } from "../part-detail/part-detail.component";
 import { QuestionComponent } from "../question/question.component";
+import { ExamPartDTO, QuestionDTO } from '../../../Interfaces/exam.interfaces';
 
 @Component({
   selector: 'app-part-question',
