@@ -12,7 +12,7 @@ import { DashboardComponent } from './Views/Admin/Dashboard/dashboard/dashboard.
 import { LoginComponent } from './Views/Auth/login/login.component'; // <-- THÊM
 import { RegisterComponent } from './Views/Auth/register/register.component'; // <-- THÊM
 import { ForgotPasswordComponent } from './Views/Auth/forgot-password/forgot-password.component'; // <-- THÊM
-
+import { AuthGuard } from './Services/Auth/auth.guard'; 
 export const routes: Routes = [
   {
     path: 'admin',
@@ -40,7 +40,12 @@ export const routes: Routes = [
       },
     ],
   },
-
+  
+  { 
+    path: 'profile', 
+    loadComponent: () => import('./Views/User/profile/profile.component').then(m => m.ProfileComponent),
+    canActivate: [AuthGuard] // Bảo vệ route profile
+  },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },

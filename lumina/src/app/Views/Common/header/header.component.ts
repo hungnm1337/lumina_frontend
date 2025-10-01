@@ -46,4 +46,10 @@ export class HeaderComponent implements OnInit {
     this.isDropdownOpen = false;
     this.authService.logout();
   }
+
+  // New:
+  goToProfile(): void {
+    this.isDropdownOpen = false;
+    this.router.navigate(['/profile']);
+  }
 }
