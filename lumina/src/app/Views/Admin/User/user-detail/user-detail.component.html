@@ -1,0 +1,222 @@
+<div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+    <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center space-x-4">
+            <img [src]="user.avatarUrl || 'https://ui-avatars.com/api/?name=' + (user.fullName || '') + '&background=667eea&color=fff&size=80'"
+                alt="User Avatar" class="w-20 h-20 rounded-full">
+            <div>
+                <h3 class="text-2xl font-bold text-gray-800">{{ user.fullName }}</h3>
+                <p class="text-gray-600">{{ user.email }}</p>
+                <div class="flex items-center space-x-3 mt-2">
+                    <span class="px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full">{{
+                        user.roleName }}</span>
+                    <span *ngIf="user.isActive"
+                        class="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">Hoạt động</span>
+                    <span *ngIf="!user.isActive"
+                        class="px-3 py-1 bg-red-100 text-red-800 text-sm font-medium rounded-full">Bị khóa</span>
+                    <span class="text-sm text-gray-500">ID: #{{ user.userId }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <!-- <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                <i class="fas fa-edit mr-2"></i>Chỉnh sửa
+            </button> -->
+            <button class="bg-red-600 text-white px-4 py-2 rounded-lg hover:text-red-900" *ngIf="user.isActive"
+                (click)="toggleStatus(user)">
+                <i class="fas fa-lock mr-2"></i>
+                Khóa tài khoản
+            </button>
+
+            <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:text-green-900" *ngIf="!user.isActive"
+                (click)="toggleStatus(user)">
+                <i class="fas fa-lock-open mr-1"></i>
+                Mở khóa tài khoản
+            </button>
+
+        </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-blue-50 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-blue-600">
+                {{ proSummary.totalPackages ?? 0 }}
+            </div>
+            <div class="text-sm text-gray-600">Số gói Pro đã mua</div>
+        </div>
+        <div class="bg-green-50 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-green-600">
+                {{ proSummary.remainDays ?? 0 }}
+            </div>
+            <div class="text-sm text-gray-600">Số ngày còn lại</div>
+        </div>
+        <div class="bg-purple-50 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-purple-600">
+                <div class="text-2xl font-bold text-purple-600">
+                    {{ proSummary.totalMoney ? (proSummary.totalMoney | currency:'VND':'symbol':'1.0-0':'vi-VN') : '0'
+                    }}
+                </div>
+            </div>
+            <div class="text-sm text-gray-600">Tổng tiền đã chi</div>
+        </div>
+        <div class="bg-yellow-50 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-yellow-600">
+                {{ proSummary.totalDays ?? 0 }} ngày
+            </div>
+            <div class="text-sm text-gray-600">Tổng ngày làm thành viên</div>
+        </div>
+    </div>
+
+
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6" *ngIf="user">
+    <!-- User Information -->
+    <div class="lg:col-span-2 space-y-6">
+        <!-- Personal Info -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h4 class="text-lg font-semibold text-gray-800">Thông tin cá nhân</h4>
+                <span class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">Chỉ xem</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <div class="space-y-1">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-user text-gray-400 text-sm"></i>
+                        <span class="text-sm font-medium text-gray-500">Tên đăng nhập</span>
+                    </div>
+                    <p class="text-gray-800 font-medium pl-6">{{ user.userName }}</p>
+                </div>
+
+                <div class="space-y-1">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-envelope text-gray-400 text-sm"></i>
+                        <span class="text-sm font-medium text-gray-500">Email</span>
+                    </div>
+                    <p class="text-gray-800 font-medium pl-6">{{ user.email }}</p>
+                </div>
+
+                <div class="space-y-1">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-phone text-gray-400 text-sm"></i>
+                        <span class="text-sm font-medium text-gray-500">Số điện thoại</span>
+                    </div>
+                    <p class="text-gray-800 font-medium pl-6">{{ user.phone || '-' }}</p>
+                </div>
+
+                <div class="space-y-1">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-id-badge text-gray-400 text-sm"></i>
+                        <span class="text-sm font-medium text-gray-500">Vai trò</span>
+                    </div>
+                    <p class="text-gray-800 font-medium pl-6">{{ user.roleName }}</p>
+                </div>
+                <div class="space-y-1">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-info-circle text-gray-400 text-sm"></i>
+                        <span class="text-sm font-medium text-gray-500">Trạng thái</span>
+                    </div>
+                    <p class="text-gray-800 font-medium pl-6">{{ user.isActive ? 'Hoạt động' : 'Bị khóa' }}</p>
+                </div>
+
+                <div class="space-y-1">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-calendar-alt text-gray-400 text-sm"></i>
+                        <span class="text-sm font-medium text-gray-500">Ngày tham gia</span>
+                    </div>
+                    <p class="text-gray-800 font-medium pl-6">{{ user.joinDate | date:'dd/MM/yyyy' }}</p>
+                </div>
+
+            </div>
+
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <div class="space-y-1">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-user-secret text-gray-400 text-sm"></i>
+                        <span class="text-sm font-medium text-gray-500">Mô tả</span>
+                    </div>
+                    <p class="text-gray-800 font-medium pl-6">{{ user.bio || '-' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Sidebar Thông tin gói & Lịch sử thanh toán & Quản trị -->
+    <div class="space-y-6">
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">Thông tin gói</h4>
+            <div *ngIf="activePackage && activePackage.package; else noPackage">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Gói hiện tại:</span>
+                        <span class="font-semibold text-purple-600">{{ activePackage.package.packageName }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Giá:</span>
+                        <span class="font-semibold text-gray-800">{{ activePackage.package.price ?
+                            (activePackage.package.price | currency:'VND':'symbol':'1.0-0':'vi-VN') : '0' }}</span>
+
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Ngày bắt đầu:</span>
+                        <span class="font-semibold text-gray-800">{{ activePackage.startTime | date:'dd/MM/yyyy'
+                            }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Ngày kết thúc:</span>
+                        <span class="font-semibold text-gray-800">{{ activePackage.endTime | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Trạng thái:</span>
+                        <span *ngIf="activePackage.package.isActive"
+                            class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Đang hoạt
+                            động</span>
+                        <span *ngIf="!activePackage.package.isActive"
+                            class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">Không hoạt
+                            động</span>
+                    </div>
+                </div>
+            </div>
+
+            <ng-template #noPackage>
+                <div class="text-red-600 font-semibold">Người dùng chưa đăng ký gói nào.</div>
+            </ng-template>
+
+        </div>
+
+        <!-- <div class="bg-white rounded-xl shadow-sm p-6">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">Lịch sử thanh toán</h4>
+            <div class="space-y-3">
+                <div *ngFor="let payment of user.payments"
+                    class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                    <div>
+                        <p class="text-sm font-medium text-gray-800">{{ payment.packageName }}</p>
+                        <p class="text-xs text-gray-500">{{ payment.paymentDate | date:'dd/MM/yyyy' }}</p>
+                    </div>
+                    <span class="text-sm font-semibold text-green-600">\${{ payment.amount }}</span>
+                </div>
+            </div>
+            <button class="w-full mt-4 text-blue-600 text-sm hover:text-blue-800 transition-colors">
+                Xem tất cả
+            </button>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">Thao tác quản trị</h4>
+            <div class="space-y-3">
+                <button class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-envelope mr-2"></i>Gửi email
+                </button>
+                <button class="w-full bg-yellow-600 text-white py-2 rounded-lg hover:bg-yellow-700 transition-colors">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Cảnh báo
+                </button>
+                <button class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors">
+                    <i class="fas fa-gift mr-2"></i>Tặng credits
+                </button>
+                <button class="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors">
+                    <i class="fas fa-trash mr-2"></i>Xóa tài khoản
+                </button>
+            </div>
+        </div> -->
+    </div>
+</div>

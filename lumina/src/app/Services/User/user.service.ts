@@ -26,7 +26,20 @@ getNonAdminUsersPaged(pageNumber: number, searchTerm: string = '', role: string 
   return this.http.get<{ data: any[], totalPages: number }>(url, { headers: this.getAuthHeaders() });
 }
 
+toggleUserStatus(userId: number): Observable<any> {
+  return this.http.patch(
+    `${this.baseUrl}/User/${userId}/toggle-status`,
+    {},
+    { headers: this.getAuthHeaders() }
+  );
+}
 
+getUserById(userId: number): Observable<any> {
+  return this.http.get<any>(`${this.baseUrl}/User/${userId}`, { headers: this.getAuthHeaders() });
+}
 
+  getUserActivePackage(userId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/Packages/user-active-package/${userId}`);
+  }
 
 }
