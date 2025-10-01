@@ -4,6 +4,7 @@ import { UserService } from '../../../../Services/User/user.service';
 import { CommonModule, NgIf, DatePipe, NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StatisticService } from '../../../../Services/Statistic/statistic.service';
+import { PackagesService } from '../../../../Services/Packages/packages.service';
 
 @Component({
   selector: 'app-user-detail',
@@ -23,7 +24,8 @@ export class UserDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private userService: UserService,
-    private statisticService: StatisticService
+    private statisticService: StatisticService,
+    private packagesService: PackagesService
   ) { }
 
   ngOnInit() {
@@ -43,7 +45,7 @@ export class UserDetailComponent implements OnInit {
         this.user = data;
 
         // Lấy gói active thêm
-        this.userService.getUserActivePackage(this.userId).subscribe({
+        this.packagesService.getUserActivePackage(this.userId).subscribe({
           next: (pkg) => {
             this.activePackage = pkg;
             this.isLoading = false;
