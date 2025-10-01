@@ -20,6 +20,11 @@ export const routes: Routes = [
       import('./Views/Admin/admin.module').then((m) => m.AdminModule),
   },
   {
+    path: 'staff',
+    loadChildren: () =>
+      import('./Views/Staff/staff.module').then((m) => m.StaffModule),
+  },
+  {
     path: 'homepage',
     component: HomepageComponent,
     children: [
