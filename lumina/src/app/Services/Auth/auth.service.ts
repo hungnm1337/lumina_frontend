@@ -91,4 +91,15 @@ export class AuthService {
   getCurrentUser(): AuthUserResponse | null {
     return this.currentUserSource.value;
   }
+
+getRoleFromToken(): string | null {
+  const token = localStorage.getItem('lumina_token');
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1] || ''));
+    return payload['role'] || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || null;
+  } catch {
+    return null;
+  }
+}
 }

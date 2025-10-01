@@ -1,0 +1,16 @@
+/* Styling for the active navigation link */
+.nav-item.active {
+  background-color: #eef2ff; /* Tailwind's bg-indigo-50 */
+  color: #4338ca; /* Tailwind's text-indigo-700 */
+  font-weight: 600; /* Tailwind's font-semibold */
+}
+
+/* Add a subtle left border to indicate the active link */
+.nav-item.active {
+  box-shadow: inset 3px 0 0 0 #4f46e5; /* Tailwind's indigo-600 */
+}
+
+/* Style the icon within the active link to match the text color */
+.nav-item.active i {
+  color: #4f46e5; /* Tailwind's indigo-600 */
+}

@@ -102,6 +102,14 @@ export class LoginComponent implements OnInit {
       next: (response) => {
         this.isLoading = false;
         this.toastService.success('Đăng nhập thành công!');
+        const role = this.authService.getRoleFromToken();
+        if (role === 'admin') {
+          this.router.navigate(['/admin/dashboard']);
+          return;
+        }else if(role === 'staff'){
+          this.router.navigate(['/staff/dashboard']);
+          return;
+        }
         this.router.navigate(['/homepage/user-dashboard']);
       },
       error: (err) => {
