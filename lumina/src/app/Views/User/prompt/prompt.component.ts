@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { PromptDTO } from '../../../Services/Exam/exam.service';
+import { PromptDTO } from '../../../Interfaces/exam.interfaces';
 @Component({
   selector: 'app-prompt',
   standalone: true,

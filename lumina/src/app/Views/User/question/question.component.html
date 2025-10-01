@@ -44,6 +44,29 @@
     }">
       {{ feedbackText }}
     </div>
+    <div class="mt-4">
+      <div class="text-sm font-medium text-gray-700 mb-2">Câu trả lời đã lưu (localStorage)</div>
+      @if (savedAnswers && savedAnswers.length > 0) {
+        <ul class="pl-0 text-sm text-gray-700 space-y-1">
+          @for (ans of savedAnswers; track ans.questionId) {
+            <li class="flex items-center gap-2">
+              <span class="inline-block min-w-24">Câu {{ ans.questionId }}</span>
+              <span class="inline-block">→ Chọn: {{ ans.optionId }}</span>
+              <span class="inline-block ml-2" [ngClass]="{
+                'bg-green-100 text-green-700 border border-green-200': isAnswerOptionCorrect(ans.questionId, ans.optionId) === true,
+                'bg-red-100 text-red-700 border border-red-200': isAnswerOptionCorrect(ans.questionId, ans.optionId) === false,
+                'bg-gray-100 text-gray-700 border border-gray-200': isAnswerOptionCorrect(ans.questionId, ans.optionId) === null
+              }" class="px-2 py-0.5 rounded text-xs">
+                {{ isAnswerOptionCorrect(ans.questionId, ans.optionId) === true ? 'Đúng' : isAnswerOptionCorrect(ans.questionId, ans.optionId) === false ? 'Sai' : 'Không xác định' }}
+              </span>
+            </li>
+          }
+        </ul>
+      } @else {
+        <div class="text-sm text-gray-500">Không có dữ liệu lưu.</div>
+      }
+      <button class="mt-3 px-3 py-1.5 rounded bg-red-600 text-white hover:bg-red-700" (click)="clearSavedAnswers()">Xóa lưu trữ</button>
+    </div>
     <div class="flex gap-4">
       <div class="mt-4">
       <button class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700" (click)="resetQuiz()">Làm lại</button>

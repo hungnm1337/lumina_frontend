@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ExamPartDTO } from '../../../Services/Exam/exam.service';
+import { ExamPartDTO } from '../../../Interfaces/exam.interfaces';
 
 @Component({
   selector: 'app-part-detail',
