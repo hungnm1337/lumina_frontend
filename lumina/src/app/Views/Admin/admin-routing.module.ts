@@ -2,7 +2,9 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AdminLayoutComponent } from './layout/admin-layout/admin-layout.component';
 import { DashboardComponent } from './Dashboard/dashboard/dashboard.component';
-import { UserListComponent } from './User/user-list/user-list.component'; 
+import { UserListComponent } from './User/user-list/user-list.component';
+import { UserDetailComponent } from './User/user-detail/user-detail.component'; // import user detail component
+import { SystemPlansComponent } from './system-plans/system-plans.component';
 
 const routes: Routes = [
   {
@@ -15,12 +17,21 @@ const routes: Routes = [
         component: DashboardComponent,
         data: { title: 'Dashboard Tổng quan' }
       },
-      // Add the new route for the user list page
       {
         path: 'users-list',
         component: UserListComponent,
         data: { title: 'Danh sách người dùng' }
       },
+      {
+        path: 'user-detail/:id',
+        component: UserDetailComponent,
+        data: { title: 'Chi tiết người dùng' }
+      },
+      {
+        path: 'system-plans',
+        component: SystemPlansComponent,
+        data: { title: 'Quản lý gói và hạn mức' }
+      }
     ]
   }
 ];

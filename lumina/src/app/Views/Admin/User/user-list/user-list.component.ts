@@ -3,11 +3,12 @@ import { NgIf, NgFor, CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../../../Services/User/user.service';
 import { RoleService } from '../../../../Services/Role/role.service';
+import { RouterLink } from '@angular/router'; 
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [NgIf, NgFor, CommonModule, FormsModule, DatePipe],
+  imports: [NgIf, NgFor, CommonModule, FormsModule, DatePipe, RouterLink],
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.scss']
 })
@@ -93,6 +94,20 @@ applyFilters(): void {
   }
 
   this.filteredUsers = users;
+}
+
+toggleStatus(user: any): void {
+  const action = user.isActive ? 'khóa' : 'mở khóa';
+  if (confirm(`Bạn có chắc muốn ${action} tài khoản của ${user.fullName}?`)) {
+    this.userService.toggleUserStatus(user.userId).subscribe({
+      next: () => {
+        user.isActive = !user.isActive; // Tự cập nhật trạng thái local cho nhanh UI, load lại trang nếu muốn chắc chắn hơn
+      },
+      error: () => {
+        alert('Có lỗi khi thay đổi trạng thái người dùng!');
+      }
+    });
+  }
 }
 
 

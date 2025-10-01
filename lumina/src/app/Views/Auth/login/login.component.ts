@@ -70,6 +70,7 @@ export class LoginComponent implements OnInit {
         this.zone.run(() => {
           this.isLoading = false;
           this.toastService.success('Đăng nhập bằng Google thành công!');
+          
           this.router.navigate(['/homepage/user-dashboard']);
         });
       },
