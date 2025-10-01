@@ -23,9 +23,9 @@ export class SidebarComponent {
     {
       title: 'Quản lý người dùng',
       items: [
-        { path: '/admin/users-list', name: 'Danh sách người dùng', icon: 'fas fa-users' },
-        { path: '/admin/user-details', name: 'Chi tiết người dùng', icon: 'fas fa-user-edit' },
-        { path: '/admin/roles-permissions', name: 'Vai trò & Quyền hạn', icon: 'fas fa-user-shield' },
+        { path: '/admin/users-list', name: 'Danh sách người dùng', icon: 'fas fa-users' }
+        // { path: '/admin/user-details', name: 'Chi tiết người dùng', icon: 'fas fa-user-edit' },
+        // { path: '/admin/roles-permissions', name: 'Vai trò & Quyền hạn', icon: 'fas fa-user-shield' },
       ],
     },
     {
@@ -39,7 +39,7 @@ export class SidebarComponent {
     {
       title: 'Giám sát & Báo cáo',
       items: [
-        { path: '/admin/audit-log', name: 'Nhật ký kiểm toán', icon: 'fas fa-clipboard-list' },
+        { path: '/admin/questions', name: 'Nhật ký kiểm toán', icon: 'fas fa-clipboard-list' },
         { path: '/admin/revenue-reports', name: 'Báo cáo doanh thu', icon: 'fas fa-chart-line' },
       ],
     }

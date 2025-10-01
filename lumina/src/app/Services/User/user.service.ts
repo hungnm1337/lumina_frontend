@@ -27,7 +27,7 @@ export interface UpdateUserProfileRequest {
   providedIn: 'root',
 })
 export class UserService {
-  // Đồng bộ với AuthService (environment.apiUrl đã có /api)
+
   baseUrl = `${environment.apiUrl}/User`;
 
   constructor(private http: HttpClient) {}
@@ -72,4 +72,21 @@ export class UserService {
       headers: this.getAuthHeaders(),
     });
   }
+
+toggleUserStatus(userId: number): Observable<any> {
+  return this.http.patch(
+    `${this.baseUrl}/${userId}/toggle-status`,
+    {},
+    { headers: this.getAuthHeaders() }
+  );
 }
+
+getUserById(userId: number): Observable<any> {
+  return this.http.get<any>(`${this.baseUrl}/${userId}`, { headers: this.getAuthHeaders() });
+}
+
+
+
+
+}
+
