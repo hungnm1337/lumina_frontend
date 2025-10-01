@@ -13,16 +13,21 @@ import { LoginComponent } from './Views/Auth/login/login.component'; // <-- THÊ
 import { RegisterComponent } from './Views/Auth/register/register.component'; // <-- THÊM
 import { ForgotPasswordComponent } from './Views/Auth/forgot-password/forgot-password.component'; // <-- THÊM
 import { AuthGuard } from './Services/Auth/auth.guard'; 
+import { RoleGuard } from './Services/Auth/role.guard';
 export const routes: Routes = [
   {
     path: 'admin',
     loadChildren: () =>
       import('./Views/Admin/admin.module').then((m) => m.AdminModule),
+    canActivate: [RoleGuard],
+    data: { roles: [1] }
   },
   {
     path: 'staff',
     loadChildren: () =>
       import('./Views/Staff/staff.module').then((m) => m.StaffModule),
+    canActivate: [RoleGuard],
+    data: { roles: [3] }
   },
   {
     path: 'homepage',

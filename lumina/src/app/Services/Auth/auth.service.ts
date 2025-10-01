@@ -2,6 +2,7 @@ import { environment } from './../../../environments/environment.development';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { jwtDecode } from 'jwt-decode';
 import {
   AuthUserResponse,
   ForgotPasswordRequest,
@@ -19,7 +20,7 @@ import { GoogleLoginRequest } from '../../Interfaces/auth.interfaces';
 })
 export class AuthService {
   private apiUrl = `${environment.apiUrl}/auth`;
-
+private tokenKey = 'authToken';
   private currentUserSource = new BehaviorSubject<AuthUserResponse | null>(
     null
   );
@@ -92,14 +93,59 @@ export class AuthService {
     return this.currentUserSource.value;
   }
 
-getRoleFromToken(): string | null {
+getDecodedToken(): any | null {
   const token = localStorage.getItem('lumina_token');
   if (!token) return null;
   try {
-    const payload = JSON.parse(atob(token.split('.')[1] || ''));
-    return payload['role'] || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || null;
+    return JSON.parse(atob(token.split('.')[1] || ''));
   } catch {
     return null;
+  }
+}
+
+getRoleClaim(): string | null {
+  const payload = this.getDecodedToken();
+  if (!payload) return null;
+  return (
+    payload['role'] ||
+    payload['roles'] ||
+    payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
+    null
+  );
+}
+
+getRoleId(): number | null {
+  const payload = this.getDecodedToken();
+  if (!payload) return null;
+  // backend có thể đặt claim roleId hoặc map từ role name
+  const byId = payload['roleId'] || payload['RoleId'];
+  if (byId && !isNaN(Number(byId))) return Number(byId);
+  // fallback: map từ tên role
+  const role = (this.getRoleClaim() || '').toString().toLowerCase();
+  if (!role) return null;
+  if (role.includes('admin')) return 1;
+  if (role.includes('manager')) return 2;
+  if (role.includes('staff')) return 3;
+  if (role.includes('user')) return 4;
+  return null;
+}
+
+navigateByRole(): void {
+  const roleId = this.getRoleId();
+  switch (roleId) {
+    case 1:
+      this.router.navigate(['/admin']);
+      break;
+    case 2:
+      this.router.navigate(['/manager']);
+      break;
+    case 3:
+      this.router.navigate(['/staff']);
+      break;
+    case 4:
+    default:
+      this.router.navigate(['/homepage/user-dashboard']);
+      break;
   }
 }
 }
