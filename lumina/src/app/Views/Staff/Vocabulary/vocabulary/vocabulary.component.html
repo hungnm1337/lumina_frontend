@@ -5,16 +5,24 @@
       <h1 class="page-title">Quản lý từ vựng</h1>
       <p class="page-subtitle">Tạo và quản lý bộ từ vựng TOEIC</p>
     </div>
-    <button class="btn-primary" (click)="openModal()">
-      <i class="fas fa-plus"></i>
-      Thêm từ vựng mới
-    </button>
+    <div class="header-actions">
+      <button class="btn-primary" (click)="openModal()">
+        <i class="fas fa-plus"></i>
+        Thêm từ vựng mới
+      </button>
+    </div>
   </div>
 
   <!-- Main Content Layout -->
   <div class="main-layout">
     <!-- Left Content -->
     <div class="vocabulary-list">
+      <!-- Loading State -->
+      <div class="loading-state" *ngIf="isLoading">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Đang tải từ vựng...</p>
+      </div>
+
       <!-- Vocabulary Items -->
       <div class="vocabulary-item" *ngFor="let vocab of filteredVocabularies">
         <!-- Word Header -->
@@ -76,17 +84,22 @@
         <div class="stats-content">
           <div class="total-count">
             <span class="count-label">Tổng từ vựng</span>
-            <span class="count-number">{{ getTotalVocabularies() | number }}</span>
+            <span class="count-number">{{ getTotalStats() | number }}</span>
           </div>
           
           <div class="category-stats">
-            <div class="category-stat" *ngFor="let category of categories">
+            <div class="category-stat" *ngFor="let list of vocabularyLists">
               <div class="category-info">
-                <span class="category-icon">{{ category.icon }}</span>
-                <span class="category-name">{{ category.name }}</span>
+                <span class="category-icon">📚</span>
+                <span class="category-name">{{ list.name }}</span>
               </div>
-              <span class="category-count">{{ category.count }}</span>
+              <span class="category-count">{{ list.vocabularyCount }}</span>
             </div>
+          </div>
+          
+          <div class="filtered-count" *ngIf="searchTerm || selectedList || selectedPartOfSpeech">
+            <span class="count-label">Kết quả hiện tại</span>
+            <span class="count-number">{{ filteredVocabularies.length | number }}</span>
           </div>
         </div>
       </div>
@@ -139,6 +152,13 @@
         <div class="filters-header">
           <i class="fas fa-filter"></i>
           <h3>Bộ lọc</h3>
+          <button 
+            class="btn-clear-filters" 
+            (click)="clearAllFilters()"
+            title="Xóa tất cả bộ lọc"
+          >
+            <i class="fas fa-times"></i>
+          </button>
         </div>
         <div class="filters-content">
           <div class="search-box">
@@ -149,14 +169,22 @@
               [(ngModel)]="searchTerm"
               (input)="onSearchChange()"
             >
+            <button 
+              class="btn-clear-search" 
+              *ngIf="searchTerm"
+              (click)="clearSearch()"
+              title="Xóa tìm kiếm"
+            >
+              <i class="fas fa-times"></i>
+            </button>
           </div>
           
           <div class="filter-group">
-            <label>Danh mục</label>
-            <select [(ngModel)]="selectedCategory" (change)="onCategoryChange()">
-              <option value="">Tất cả danh mục</option>
-              <option *ngFor="let category of categories" [value]="category.id">
-                {{ category.icon }} {{ category.name }}
+            <label>Danh sách từ vựng</label>
+            <select [(ngModel)]="selectedList" (change)="onListChange()">
+              <option value="">Tất cả danh sách</option>
+              <option *ngFor="let list of vocabularyLists" [value]="list.vocabularyListId">
+                {{ list.name }} ({{ list.vocabularyCount }} từ)
               </option>
             </select>
           </div>
@@ -297,8 +325,9 @@
         <button type="button" class="btn-secondary" (click)="closeModal()">
           Hủy
         </button>
-        <button type="submit" class="btn-primary" [disabled]="!vocabularyForm.valid">
-          {{ editingVocabulary ? 'Cập nhật' : 'Thêm mới' }}
+        <button type="submit" class="btn-primary" [disabled]="!vocabularyForm.valid || isSubmitting">
+          <span *ngIf="isSubmitting" class="loading-spinner"></span>
+          {{ isSubmitting ? 'Đang xử lý...' : (editingVocabulary ? 'Cập nhật' : 'Thêm mới') }}
         </button>
       </div>
     </form>

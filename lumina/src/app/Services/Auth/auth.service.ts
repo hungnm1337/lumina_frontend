@@ -140,7 +140,7 @@ navigateByRole(): void {
       this.router.navigate(['/manager']);
       break;
     case 3:
-      this.router.navigate(['/staff']);
+      this.router.navigate(['/staff/dashboard']);
       break;
     case 4:
     default:
