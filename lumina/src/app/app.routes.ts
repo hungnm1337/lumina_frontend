@@ -7,7 +7,7 @@ import { ExamsComponent } from './Views/User/exams/exams.component';
 import { ExamPartComponent } from './Views/User/exam-part/exam-part.component';
 import { PartQuestionComponent } from './Views/User/part-question/part-question.component';
 import { DashboardComponent } from './Views/Admin/Dashboard/dashboard/dashboard.component';
-// import { ContentHomepageComponent } from './Views/Common/content-homepage/content-homepage.component';
+import { ContentHomepageComponent } from './Views/Common/content-homepage/content-homepage.component';
 import { LoginComponent } from './Views/Auth/login/login.component'; // <-- THÊM
 import { RegisterComponent } from './Views/Auth/register/register.component'; // <-- THÊM
 import { ForgotPasswordComponent } from './Views/Auth/forgot-password/forgot-password.component'; // <-- THÊM
