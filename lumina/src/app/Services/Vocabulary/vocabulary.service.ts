@@ -1,0 +1,194 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment.development';
+import { 
+  VocabularyWord,
+  VocabularyListCreate,
+  VocabularyListResponse,
+  VocabularyStats,
+  Vocabulary,
+  VocabularyCategory
+} from '../../Interfaces/vocabulary.interfaces';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class VocabularyService {
+  private apiUrl = `${environment.apiUrl}/vocabularies`;
+  private vocabularyListsUrl = `${environment.apiUrl}/vocabulary-lists`;
+
+  constructor(private http: HttpClient) {}
+
+  // Lấy danh sách từ vựng
+  getVocabularies(listId?: number, search?: string): Observable<VocabularyWord[]> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    let params: any = {};
+    if (listId) params.listId = listId.toString();
+    if (search) params.search = search;
+
+    return this.http.get<VocabularyWord[]>(this.apiUrl, { headers, params });
+  }
+
+  // Tạo từ vựng mới
+  createVocabulary(vocabularyData: {
+    vocabularyListId: number;
+    word: string;
+    typeOfWord: string;
+    definition: string;
+    example?: string;
+  }): Observable<any> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post(this.apiUrl, vocabularyData, { headers });
+  }
+
+  // Lấy từ vựng theo ID
+  getVocabularyById(id: number): Observable<VocabularyWord> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.get<VocabularyWord>(`${this.apiUrl}/${id}`, { headers });
+  }
+
+  // Cập nhật từ vựng
+  updateVocabulary(id: number, vocabularyData: {
+    word: string;
+    typeOfWord: string;
+    definition: string;
+    example?: string;
+  }): Observable<any> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.put(`${this.apiUrl}/${id}`, vocabularyData, { headers });
+  }
+
+  // Xóa từ vựng
+  deleteVocabulary(id: number): Observable<any> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.delete(`${this.apiUrl}/${id}`, { headers });
+  }
+
+  // Tìm kiếm từ vựng
+  searchVocabularies(term: string, listId?: number): Observable<VocabularyWord[]> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    let params: any = { term };
+    if (listId) {
+      params.listId = listId.toString();
+    }
+
+    return this.http.get<VocabularyWord[]>(`${this.apiUrl}/search`, { headers, params });
+  }
+
+  // Lấy từ vựng theo loại từ
+  getVocabulariesByType(type: string): Observable<VocabularyWord[]> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.get<VocabularyWord[]>(`${this.apiUrl}/by-type/${type}`, { headers });
+  }
+
+  // Lấy thống kê từ vựng
+  getVocabularyStats(): Observable<{totalCount: number, countsByList: VocabularyStats[]}> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.get<{totalCount: number, countsByList: VocabularyStats[]}>(`${this.apiUrl}/stats`, { headers });
+  }
+
+  // === VOCABULARY LISTS ===
+  
+  // Lấy danh sách vocabulary lists
+  getVocabularyLists(searchTerm?: string): Observable<VocabularyListResponse[]> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    let params: any = {};
+    if (searchTerm) {
+      params.searchTerm = searchTerm;
+    }
+    
+    return this.http.get<VocabularyListResponse[]>(this.vocabularyListsUrl, { headers, params });
+  }
+
+  // Tạo vocabulary list mới
+  createVocabularyList(listData: VocabularyListCreate): Observable<VocabularyListResponse> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post<VocabularyListResponse>(this.vocabularyListsUrl, listData, { headers });
+  }
+
+  // Helper method để convert VocabularyWord thành Vocabulary (cho UI)
+  convertToVocabulary(vocabulary: VocabularyWord): Vocabulary {
+    return {
+      id: vocabulary.id,
+      word: vocabulary.word,
+      pronunciation: '', // Default empty - có thể thêm vào backend sau
+      category: 'general', // Default category
+      partOfSpeech: vocabulary.type,
+      definition: vocabulary.definition,
+      example: vocabulary.example || '',
+      translation: '', // Default empty - có thể thêm vào backend sau
+      difficulty: 'Intermediate', // Default difficulty
+      createdDate: new Date().toLocaleDateString('vi-VN'),
+      createdBy: 'System', // Default creator
+      status: 'active' // Default status
+    };
+  }
+
+  // Helper method để convert Vocabulary thành VocabularyWord format (cho API)
+  convertToVocabularyWord(vocabulary: Vocabulary, listId: number): {
+    vocabularyListId: number;
+    word: string;
+    typeOfWord: string;
+    definition: string;
+    example?: string;
+  } {
+    return {
+      vocabularyListId: listId,
+      word: vocabulary.word,
+      typeOfWord: vocabulary.partOfSpeech,
+      definition: vocabulary.definition,
+      example: vocabulary.example || undefined
+    };
+  }
+}

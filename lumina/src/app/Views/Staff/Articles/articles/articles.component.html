@@ -24,12 +24,12 @@
     </div>
     
     <div class="filter-group">
-      <select [(ngModel)]="selectedCategory" (change)="onCategoryChange()">
-        <option value="">Tất cả danh mục</option>
-        <option *ngFor="let category of categories" [value]="category">
-          {{ category }}
-        </option>
-      </select>
+        <select [(ngModel)]="selectedCategory" (change)="onCategoryChange()">
+          <option value="">Tất cả danh mục</option>
+          <option *ngFor="let category of categoryNames" [value]="category">
+            {{ category }}
+          </option>
+        </select>
       
       <select [(ngModel)]="selectedStatus" (change)="onStatusChange()">
         <option value="">Tất cả trạng thái</option>
@@ -37,11 +37,35 @@
         <option value="draft">Bản nháp</option>
         <option value="pending">Chờ duyệt</option>
       </select>
+
+      <!-- Sorting -->
+      <select [(ngModel)]="sortBy" (change)="changeSort(sortBy, sortDir)">
+        <option value="createdAt">Mới nhất</option>
+        <option value="title">Tiêu đề (A-Z)</option>
+        <option value="category">Danh mục</option>
+      </select>
+      <select [(ngModel)]="sortDir" (change)="changeSort(sortBy, sortDir)">
+        <option value="desc">Giảm dần</option>
+        <option value="asc">Tăng dần</option>
+      </select>
+
+      <!-- Page size -->
+      <select [ngModel]="pageSize" (ngModelChange)="changePageSize($event)">
+        <option [ngValue]="10">10 / trang</option>
+        <option [ngValue]="20">20 / trang</option>
+        <option [ngValue]="50">50 / trang</option>
+      </select>
     </div>
   </div>
 
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Đang tải bài viết...</p>
+  </div>
+
   <!-- Articles Grid -->
-  <div class="articles-grid">
+  <div class="articles-grid" *ngIf="!isLoading">
     <div class="article-card" *ngFor="let article of filteredArticles">
       <div class="article-status">
         <span [class]="getStatusClass(article.status)">
@@ -94,15 +118,30 @@
         >
           <i class="fas fa-upload"></i>
         </button>
-        <button class="btn-action btn-delete" (click)="deleteArticle(article.id)">
-          <i class="fas fa-trash"></i>
+        <button class="btn-action btn-delete" (click)="deleteArticle(article.id)" [disabled]="isLoading">
+          <i class="fas fa-trash" [class.fa-spin]="isLoading"></i>
         </button>
       </div>
     </div>
   </div>
 
+  <!-- Pagination -->
+  <div class="pagination-bar" *ngIf="!isLoading && total > 0">
+    <button class="btn-secondary" (click)="prevPage()" [disabled]="page === 1">
+      <i class="fas fa-chevron-left"></i>
+      Trang trước
+    </button>
+    <div class="page-info">
+      Trang {{ page }} / {{ Math.ceil(total / pageSize) }} · Tổng {{ total | number }} bài
+    </div>
+    <button class="btn-secondary" (click)="nextPage()" [disabled]="page * pageSize >= total">
+      Trang sau
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+
   <!-- Empty State -->
-  <div class="empty-state" *ngIf="filteredArticles.length === 0">
+  <div class="empty-state" *ngIf="!isLoading && filteredArticles.length === 0">
     <i class="fas fa-file-alt"></i>
     <h3>Không tìm thấy bài viết nào</h3>
     <p>Hãy thử thay đổi bộ lọc hoặc tạo bài viết mới</p>
@@ -134,7 +173,7 @@
           <label for="category">Danh mục</label>
           <select id="category" formControlName="category">
             <option value="">Chọn danh mục</option>
-            <option *ngFor="let category of categories" [value]="category">
+            <option *ngFor="let category of categoryNames" [value]="category">
               {{ category }}
             </option>
           </select>
@@ -248,8 +287,9 @@
         <button type="button" class="btn-secondary" (click)="closeModal()">
           Lưu nháp
         </button>
-        <button type="submit" class="btn-primary" [disabled]="!articleForm.valid">
-          {{ editingArticle ? 'Cập nhật' : 'Lưu & Xuất bản' }}
+        <button type="submit" class="btn-primary" [disabled]="!articleForm.valid || isSubmitting">
+          <span *ngIf="isSubmitting" class="loading-spinner"></span>
+          {{ isSubmitting ? 'Đang xử lý...' : (editingArticle ? 'Cập nhật' : 'Lưu & Xuất bản') }}
         </button>
       </div>
     </form>
