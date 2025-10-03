@@ -6,10 +6,11 @@ import { TimeComponent } from "../time/time.component";
 import { QuestionDTO, OptionDTO } from '../../../Interfaces/exam.interfaces';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../Services/Auth/auth.service';
+import { WritingAnswerBoxComponent } from "../writing-answer-box/writing-answer-box.component";
 @Component({
   selector: 'app-question',
   standalone: true,
-  imports: [CommonModule, OptionsComponent, PromptComponent, TimeComponent],
+  imports: [CommonModule, OptionsComponent, PromptComponent, TimeComponent, WritingAnswerBoxComponent],
   templateUrl: './question.component.html'
 })
 export class QuestionComponent {
