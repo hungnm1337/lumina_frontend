@@ -44,6 +44,41 @@ export class VocabularyComponent implements OnInit {
     { id: 'education', name: 'Education', icon: '🎓', count: 156, color: 'indigo' }
   ];
 
+  // Phân trang
+page: number = 1;
+pageSize: number = 5; // số item mỗi trang
+totalItems: number = 0;
+totalPages: number = 0;
+
+// Lấy danh sách sau khi phân trang
+get pagedVocabularies() {
+  const start = (this.page - 1) * this.pageSize;
+  return this.filteredVocabularies.slice(start, start + this.pageSize);
+}
+
+// Cập nhật lại số trang mỗi khi lọc/search thay đổi
+updatePagination() {
+  this.totalItems = this.filteredVocabularies.length;
+  this.totalPages = Math.ceil(this.totalItems / this.pageSize) || 1;
+  if (this.page > this.totalPages) {
+    this.page = this.totalPages;
+  }
+}
+
+// Sang trang sau
+nextPage() {
+  if (this.page < this.totalPages) {
+    this.page++;
+  }
+}
+
+// Trở về trang trước
+prevPage() {
+  if (this.page > 1) {
+    this.page--;
+  }
+}
+
   difficulties = ['Beginner', 'Intermediate', 'Advanced'];
   partsOfSpeech = ['Noun', 'Verb', 'Adjective', 'Adverb', 'Preposition', 'Conjunction'];
 
@@ -205,16 +240,25 @@ export class VocabularyComponent implements OnInit {
   }
 
   filterVocabularies() {
-    this.filteredVocabularies = this.vocabularies.filter(vocab => {
-      const matchesSearch = vocab.word.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                           vocab.definition.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                           vocab.translation.toLowerCase().includes(this.searchTerm.toLowerCase());
-      const matchesCategory = !this.selectedCategory || vocab.category === this.selectedCategory;
-      const matchesDifficulty = !this.selectedDifficulty || vocab.difficulty === this.selectedDifficulty;
-      const matchesPartOfSpeech = !this.selectedPartOfSpeech || vocab.partOfSpeech === this.selectedPartOfSpeech;
-      
-      return matchesSearch && matchesCategory && matchesDifficulty && matchesPartOfSpeech;
-    });
+  this.filteredVocabularies = this.vocabularies.filter(vocab => {
+    const matchesSearch =
+      vocab.word.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+      vocab.definition.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+      vocab.translation.toLowerCase().includes(this.searchTerm.toLowerCase());
+
+    const matchesCategory = !this.selectedCategory || vocab.category === this.selectedCategory;
+    const matchesDifficulty = !this.selectedDifficulty || vocab.difficulty === this.selectedDifficulty;
+    const matchesPartOfSpeech = !this.selectedPartOfSpeech || vocab.partOfSpeech === this.selectedPartOfSpeech;
+
+    return matchesSearch && matchesCategory && matchesDifficulty && matchesPartOfSpeech;
+  });
+
+  // ✅ reset về trang 1 mỗi khi dữ liệu lọc thay đổi
+  this.page = 1;
+  // ✅ tính lại tổng trang/tổng item
+  this.updatePagination();
+
+
   }
 
   onSearchChange() {

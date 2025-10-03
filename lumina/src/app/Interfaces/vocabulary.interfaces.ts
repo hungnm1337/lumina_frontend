@@ -51,3 +51,4 @@ export interface VocabularyCategory {
   count: number;
   color: string;
 }
+

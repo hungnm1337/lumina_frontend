@@ -560,4 +560,96 @@
       }
     }
   }
+
+  // Loading and Error States
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+
+    .loading-content {
+      text-align: center;
+      color: #667eea;
+
+      i {
+        margin-bottom: 16px;
+      }
+
+      p {
+        font-size: 16px;
+        font-weight: 500;
+        margin: 0;
+      }
+    }
+  }
+
+  .error-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    text-align: center;
+
+    .error-content {
+      max-width: 400px;
+      padding: 32px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+      i {
+        color: #ef4444;
+        margin-bottom: 16px;
+      }
+
+      h3 {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0 0 8px 0;
+      }
+
+      p {
+        color: #6b7280;
+        margin: 0 0 24px 0;
+      }
+
+      .btn-retry {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background: #5a67d8;
+          transform: translateY(-1px);
+        }
+      }
+    }
+  }
+
+  // Enhanced stat trend colors
+  .stat-trend {
+    &.positive {
+      color: #10b981;
+    }
+
+    &.negative {
+      color: #ef4444;
+    }
+  }
 }
