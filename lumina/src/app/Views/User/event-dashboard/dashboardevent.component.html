@@ -1,0 +1,21 @@
+<div class="max-w-5xl mx-auto px-4 py-8">
+  <h2 class="text-2xl font-semibold mb-4">Sự kiện</h2>
+  <div *ngIf="isLoading" class="text-gray-500">Đang tải...</div>
+  <div *ngIf="errorMessage" class="text-red-600">{{ errorMessage }}</div>
+
+  <div *ngIf="!isLoading && !errorMessage">
+    <div *ngIf="events?.length === 0" class="text-gray-500">Chưa có sự kiện nào.</div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" *ngIf="events?.length">
+      <div class="border rounded-lg p-4 shadow-sm bg-white" *ngFor="let e of events">
+        <div class="text-lg font-medium">{{ e.eventName }}</div>
+        <div class="text-sm text-gray-600 mt-1">{{ e.content }}</div>
+        <div class="text-xs text-gray-500 mt-2">
+          {{ e.startDate | date:'dd/MM/yyyy' }} - {{ e.endDate | date:'dd/MM/yyyy' }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+

@@ -7,12 +7,15 @@ import { ExamsComponent } from './Views/User/exams/exams.component';
 import { ExamPartComponent } from './Views/User/exam-part/exam-part.component';
 import { PartQuestionComponent } from './Views/User/part-question/part-question.component';
 import { DashboardComponent } from './Views/Admin/Dashboard/dashboard/dashboard.component';
-// import { ContentHomepageComponent } from './Views/Common/content-homepage/content-homepage.component';
+import { ContentHomepageComponent } from './Views/Common/content-homepage/content-homepage.component';
 import { LoginComponent } from './Views/Auth/login/login.component'; // <-- THÊM
 import { RegisterComponent } from './Views/Auth/register/register.component'; // <-- THÊM
 import { ForgotPasswordComponent } from './Views/Auth/forgot-password/forgot-password.component'; // <-- THÊM
 import { AuthGuard } from './Services/Auth/auth.guard'; 
 import { RoleGuard } from './Services/Auth/role.guard';
+import { ManageEventsDashboardComponent } from './Views/Manage/Event/dashboardevent.component';
+import { UserEventsDashboardComponent } from './Views/User/event-dashboard/dashboardevent.component';
+import { DashboardSlideComponent } from './Views/Manage/Slide/dashboardslide.component';
 export const routes: Routes = [
   {
     path: 'admin',
@@ -29,10 +32,23 @@ export const routes: Routes = [
     data: { roles: [3] }
   },
   {
+    path: 'manager',
+    children: [
+      { path: 'events', component: ManageEventsDashboardComponent },
+      { path: '', redirectTo: 'events', pathMatch: 'full' },
+      {path: 'slides', component: DashboardSlideComponent},
+      {path: '', redirectTo: 'slides', pathMatch: 'full'},
+    ],
+    canActivate: [RoleGuard],
+    data: { roles: [2] }
+  },
+  {
     path: 'homepage',
     component: HomepageComponent,
     children: [
       { path: '', component: ContentHomepageComponent },
+      { path: 'events', component: UserEventsDashboardComponent },
+      { path: 'slides', component: DashboardSlideComponent},
       {
         path: 'user-dashboard',
         component: UserDashboardComponent,

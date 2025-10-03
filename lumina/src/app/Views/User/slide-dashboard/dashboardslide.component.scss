@@ -1,0 +1,58 @@
+// Keyframes for smooth fades and slides
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes kenBurns {
+  0% { transform: scale(1) translateZ(0); }
+  100% { transform: scale(1.06) translateZ(0); }
+}
+
+.slide-enter {
+  animation: fadeIn 600ms ease both;
+}
+
+.caption-enter {
+  animation: slideUp 600ms 120ms ease both;
+}
+
+.visual-zoom {
+  animation: kenBurns 8s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+// Indicators
+.indicator {
+  transition: width 250ms ease, background-color 250ms ease, opacity 250ms ease;
+}
+
+// Controls
+.control {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+// Responsive height helpers if needed
+@media (max-width: 640px) {
+  .hero-h {
+    height: 50vh;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .hero-h {
+    height: 60vh;
+  }
+}
+
+@media (min-width: 1025px) {
+  .hero-h {
+    height: 70vh;
+  }
+}

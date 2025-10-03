@@ -1,0 +1,104 @@
+<div class="w-full bg-gray-900 text-white">
+  <!-- Hero / Carousel Wrapper -->
+  <div class="relative overflow-hidden" (mouseenter)="pauseAutoplay()" (mouseleave)="resumeAutoplay()">
+
+    <!-- Slides -->
+    <div class="relative h-[50vh] md:h-[60vh] lg:h-[70vh]">
+      <div class="absolute inset-0">
+        <ng-container *ngIf="!isLoading; else loadingTpl">
+          <ng-container *ngIf="!isEmpty; else emptyTpl">
+            <div class="h-full w-full">
+              <div class="relative h-full w-full">
+                <div class="h-full w-full">
+                  <div class="h-full w-full relative">
+                    <ng-container *ngFor="let slide of activeSlides; let i = index; trackBy: trackById">
+                      <div
+                        class="absolute inset-0 transition-opacity duration-700 ease-in-out"
+                        [class.opacity-100]="i === currentIndex"
+                        [class.opacity-0]="i !== currentIndex"
+                        [attr.aria-hidden]="i === currentIndex ? 'false' : 'true'">
+                        <div class="h-full w-full">
+                          <!-- Background Image / Video Placeholder -->
+                          <div class="h-full w-full bg-cover bg-center"
+                               [ngStyle]="{ 'background-image': 'url(' + slide.slideUrl + ')' }">
+                            <!-- gradient overlay -->
+                            <div class="h-full w-full bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
+                          </div>
+                        </div>
+
+                        <!-- Caption -->
+                        <div class="absolute bottom-10 left-0 right-0 px-6 md:px-10 lg:px-16">
+                          <div class="max-w-5xl">
+                            <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white/10 backdrop-blur-sm border border-white/20 mb-3">
+                              SLIDE
+                            </div>
+                            <h2 class="text-2xl md:text-4xl lg:text-5xl font-extrabold drop-shadow tracking-tight mb-3">
+                              {{ slide.slideName }}
+                            </h2>
+                            <p class="text-sm md:text-base text-white/80 max-w-2xl">
+                              Trải nghiệm những slide trực quan với hiệu ứng mượt mà và hiện đại.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </ng-container>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- Prev/Next Controls -->
+    <button type="button" (click)="prev()"
+            class="group absolute left-4 top-1/2 -translate-y-1/2 z-20 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition">
+      <span class="sr-only">Previous</span>
+      <svg class="h-5 w-5 text-white group-hover:translate-x-[-2px] transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </button>
+    <button type="button" (click)="next()"
+            class="group absolute right-4 top-1/2 -translate-y-1/2 z-20 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition">
+      <span class="sr-only">Next</span>
+      <svg class="h-5 w-5 text-white group-hover:translate-x-[2px] transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+      </svg>
+    </button>
+
+    <!-- Indicators -->
+    <div class="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-2 z-20">
+      <button *ngFor="let _ of activeSlides; let i = index"
+              (click)="goTo(i)"
+              class="h-2 rounded-full transition-all"
+              [class.bg-white]="i === currentIndex"
+              [style.width.px]="i === currentIndex ? 28 : 8"></button>
+    </div>
+
+    <!-- Autoplay toggle -->
+    <button (click)="toggleAutoplay()"
+            class="absolute top-4 right-4 z-20 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-white/10 border border-white/20 hover:bg-white/20 transition">
+      <span class="w-2 h-2 rounded-full" [class.bg-green-400]="isAutoplay" [class.bg-red-400]="!isAutoplay"></span>
+      {{ isAutoplay ? 'Autoplay: ON' : 'Autoplay: OFF' }}
+    </button>
+
+    <!-- Touch Layer for Swipe -->
+    <div class="absolute inset-0 z-10" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)"></div>
+  </div>
+</div>
+
+<ng-template #loadingTpl>
+  <div class="h-full flex items-center justify-center">
+    <div class="w-10 h-10 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+  </div>
+</ng-template>
+
+<ng-template #emptyTpl>
+  <div class="h-full flex flex-col items-center justify-center gap-3 text-center px-6">
+    <svg class="w-10 h-10 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7M3 7l9 6 9-6M3 7h18" />
+    </svg>
+    <p class="text-white/80">Hiện chưa có slide nào khả dụng.</p>
+  </div>
+</ng-template>

@@ -1,0 +1,243 @@
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-semibold">Quản lý Sự kiện</h2>
+    <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition" (click)="openCreateModal()">
+      <i class="fas fa-plus mr-2"></i>Thêm sự kiện
+    </button>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Search and Filter Controls -->
+  <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <!-- Search -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Tìm kiếm</label>
+        <input 
+          type="text" 
+          class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          [(ngModel)]="searchTerm" 
+          (input)="onSearchChange()"
+          placeholder="Tên sự kiện, nội dung..."
+        />
+      </div>
+
+      <!-- Status Filter -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+        <select 
+          class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          [(ngModel)]="filterStatus" 
+          (change)="onFilterChange()"
+        >
+          <option value="all">Tất cả</option>
+          <option value="active">Đang diễn ra</option>
+          <option value="upcoming">Sắp diễn ra</option>
+          <option value="past">Đã kết thúc</option>
+        </select>
+      </div>
+
+      <!-- Sort By -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Sắp xếp theo</label>
+        <select 
+          class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          [(ngModel)]="sortBy" 
+          (change)="onSortChange()"
+        >
+          <option value="startDate">Ngày bắt đầu</option>
+          <option value="endDate">Ngày kết thúc</option>
+          <option value="eventName">Tên sự kiện</option>
+        </select>
+      </div>
+
+      <!-- Sort Order -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Thứ tự</label>
+        <select 
+          class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          [(ngModel)]="sortOrder" 
+          (change)="onSortChange()"
+        >
+          <option value="asc">Tăng dần</option>
+          <option value="desc">Giảm dần</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="text-center py-8">
+    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+    <p class="text-gray-500 mt-2">Đang tải...</p>
+  </div>
+
+  <!-- Events Grid -->
+  <div *ngIf="!isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow" *ngFor="let event of filteredEvents">
+      <div class="p-4">
+        <div class="flex justify-between items-start mb-3">
+          <h3 class="text-lg font-semibold text-gray-900">{{ event.eventName }}</h3>
+          <span class="px-2 py-1 text-xs font-medium rounded-full" 
+                [ngClass]="getStatusClass(getEventStatus(event))">
+            {{ getEventStatus(event) === 'active' ? 'Đang diễn ra' : 
+               getEventStatus(event) === 'upcoming' ? 'Sắp diễn ra' : 'Đã kết thúc' }}
+          </span>
+        </div>
+        
+        <p class="text-gray-600 text-sm mb-3" *ngIf="event.content">{{ event.content }}</p>
+        
+        <div class="text-xs text-gray-500 mb-4">
+          <div class="flex items-center mb-1">
+            <i class="fas fa-calendar-start mr-2"></i>
+            Bắt đầu: {{ event.startDate | date:'dd/MM/yyyy HH:mm' }}
+          </div>
+          <div class="flex items-center">
+            <i class="fas fa-calendar-end mr-2"></i>
+            Kết thúc: {{ event.endDate | date:'dd/MM/yyyy HH:mm' }}
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <button class="flex-1 px-3 py-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition text-sm"
+                  (click)="openDetailModal(event)">
+            <i class="fas fa-eye mr-1"></i>Chi tiết
+          </button>
+          <button class="flex-1 px-3 py-2 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition text-sm"
+                  (click)="openEditModal(event)">
+            <i class="fas fa-edit mr-1"></i>Sửa
+          </button>
+          <button class="px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 transition text-sm"
+                  (click)="delete(event)">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Results -->
+  <div *ngIf="!isLoading && filteredEvents.length === 0" class="text-center py-12">
+    <i class="fas fa-calendar-times text-4xl text-gray-400 mb-4"></i>
+    <p class="text-gray-500 text-lg">Không tìm thấy sự kiện nào</p>
+    <p class="text-gray-400 text-sm">Thử thay đổi bộ lọc hoặc tìm kiếm</p>
+  </div>
+</div>
+
+<!-- Modal -->
+<div *ngIf="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" (click)="closeModal()">
+  <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center p-6 border-b">
+      <h3 class="text-xl font-semibold">
+        <span *ngIf="!isEditing && !selectedEvent">Thêm sự kiện mới</span>
+        <span *ngIf="isEditing">Chỉnh sửa sự kiện</span>
+        <span *ngIf="!isEditing && selectedEvent">Chi tiết sự kiện</span>
+      </h3>
+      <button class="text-gray-400 hover:text-gray-600" (click)="closeModal()">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6">
+      <!-- Detail View -->
+      <div *ngIf="!isEditing && selectedEvent" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Tên sự kiện</label>
+          <p class="text-gray-900 font-medium">{{ selectedEvent.eventName }}</p>
+        </div>
+        <div *ngIf="selectedEvent.content">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nội dung</label>
+          <p class="text-gray-900">{{ selectedEvent.content }}</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày bắt đầu</label>
+            <p class="text-gray-900">{{ selectedEvent.startDate | date:'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày kết thúc</label>
+            <p class="text-gray-900">{{ selectedEvent.endDate | date:'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+          <span class="px-3 py-1 text-sm font-medium rounded-full" 
+                [ngClass]="getStatusClass(getEventStatus(selectedEvent))">
+            {{ getEventStatus(selectedEvent) === 'active' ? 'Đang diễn ra' : 
+               getEventStatus(selectedEvent) === 'upcoming' ? 'Sắp diễn ra' : 'Đã kết thúc' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Form View (Create/Edit) -->
+      <div *ngIf="isEditing || (!isEditing && !selectedEvent)" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Tên sự kiện *</label>
+          <input 
+            type="text" 
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            [(ngModel)]="form.eventName" 
+            placeholder="Nhập tên sự kiện"
+          />
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nội dung</label>
+          <textarea 
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            [(ngModel)]="form.content" 
+            placeholder="Mô tả chi tiết về sự kiện"
+            rows="3"
+          ></textarea>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày bắt đầu *</label>
+            <input 
+              type="date" 
+              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              [(ngModel)]="form.startDate"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày kết thúc *</label>
+            <input 
+              type="date" 
+              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              [(ngModel)]="form.endDate"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex justify-end gap-3 p-6 border-t bg-gray-50">
+      <button 
+        class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition"
+        (click)="closeModal()"
+      >
+        Hủy
+      </button>
+      <button 
+        *ngIf="isEditing || (!isEditing && !selectedEvent)"
+        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition disabled:opacity-50"
+        (click)="submit()" 
+        [disabled]="isLoading"
+      >
+        <span *ngIf="isLoading" class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+        {{ isEditing ? 'Cập nhật' : 'Tạo mới' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
