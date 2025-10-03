@@ -2,26 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { Router } from '@angular/router';
-
-interface Article {
-  id: number;
-  title: string;
-  summary: string;
-  category: string;
-  status: 'published' | 'draft' | 'pending';
-  author: string;
-  authorRole: string;
-  publishDate: string;
-  views: number;
-  likes: number;
-  tags: string[];
-  sections: ArticleSection[];
-}
-
-interface ArticleSection {
-  type: 'đoạn văn' | 'hình ảnh' | 'video' | 'danh sách';
-  content: string;
-}
+import { ArticleService } from '../../../../Services/Article/article.service';
+import { ToastService } from '../../../../Services/Toast/toast.service';
+import { 
+  Article, 
+  ArticleSection, 
+  ArticleCategory,
+  ArticleCreate
+} from '../../../../Interfaces/article.interfaces';
 
 @Component({
   selector: 'app-articles',
@@ -33,21 +21,24 @@ interface ArticleSection {
 export class ArticlesComponent implements OnInit {
   articles: Article[] = [];
   filteredArticles: Article[] = [];
+  Math = Math;
   searchTerm = '';
   selectedCategory = '';
   selectedStatus = '';
+  // pagination & sorting
+  page = 1;
+  pageSize = 10;
+  total = 0;
+  sortBy: 'createdAt' | 'title' | 'category' = 'createdAt';
+  sortDir: 'asc' | 'desc' = 'desc';
   isModalOpen = false;
   editingArticle: Article | null = null;
   articleForm: FormGroup;
+  isLoading = false;
+  isSubmitting = false;
 
-  categories = [
-    'Listening Tips', 
-    'Reading Strategies', 
-    'Writing Guide', 
-    'Speaking Practice', 
-    'Grammar', 
-    'Vocabulary'
-  ];
+  categories: ArticleCategory[] = [];
+  categoryNames: string[] = [];
 
   sectionTypes = [
     { value: 'đoạn văn', label: 'Đoạn văn' },
@@ -56,7 +47,12 @@ export class ArticlesComponent implements OnInit {
     { value: 'danh sách', label: 'Danh sách' }
   ];
   
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder, 
+    private router: Router,
+    private articleService: ArticleService,
+    private toastService: ToastService
+  ) {
     this.articleForm = this.fb.group({
       category: ['', Validators.required],
       status: ['draft', Validators.required],
@@ -65,11 +61,64 @@ export class ArticlesComponent implements OnInit {
       sections: this.fb.array([]),
       tags: ['']
     });
-    this.loadSampleData();
   }
 
   ngOnInit() {
-    this.filterArticles();
+    this.loadCategories();
+    this.loadArticles();
+  }
+
+  loadCategories() {
+    this.isLoading = true;
+    this.articleService.getCategories().subscribe({
+      next: (categories) => {
+        this.categories = categories;
+        this.categoryNames = categories.map(cat => cat.name);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading categories:', error);
+        this.toastService.error('Không thể tải danh mục bài viết');
+        this.isLoading = false;
+        // Fallback to default categories
+        this.categoryNames = [
+          'Listening Tips', 
+          'Reading Strategies', 
+          'Writing Guide', 
+          'Speaking Practice', 
+          'Grammar', 
+          'Vocabulary'
+        ];
+      }
+    });
+  }
+
+  loadArticles() {
+    this.isLoading = true;
+    // query with current pagination/sorting & filters
+    this.articleService.queryArticles({
+      page: this.page,
+      pageSize: this.pageSize,
+      sortBy: this.sortBy,
+      sortDir: this.sortDir,
+      search: this.searchTerm || undefined,
+      // Category filter maps by name; backend expects id, so keep client-side until we add mapping
+      isPublished: this.selectedStatus === 'published' ? true : this.selectedStatus === 'draft' ? false : undefined
+    }).subscribe({
+      next: (res) => {
+        this.articles = res.items.map(article => this.articleService.convertToArticle(article));
+        this.total = res.total;
+        this.filterArticles();
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading articles:', error);
+        this.toastService.error('Không thể tải danh sách bài viết');
+        this.isLoading = false;
+        this.articles = [];
+        this.filterArticles();
+      }
+    });
   }
 
   get sections(): FormArray {
@@ -107,61 +156,6 @@ export class ArticlesComponent implements OnInit {
     }
   }
 
-  loadSampleData() {
-    this.articles = [
-      {
-        id: 1,
-        title: '10 Tips cải thiện Listening TOEIC',
-        summary: 'Hướng dẫn chi tiết các phương pháp hiệu quả để nâng cao điểm số phần Listening TOEIC. Bài viết cung cấp những kỹ thuật thiết thực giúp học viên cải thiện khả năng nghe hiểu một cách nhanh chóng.',
-        category: 'Listening Tips',
-        author: 'Nguyễn Văn A',
-        authorRole: 'Content Staff',
-        publishDate: '15/12/2024',
-        status: 'published',
-        views: 1234,
-        likes: 89,
-        tags: ['TOEIC', 'Listening', 'Tips'],
-        sections: [
-          { type: 'đoạn văn', content: 'Nghe là một trong bốn kỹ năng quan trọng nhất trong TOEIC. Để đạt điểm cao, bạn cần luyện tập thường xuyên và áp dụng những phương pháp hiệu quả.' },
-          { type: 'đoạn văn', content: 'Dưới đây là 10 tips cải thiện listening hiệu quả nhất mà chúng tôi đã tổng hợp từ kinh nghiệm giảng dạy nhiều năm.' }
-        ]
-      },
-      {
-        id: 2,
-        title: 'Strategies for TOEIC Reading',
-        summary: 'Comprehensive guide to improve reading comprehension skills for TOEIC test. Learn proven strategies to tackle different types of reading questions efficiently.',
-        category: 'Reading Strategies',
-        author: 'Trần Thị B',
-        authorRole: 'Senior Content Staff',
-        publishDate: '12/12/2024',
-        status: 'published',
-        views: 956,
-        likes: 67,
-        tags: ['TOEIC', 'Reading', 'Strategies'],
-        sections: [
-          { type: 'đoạn văn', content: 'Reading comprehension chiếm một phần quan trọng trong bài thi TOEIC. Việc nắm vững các chiến lược đọc hiểu sẽ giúp bạn tiết kiệm thời gian và đạt điểm cao.' },
-          { type: 'danh sách', content: '1. Đọc lướt để nắm ý chính\n2. Tìm từ khóa trong câu hỏi\n3. Loại trừ đáp án sai\n4. Quản lý thời gian hiệu quả' }
-        ]
-      },
-      {
-        id: 3,
-        title: 'Writing Task 1 Guidelines',
-        summary: 'Essential tips for tackling TOEIC writing tasks effectively. Master the art of structured writing with clear examples and practice exercises.',
-        category: 'Writing Guide',
-        author: 'Lê Văn C',
-        authorRole: 'Content Staff',
-        publishDate: '10/12/2024',
-        status: 'draft',
-        views: 0,
-        likes: 0,
-        tags: ['TOEIC', 'Writing', 'Guidelines'],
-        sections: [
-          { type: 'đoạn văn', content: 'Writing là kỹ năng quan trọng trong TOEIC, đòi hỏi bạn phải có khả năng diễn đạt ý tưởng một cách rõ ràng và logic.' }
-        ]
-      }
-    ];
-    this.filteredArticles = [...this.articles];
-  }
 
   filterArticles() {
     this.filteredArticles = this.articles.filter(article => {
@@ -175,15 +169,47 @@ export class ArticlesComponent implements OnInit {
   }
 
   onSearchChange() {
-    this.filterArticles();
+    this.page = 1;
+    this.loadArticles();
   }
 
   onCategoryChange() {
+    // hiện tại category filter là client-side do backend dùng id; vẫn filter ở client
+    this.page = 1;
     this.filterArticles();
   }
 
   onStatusChange() {
-    this.filterArticles();
+    this.page = 1;
+    this.loadArticles();
+  }
+
+  // pagination controls
+  nextPage() {
+    if (this.page * this.pageSize < this.total) {
+      this.page += 1;
+      this.loadArticles();
+    }
+  }
+
+  prevPage() {
+    if (this.page > 1) {
+      this.page -= 1;
+      this.loadArticles();
+    }
+  }
+
+  changePageSize(size: number) {
+    this.pageSize = size;
+    this.page = 1;
+    this.loadArticles();
+  }
+
+  changeSort(sortBy: 'createdAt'|'title'|'category', sortDir: 'asc'|'desc') {
+    this.sortBy = sortBy;
+    this.sortDir = sortDir;
+    this.page = 1;
+    this.loadArticles();
   }
 
   openModal(article: Article | null = null) {
@@ -232,62 +258,115 @@ export class ArticlesComponent implements OnInit {
   }
 
   saveArticle() {
-    if (this.articleForm.valid) {
+    if (this.articleForm.valid && !this.isSubmitting) {
+      this.isSubmitting = true;
       const formData = this.articleForm.value;
-      const tags = formData.tags ? formData.tags.split(',').map((tag: string) => tag.trim()) : [];
       
+      // Find category ID
+      const selectedCategory = this.categories.find(cat => cat.name === formData.category);
+      if (!selectedCategory) {
+        this.toastService.error('Vui lòng chọn danh mục hợp lệ');
+        this.isSubmitting = false;
+        return;
+      }
+
+      // Convert form data to ArticleCreate format
+      const articleData: ArticleCreate = {
+        title: formData.title,
+        summary: formData.summary,
+        categoryId: selectedCategory.id,
+        publishNow: formData.status === 'published',
+        sections: formData.sections.map((section: any, index: number) => ({
+          sectionTitle: `Section ${index + 1}`,
+          sectionContent: section.content,
+          orderIndex: index
+        }))
+      };
+
       if (this.editingArticle) {
-        // Update existing article
-        const index = this.articles.findIndex(a => a.id === this.editingArticle!.id);
-        if (index !== -1) {
-          this.articles[index] = {
-            ...this.articles[index],
-            title: formData.title,
-            summary: formData.summary,
-            category: formData.category,
-            status: formData.status,
-            sections: formData.sections,
-            tags: tags
-          };
-        }
-      } else {
-        // Create new article
-        const newArticle: Article = {
-          id: Math.max(...this.articles.map(a => a.id)) + 1,
+        // Update article
+        const updatePayload = {
           title: formData.title,
           summary: formData.summary,
-          category: formData.category,
-          status: formData.status,
-          sections: formData.sections,
-          author: 'Current User',
-          authorRole: 'Content Staff',
-          publishDate: new Date().toLocaleDateString('vi-VN'),
-          views: 0,
-          likes: 0,
-          tags: tags
+          categoryId: selectedCategory.id,
+          sections: formData.sections.map((section: any, index: number) => ({
+            sectionTitle: `Section ${index + 1}`,
+            sectionContent: section.content,
+            orderIndex: index
+          }))
         };
-        this.articles.push(newArticle);
+
+        this.articleService.updateArticle(this.editingArticle.id, updatePayload).subscribe({
+          next: (updated) => {
+            this.toastService.success('Cập nhật bài viết thành công!');
+            // reload
+            this.loadArticles();
+            this.closeModal();
+            this.isSubmitting = false;
+          },
+          error: (error) => {
+            console.error('Error updating article:', error);
+            this.toastService.error('Không thể cập nhật bài viết. Vui lòng thử lại.');
+            this.isSubmitting = false;
+          }
+        });
+      } else {
+        // Create new article
+        this.articleService.createArticle(articleData).subscribe({
+          next: (response) => {
+            this.toastService.success('Tạo bài viết thành công!');
+            // Convert response to Article format and add to list
+            const newArticle = this.articleService.convertToArticle(response);
+            this.articles.unshift(newArticle); // Add to beginning
+            this.filterArticles();
+            this.closeModal();
+            this.isSubmitting = false;
+          },
+          error: (error) => {
+            console.error('Error creating article:', error);
+            this.toastService.error('Không thể tạo bài viết. Vui lòng thử lại.');
+            this.isSubmitting = false;
+          }
+        });
       }
-      
-      this.filterArticles();
-      this.closeModal();
     }
   }
 
   deleteArticle(id: number) {
     if (confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
-      this.articles = this.articles.filter(a => a.id !== id);
-      this.filterArticles();
+      this.isLoading = true;
+      
+      this.articleService.deleteArticle(id).subscribe({
+        next: () => {
+          this.toastService.success('Xóa bài viết thành công!');
+          // Xóa từ danh sách local
+          this.articles = this.articles.filter(a => a.id !== id);
+          this.filterArticles();
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error deleting article:', error);
+          this.toastService.error('Không thể xóa bài viết. Vui lòng thử lại.');
+          this.isLoading = false;
+        }
+      });
     }
   }
 
   publishArticle(id: number) {
-    const article = this.articles.find(a => a.id === id);
-    if (article) {
-      article.status = 'published';
-      article.publishDate = new Date().toLocaleDateString('vi-VN');
-      this.filterArticles();
-    }
+    this.isLoading = true;
+    this.articleService.setPublish(id, true).subscribe({
+      next: () => {
+        this.toastService.success('Đã xuất bản bài viết!');
+        this.loadArticles();
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error publishing article:', error);
+        this.toastService.error('Không thể xuất bản bài viết.');
+        this.isLoading = false;
+      }
+    });
   }
 
   getStatusClass(status: string): string {

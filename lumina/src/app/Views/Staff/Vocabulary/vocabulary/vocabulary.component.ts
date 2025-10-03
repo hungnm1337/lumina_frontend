@@ -2,29 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-
-interface VocabularyWord {
-  id: number;
-  word: string;
-  pronunciation: string;
-  category: string;
-  partOfSpeech: string;
-  definition: string;
-  example: string;
-  translation: string;
-  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
-  createdDate: string;
-  createdBy: string;
-  status: 'active' | 'inactive';
-}
-
-interface VocabularyCategory {
-  id: string;
-  name: string;
-  icon: string;
-  count: number;
-  color: string;
-}
+import { VocabularyService } from '../../../../Services/Vocabulary/vocabulary.service';
+import { ToastService } from '../../../../Services/Toast/toast.service';
+import { 
+  VocabularyWord,
+  VocabularyListResponse,
+  Vocabulary,
+  VocabularyCategory,
+  VocabularyStats
+} from '../../../../Interfaces/vocabulary.interfaces';
 
 @Component({
   selector: 'app-vocabulary',
@@ -34,15 +20,20 @@ interface VocabularyCategory {
   styleUrls: ['./vocabulary.component.scss']
 })
 export class VocabularyComponent implements OnInit {
-  vocabularies: VocabularyWord[] = [];
-  filteredVocabularies: VocabularyWord[] = [];
+  vocabularies: Vocabulary[] = [];
+  filteredVocabularies: Vocabulary[] = [];
+  vocabularyLists: VocabularyListResponse[] = [];
+  stats: VocabularyStats[] = [];
   searchTerm = '';
+  selectedList = '';
   selectedCategory = '';
   selectedDifficulty = '';
   selectedPartOfSpeech = '';
   isModalOpen = false;
-  editingVocabulary: VocabularyWord | null = null;
+  editingVocabulary: Vocabulary | null = null;
   vocabularyForm: FormGroup;
+  isLoading = false;
+  isSubmitting = false;
 
   categories: VocabularyCategory[] = [
     { id: 'business', name: 'Business', icon: '💼', count: 567, color: 'blue' },
@@ -56,7 +47,12 @@ export class VocabularyComponent implements OnInit {
   difficulties = ['Beginner', 'Intermediate', 'Advanced'];
   partsOfSpeech = ['Noun', 'Verb', 'Adjective', 'Adverb', 'Preposition', 'Conjunction'];
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder, 
+    private router: Router,
+    private vocabularyService: VocabularyService,
+    private toastService: ToastService
+  ) {
     this.vocabularyForm = this.fb.group({
       word: ['', [Validators.required, Validators.minLength(2)]],
       pronunciation: ['', Validators.required],
@@ -67,11 +63,69 @@ export class VocabularyComponent implements OnInit {
       translation: ['', [Validators.required, Validators.minLength(5)]],
       difficulty: ['', Validators.required]
     });
-    this.loadSampleData();
   }
 
   ngOnInit() {
-    this.filterVocabularies();
+    this.loadData();
+  }
+
+  loadData() {
+    this.loadVocabularyLists();
+    this.loadStats();
+    this.loadVocabularies();
+  }
+
+  loadVocabularyLists() {
+    this.vocabularyService.getVocabularyLists().subscribe({
+      next: (lists) => {
+        this.vocabularyLists = lists;
+      },
+      error: (error) => {
+        console.error('Error loading vocabulary lists:', error);
+        this.toastService.error('Không thể tải danh sách từ điển');
+      }
+    });
+  }
+
+  loadStats() {
+    this.vocabularyService.getVocabularyStats().subscribe({
+      next: (statsResponse) => {
+        this.stats = statsResponse.countsByList;
+        this.updateCategoryCounts();
+      },
+      error: (error) => {
+        console.error('Error loading stats:', error);
+      }
+    });
+  }
+
+  loadVocabularies(listId?: number, search?: string) {
+    this.isLoading = true;
+    
+    this.vocabularyService.getVocabularies(listId, search).subscribe({
+      next: (vocabularies) => {
+        this.vocabularies = vocabularies.map(v => this.vocabularyService.convertToVocabulary(v));
+        this.filterVocabularies();
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading vocabularies:', error);
+        this.toastService.error('Không thể tải danh sách từ vựng');
+        this.isLoading = false;
+        this.vocabularies = [];
+        this.filterVocabularies();
+      }
+    });
+  }
+
+  updateCategoryCounts() {
+    // Update category counts based on stats
+    this.stats.forEach(stat => {
+      const category = this.categories.find(c => c.id === `list-${stat.listId}`);
+      if (category) {
+        category.count = stat.total;
+      }
+    });
   }
 
   loadSampleData() {
@@ -164,11 +218,42 @@ export class VocabularyComponent implements OnInit {
   }
 
   onSearchChange() {
-    this.filterVocabularies();
+    // Debounce search để tránh gọi API quá nhiều
+    if (this.searchTerm.trim().length >= 2) {
+      this.performSearch();
+    } else if (this.searchTerm.trim().length === 0) {
+      this.loadVocabularies();
+    }
+  }
+
+  performSearch() {
+    this.isLoading = true;
+    const listId = this.selectedList ? parseInt(this.selectedList) : undefined;
+    
+    this.vocabularyService.searchVocabularies(this.searchTerm, listId).subscribe({
+      next: (vocabularies) => {
+        this.vocabularies = vocabularies.map(v => this.vocabularyService.convertToVocabulary(v));
+        this.filterVocabularies();
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error searching vocabularies:', error);
+        this.toastService.error('Không thể tìm kiếm từ vựng');
+        this.isLoading = false;
+      }
+    });
   }
 
   onCategoryChange() {
     this.filterVocabularies();
+  }
+
+  onListChange() {
+    if (this.selectedList) {
+      this.loadVocabularies(parseInt(this.selectedList));
+    } else {
+      this.loadVocabularies();
+    }
   }
 
   onDifficultyChange() {
@@ -176,10 +261,31 @@ export class VocabularyComponent implements OnInit {
   }
 
   onPartOfSpeechChange() {
-    this.filterVocabularies();
+    if (this.selectedPartOfSpeech) {
+      this.loadVocabulariesByType();
+    } else {
+      this.loadVocabularies();
+    }
   }
 
-  openModal(vocabulary: VocabularyWord | null = null) {
+  loadVocabulariesByType() {
+    this.isLoading = true;
+    
+    this.vocabularyService.getVocabulariesByType(this.selectedPartOfSpeech).subscribe({
+      next: (vocabularies) => {
+        this.vocabularies = vocabularies.map(v => this.vocabularyService.convertToVocabulary(v));
+        this.filterVocabularies();
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading vocabularies by type:', error);
+        this.toastService.error('Không thể tải từ vựng theo loại');
+        this.isLoading = false;
+      }
+    });
+  }
+
+  openModal(vocabulary: Vocabulary | null = null) {
     this.editingVocabulary = vocabulary;
     this.isModalOpen = true;
     
@@ -197,44 +303,82 @@ export class VocabularyComponent implements OnInit {
   }
 
   saveVocabulary() {
-    if (this.vocabularyForm.valid) {
+    if (this.vocabularyForm.valid && !this.isSubmitting) {
+      this.isSubmitting = true;
       const formData = this.vocabularyForm.value;
       
       if (this.editingVocabulary) {
-        // Update existing vocabulary
-        const index = this.vocabularies.findIndex(v => v.id === this.editingVocabulary!.id);
-        if (index !== -1) {
-          this.vocabularies[index] = {
-            ...this.vocabularies[index],
-            ...formData
-          };
-        }
+        // Cập nhật từ vựng
+        const updateData = {
+          word: formData.word,
+          typeOfWord: formData.partOfSpeech,
+          definition: formData.definition,
+          example: formData.example || undefined
+        };
+
+        this.vocabularyService.updateVocabulary(this.editingVocabulary.id, updateData).subscribe({
+          next: () => {
+            this.toastService.success('Cập nhật từ vựng thành công!');
+            // Reload data
+            this.loadVocabularies();
+            this.loadStats();
+            this.closeModal();
+            this.isSubmitting = false;
+          },
+          error: (error) => {
+            console.error('Error updating vocabulary:', error);
+            this.toastService.error('Không thể cập nhật từ vựng. Vui lòng thử lại.');
+            this.isSubmitting = false;
+          }
+        });
       } else {
         // Create new vocabulary
-        const newVocabulary: VocabularyWord = {
-          id: Math.max(...this.vocabularies.map(v => v.id)) + 1,
-          ...formData,
-          createdDate: new Date().toLocaleDateString('vi-VN'),
-          createdBy: 'Current User',
-          status: 'active'
+        // Tạo từ vựng mới qua API
+        const vocabularyData = {
+          vocabularyListId: this.vocabularyLists[0]?.vocabularyListId || 1,
+          word: formData.word,
+          typeOfWord: formData.partOfSpeech,
+          definition: formData.definition,
+          example: formData.example || undefined
         };
-        this.vocabularies.push(newVocabulary);
-        this.updateCategoryCount(formData.category, 1);
+
+        this.vocabularyService.createVocabulary(vocabularyData).subscribe({
+          next: () => {
+            this.toastService.success('Tạo từ vựng thành công!');
+            // Reload data
+            this.loadVocabularies();
+            this.loadStats();
+            this.closeModal();
+            this.isSubmitting = false;
+          },
+          error: (error) => {
+            console.error('Error creating vocabulary:', error);
+            this.toastService.error('Không thể tạo từ vựng. Vui lòng thử lại.');
+            this.isSubmitting = false;
+          }
+        });
       }
-      
-      this.filterVocabularies();
-      this.closeModal();
     }
   }
 
   deleteVocabulary(id: number) {
     if (confirm('Bạn có chắc chắn muốn xóa từ vựng này?')) {
-      const vocabulary = this.vocabularies.find(v => v.id === id);
-      if (vocabulary) {
-        this.updateCategoryCount(vocabulary.category, -1);
-      }
-      this.vocabularies = this.vocabularies.filter(v => v.id !== id);
-      this.filterVocabularies();
+      this.isLoading = true;
+      
+      this.vocabularyService.deleteVocabulary(id).subscribe({
+        next: () => {
+          this.toastService.success('Xóa từ vựng thành công!');
+          // Reload data
+          this.loadVocabularies();
+          this.loadStats();
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error deleting vocabulary:', error);
+          this.toastService.error('Không thể xóa từ vựng. Vui lòng thử lại.');
+          this.isLoading = false;
+        }
+      });
     }
   }
 
@@ -288,11 +432,33 @@ export class VocabularyComponent implements OnInit {
   }
 
   getTotalVocabularies(): number {
-    return this.categories.reduce((total, category) => total + category.count, 0);
+    return this.vocabularies.length;
+  }
+
+  getTotalStats(): number {
+    return this.stats.reduce((total, stat) => total + stat.total, 0);
   }
 
   playPronunciation(word: string) {
     // Placeholder for text-to-speech functionality
     console.log(`Playing pronunciation for: ${word}`);
+  }
+
+  clearSearch() {
+    this.searchTerm = '';
+    this.loadVocabularies();
+  }
+
+  clearAllFilters() {
+    this.searchTerm = '';
+    this.selectedList = '';
+    this.selectedCategory = '';
+    this.selectedDifficulty = '';
+    this.selectedPartOfSpeech = '';
+    this.loadVocabularies();
+  }
+
+  refreshData() {
+    this.loadData();
   }
 }
