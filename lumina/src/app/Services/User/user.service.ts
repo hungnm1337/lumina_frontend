@@ -1,32 +1,92 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment.development';
+
+export interface UserDto {
+  userId: number;
+  email: string;
+  fullName: string;
+  roleId: number;
+  roleName: string;
+  avatarUrl?: string | null;
+  bio?: string | null;
+  phone?: string | null;
+  isActive?: boolean | null;
+  joinDate?: string | null;
+}
+
+export interface UpdateUserProfileRequest {
+  fullName: string;
+  phone?: string | null;
+  bio?: string | null;
+  avatarUrl?: string | null;
+}
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UserService {
 
-  baseUrl = "https://localhost:7162/api";
+  baseUrl = `${environment.apiUrl}/User`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
+    // Đọc đúng key token
+    const token = localStorage.getItem('lumina_token');
     return new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'accept': 'application/json'
+      Authorization: token ? `Bearer ${token}` : '',
+      Accept: 'application/json',
     });
   }
 
-getNonAdminUsersPaged(pageNumber: number, searchTerm: string = '', role: string = ''): Observable<{ data: any[], totalPages: number }> {
-  let url = `${this.baseUrl}/User/non-admin-users?pageNumber=${pageNumber}`;
-  if (searchTerm) url += `&searchTerm=${encodeURIComponent(searchTerm)}`;
-  if (role && role !== 'Tất cả vai trò') url += `&roleName=${encodeURIComponent(role)}`;
-  return this.http.get<{ data: any[], totalPages: number }>(url, { headers: this.getAuthHeaders() });
+  getNonAdminUsersPaged(
+    pageNumber: number,
+    searchTerm: string = '',
+    role: string = ''
+  ): Observable<{ data: any[]; totalPages: number }> {
+    let url = `${this.baseUrl}/non-admin-users?pageNumber=${pageNumber}`;
+    if (searchTerm) url += `&searchTerm=${encodeURIComponent(searchTerm)}`;
+    if (role && role !== 'Tất cả vai trò') url += `&roleName=${encodeURIComponent(role)}`;
+    return this.http.get<{ data: any[]; totalPages: number }>(url, {
+      headers: this.getAuthHeaders(),
+    });
+  }
+
+  // Profile
+  getProfile(): Observable<UserDto> {
+    return this.http.get<UserDto>(`${this.baseUrl}/profile`, {
+      headers: this.getAuthHeaders(),
+    });
+  }
+
+  updateProfile(body: UpdateUserProfileRequest): Observable<UserDto> {
+    return this.http.put<UserDto>(`${this.baseUrl}/profile`, body, {
+      headers: this.getAuthHeaders(),
+    });
+  }
+
+  changePassword(body: { currentPassword: string; newPassword: string }) {
+    return this.http.put<void>(`${this.baseUrl}/profile/change-password`, body, {
+      headers: this.getAuthHeaders(),
+    });
+  }
+
+toggleUserStatus(userId: number): Observable<any> {
+  return this.http.patch(
+    `${this.baseUrl}/${userId}/toggle-status`,
+    {},
+    { headers: this.getAuthHeaders() }
+  );
+}
+
+getUserById(userId: number): Observable<any> {
+  return this.http.get<any>(`${this.baseUrl}/${userId}`, { headers: this.getAuthHeaders() });
 }
 
 
 
 
 }
+

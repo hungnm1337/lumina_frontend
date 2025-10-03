@@ -1,0 +1,30 @@
+<header class="bg-white shadow-sm border-b border-gray-200">
+  <div class="flex items-center justify-between px-6 py-4">
+      <div class="flex items-center space-x-4">
+          <!-- Nút để bật/tắt sidebar -->
+          <!-- Tiêu đề trang, sẽ được cập nhật tự động -->
+          <h2 id="page-title" class="text-2xl font-semibold text-gray-800">{{ pageTitle }}</h2>
+      </div>
+
+      <div class="flex items-center space-x-6">
+          <!-- Nút thông báo -->
+          <div class="relative">
+              <button class="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
+                  <i class="fas fa-bell text-lg"></i>
+                  <!-- Dấu chấm thông báo mới -->
+                  <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center border-2 border-white">3</span>
+              </button>
+          </div>
+
+          <!-- Thông tin người dùng -->
+          <div class="flex items-center space-x-3 cursor-pointer">
+              <img src="https://ui-avatars.com/api/?name=Staff&background=667eea&color=fff" alt="Staff Avatar" class="w-9 h-9 rounded-full">
+              <div>
+                <span class="text-sm font-medium text-gray-800">Staff User</span>
+                <p class="text-xs text-gray-500">Content Manager</p>
+              </div>
+              <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+          </div>
+      </div>
+  </div>
+</header>

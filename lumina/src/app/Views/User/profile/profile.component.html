@@ -1,0 +1,164 @@
+<app-header></app-header>
+<div class="wrap">
+  <div class="header">
+    <div>
+      <h1 class="title">Hồ sơ cá nhân</h1>
+    </div>
+    <div class="toolbar">
+      <button class="btn primary" (click)="save()" [disabled]="loading()">
+        {{
+          editing() ? (loading() ? "Đang lưu..." : "Lưu thay đổi") : "Chỉnh sửa"
+        }}
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading()" class="loading">Đang tải hồ sơ...</div>
+
+  <ng-container *ngIf="!loading() && profile() as p">
+    <div class="grid">
+      <!-- SIDEBAR -->
+      <aside class="card" aria-label="Tổng quan người dùng">
+        <div class="avatar">
+          <img
+            [src]="
+              p.avatarUrl || 'https://api.dicebear.com/7.x/thumbs/svg?seed=user'
+            "
+            alt="Ảnh đại diện"
+            class="avatar-img"
+          />
+          <div>
+            <strong>{{ p.fullName || "—" }}</strong>
+            <div class="muted">{{ p.email || "—" }}</div>
+            <div class="kpi">
+              <div class="pill" title="Vai trò">
+                <i class="fas fa-user-shield"></i>
+                {{ p.roleName || "—" }}
+              </div>
+              <div class="pill" title="Tham gia" *ngIf="p.joinDate">
+                <i class="fas fa-calendar-alt"></i>
+                {{ p.joinDate }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top: 12px">
+          <input
+            type="file"
+            accept="image/*"
+            (change)="onAvatarChange($event)"
+            #avatarInput
+            style="display: none"
+          />
+          <button class="btn" (click)="avatarInput.click()">
+            Thay đổi ảnh
+          </button>
+          <div class="status" *ngIf="avatarStatus">{{ avatarStatus }}</div>
+        </div>
+      </aside>
+
+      <!-- MAIN -->
+      <main style="display: grid; gap: 16px">
+        <section class="card">
+          <h3>Thông tin cơ bản</h3>
+          <div class="row">
+            <div>
+              <label>Họ và tên</label>
+              <input
+                type="text"
+                [(ngModel)]="form.fullName"
+                name="fullName"
+                placeholder="VD: Nguyễn Văn A"
+                [disabled]="!editing()"
+              />
+            </div>
+            <div>
+              <label>Email</label>
+              <input type="email" [value]="p.email" disabled />
+            </div>
+            <div>
+              <label>Số điện thoại</label>
+              <input
+                type="tel"
+                [(ngModel)]="form.phone"
+                name="phone"
+                placeholder="VD: 09xxxxxxxx"
+                [disabled]="!editing()"
+              />
+            </div>
+            <div>
+              <label>Giới thiệu</label>
+              <textarea
+                [(ngModel)]="form.bio"
+                name="bio"
+                rows="3"
+                placeholder="Giới thiệu về bản thân..."
+                [disabled]="!editing()"
+              ></textarea>
+            </div>
+          </div>
+          <div class="section-actions" *ngIf="editing()">
+            <button class="btn ghost" (click)="cancel()">Hủy</button>
+            <button class="btn primary" (click)="save()" [disabled]="loading()">
+              {{ loading() ? "Đang lưu..." : "Lưu thay đổi" }}
+            </button>
+          </div>
+        </section>
+
+        <section class="card">
+          <h3>Đổi mật khẩu</h3>
+          <div class="row">
+            <div>
+              <label>Mật khẩu hiện tại</label>
+              <input
+                type="password"
+                [(ngModel)]="passwordForm.currentPassword"
+                name="currentPassword"
+                placeholder="Nhập mật khẩu hiện tại"
+                autocomplete="current-password"
+              />
+            </div>
+            <div></div>
+            <div>
+              <label>Mật khẩu mới (tối thiểu 8 ký tự)</label>
+              <input
+                type="password"
+                [(ngModel)]="passwordForm.newPassword"
+                name="newPassword"
+                placeholder="Nhập mật khẩu mới"
+                autocomplete="new-password"
+              />
+            </div>
+            <div>
+              <label>Nhập lại mật khẩu mới</label>
+              <input
+                type="password"
+                [(ngModel)]="passwordForm.confirmPassword"
+                name="confirmPassword"
+                placeholder="Nhập lại mật khẩu mới"
+                autocomplete="new-password"
+              />
+            </div>
+          </div>
+          <div class="section-actions">
+            <button
+              class="btn primary"
+              (click)="changePassword()"
+              [disabled]="passwordLoading()"
+            >
+              {{ passwordLoading() ? "Đang cập nhật..." : "Cập nhật mật khẩu" }}
+            </button>
+          </div>
+          <div
+            class="status"
+            [class.success]="passwordStatus === 'success'"
+            [class.error]="passwordStatus === 'error'"
+            *ngIf="passwordStatus"
+          >
+            {{ passwordMessage }}
+          </div>
+        </section>
+      </main>
+    </div>
+  </ng-container>
+</div>

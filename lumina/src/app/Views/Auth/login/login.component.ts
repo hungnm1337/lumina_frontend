@@ -70,7 +70,7 @@ export class LoginComponent implements OnInit {
         this.zone.run(() => {
           this.isLoading = false;
           this.toastService.success('Đăng nhập bằng Google thành công!');
-          this.router.navigate(['/homepage/user-dashboard']);
+          this.authService.navigateByRole();
         });
       },
       error: (err) => {
@@ -102,7 +102,7 @@ export class LoginComponent implements OnInit {
       next: (response) => {
         this.isLoading = false;
         this.toastService.success('Đăng nhập thành công!');
-        this.router.navigate(['/homepage/user-dashboard']);
+        this.authService.navigateByRole();
       },
       error: (err) => {
         this.isLoading = false;

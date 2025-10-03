@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -8,14 +9,14 @@ import { Observable } from 'rxjs';
 export class RoleService {
 
   // URL cơ sở của API backend
-  baseUrl = "https://localhost:7162/api";
+  baseUrl = `${environment.apiUrl}`;
 
   constructor(private http: HttpClient) { }
 
   private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token'); 
+    const token = localStorage.getItem('lumina_token'); 
     return new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
+      'Authorization': token ? `Bearer ${token}` : '',
       'accept': 'application/json' 
     });
   }

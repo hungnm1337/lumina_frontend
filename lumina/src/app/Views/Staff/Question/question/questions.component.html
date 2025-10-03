@@ -1,0 +1,474 @@
+<div class="questions-container">
+  <!-- Header Section -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">Quản lý câu hỏi TOEIC</h1>
+      <p class="page-subtitle">Tạo và chỉnh sửa câu hỏi cho 4 kỹ năng</p>
+    </div>
+    <button class="btn-primary" (click)="openModal()">
+      <i class="fas fa-plus"></i>
+      Thêm câu hỏi mới
+    </button>
+  </div>
+
+  <!-- Statistics Section -->
+  <div class="stats-section">
+    <div class="stats-grid">
+      <div class="stat-card listening">
+        <div class="stat-icon">
+          <i class="fas fa-headphones"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ getQuestionStats().listening }}</h3>
+          <p>Listening</p>
+        </div>
+      </div>
+      
+      <div class="stat-card reading">
+        <div class="stat-icon">
+          <i class="fas fa-book-open"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ getQuestionStats().reading }}</h3>
+          <p>Reading</p>
+        </div>
+      </div>
+      
+      <div class="stat-card speaking">
+        <div class="stat-icon">
+          <i class="fas fa-microphone"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ getQuestionStats().speaking }}</h3>
+          <p>Speaking</p>
+        </div>
+      </div>
+      
+      <div class="stat-card writing">
+        <div class="stat-icon">
+          <i class="fas fa-pen"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ getQuestionStats().writing }}</h3>
+          <p>Writing</p>
+        </div>
+      </div>
+      
+      <div class="stat-card total">
+        <div class="stat-icon">
+          <i class="fas fa-question-circle"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ getQuestionStats().total }}</h3>
+          <p>Tổng câu hỏi</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input 
+        type="text" 
+        placeholder="Tìm kiếm câu hỏi..." 
+        [(ngModel)]="searchTerm"
+        (input)="onSearchChange()"
+      >
+    </div>
+    
+    <div class="filter-group">
+      <select [(ngModel)]="selectedSkill" (change)="onSkillChange()">
+        <option value="">Tất cả kỹ năng</option>
+        <option *ngFor="let skill of skills" [value]="skill">
+          {{ skill }}
+        </option>
+      </select>
+      
+      <select [(ngModel)]="selectedPart" (change)="onPartChange()">
+        <option value="">Tất cả phần</option>
+        <option *ngFor="let part of getPartsForSkill(selectedSkill)" [value]="part">
+          {{ part }}
+        </option>
+      </select>
+      
+      <select [(ngModel)]="selectedDifficulty" (change)="onDifficultyChange()">
+        <option value="">Tất cả độ khó</option>
+        <option *ngFor="let difficulty of difficulties" [value]="difficulty.value">
+          {{ difficulty.label }}
+        </option>
+      </select>
+      
+      <select [(ngModel)]="selectedStatus" (change)="onStatusChange()">
+        <option value="">Tất cả trạng thái</option>
+        <option value="published">Đã xuất bản</option>
+        <option value="draft">Bản nháp</option>
+        <option value="archived">Đã lưu trữ</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Questions Grid -->
+  <div class="questions-grid">
+    <div class="question-card" *ngFor="let question of filteredQuestions">
+      <div class="question-header">
+        <div class="question-info">
+          <div class="question-meta">
+            <span class="skill-tag" [class]="'color-' + getSkillColor(question.skill)">
+              {{ question.skill }}
+            </span>
+            <span class="part-tag">{{ question.part }}</span>
+            <span class="type-tag" [class]="'type-' + question.questionType">
+              {{ getQuestionTypeLabel(question.questionType) }}
+            </span>
+          </div>
+          <span class="question-id">ID: {{ question.id }}</span>
+        </div>
+        
+        <div class="question-status">
+          <span [class]="getStatusClass(question.status)">
+            {{ getStatusText(question.status) }}
+          </span>
+        </div>
+      </div>
+      
+      <div class="question-content">
+        <h3 class="question-title">{{ question.title || 'Untitled' }}</h3>
+        <p class="question-description" *ngIf="question.description">{{ question.description }}</p>
+        
+        <div class="question-text">
+          <strong>Câu hỏi:</strong> {{ question.questionText }}
+        </div>
+        
+        <!-- Multiple Choice Options -->
+        <div class="question-options" *ngIf="question.questionType === 'multiple-choice' && question.options">
+          <div class="option" *ngFor="let option of question.options; let i = index" 
+               [class.correct]="i === question.correctAnswer">
+            <span class="option-label">{{ getOptionLabel(i) }}.</span>
+            <span class="option-text">{{ option }}</span>
+            <i class="fas fa-check-circle" *ngIf="i === question.correctAnswer"></i>
+          </div>
+        </div>
+        
+        <!-- Multiple Answer Options -->
+        <div class="question-options multiple-answer" *ngIf="question.questionType === 'multiple-answer' && question.options">
+          <div class="option" *ngFor="let option of question.options; let i = index" 
+               [class.correct]="isMultipleAnswerCorrect(question, i)">
+            <span class="option-label">{{ getOptionLabel(i) }}.</span>
+            <span class="option-text">{{ option }}</span>
+            <i class="fas fa-check-circle" *ngIf="isMultipleAnswerCorrect(question, i)"></i>
+          </div>
+          <div class="correct-answers-info">
+            <strong>Đáp án đúng:</strong> {{ getMultipleAnswerDisplay(question) }}
+          </div>
+        </div>
+        
+        <!-- True/False Options -->
+        <div class="question-options" *ngIf="question.questionType === 'true-false' && question.options">
+          <div class="option" *ngFor="let option of question.options; let i = index" 
+               [class.correct]="i === question.correctAnswer">
+            <span class="option-label">{{ i === 0 ? '✓' : '✗' }}</span>
+            <span class="option-text">{{ option }}</span>
+            <i class="fas fa-check-circle" *ngIf="i === question.correctAnswer"></i>
+          </div>
+        </div>
+        
+        <!-- Essay Sample Answer -->
+        <div class="sample-answer" *ngIf="question.questionType === 'essay' && question.sampleAnswer">
+          <strong>Đáp án mẫu:</strong>
+          <p class="sample-text">{{ sliceText(question.sampleAnswer, 150) }}</p>
+        </div>
+      </div>
+      
+      <div class="question-footer">
+        <div class="question-tags">
+          <span class="difficulty-tag" [class]="getDifficultyClass(question.difficulty)">
+            {{ getDifficultyEmoji(question.difficulty) }} {{ question.difficulty }}
+          </span>
+          <span class="duration-tag" *ngIf="question.duration">
+            <i class="fas fa-clock"></i> {{ question.duration }}s
+          </span>
+          <span class="date-tag">{{ question.createdDate }}</span>
+        </div>
+        
+        <div class="question-actions">
+          <button class="btn-action btn-edit" (click)="openModal(question)">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button 
+            class="btn-action btn-publish" 
+            *ngIf="question.status !== 'published'"
+            (click)="publishQuestion(question.id)"
+          >
+            <i class="fas fa-upload"></i>
+          </button>
+          <button class="btn-action btn-delete" (click)="deleteQuestion(question.id)">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="filteredQuestions.length === 0">
+    <i class="fas fa-question-circle"></i>
+    <h3>Không tìm thấy câu hỏi nào</h3>
+    <p>Hãy thử thay đổi bộ lọc hoặc tạo câu hỏi mới</p>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-content">
+        <div class="modal-icon">
+          <i class="fas fa-question-circle"></i>
+        </div>
+        <div class="modal-title-section">
+          <h2>{{ editingQuestion ? 'Chỉnh sửa câu hỏi' : 'Tạo câu hỏi mới' }}</h2>
+          <p>Nhập nội dung và cấu hình theo từng kỹ năng/Part</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <form [formGroup]="questionForm" (ngSubmit)="saveQuestion()" class="modal-form">
+      
+      <!-- Row 1: Kỹ năng, Part, Độ khó, Dạng câu hỏi -->
+      <div class="form-row four-cols">
+        <div class="form-group">
+          <label for="skill">Kỹ năng</label>
+          <select id="skill" formControlName="skill">
+            <option value="">Chọn kỹ năng</option>
+            <option *ngFor="let skill of skills" [value]="skill">
+              {{ skill }}
+            </option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="part">Part</label>
+          <select id="part" formControlName="part">
+            <option value="">Chọn Part</option>
+            <option *ngFor="let part of getPartsForSkill(questionForm.get('skill')?.value)" [value]="part">
+              {{ part }}
+            </option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="difficulty">Độ khó</label>
+          <select id="difficulty" formControlName="difficulty">
+            <option *ngFor="let difficulty of difficulties" [value]="difficulty.value">
+              {{ difficulty.label }}
+            </option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="questionType">Dạng câu hỏi</label>
+          <select id="questionType" formControlName="questionType">
+            <option *ngFor="let type of questionTypes" [value]="type.value">
+              {{ type.label }}
+            </option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- Row 2: Tiêu đề và Thời lượng -->
+      <div class="form-row two-cols">
+        <div class="form-group">
+          <label for="title">Tiêu đề nội bộ (optional)</label>
+          <input 
+            type="text" 
+            id="title"
+            formControlName="title"
+            placeholder="VD: L-P3 - Purpose of conversation"
+          >
+        </div>
+        
+        <div class="form-group">
+          <label for="duration">Thời lượng gợi ý (giây, optional)</label>
+          <input 
+            type="number" 
+            id="duration"
+            formControlName="duration"
+            placeholder="VD: 45"
+          >
+        </div>
+      </div>
+      
+      <!-- Nội dung câu hỏi -->
+      <div class="form-group">
+        <label for="questionText">Nội dung câu hỏi / Lời dẫn</label>
+        <textarea 
+          id="questionText"
+          formControlName="questionText"
+          rows="4"
+          placeholder="Nhập nội dung câu hỏi..."
+        ></textarea>
+      </div>
+      
+      <!-- Options Section -->
+      <div class="form-group" *ngIf="shouldShowOptions()">
+        <div class="section-header">
+          <label>Phương án trả lời</label>
+          <button 
+            type="button" 
+            class="btn-add-option" 
+            (click)="addOption()" 
+            *ngIf="isQuestionTypeMultipleChoice() || isQuestionTypeMultipleAnswer()"
+          >
+            <i class="fas fa-plus"></i> Thêm phương án
+          </button>
+        </div>
+        
+        <div formArrayName="options" class="options-container">
+          <div *ngFor="let option of options.controls; let i = index" class="option-input">
+            
+            <!-- Radio Buttons for Single Choice -->
+            <div class="option-controls" *ngIf="shouldShowRadios()">
+              <input 
+                type="radio" 
+                [name]="'correctAnswer'"
+                [value]="i"
+                formControlName="correctAnswer"
+                [id]="'correct-' + i"
+              >
+              <label [for]="'correct-' + i" class="option-label">
+                {{ getQuestionTypeDisplayName(questionForm.get('questionType')?.value, i) }}
+              </label>
+              <button 
+                type="button" 
+                class="btn-remove-option" 
+                (click)="removeOption(i)" 
+                *ngIf="!isOptionDisabled(i) && options.length > 2"
+              >
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+
+            <!-- Checkboxes for Multiple Answer -->
+            <div class="option-controls" *ngIf="shouldShowCheckboxes()" formArrayName="correctAnswers">
+              <input 
+                type="checkbox" 
+                [formControlName]="i"
+                [id]="'checkbox-' + i"
+              >
+              <label [for]="'checkbox-' + i" class="option-label checkbox-label">
+                {{ getOptionLabel(i) }}
+              </label>
+              <button 
+                type="button" 
+                class="btn-remove-option" 
+                (click)="removeOption(i)" 
+                *ngIf="options.length > 2"
+              >
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+            
+            <input 
+              type="text" 
+              [formControlName]="i"
+              [placeholder]="getPlaceholderText(questionForm.get('questionType')?.value, i)"
+              class="option-text-input"
+              [readonly]="isReadonlyOption(questionForm.get('questionType')?.value)"
+            >
+          </div>
+        </div>
+        
+        <!-- Form Hints -->
+        <div class="form-hint" *ngIf="isQuestionTypeMultipleChoice()">
+          • "1 đáp án": chọn đúng một phương án bằng radio button.
+        </div>
+        
+        <div class="form-hint" *ngIf="isQuestionTypeMultipleAnswer()">
+          • "Nhiều đáp án": chọn tất cả đáp án đúng bằng checkbox. Phải có ít nhất một đáp án đúng.
+        </div>
+        
+        <div class="form-hint" *ngIf="isQuestionTypeTrueFalse()">
+          • "Đúng/Sai": hệ thống tự tạo 2 phương án cố định.
+        </div>
+
+        <!-- Validation Error for Multiple Answer -->
+        <div class="error-message" *ngIf="correctAnswers.hasError('atLeastOneRequired') && correctAnswers.touched">
+          <i class="fas fa-exclamation-triangle"></i>
+          Phải chọn ít nhất một đáp án đúng
+        </div>
+      </div>
+      
+      <!-- Essay Sample Answer -->
+      <div class="form-group" *ngIf="shouldShowSampleAnswer()">
+        <label for="sampleAnswer">Đáp án mẫu / Gợi ý chấm *</label>
+        <textarea 
+          id="sampleAnswer"
+          formControlName="sampleAnswer"
+          rows="5"
+          placeholder="Nhập đáp án mẫu hoặc tiêu chí chấm..."
+        ></textarea>
+      </div>
+      
+      <!-- Explanation -->
+      <div class="form-group">
+        <label for="explanation">Giải thích đáp án *</label>
+        <textarea 
+          id="explanation"
+          formControlName="explanation"
+          rows="3"
+          placeholder="Giải thích tại sao đáp án này đúng..."
+        ></textarea>
+      </div>
+      
+      <!-- Media Files -->
+      <div class="form-row two-cols">
+        <div class="form-group">
+          <label for="audioFile">File âm thanh</label>
+          <input 
+            type="text" 
+            id="audioFile"
+            formControlName="audioFile"
+            placeholder="VD: listening_part3_01.mp3"
+          >
+        </div>
+        
+        <div class="form-group">
+          <label for="imageFile">File hình ảnh</label>
+          <input 
+            type="text" 
+            id="imageFile"
+            formControlName="imageFile"
+            placeholder="VD: reading_chart_01.jpg"
+          >
+        </div>
+      </div>
+      
+      <!-- Tags -->
+      <div class="form-group">
+        <label for="tags">Tags (optional)</label>
+        <input 
+          type="text" 
+          id="tags"
+          formControlName="tags"
+          placeholder="VD: vocabulary, purpose, business"
+        >
+        <small class="form-hint">Phân cách các tag bằng dấu phẩy</small>
+      </div>
+      
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeModal()">
+          Hủy
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="!questionForm.valid">
+          {{ editingQuestion ? 'Cập nhật' : 'Tạo câu hỏi' }}
+        </button>
+      </div>
+      
+    </form>
+  </div>
+</div>

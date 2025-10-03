@@ -13,7 +13,6 @@ import { AuthUserResponse } from '../../../Interfaces/auth.interfaces';
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
-
 export class HeaderComponent implements OnInit {
   currentUser$!: Observable<AuthUserResponse | null>;
   isDropdownOpen = false;
@@ -46,5 +45,11 @@ export class HeaderComponent implements OnInit {
   logout(): void {
     this.isDropdownOpen = false;
     this.authService.logout();
+  }
+
+  // New:
+  goToProfile(): void {
+    this.isDropdownOpen = false;
+    this.router.navigate(['/profile']);
   }
 }
