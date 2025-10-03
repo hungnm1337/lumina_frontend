@@ -1,200 +1,182 @@
 <div class="dashboard-container">
-  <!-- Welcome Header -->
-  <div class="welcome-header">
-    <div class="welcome-content">
-      <h1>Chào mừng trở lại! 👋</h1>
-      <p>Hôm nay là {{ getCurrentDate() }}. Hãy tiếp tục tạo nên những nội dung học tập chất lượng.</p>
-    </div>
-    <div class="welcome-stats">
-      <div class="stat-item">
-        <span class="stat-number">{{ getTotalContent() }}</span>
-        <span class="stat-label">Tổng nội dung</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number">{{ getThisMonthContent() }}</span>
-        <span class="stat-label">Tháng này</span>
-      </div>
+  <!-- Loading State -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="loading-content">
+      <i class="fas fa-spinner fa-spin fa-2x"></i>
+      <p>Đang tải dữ liệu dashboard...</p>
     </div>
   </div>
 
-  <!-- Quick Actions -->
-  <div class="quick-actions-section">
-    <h2 class="section-title">Tác vụ nhanh</h2>
-    <div class="quick-actions-grid">
-      <div 
-        *ngFor="let action of quickActions" 
-        class="quick-action-card"
-        [class]="'color-' + action.color"
-        (click)="navigateTo(action.route)"
-      >
-        <div class="action-icon">
-          <i [class]="action.icon"></i>
-        </div>
-        <div class="action-content">
-          <h3>{{ action.title }}</h3>
-          <p>{{ action.description }}</p>
-        </div>
-        <div class="action-arrow">
-          <i class="fas fa-arrow-right"></i>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Stats Overview -->
-  <div class="stats-section">
-    <h2 class="section-title">Tổng quan thống kê</h2>
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-header">
-          <div class="stat-icon purple">
-            <i class="fas fa-edit"></i>
-          </div>
-          <div class="stat-trend positive">
-            <i class="fas fa-arrow-up"></i>
-            <span>+{{ staffStats.articlesThisMonth }}</span>
-          </div>
-        </div>
-        <div class="stat-content">
-          <h3>{{ staffStats.totalArticles }}</h3>
-          <p>Bài viết kiến thức</p>
-          <div class="stat-detail">
-            <span>{{ staffStats.articlesThisMonth }} bài tháng này</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-header">
-          <div class="stat-icon blue">
-            <i class="fas fa-question-circle"></i>
-          </div>
-          <div class="stat-trend positive">
-            <i class="fas fa-arrow-up"></i>
-            <span>+{{ staffStats.questionsThisMonth }}</span>
-          </div>
-        </div>
-        <div class="stat-content">
-          <h3>{{ staffStats.totalQuestions | number }}</h3>
-          <p>Câu hỏi luyện tập</p>
-          <div class="stat-detail">
-            <span>{{ staffStats.questionsThisMonth }} câu tháng này</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-header">
-          <div class="stat-icon green">
-            <i class="fas fa-clipboard-list"></i>
-          </div>
-          <div class="stat-trend positive">
-            <i class="fas fa-arrow-up"></i>
-            <span>+{{ staffStats.testsThisMonth }}</span>
-          </div>
-        </div>
-        <div class="stat-content">
-          <h3>{{ staffStats.totalTests }}</h3>
-          <p>Bài thi thực hành</p>
-          <div class="stat-detail">
-            <span>{{ staffStats.testsThisMonth }} bài tháng này</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-header">
-          <div class="stat-icon orange">
-            <i class="fas fa-spell-check"></i>
-          </div>
-          <div class="stat-trend positive">
-            <i class="fas fa-arrow-up"></i>
-            <span>+{{ staffStats.vocabularyThisMonth }}</span>
-          </div>
-        </div>
-        <div class="stat-content">
-          <h3>{{ staffStats.totalVocabulary | number }}</h3>
-          <p>Từ vựng</p>
-          <div class="stat-detail">
-            <span>{{ staffStats.vocabularyThisMonth }} từ tháng này</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Recent Activities -->
-  <div class="activities-section">
-    <div class="section-header">
-      <h2 class="section-title">Hoạt động gần đây</h2>
-      <button class="btn-view-all-header">
-        <i class="fas fa-external-link-alt"></i>
-        Xem tất cả
+  <!-- Error State -->
+  <div class="error-state" *ngIf="error && !isLoading">
+    <div class="error-content">
+      <i class="fas fa-exclamation-triangle fa-2x"></i>
+      <h3>Có lỗi xảy ra</h3>
+      <p>{{ error }}</p>
+      <button class="btn-retry" (click)="refreshData()">
+        <i class="fas fa-redo"></i>
+        Thử lại
       </button>
     </div>
-    
-    <div class="activities-list">
-      <div *ngFor="let activity of recentActivities" class="activity-item">
-        <div class="activity-icon" [class]="'color-' + getActivityColor(activity.type)">
-          <i [class]="getActivityIcon(activity.type)"></i>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && !error">
+    <!-- Welcome Header -->
+    <div class="welcome-header">
+      <div class="welcome-content">
+        <h1>Chào mừng trở lại! 👋</h1>
+        <p>Hôm nay là {{ getCurrentDate() }}. Hãy tiếp tục tạo nên những nội dung học tập chất lượng.</p>
+      </div>
+      <div class="welcome-stats">
+        <div class="stat-item">
+          <span class="stat-number">{{ getTotalContent() | number }}</span>
+          <span class="stat-label">Tổng nội dung</span>
         </div>
-        <div class="activity-content">
-          <h4>{{ activity.action }}</h4>
-          <p>{{ activity.title }}</p>
-          <div class="activity-meta">
-            <span class="activity-time">
-              <i class="fas fa-clock"></i>
-              {{ activity.timestamp }}
-            </span>
-            <span class="activity-status" [class]="getStatusBadge(activity.status)">
-              {{ getStatusText(activity.status) }}
-            </span>
+        <div class="stat-item">
+          <span class="stat-number">{{ getThisMonthContent() | number }}</span>
+          <span class="stat-label">Tháng này</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-section">
+      <h2 class="section-title">Tác vụ nhanh</h2>
+      <div class="quick-actions-grid">
+        <div *ngFor="let action of quickActions" class="quick-action-card" [class]="'color-' + action.color" (click)="navigateTo(action.route)">
+          <div class="action-icon"><i [class]="action.icon"></i></div>
+          <div class="action-content">
+            <h3>{{ action.title }}</h3>
+            <p>{{ action.description }}</p>
+          </div>
+          <div class="action-arrow"><i class="fas fa-arrow-right"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="stats-section">
+      <h2 class="section-title">Tổng quan thống kê</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-header">
+            <div class="stat-icon purple"><i class="fas fa-edit"></i></div>
+            <div class="stat-trend" [class.positive]="getGrowthPercentage(staffStats.articlesThisMonth, staffStats.articlesLastMonth) >= 0" [class.negative]="getGrowthPercentage(staffStats.articlesThisMonth, staffStats.articlesLastMonth) < 0">
+              <i [class]="getGrowthPercentage(staffStats.articlesThisMonth, staffStats.articlesLastMonth) >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+              <span>{{ getGrowthPercentage(staffStats.articlesThisMonth, staffStats.articlesLastMonth) | number:'1.0-1' }}%</span>
+            </div>
+          </div>
+          <div class="stat-content">
+            <h3>{{ staffStats.totalArticles | number }}</h3>
+            <p>Bài viết</p>
+            <div class="stat-detail"><span>{{ staffStats.articlesThisMonth | number }} tháng này</span></div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header">
+            <div class="stat-icon blue"><i class="fas fa-question-circle"></i></div>
+            <div class="stat-trend" [class.positive]="getGrowthPercentage(staffStats.questionsThisMonth, staffStats.questionsLastMonth) >= 0" [class.negative]="getGrowthPercentage(staffStats.questionsThisMonth, staffStats.questionsLastMonth) < 0">
+              <i [class]="getGrowthPercentage(staffStats.questionsThisMonth, staffStats.questionsLastMonth) >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+              <span>{{ getGrowthPercentage(staffStats.questionsThisMonth, staffStats.questionsLastMonth) | number:'1.0-1' }}%</span>
+            </div>
+          </div>
+          <div class="stat-content">
+            <h3>{{ staffStats.totalQuestions | number }}</h3>
+            <p>Câu hỏi</p>
+            <div class="stat-detail"><span>{{ staffStats.questionsThisMonth | number }} tháng này</span></div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header">
+            <div class="stat-icon green"><i class="fas fa-clipboard-list"></i></div>
+            <div class="stat-trend" [class.positive]="getGrowthPercentage(staffStats.testsThisMonth, staffStats.testsLastMonth) >= 0" [class.negative]="getGrowthPercentage(staffStats.testsThisMonth, staffStats.testsLastMonth) < 0">
+              <i [class]="getGrowthPercentage(staffStats.testsThisMonth, staffStats.testsLastMonth) >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+              <span>{{ getGrowthPercentage(staffStats.testsThisMonth, staffStats.testsLastMonth) | number:'1.0-1' }}%</span>
+            </div>
+          </div>
+          <div class="stat-content">
+            <h3>{{ staffStats.totalTests | number }}</h3>
+            <p>Bài thi</p>
+            <div class="stat-detail"><span>{{ staffStats.testsThisMonth | number }} tháng này</span></div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header">
+            <div class="stat-icon orange"><i class="fas fa-spell-check"></i></div>
+            <div class="stat-trend" [class.positive]="getGrowthPercentage(staffStats.vocabularyThisMonth, staffStats.vocabularyLastMonth) >= 0" [class.negative]="getGrowthPercentage(staffStats.vocabularyThisMonth, staffStats.vocabularyLastMonth) < 0">
+              <i [class]="getGrowthPercentage(staffStats.vocabularyThisMonth, staffStats.vocabularyLastMonth) >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+              <span>{{ getGrowthPercentage(staffStats.vocabularyThisMonth, staffStats.vocabularyLastMonth) | number:'1.0-1' }}%</span>
+            </div>
+          </div>
+          <div class="stat-content">
+            <h3>{{ staffStats.totalVocabulary | number }}</h3>
+            <p>Từ vựng</p>
+            <div class="stat-detail"><span>{{ staffStats.vocabularyThisMonth | number }} tháng này</span></div>
           </div>
         </div>
       </div>
     </div>
     
-    <div class="activities-footer">
-      <button class="btn-view-all">
-        <i class="fas fa-history"></i>
-        Xem tất cả hoạt động
-      </button>
-    </div>
-  </div>
+    <!-- Left/Right Columns -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+      <!-- Recent Activities (Left Column) -->
+      <div class="lg:col-span-2">
+        <div class="activities-section">
+          <div class="section-header">
+            <h2 class="section-title">Hoạt động gần đây</h2>
+            <button class="btn-view-all-header"><i class="fas fa-external-link-alt"></i> Xem tất cả</button>
+          </div>
+          <div class="activities-list">
+            <div *ngFor="let activity of recentActivities" class="activity-item">
+              <div class="activity-icon" [class]="'color-' + getActivityColor(activity.type)"><i [class]="getActivityIcon(activity.type)"></i></div>
+              <div class="activity-content">
+                <h4>{{ activity.action }}</h4>
+                <p>{{ activity.title }}</p>
+                <div class="activity-meta">
+                  <span class="activity-time"><i class="fas fa-clock"></i> {{ activity.timestamp }}</span>
+                  <span class="activity-status" [class]="getStatusBadge(activity.status)">{{ getStatusText(activity.status) }}</span>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="recentActivities.length === 0" class="text-center py-6 text-gray-500">
+                <i class="fas fa-history fa-2x"></i>
+                <p class="mt-2">Chưa có hoạt động nào gần đây.</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  <!-- Quick Stats Cards -->
-  <div class="quick-stats-section">
-    <div class="quick-stats-grid">
-      <div class="quick-stat-card productivity">
-        <div class="quick-stat-icon">
-          <i class="fas fa-chart-line"></i>
-        </div>
-        <div class="quick-stat-content">
-          <h4>Năng suất tuần này</h4>
-          <p class="stat-value">+15%</p>
-          <span class="stat-label">So với tuần trước</span>
-        </div>
-      </div>
-      
-      <div class="quick-stat-card engagement">
-        <div class="quick-stat-icon">
-          <i class="fas fa-users"></i>
-        </div>
-        <div class="quick-stat-content">
-          <h4>Nội dung được yêu thích</h4>
-          <p class="stat-value">1,247</p>
-          <span class="stat-label">Lượt thích tháng này</span>
-        </div>
-      </div>
-      
-      <div class="quick-stat-card quality">
-        <div class="quick-stat-icon">
-          <i class="fas fa-star"></i>
-        </div>
-        <div class="quick-stat-content">
-          <h4>Điểm chất lượng</h4>
-          <p class="stat-value">4.8/5</p>
-          <span class="stat-label">Đánh giá trung bình</span>
+      <!-- Metrics (Right Column) -->
+      <div class="lg:col-span-1">
+        <div class="quick-stats-section">
+          <h2 class="section-title">Chỉ số hiệu suất</h2>
+          <div class="quick-stats-grid">
+            <div class="quick-stat-card productivity">
+              <div class="quick-stat-icon"><i class="fas fa-chart-line"></i></div>
+              <div class="quick-stat-content">
+                <h4>Tăng trưởng năng suất</h4>
+                <p class="stat-value">{{ metrics.productivityGrowth >= 0 ? '+' : '' }}{{ metrics.productivityGrowth | number:'1.0-1' }}%</p>
+                <span class="stat-label">So với tháng trước</span>
+              </div>
+            </div>
+            <div class="quick-stat-card engagement">
+              <div class="quick-stat-icon"><i class="fas fa-users"></i></div>
+              <div class="quick-stat-content">
+                <h4>Lượt tương tác</h4>
+                <p class="stat-value">{{ metrics.contentLikes | number }}</p>
+                <span class="stat-label">Tổng lượt làm bài</span>
+              </div>
+            </div>
+            <div class="quick-stat-card quality">
+              <div class="quick-stat-icon"><i class="fas fa-star"></i></div>
+              <div class="quick-stat-content">
+                <h4>Điểm chất lượng</h4>
+                <p class="stat-value">{{ metrics.qualityRating }}/5</p>
+                <span class="stat-label">Đánh giá trung bình</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

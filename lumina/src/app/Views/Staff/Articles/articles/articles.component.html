@@ -1,4 +1,4 @@
-<div class="articles-container">
+﻿<div class="articles-container">
   <!-- Header Section -->
   <div class="page-header">
     <div class="header-content">
@@ -125,20 +125,43 @@
     </div>
   </div>
 
-  <!-- Pagination -->
-  <div class="pagination-bar" *ngIf="!isLoading && total > 0">
-    <button class="btn-secondary" (click)="prevPage()" [disabled]="page === 1">
-      <i class="fas fa-chevron-left"></i>
-      Trang trước
-    </button>
-    <div class="page-info">
-      Trang {{ page }} / {{ Math.ceil(total / pageSize) }} · Tổng {{ total | number }} bài
-    </div>
-    <button class="btn-secondary" (click)="nextPage()" [disabled]="page * pageSize >= total">
-      Trang sau
-      <i class="fas fa-chevron-right"></i>
-    </button>
+ <!-- Pagination -->
+<div class="flex items-center justify-center gap-4 mt-6" *ngIf="!isLoading && total > 0">
+  <!-- Nút Trang trước -->
+  <button
+    (click)="prevPage()"
+    [disabled]="page === 1"
+    class="px-4 py-2 flex items-center gap-2 rounded-lg border border-gray-300 text-gray-700 
+           bg-white hover:bg-gray-100 shadow-sm transition 
+           disabled:opacity-40 disabled:cursor-not-allowed"
+  >
+    <i class="fas fa-chevron-left"></i>
+    <span>Trang trước</span>
+  </button>
+
+  <!-- Thông tin số trang -->
+  <div class="px-5 py-2 bg-white shadow rounded-lg text-gray-700 font-medium">
+    Trang 
+    <span class="font-semibold">{{ page }}</span> /
+    <span class="font-semibold">{{ Math.ceil(total / pageSize) }}</span>
+    · Tổng 
+    <span class="font-semibold">{{ total | number }}</span> bài
   </div>
+
+  <!-- Nút Trang sau -->
+  <button
+    (click)="nextPage()"
+    [disabled]="page * pageSize >= total"
+    class="px-4 py-2 flex items-center gap-2 rounded-lg border border-gray-300 text-gray-700 
+           bg-white hover:bg-gray-100 shadow-sm transition 
+           disabled:opacity-40 disabled:cursor-not-allowed"
+  >
+    <span>Trang sau</span>
+    <i class="fas fa-chevron-right"></i>
+  </button>
+</div>
+
+
 
   <!-- Empty State -->
   <div class="empty-state" *ngIf="!isLoading && filteredArticles.length === 0">
