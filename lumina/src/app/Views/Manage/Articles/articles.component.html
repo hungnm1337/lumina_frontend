@@ -1,0 +1,197 @@
+<div class="article-management-container">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-spinner">
+    <i class="fas fa-spinner fa-spin fa-2x"></i>
+    <span style="margin-left: 12px;">Đang tải dữ liệu...</span>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage" class="error-message">
+    <i class="fas fa-exclamation-triangle"></i>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && !errorMessage">
+    <!-- Header Section -->
+    <div class="header-section">
+      <div class="header-left">
+        <h1 class="page-title">
+          <i class="fas fa-paper-plane title-icon"></i>
+          Quản lý Bài viết
+        </h1>
+      </div>
+      <div class="header-right">
+        <button class="btn-create-article" (click)="createNewArticle()">
+          <i class="fas fa-plus"></i>
+          Tạo bài viết mới
+        </button>
+      </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-section">
+      <div class="stats-grid">
+        <!-- Total Articles Card -->
+        <div class="stat-card">
+          <div class="stat-content">
+            <div class="stat-number">{{ formatNumber(stats.totalArticles) }}</div>
+            <div class="stat-label">Tổng bài viết</div>
+            <div class="stat-trend positive">{{ getTrendText() }}</div>
+          </div>
+          <div class="stat-icon">
+            <i class="fas fa-file-alt"></i>
+          </div>
+        </div>
+
+        <!-- Pending Approval Card -->
+        <div class="stat-card">
+          <div class="stat-content">
+            <div class="stat-number">{{ stats.pendingArticles }}</div>
+            <div class="stat-label">Chờ duyệt</div>
+            <div class="stat-trend positive">+5 bài mới</div>
+          </div>
+          <div class="stat-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+        </div>
+
+        <!-- Approved Articles Card -->
+        <div class="stat-card">
+          <div class="stat-content">
+            <div class="stat-number">{{ formatNumber(stats.approvedArticles) }}</div>
+            <div class="stat-label">Đã phê duyệt</div>
+            <div class="stat-trend positive">+18 hôm nay</div>
+          </div>
+          <div class="stat-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+        </div>
+
+        <!-- Monthly Views Card -->
+        <div class="stat-card">
+          <div class="stat-content">
+            <div class="stat-number">{{ formatNumber(stats.monthlyViews) }}</div>
+            <div class="stat-label">Lượt xem tháng</div>
+            <div class="stat-trend positive">+25.7% tháng này</div>
+          </div>
+          <div class="stat-icon">
+            <i class="fas fa-eye"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter and Search Section -->
+    <div class="filter-section">
+      <div class="filter-row">
+        <div class="filter-item">
+          <label>Trạng thái</label>
+          <select class="filter-select" [(ngModel)]="statusFilter" (change)="applyFilters()">
+            <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+          </select>
+        </div>
+        
+        <div class="filter-item">
+          <label>Danh mục</label>
+          <select class="filter-select" [(ngModel)]="categoryFilter" (change)="applyFilters()">
+            <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+          </select>
+        </div>
+        
+        <div class="filter-item">
+          <label>Tác giả</label>
+          <input type="text" class="filter-input" placeholder="Tìm theo tác giả..." 
+                 [(ngModel)]="authorFilter" (input)="applyFilters()">
+        </div>
+        
+        <div class="filter-item">
+          <label>Từ khóa</label>
+          <input type="text" class="filter-input" placeholder="Tìm kiếm bài viết..." 
+                 [(ngModel)]="keywordFilter" (input)="applyFilters()">
+        </div>
+        
+        <div class="filter-item">
+          <button class="btn-search" (click)="applyFilters()">
+            <i class="fas fa-search"></i>
+            Tìm kiếm
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Article Table -->
+    <div class="table-container">
+      <table class="article-table">
+        <thead>
+          <tr>
+            <th>Bài viết</th>
+            <th>Tác giả</th>
+            <th>Danh mục</th>
+            <th>Trạng thái</th>
+            <th>Lượt xem</th>
+            <th>Ngày tạo</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let article of getPaginatedArticles()">
+            <td class="article-info">
+              <div class="article-title">{{ article.title }}</div>
+              <div class="article-description">{{ article.description }}</div>
+            </td>
+            <td class="author-info">
+              <div class="author-avatar">{{ article.author.avatar }}</div>
+              <div class="author-name">{{ article.author.name }}</div>
+            </td>
+            <td>
+              <span class="category-tag" [ngClass]="getCategoryClass(article.category)">{{ article.category }}</span>
+            </td>
+            <td>
+              <span class="status-tag" [ngClass]="getStatusClass(article.status)">{{ getStatusText(article.status) }}</span>
+            </td>
+            <td class="views-count">{{ formatNumber(article.views) }}</td>
+            <td class="date">{{ article.createdDate }}</td>
+            <td class="actions">
+              <button *ngIf="article.status === 'pending'" class="btn-action approve" (click)="approveArticle(article)">
+                ✓ Duyệt
+              </button>
+              <button class="btn-action edit" (click)="editArticle(article)">Sửa</button>
+              <button *ngIf="article.status === 'pending'" class="btn-action reject" (click)="rejectArticle(article)">
+                × Từ chối
+              </button>
+              <button *ngIf="article.status === 'rejected'" class="btn-action reapprove" (click)="reapproveArticle(article)">
+                C Duyệt lại
+              </button>
+              <button *ngIf="article.status === 'approved' || article.status === 'draft'" class="btn-action delete" (click)="deleteArticle(article)">
+                Xóa
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+      <!-- Pagination -->
+      <div class="pagination-section">
+        <div class="pagination">
+          <button class="pagination-btn" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <div class="page-numbers">
+            <button *ngFor="let page of [].constructor(totalPages); let i = index" 
+                    class="page-btn" 
+                    [class.active]="currentPage === i + 1"
+                    (click)="goToPage(i + 1)">
+              {{ i + 1 }}
+            </button>
+          </div>
+          <div class="page-info">Trang {{ currentPage }} của {{ totalPages }}</div>
+          <button class="pagination-btn" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+

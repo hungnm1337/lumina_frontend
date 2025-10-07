@@ -46,6 +46,9 @@
         >
           <i class="fas fa-video mr-2"></i> Xem demo
         </button>
+        <button (click)="scrollToEvent()" class="btn-secondary text-lg px-8 py-4 bg-white/20 border border-white/30 text-white hover:bg-white/30 transition">
+          Xem sự kiện
+        </button>
       </div>
 
       <div class="flex items-center space-x-8 text-sm">
@@ -160,6 +163,11 @@
 
     </div>
   </div>
+  
+  
+  <app-user-slide-dashboard></app-user-slide-dashboard>
+  <app-user-events-dashboard></app-user-events-dashboard>
+
 </section>
 
 <!-- You can continue building similarly for Courses Section, Testimonials, CTA, Footer -->
