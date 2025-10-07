@@ -15,6 +15,16 @@ export class TimeComponent implements OnInit, OnChanges, OnDestroy {
   remainingSeconds: number = 0;
   private intervalId: any = null;
 
+  get formattedTime(): string {
+    const minutes = Math.floor(this.remainingSeconds / 60);
+    const seconds = this.remainingSeconds % 60;
+    return `${this.padToTwoDigits(minutes)}:${this.padToTwoDigits(seconds)}`;
+  }
+
+  private padToTwoDigits(value: number): string {
+    return value < 10 ? `0${value}` : `${value}`;
+  }
+
   ngOnInit(): void {
     this.startCountdown();
   }

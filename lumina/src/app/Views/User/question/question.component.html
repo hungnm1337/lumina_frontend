@@ -4,13 +4,13 @@
       <div class="space-y-2">
         <app-time [time]="questions[currentIndex].time" [resetAt]="currentIndex" [paused]="showExplain" (timeout)="onTimeout()"></app-time>
       </div>
-      <h3 class="text-lg font-semibold text-gray-800 flex-1">{{ questions[currentIndex].stemText }}</h3>
       <span class="text-xs text-gray-500 inline-flex items-center gap-2">
         <span class="bg-gray-100 px-2 py-1 rounded">Type: {{ questions[currentIndex].questionType }}</span>
         <span class="bg-gray-100 px-2 py-1 rounded">Score: {{ questions[currentIndex].scoreWeight }}</span>
         <span class="bg-green-100 text-green-700 px-2 py-1 rounded font-medium">Điểm của bạn: {{ totalScore }}</span>
       </span>
     </div>
+      <h3 class="text-lg font-semibold text-gray-800 flex-1">{{ questions[currentIndex].stemText }}</h3>
 
     <div class="grid gap-4 mt-3">
       <div class="space-y-2">

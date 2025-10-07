@@ -80,7 +80,7 @@ private tokenKey = 'authToken';
     localStorage.removeItem('lumina_token');
     localStorage.removeItem('lumina_user');
     this.currentUserSource.next(null);
-    this.router.navigate(['/login']); 
+    this.router.navigate(['/login']);
   }
 
   private setSession(authResponse: LoginResponse) {

@@ -69,7 +69,7 @@ export class ExamsComponent {
       },
       {
         skillName: 'Writing',
-        skillCodes: ['WRITING', 'TOEIC_WRITING', 'TOEIC_WRITING_TEST'],
+        skillCodes: ['WRITING', 'TOEIC_WRITTING', 'TOEIC_WRITING_TEST'],
         icon: 'fas fa-pen',
         color: 'orange'
       }
