@@ -18,16 +18,16 @@ export class ManageEventsDashboardComponent implements OnInit {
 
   // search and filter
   searchTerm: string = '';
-  filterStatus: string = 'all'; // all, active, upcoming, past
-  sortBy: string = 'startDate'; // startDate, endDate, eventName
-  sortOrder: string = 'asc'; // asc, desc
+  filterStatus: string = 'all';
+  sortBy: string = 'startDate';
+  sortOrder: string = 'asc';
 
   // modal state
   showModal = false;
   isEditing = false;
   editingId: number | null = null;
   selectedEvent: EventDTO | null = null;
-  
+
   // form state
   form: { eventName: string; content?: string; startDate?: string; endDate?: string } = {
     eventName: '',
@@ -42,6 +42,20 @@ export class ManageEventsDashboardComponent implements OnInit {
     this.fetchEvents();
   }
 
+  // ===== GETTER METHODS =====
+  get activeEventsCount(): number {
+    return this.events.filter(e => this.getEventStatus(e) === 'active').length;
+  }
+
+  get upcomingEventsCount(): number {
+    return this.events.filter(e => this.getEventStatus(e) === 'upcoming').length;
+  }
+
+  get pastEventsCount(): number {
+    return this.events.filter(e => this.getEventStatus(e) === 'past').length;
+  }
+
+  // ===== DATA FETCHING =====
   private fetchEvents(): void {
     this.isLoading = true;
     this.errorMessage = null;
@@ -58,7 +72,7 @@ export class ManageEventsDashboardComponent implements OnInit {
     });
   }
 
-  // Search and filter methods
+  // ===== SEARCH AND FILTER =====
   onSearchChange(): void {
     this.applyFilters();
   }
@@ -71,13 +85,21 @@ export class ManageEventsDashboardComponent implements OnInit {
     this.applyFilters();
   }
 
+  clearFilters(): void {
+    this.searchTerm = '';
+    this.filterStatus = 'all';
+    this.sortBy = 'startDate';
+    this.sortOrder = 'asc';
+    this.applyFilters();
+  }
+
   private applyFilters(): void {
     let filtered = [...this.events];
 
     // Search filter
     if (this.searchTerm.trim()) {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(event => 
+      filtered = filtered.filter(event =>
         event.eventName.toLowerCase().includes(term) ||
         (event.content && event.content.toLowerCase().includes(term))
       );
@@ -100,7 +122,6 @@ export class ManageEventsDashboardComponent implements OnInit {
     // Sort
     filtered.sort((a, b) => {
       let aValue: any, bValue: any;
-      
       switch (this.sortBy) {
         case 'eventName':
           aValue = a.eventName.toLowerCase();
@@ -126,24 +147,22 @@ export class ManageEventsDashboardComponent implements OnInit {
     this.filteredEvents = filtered;
   }
 
-  // Modal methods
+  // ===== MODAL METHODS =====
   openCreateModal(): void {
-    this.isEditing = false;
+    this.isEditing = true;
     this.editingId = null;
     this.selectedEvent = null;
     this.form = { eventName: '', content: '', startDate: '', endDate: '' };
     this.showModal = true;
+    this.errorMessage = null;
   }
 
   openEditModal(event: EventDTO): void {
     this.isEditing = true;
     this.editingId = event.eventId;
     this.selectedEvent = event;
-    
-    // Convert dates to local date format for input[type="date"]
     const startDate = new Date(event.startDate);
     const endDate = new Date(event.endDate);
-    
     this.form = {
       eventName: event.eventName,
       content: event.content || '',
@@ -151,13 +170,7 @@ export class ManageEventsDashboardComponent implements OnInit {
       endDate: this.formatDateForInput(endDate),
     };
     this.showModal = true;
-  }
-
-  private formatDateForInput(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    this.errorMessage = null;
   }
 
   openDetailModal(event: EventDTO): void {
@@ -165,6 +178,7 @@ export class ManageEventsDashboardComponent implements OnInit {
     this.isEditing = false;
     this.editingId = null;
     this.showModal = true;
+    this.errorMessage = null;
   }
 
   closeModal(): void {
@@ -173,46 +187,47 @@ export class ManageEventsDashboardComponent implements OnInit {
     this.editingId = null;
     this.selectedEvent = null;
     this.form = { eventName: '', content: '', startDate: '', endDate: '' };
+    this.errorMessage = null;
   }
 
+  // ===== CRUD OPERATIONS =====
   submit(): void {
-    // Clear previous error
     this.errorMessage = null;
-    
+
     // Validation
     if (!this.form.eventName?.trim()) {
       this.errorMessage = 'Tên sự kiện là bắt buộc';
       return;
     }
-    
+
     if (!this.form.startDate) {
       this.errorMessage = 'Ngày bắt đầu là bắt buộc';
       return;
     }
-    
+
     if (!this.form.endDate) {
       this.errorMessage = 'Ngày kết thúc là bắt buộc';
       return;
     }
-    
-    // Check if end date is after start date
+
     const startDate = new Date(this.form.startDate);
     const endDate = new Date(this.form.endDate);
     if (endDate <= startDate) {
       this.errorMessage = 'Ngày kết thúc phải sau ngày bắt đầu';
       return;
     }
-    
+
     this.isLoading = true;
+
     if (this.editingId == null) {
-      // Create new event
+      // Create
       const createPayload = {
         eventName: this.form.eventName.trim(),
         content: this.form.content?.trim() || undefined,
         startDate: this.form.startDate,
         endDate: this.form.endDate,
       } as unknown as EventDTO;
-      
+
       this.eventService.CreateEvent(createPayload).subscribe({
         next: () => {
           this.isLoading = false;
@@ -221,22 +236,18 @@ export class ManageEventsDashboardComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading = false;
-          console.error('Create event error:', error);
           this.errorMessage = error.error?.message || 'Tạo sự kiện thất bại';
         },
       });
     } else {
-      // Update existing event
+      // Update
       const updatePayload = {
         eventName: this.form.eventName.trim(),
         content: this.form.content?.trim() || undefined,
         startDate: this.form.startDate,
         endDate: this.form.endDate,
       } as unknown as EventDTO;
-      
-      console.log('Updating event with ID:', this.editingId);
-      console.log('Update payload:', updatePayload);
-      
+
       this.eventService.UpdateEvent(this.editingId, updatePayload).subscribe({
         next: () => {
           this.isLoading = false;
@@ -245,14 +256,7 @@ export class ManageEventsDashboardComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading = false;
-          console.error('Update event error details:', {
-            status: error.status,
-            statusText: error.statusText,
-            error: error.error,
-            url: error.url,
-            message: error.message
-          });
-          this.errorMessage = `Cập nhật sự kiện thất bại (${error.status}): ${error.error?.message || error.message}`;
+          this.errorMessage = `Cập nhật sự kiện thất bại: ${error.error?.message || error.message}`;
         },
       });
     }
@@ -260,6 +264,7 @@ export class ManageEventsDashboardComponent implements OnInit {
 
   delete(event: EventDTO): void {
     if (!confirm(`Xóa sự kiện "${event.eventName}"?`)) return;
+
     this.isLoading = true;
     this.eventService.DeleteEvent(event.eventId).subscribe({
       next: () => {
@@ -273,26 +278,40 @@ export class ManageEventsDashboardComponent implements OnInit {
     });
   }
 
-  // Helper methods
+  // ===== HELPER METHODS =====
   getEventStatus(event: EventDTO): string {
     const now = new Date();
     const start = new Date(event.startDate);
     const end = new Date(event.endDate);
-    
     if (start > now) return 'upcoming';
     if (end < now) return 'past';
     return 'active';
   }
 
-  getStatusClass(status: string): string {
+  getStatusLabel(status: string): string {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'upcoming': return 'bg-blue-100 text-blue-800';
-      case 'past': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'active': return 'Đang diễn ra';
+      case 'upcoming': return 'Sắp diễn ra';
+      case 'past': return 'Đã kết thúc';
+      default: return 'Không rõ';
     }
   }
+
+  getEventDuration(event: EventDTO): string {
+    const start = new Date(event.startDate);
+    const end = new Date(event.endDate);
+    const diff = end.getTime() - start.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    
+    if (days === 0) return 'Trong ngày';
+    if (days === 1) return '1 ngày';
+    return `${days} ngày`;
+  }
+
+  private formatDateForInput(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
 }
-
-
-

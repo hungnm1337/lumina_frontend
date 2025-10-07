@@ -1,306 +1,356 @@
-<div class="min-h-screen bg-gray-50 p-6">
-  <div class="max-w-7xl mx-auto">
-    <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">Quản lý Slide</h1>
-      <p class="text-gray-600">Quản lý và theo dõi các slide trong hệ thống</p>
+<div class="vocabulary-container">
+  <!-- TOEIC Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">Dashboard Slides</h1>
+      <p class="page-subtitle">Quản lý và theo dõi các slide trong hệ thống</p>
     </div>
+    <button class="btn-primary" (click)="openCreateModal()">
+      <i class="fas fa-plus"></i>
+      Tạo slide mới
+    </button>
+  </div>
 
-    <!-- Action Bar -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <!-- Search and Filter -->
-        <div class="flex flex-col sm:flex-row gap-4 flex-1">
-          <!-- Search Input -->
-          <div class="relative flex-1 max-w-md">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-              </svg>
-            </div>
-            <input
-              type="text"
-              [(ngModel)]="searchKeyword"
-              (input)="onSearchChange()"
-              placeholder="Tìm kiếm theo tên hoặc URL..."
-              class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
+  <!-- Alert Messages -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <i class="fas fa-exclamation-circle"></i>
+    {{ errorMessage }}
+  </div>
 
-          <!-- Filter Dropdown -->
-          <select
-            [(ngModel)]="filterActive"
-            (change)="onFilterChange()"
-            class="px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option [value]="null">Tất cả trạng thái</option>
-            <option [value]="true">Hoạt động</option>
-            <option [value]="false">Không hoạt động</option>
-          </select>
+  <div *ngIf="successMessage" class="alert alert-success">
+    <i class="fas fa-check-circle"></i>
+    {{ successMessage }}
+  </div>
 
-          <!-- Clear Filters -->
-          <button
-            (click)="clearFilters()"
-            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Xóa bộ lọc
-          </button>
-        </div>
-
-        <!-- Add Button -->
-        <button
-          (click)="openCreateModal()"
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-          </svg>
-          Thêm Slide
-        </button>
-      </div>
-    </div>
-
-    <!-- Messages -->
-    <div *ngIf="errorMessage" class="mb-4 bg-red-50 border border-red-200 rounded-md p-4 flex items-start">
-      <span class="inline-flex h-5 w-5 text-red-400" aria-hidden="true">&#9888;</span>
-      <p class="ml-3 text-sm text-red-800">{{ errorMessage }}</p>
-    </div>
-
-    <div *ngIf="successMessage" class="mb-4 bg-green-50 border border-green-200 rounded-md p-4">
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-          </svg>
-        </div>
-        <div class="ml-3">
-          <p class="text-sm text-green-800">{{ successMessage }}</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Loading State -->
-    <div *ngIf="isLoading" class="flex justify-center items-center py-12">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-    </div>
-
-    <!-- Slides List -->
-    <div *ngIf="!isLoading" class="bg-white shadow-sm rounded-lg border border-gray-200">
-      <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-medium text-gray-900">
-          Danh sách Slide ({{ filteredSlides.length }})
-        </h3>
+  <!-- Main Layout -->
+  <div class="main-layout">
+    <!-- Slides List Section -->
+    <div class="vocabulary-list">
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Đang tải danh sách slides...</p>
       </div>
 
       <!-- Empty State -->
-      <div *ngIf="filteredSlides.length === 0" class="text-center py-12">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-        </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900">Không có slide nào</h3>
-        <p class="mt-1 text-sm text-gray-500">Bắt đầu bằng cách tạo slide mới.</p>
-        <div class="mt-6">
-          <button
-            (click)="openCreateModal()"
-            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-            </svg>
-            Thêm Slide
-          </button>
-        </div>
+      <div *ngIf="!isLoading && filteredSlides.length === 0" class="empty-state">
+        <i class="fas fa-images"></i>
+        <h3>Chưa có slide nào</h3>
+        <p>Bắt đầu bằng cách tạo slide mới.</p>
       </div>
 
       <!-- Slides Grid -->
-      <div *ngIf="filteredSlides.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
-        <div *ngFor="let slide of filteredSlides" class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
-          <div class="p-6">
-            <!-- Slide Header -->
-            <div class="flex items-start justify-between mb-4">
-              <div class="flex-1">
-                <h4 class="text-lg font-semibold text-gray-900 mb-1">{{ slide.slideName }}</h4>
-                <div class="flex items-center space-x-2">
-                  <span [class]="'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ' + getStatusBadgeClass(slide.isActive)">
-                    {{ getStatusText(slide.isActive) }}
-                  </span>
-                </div>
-              </div>
+      <div *ngIf="!isLoading && filteredSlides.length > 0">
+        <div *ngFor="let slide of filteredSlides" class="vocabulary-item">
+          <!-- Slide Header -->
+          <div class="word-header">
+            <div class="word-title">
+              <h2 class="word">{{ slide.slideName }}</h2>
+              <p class="pronunciation">{{ slide.slideUrl }}</p>
             </div>
-
-            <!-- Slide URL -->
-            <div class="mb-4">
-              <p class="text-sm text-gray-600 mb-1">URL:</p>
-              <p class="text-sm text-blue-600 break-all">{{ slide.slideUrl }}</p>
-            </div>
-
-            <!-- Slide Info -->
-            <div class="space-y-2 mb-4">
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-500">Ngày tạo:</span>
-                <span class="text-gray-900">{{ formatDate(slide.createAt) }}</span>
-              </div>
-              <div *ngIf="slide.updateAt" class="flex justify-between text-sm">
-                <span class="text-gray-500">Cập nhật:</span>
-                <span class="text-gray-900">{{ formatDate(slide.updateAt) }}</span>
-              </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="flex space-x-2">
-              <button
-                (click)="openViewModal(slide)"
-                class="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                </svg>
-                Xem
+            <div class="word-actions">
+              <!-- Status Badge -->
+              <span class="category-tag" [ngClass]="slide.isActive ? 'color-green' : 'color-red'">
+                {{ getStatusText(slide.isActive) }}
+              </span>
+              
+              <!-- Action Buttons -->
+              <button class="btn-action btn-edit" (click)="openEditModal(slide)" title="Chỉnh sửa">
+                <i class="fas fa-edit"></i>
               </button>
-              <button
-                (click)="openEditModal(slide)"
-                class="flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                </svg>
-                Sửa
+              <button class="btn-action btn-view" (click)="openViewModal(slide)" title="Xem chi tiết">
+                <i class="fas fa-eye"></i>
               </button>
-              <button
-                (click)="deleteSlide(slide)"
-                class="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                </svg>
+              <button class="btn-action btn-delete" (click)="deleteSlide(slide)" title="Xóa">
+                <i class="fas fa-trash"></i>
               </button>
             </div>
           </div>
+
+          <!-- Slide Content -->
+          <div class="word-content">
+            <div class="word-info">
+              <span class="pos-tag pos-noun">Slide</span>
+              <span class="definition">URL: {{ slide.slideUrl }}</span>
+            </div>
+
+            <!-- Slide Meta Information -->
+            <div class="vocab-meta">
+              <div class="meta-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span class="meta-label">Ngày tạo:</span>
+                <span class="meta-value">{{ formatDate(slide.createAt) }}</span>
+              </div>
+              <div class="meta-item" *ngIf="slide.updateAt">
+                <i class="fas fa-clock"></i>
+                <span class="meta-label">Cập nhật:</span>
+                <span class="meta-value">{{ formatDate(slide.updateAt) }}</span>
+              </div>
+              <div class="meta-item">
+                <i class="fas fa-user"></i>
+                <span class="meta-label">Tạo bởi:</span>
+                <span class="meta-value">{{ slide.createBy }}</span>
+              </div>
+              <div class="meta-item">
+                <i class="fas fa-toggle-on"></i>
+                <span class="meta-label">Trạng thái:</span>
+                <span class="meta-value status-badge" [class.active]="slide.isActive">
+                  {{ getStatusText(slide.isActive) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Section -->
+    <div class="vocabulary-sidebar">
+      <!-- Statistics Card -->
+      <div class="stats-card">
+        <div class="stats-header">
+          <i class="fas fa-chart-bar"></i>
+          <h3>Thống kê Slides</h3>
+        </div>
+        <div class="total-count">
+          <span class="count-label">Tổng số slides</span>
+          <span class="count-number">{{ slides.length }}</span>
+        </div>
+        <div class="category-stats">
+          <div class="category-stat">
+            <div class="category-info">
+              <i class="fas fa-check-circle category-icon" style="color: #10b981;"></i>
+              <span class="category-name">Hoạt động</span>
+            </div>
+            <span class="category-count">{{ activeSlidesCount }}</span>
+          </div>
+          <div class="category-stat">
+            <div class="category-info">
+              <i class="fas fa-times-circle category-icon" style="color: #ef4444;"></i>
+              <span class="category-name">Không hoạt động</span>
+            </div>
+            <span class="category-count">{{ inactiveSlidesCount }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters Card -->
+      <div class="filters-card">
+        <div class="filters-header">
+          <i class="fas fa-filter"></i>
+          <h3>Bộ lọc</h3>
+        </div>
+        
+        <!-- Search Box -->
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input
+            type="text"
+            [(ngModel)]="searchKeyword"
+            (input)="onSearchChange()"
+            placeholder="Tìm kiếm slides..."
+            class="search-input">
+        </div>
+
+        <!-- Status Filter -->
+        <div class="filter-group">
+          <label>Trạng thái</label>
+          <select [(ngModel)]="filterActive" (change)="onFilterChange()">
+            <option [ngValue]="null">Tất cả</option>
+            <option [ngValue]="true">Hoạt động</option>
+            <option [ngValue]="false">Không hoạt động</option>
+          </select>
+        </div>
+
+        <!-- Clear Filters Button -->
+        <button class="btn-quick-add" (click)="clearFilters()">
+          <i class="fas fa-eraser"></i>
+          Xóa bộ lọc
+        </button>
+      </div>
+
+      <!-- Quick Add Card -->
+      <div class="quick-add-card">
+        <div class="quick-add-header">
+          <i class="fas fa-rocket"></i>
+          <h3>Thêm nhanh</h3>
+        </div>
+        <div class="quick-add-form">
+          <div class="form-group">
+            <input
+              type="text"
+              [(ngModel)]="formData.slideName"
+              placeholder="Tên slide..."
+              class="form-input">
+          </div>
+          <div class="form-group">
+            <input
+              type="text"
+              [(ngModel)]="formData.slideUrl"
+              placeholder="URL slide..."
+              class="form-input">
+          </div>
+          <div class="form-group">
+            <select [(ngModel)]="formData.isActive" class="form-select">
+              <option [ngValue]="true">Hoạt động</option>
+              <option [ngValue]="false">Không hoạt động</option>
+            </select>
+          </div>
+          <button class="btn-quick-add" (click)="saveSlide()" [disabled]="isLoading">
+            <i class="fas fa-plus"></i>
+            Thêm slide
+          </button>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Modal -->
-  <div *ngIf="isModalOpen" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" (click)="closeModal()">
-    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white" (click)="$event.stopPropagation()">
-      <!-- Modal Header -->
-      <div class="flex items-center justify-between pb-4 border-b border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">
-          {{ isEditMode ? 'Chỉnh sửa Slide' : (selectedSlide ? 'Chi tiết Slide' : 'Thêm Slide mới') }}
-        </h3>
-        <button
-          (click)="closeModal()"
-          class="text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-600"
-        >
-          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
-
-      <!-- Modal Body -->
-      <div class="mt-6">
-        <!-- View Mode -->
-        <div *ngIf="selectedSlide && !isEditMode" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Tên Slide</label>
-            <p class="text-sm text-gray-900 bg-gray-50 p-3 rounded-md">{{ selectedSlide.slideName }}</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">URL</label>
-            <p class="text-sm text-blue-600 bg-gray-50 p-3 rounded-md break-all">{{ selectedSlide.slideUrl }}</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
-            <span [class]="'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ' + getStatusBadgeClass(selectedSlide.isActive)">
-              {{ getStatusText(selectedSlide.isActive) }}
-            </span>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Ngày tạo</label>
-              <p class="text-sm text-gray-900 bg-gray-50 p-3 rounded-md">{{ formatDate(selectedSlide.createAt) }}</p>
-            </div>
-            <div *ngIf="selectedSlide.updateAt">
-              <label class="block text-sm font-medium text-gray-700 mb-1">Cập nhật lần cuối</label>
-              <p class="text-sm text-gray-900 bg-gray-50 p-3 rounded-md">{{ formatDate(selectedSlide.updateAt) }}</p>
-            </div>
-          </div>
+<!-- View Modal -->
+<div *ngIf="isModalOpen && !isEditMode && selectedSlide" class="modal-overlay" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-content">
+        <div class="modal-icon">
+          <i class="fas fa-eye"></i>
         </div>
-
-        <!-- Edit/Create Mode -->
-        <div *ngIf="!selectedSlide || isEditMode" class="space-y-4">
-          <div>
-            <label for="slideName" class="block text-sm font-medium text-gray-700 mb-1">Tên Slide *</label>
-            <input
-              type="text"
-              id="slideName"
-              [(ngModel)]="formData.slideName"
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Nhập tên slide"
-            />
-          </div>
-
-          <div>
-            <label for="slideUrl" class="block text-sm font-medium text-gray-700 mb-1">URL Slide *</label>
-            <input
-              type="url"
-              id="slideUrl"
-              [(ngModel)]="formData.slideUrl"
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              placeholder="https://example.com/slide"
-            />
-          </div>
-
-          <div>
-            <label class="flex items-center">
-              <input
-                type="checkbox"
-                [(ngModel)]="formData.isActive"
-                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <span class="ml-2 text-sm text-gray-700">Slide đang hoạt động</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Error Message -->
-        <div *ngIf="errorMessage" class="mt-4 bg-red-50 border border-red-200 rounded-md p-3">
-          <p class="text-sm text-red-800">{{ errorMessage }}</p>
-        </div>
-
-        <!-- Success Message -->
-        <div *ngIf="successMessage" class="mt-4 bg-green-50 border border-green-200 rounded-md p-3">
-          <p class="text-sm text-green-800">{{ successMessage }}</p>
+        <div class="modal-title-section">
+          <h2>Chi tiết Slide</h2>
+          <p>Xem thông tin slide</p>
         </div>
       </div>
+      <button class="btn-close" (click)="closeModal()" type="button">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
 
-      <!-- Modal Footer -->
-      <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
-        <button
-          (click)="closeModal()"
-          class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          {{ selectedSlide && !isEditMode ? 'Đóng' : 'Hủy' }}
-        </button>
-        <button
-          *ngIf="!selectedSlide || isEditMode"
-          (click)="saveSlide()"
-          [disabled]="isLoading"
-          class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <span *ngIf="isLoading" class="inline-flex items-center">
-            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Đang lưu...
+    <div class="modal-form">
+      <div class="form-group">
+        <label>Tên Slide</label>
+        <p class="view-text">{{ selectedSlide.slideName }}</p>
+      </div>
+
+      <div class="form-group">
+        <label>URL Slide</label>
+        <p class="view-text">{{ selectedSlide.slideUrl }}</p>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Trạng thái</label>
+          <span class="category-tag" [ngClass]="selectedSlide.isActive ? 'color-green' : 'color-red'">
+            {{ getStatusText(selectedSlide.isActive) }}
           </span>
-          <span *ngIf="!isLoading">{{ isEditMode ? 'Cập nhật' : 'Tạo mới' }}</span>
+        </div>
+
+        <div class="form-group">
+          <label>Tạo bởi</label>
+          <p class="view-text">{{ selectedSlide.createBy }}</p>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ngày tạo</label>
+          <p class="view-text">{{ formatDate(selectedSlide.createAt) }}</p>
+        </div>
+
+        <div class="form-group" *ngIf="selectedSlide.updateAt">
+          <label>Cập nhật</label>
+          <p class="view-text">{{ formatDate(selectedSlide.updateAt) }}</p>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeModal()">
+          Đóng
+        </button>
+        <button type="button" class="btn-primary" (click)="openEditModal(selectedSlide)">
+          <i class="fas fa-edit"></i>
+          Chỉnh sửa
         </button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div *ngIf="isModalOpen && isEditMode" class="modal-overlay" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-content">
+        <div class="modal-icon">
+          <i class="fas fa-edit"></i>
+        </div>
+        <div class="modal-title-section">
+          <h2>{{ selectedSlide ? 'Chỉnh sửa Slide' : 'Tạo Slide mới' }}</h2>
+          <p>{{ selectedSlide ? 'Cập nhật thông tin slide' : 'Thêm slide mới vào hệ thống' }}</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeModal()" type="button">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Alert Messages in Modal -->
+    <div *ngIf="errorMessage" class="alert alert-error" style="margin: 0 24px;">
+      <i class="fas fa-exclamation-circle"></i>
+      {{ errorMessage }}
+    </div>
+
+    <div *ngIf="successMessage" class="alert alert-success" style="margin: 0 24px;">
+      <i class="fas fa-check-circle"></i>
+      {{ successMessage }}
+    </div>
+
+    <form (ngSubmit)="saveSlide()" class="modal-form">
+      <div class="form-group">
+        <label for="slideName">Tên Slide *</label>
+        <input
+          id="slideName"
+          type="text"
+          [(ngModel)]="formData.slideName"
+          name="slideName"
+          placeholder="Nhập tên slide..."
+          required
+          class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label for="slideUrl">URL Slide *</label>
+        <input
+          id="slideUrl"
+          type="text"
+          [(ngModel)]="formData.slideUrl"
+          name="slideUrl"
+          placeholder="Nhập URL slide..."
+          required
+          class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label for="isActive">Trạng thái</label>
+        <select
+          id="isActive"
+          [(ngModel)]="formData.isActive"
+          name="isActive"
+          class="form-select">
+          <option [ngValue]="true">Hoạt động</option>
+          <option [ngValue]="false">Không hoạt động</option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeModal()" [disabled]="isLoading">
+          Hủy
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="isLoading">
+          <i *ngIf="isLoading" class="fas fa-spinner fa-spin"></i>
+          <i *ngIf="!isLoading && selectedSlide" class="fas fa-save"></i>
+          <i *ngIf="!isLoading && !selectedSlide" class="fas fa-plus"></i>
+          {{ selectedSlide ? 'Cập nhật' : 'Tạo mới' }}
+        </button>
+      </div>
+    </form>
   </div>
 </div>
