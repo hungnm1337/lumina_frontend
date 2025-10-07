@@ -28,7 +28,10 @@
         <!-- Word Header -->
         <div class="word-header">
           <div class="word-title">
-            <h3 class="word">{{ vocab.word }}</h3>
+            <h3 class="word" (click)="speakWord(vocab.word)" title="Click để nghe phát âm">
+              {{ vocab.word }}
+              <i class="fas fa-volume-up speak-icon"></i>
+            </h3>
             <span class="pronunciation">{{ vocab.pronunciation }}</span>
           </div>
           <div class="word-actions">
@@ -42,28 +45,67 @@
               <i class="fas fa-trash"></i>
             </button>
           </div>
-
         </div>
 
 
 
         <!-- Word Content -->
         <div class="word-content">
+          <!-- Part of Speech & Translation -->
           <div class="word-info">
             <span class="pos-tag" [class]="getPartOfSpeechClass(vocab.partOfSpeech)">
-              {{ vocab.partOfSpeech }}:
+              {{ vocab.partOfSpeech }}
             </span>
             <span class="definition">{{ vocab.translation }}</span>
           </div>
 
-          <div class="example-section">
-            <div class="example-label">Ví dụ:</div>
-            <div class="example-text">{{ vocab.example }}</div>
+          <!-- Definition (English) -->
+          <div class="definition-section">
+            <div class="section-label">
+              <i class="fas fa-book"></i>
+              Định nghĩa:
+            </div>
+            <div class="section-text">{{ vocab.definition }}</div>
           </div>
 
-          <div class="translation-section">
-            <div class="translation-label">Dịch:</div>
-            <div class="translation-text">{{ vocab.definition }}</div>
+          <!-- Example -->
+          <div class="example-section">
+            <div class="section-label">
+              <i class="fas fa-quote-left"></i>
+              Ví dụ:
+            </div>
+            <div class="example-text" (click)="speakExample(vocab.example)" title="Click để nghe câu ví dụ">
+              {{ vocab.example }}
+              <i class="fas fa-volume-up speak-icon-small"></i>
+            </div>
+          </div>
+
+          <!-- Additional Info Row -->
+          <div class="vocab-meta">
+            <div class="meta-item">
+              <i class="fas fa-signal"></i>
+              <span class="meta-label">Độ khó:</span>
+              <span class="meta-value" [class]="getDifficultyClass(vocab.difficulty)">
+                {{ vocab.difficulty }}
+              </span>
+            </div>
+            <div class="meta-item" *ngIf="vocab.createdDate">
+              <i class="fas fa-calendar"></i>
+              <span class="meta-label">Ngày tạo:</span>
+              <span class="meta-value">{{ vocab.createdDate }}</span>
+            </div>
+            <div class="meta-item" *ngIf="vocab.createdBy">
+              <i class="fas fa-user"></i>
+              <span class="meta-label">Tạo bởi:</span>
+              <span class="meta-value">{{ vocab.createdBy }}</span>
+            </div>
+            <div class="meta-item">
+              <i class="fas fa-check-circle"></i>
+              <span class="meta-label">Trạng thái:</span>
+              <span class="meta-value status-badge" [class.active]="vocab.status === 'active'">
+                {{ vocab.status === 'active' ? 'Hoạt động' : 'Không hoạt động' }}
+              </span>
+            </div>
           </div>
         </div>
       </div>

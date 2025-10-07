@@ -1,12 +1,11 @@
 ﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
-import { Router } from '@angular/router';
 import { ArticleService } from '../../../../Services/Article/article.service';
 import { ToastService } from '../../../../Services/Toast/toast.service';
-import { 
-  Article, 
-  ArticleSection, 
+import { AuthService } from '../../../../Services/Auth/auth.service';
+import {
+  Article,
   ArticleCategory,
   ArticleCreate
 } from '../../../../Interfaces/article.interfaces';
@@ -21,20 +20,21 @@ import {
 export class ArticlesComponent implements OnInit {
   articles: Article[] = [];
   filteredArticles: Article[] = [];
-  Math = Math;
+  isManager = false;
+  isModalOpen = false;
+  editingArticle: Article | null = null;
+  articleForm: FormGroup;
+  isLoading = true;
+  isSubmitting = false;
   searchTerm = '';
   selectedCategory = '';
-  selectedStatus = '';
+  selectedStatus: 'draft' | 'pending' | 'published' | '' = '';
   page = 1;
   pageSize = 6;
   total = 0;
   sortBy: 'createdAt' | 'title' | 'category' = 'createdAt';
   sortDir: 'asc' | 'desc' = 'desc';
-  isModalOpen = false;
-  editingArticle: Article | null = null;
-  articleForm: FormGroup;
-  isLoading = false;
-  isSubmitting = false;
+  Math = Math;
   categories: ArticleCategory[] = [];
   categoryNames: string[] = [];
   sectionTypes = [
@@ -43,12 +43,12 @@ export class ArticlesComponent implements OnInit {
     { value: 'video', label: 'Video' },
     { value: 'danh sách', label: 'Danh sách' }
   ];
-  
+
   constructor(
-    private fb: FormBuilder, 
-    private router: Router,
+    private fb: FormBuilder,
     private articleService: ArticleService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private authService: AuthService
   ) {
     this.articleForm = this.fb.group({
       category: ['', Validators.required],
@@ -61,30 +61,21 @@ export class ArticlesComponent implements OnInit {
   }
 
   ngOnInit() {
+    const roleId = this.authService.getRoleId();
+    this.isManager = (roleId === 2);
     this.loadCategories();
     this.loadArticles();
   }
 
   loadCategories() {
-    this.isLoading = true;
     this.articleService.getCategories().subscribe({
       next: (categories) => {
         this.categories = categories;
         this.categoryNames = categories.map(cat => cat.name);
-        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading categories:', error);
         this.toastService.error('Không thể tải danh mục bài viết');
-        this.isLoading = false;
-        this.categoryNames = [
-          'Listening Tips', 
-          'Reading Strategies', 
-          'Writing Guide', 
-          'Speaking Practice', 
-          'Grammar', 
-          'Vocabulary'
-        ];
       }
     });
   }
@@ -97,12 +88,12 @@ export class ArticlesComponent implements OnInit {
       sortBy: this.sortBy,
       sortDir: this.sortDir,
       search: this.searchTerm || undefined,
-      isPublished: this.selectedStatus === 'published' ? true : this.selectedStatus === 'draft' ? false : undefined
+      status: this.selectedStatus || undefined
     }).subscribe({
       next: (res) => {
         this.articles = res.items.map(article => this.articleService.convertToArticle(article));
+        this.filteredArticles = this.articles;
         this.total = res.total;
-        this.filterArticles();
         this.isLoading = false;
       },
       error: (error) => {
@@ -110,7 +101,7 @@ export class ArticlesComponent implements OnInit {
         this.toastService.error('Không thể tải danh sách bài viết');
         this.isLoading = false;
         this.articles = [];
-        this.filterArticles();
+        this.filteredArticles = [];
       }
     });
   }
@@ -122,18 +113,13 @@ export class ArticlesComponent implements OnInit {
   createSectionFormGroup(): FormGroup {
     return this.fb.group({
       type: ['đoạn văn', Validators.required],
-      content: ['', Validators.required]
+      content: ['', Validators.required],
+      sectionTitle: ['', Validators.required]
     });
   }
 
-  addSection() {
-    this.sections.push(this.createSectionFormGroup());
-  }
-
-  removeSection(index: number) {
-    this.sections.removeAt(index);
-  }
-
+  addSection() { this.sections.push(this.createSectionFormGroup()); }
+  removeSection(index: number) { this.sections.removeAt(index); }
   moveSectionUp(index: number) {
     if (index > 0) {
       const section = this.sections.at(index);
@@ -141,7 +127,6 @@ export class ArticlesComponent implements OnInit {
       this.sections.insert(index - 1, section);
     }
   }
-
   moveSectionDown(index: number) {
     if (index < this.sections.length - 1) {
       const section = this.sections.at(index);
@@ -150,32 +135,15 @@ export class ArticlesComponent implements OnInit {
     }
   }
 
-
-  filterArticles() {
-    this.filteredArticles = this.articles.filter(article => {
-      const matchesSearch = article.title.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                           article.summary.toLowerCase().includes(this.searchTerm.toLowerCase());
-      const matchesCategory = !this.selectedCategory || article.category === this.selectedCategory;
-      const matchesStatus = !this.selectedStatus || article.status === this.selectedStatus;
-      
-      return matchesSearch && matchesCategory && matchesStatus;
-    });
-  }
-
-  onSearchChange() {
+  onFilterChange() {
     this.page = 1;
     this.loadArticles();
   }
+  
+  onSearchChange() { this.onFilterChange(); }
+  onCategoryChange() { this.onFilterChange(); }
+  onStatusChange() { this.onFilterChange(); }
 
-  onCategoryChange() {
-    this.page = 1;
-    this.filterArticles();
-  }
-
-  onStatusChange() {
-    this.page = 1;
-    this.loadArticles();
-  }
   nextPage() {
     if (this.page * this.pageSize < this.total) {
       this.page += 1;
@@ -202,7 +170,8 @@ export class ArticlesComponent implements OnInit {
     this.page = 1;
     this.loadArticles();
   }
-
+  
+  // ----- HÀM ĐÃ ĐƯỢC SỬA LẠI -----
   openModal(article: Article | null = null) {
     this.editingArticle = article;
     this.isModalOpen = true;
@@ -210,7 +179,7 @@ export class ArticlesComponent implements OnInit {
       this.sections.removeAt(0);
     }
     
-    if (article) {
+    if (article) { // Chế độ CHỈNH SỬA
       this.articleForm.patchValue({
         category: article.category,
         status: article.status,
@@ -219,143 +188,157 @@ export class ArticlesComponent implements OnInit {
         tags: article.tags.join(', ')
       });
       
-      // Add existing sections
-      article.sections.forEach(section => {
-        const sectionFormGroup = this.createSectionFormGroup();
-        sectionFormGroup.patchValue(section);
-        this.sections.push(sectionFormGroup);
-      });
-    } else {
-      this.articleForm.reset();
-      this.articleForm.patchValue({
-        category: '',
-        status: 'draft'
-      });
-      // Add one default section
+      // Lặp qua dữ liệu sections của bài viết và tạo FormGroup tương ứng
+      if (article.sections && article.sections.length > 0) {
+        article.sections.forEach(sectionData => {
+          this.sections.push(this.fb.group({
+            type: [sectionData.type, Validators.required],
+            content: [sectionData.content, Validators.required],
+            sectionTitle: [sectionData.sectionTitle || '', Validators.required]
+          }));
+        });
+      }
+      
+    } else { // Chế độ TẠO MỚI
+      this.articleForm.reset({ category: '', status: 'draft' });
       this.addSection();
     }
   }
+  // ----- KẾT THÚC SỬA -----
 
   closeModal() {
     this.isModalOpen = false;
     this.editingArticle = null;
     this.articleForm.reset();
-    // Clear sections
     while (this.sections.length !== 0) {
       this.sections.removeAt(0);
     }
   }
 
   saveArticle() {
-    if (this.articleForm.valid && !this.isSubmitting) {
-      this.isSubmitting = true;
-      const formData = this.articleForm.value;
-      
-      // Find category ID
-      const selectedCategory = this.categories.find(cat => cat.name === formData.category);
-      if (!selectedCategory) {
-        this.toastService.error('Vui lòng chọn danh mục hợp lệ');
-        this.isSubmitting = false;
-        return;
-      }
+    if (!this.articleForm.valid) {
+      this.toastService.error("Vui lòng điền đầy đủ các trường bắt buộc.");
+      return;
+    }
+    
+    this.isSubmitting = true;
+    const formData = this.articleForm.value;
+    const selectedCategory = this.categories.find(cat => cat.name === formData.category);
 
-      // Convert form data to ArticleCreate format
-      const articleData: ArticleCreate = {
-        title: formData.title,
-        summary: formData.summary,
-        categoryId: selectedCategory.id,
-        publishNow: formData.status === 'published',
-        sections: formData.sections.map((section: any, index: number) => ({
-          sectionTitle: `Section ${index + 1}`,
-          sectionContent: section.content,
-          orderIndex: index
-        }))
-      };
+    if (!selectedCategory) {
+      this.toastService.error('Vui lòng chọn danh mục hợp lệ');
+      this.isSubmitting = false;
+      return;
+    }
 
-      if (this.editingArticle) {
-        // Update article
-        const updatePayload = {
-          title: formData.title,
-          summary: formData.summary,
-          categoryId: selectedCategory.id,
-          sections: formData.sections.map((section: any, index: number) => ({
-            sectionTitle: `Section ${index + 1}`,
-            sectionContent: section.content,
-            orderIndex: index
-          }))
-        };
-
-        this.articleService.updateArticle(this.editingArticle.id, updatePayload).subscribe({
-          next: (updated) => {
-            this.toastService.success('Cập nhật bài viết thành công!');
-            // reload
-            this.loadArticles();
-            this.closeModal();
-            this.isSubmitting = false;
-          },
-          error: (error) => {
-            console.error('Error updating article:', error);
-            this.toastService.error('Không thể cập nhật bài viết. Vui lòng thử lại.');
-            this.isSubmitting = false;
-          }
-        });
-      } else {
-        // Create new article
-        this.articleService.createArticle(articleData).subscribe({
-          next: (response) => {
-            this.toastService.success('Tạo bài viết thành công!');
-            // Convert response to Article format and add to list
-            const newArticle = this.articleService.convertToArticle(response);
-            this.articles.unshift(newArticle); // Add to beginning
-            this.filterArticles();
-            this.closeModal();
-            this.isSubmitting = false;
-          },
-          error: (error) => {
-            console.error('Error creating article:', error);
-            this.toastService.error('Không thể tạo bài viết. Vui lòng thử lại.');
-            this.isSubmitting = false;
-          }
-        });
-      }
+    const articlePayload = {
+      title: formData.title,
+      summary: formData.summary,
+      categoryId: selectedCategory.id,
+      sections: formData.sections.map((section: any, index: number) => ({
+        sectionTitle: section.sectionTitle || `Section ${index + 1}`,
+        sectionContent: section.content,
+        orderIndex: index
+      }))
+    };
+    
+    if (this.editingArticle) {
+      this.articleService.updateArticle(this.editingArticle.id, articlePayload).subscribe({
+        next: () => {
+          this.toastService.success('Cập nhật bài viết thành công!');
+          this.finalizeSave();
+        },
+        error: (err) => this.handleSaveError(err, 'cập nhật')
+      });
+    } else {
+      const createPayload: ArticleCreate = { ...articlePayload, publishNow: false };
+      this.articleService.createArticle(createPayload).subscribe({
+        next: () => {
+          this.toastService.success('Tạo bài viết thành công!');
+          this.finalizeSave();
+        },
+        error: (err) => this.handleSaveError(err, 'tạo mới')
+      });
     }
   }
 
   deleteArticle(id: number) {
     if (confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
       this.isLoading = true;
-      
       this.articleService.deleteArticle(id).subscribe({
         next: () => {
           this.toastService.success('Xóa bài viết thành công!');
-          // Xóa từ danh sách local
-          this.articles = this.articles.filter(a => a.id !== id);
-          this.filterArticles();
-          this.isLoading = false;
+          this.loadArticles();
         },
         error: (error) => {
-          console.error('Error deleting article:', error);
-          this.toastService.error('Không thể xóa bài viết. Vui lòng thử lại.');
+          this.toastService.error('Không thể xóa bài viết.');
           this.isLoading = false;
         }
       });
     }
   }
 
-  publishArticle(id: number) {
+  submitForApproval(id: number) {
+    if (confirm('Bạn có chắc muốn gửi bài viết này để phê duyệt?')) {
+      this.isLoading = true;
+      this.articleService.requestApproval(id).subscribe({
+        next: () => {
+          this.toastService.success('Đã gửi yêu cầu phê duyệt!');
+          const article = this.filteredArticles.find(a => a.id === id);
+          if (article) {
+            article.status = 'pending';
+          }
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error("Error submitting for approval:", err);
+          this.toastService.error('Gửi yêu cầu thất bại.');
+          this.isLoading = false;
+        }
+      });
+    }
+  }
+
+  approveArticle(id: number) {
     this.isLoading = true;
-    this.articleService.setPublish(id, true).subscribe({
+    this.articleService.reviewArticle(id, true).subscribe({
       next: () => {
-        this.toastService.success('Đã xuất bản bài viết!');
+        this.toastService.success('Đã phê duyệt và xuất bản bài viết!');
         this.loadArticles();
-        this.isLoading = false;
       },
-      error: (error) => {
-        console.error('Error publishing article:', error);
-        this.toastService.error('Không thể xuất bản bài viết.');
+      error: () => {
+        this.toastService.error('Phê duyệt thất bại.');
         this.isLoading = false;
       }
     });
+  }
+
+  rejectArticle(id: number) {
+    if (confirm('Bạn có chắc muốn từ chối và trả bài viết này về trạng thái Nháp?')) {
+      this.isLoading = true;
+      this.articleService.reviewArticle(id, false).subscribe({
+        next: () => {
+          this.toastService.info('Đã từ chối và trả lại bài viết.');
+          this.loadArticles();
+        },
+        error: () => {
+          this.toastService.error('Từ chối thất bại.');
+          this.isLoading = false;
+        }
+      });
+    }
+  }
+
+  private finalizeSave() {
+    this.isSubmitting = false;
+    this.closeModal();
+    this.loadArticles();
+  }
+
+  private handleSaveError(error: any, action: string) {
+    this.isSubmitting = false;
+    console.error(`Error ${action} article:`, error);
+    this.toastService.error(`Không thể ${action} bài viết. Vui lòng thử lại.`);
   }
 
   getStatusClass(status: string): string {

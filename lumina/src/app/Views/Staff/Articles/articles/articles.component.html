@@ -15,22 +15,17 @@
   <div class="filters-section">
     <div class="search-box">
       <i class="fas fa-search"></i>
-      <input 
-        type="text" 
-        placeholder="Tìm kiếm bài viết..." 
-        [(ngModel)]="searchTerm"
-        (input)="onSearchChange()"
-      >
+      <input type="text" placeholder="Tìm kiếm bài viết..." [(ngModel)]="searchTerm" (input)="onSearchChange()">
     </div>
-    
+
     <div class="filter-group">
-        <select [(ngModel)]="selectedCategory" (change)="onCategoryChange()">
-          <option value="">Tất cả danh mục</option>
-          <option *ngFor="let category of categoryNames" [value]="category">
-            {{ category }}
-          </option>
-        </select>
-      
+      <select [(ngModel)]="selectedCategory" (change)="onCategoryChange()">
+        <option value="">Tất cả danh mục</option>
+        <option *ngFor="let category of categoryNames" [value]="category">
+          {{ category }}
+        </option>
+      </select>
+
       <select [(ngModel)]="selectedStatus" (change)="onStatusChange()">
         <option value="">Tất cả trạng thái</option>
         <option value="published">Đã xuất bản</option>
@@ -72,11 +67,11 @@
           {{ getStatusText(article.status) }}
         </span>
       </div>
-      
+
       <div class="article-content">
         <h3 class="article-title">{{ article.title }}</h3>
         <p class="article-excerpt">{{ article.summary }}</p>
-        
+
         <div class="article-meta">
           <div class="meta-item">
             <i class="fas fa-tag"></i>
@@ -95,7 +90,7 @@
             <span>{{ article.likes | number }} lượt thích</span>
           </div>
         </div>
-        
+
         <div class="author-info">
           <div class="author-avatar">
             <i class="fas fa-user"></i>
@@ -106,60 +101,64 @@
           </div>
         </div>
       </div>
-      
+
       <div class="article-actions">
+        <!-- Nút sửa luôn hiển thị -->
         <button class="btn-action btn-edit" (click)="openModal(article)">
           <i class="fas fa-edit"></i>
         </button>
-        <button 
-          class="btn-action btn-publish" 
-          *ngIf="article.status !== 'published'"
-          (click)="publishArticle(article.id)"
-        >
+
+        <!-- Nút Gửi duyệt cho Staff -->
+        <button class="btn-action btn-submit" *ngIf="article.status === 'draft' && !isManager"
+          (click)="submitForApproval(article.id)">
           <i class="fas fa-upload"></i>
         </button>
-        <button class="btn-action btn-delete" (click)="deleteArticle(article.id)" [disabled]="isLoading">
-          <i class="fas fa-trash" [class.fa-spin]="isLoading"></i>
+
+        <!-- Nút Phê duyệt và Từ chối cho Manager -->
+        <ng-container *ngIf="article.status === 'pending' && isManager">
+          <button class="btn-action btn-approve" (click)="approveArticle(article.id)">
+            <i class="fas fa-check"></i> Duyệt
+          </button>
+          <button class="btn-action btn-reject" (click)="rejectArticle(article.id)">
+            <i class="fas fa-times"></i> Từ chối
+          </button>
+        </ng-container>
+
+        <!-- Nút xóa -->
+        <button class="btn-action btn-delete" (click)="deleteArticle(article.id)">
+          <i class="fas fa-trash"></i>
         </button>
       </div>
     </div>
   </div>
 
- <!-- Pagination -->
-<div class="flex items-center justify-center gap-4 mt-6" *ngIf="!isLoading && total > 0">
-  <!-- Nút Trang trước -->
-  <button
-    (click)="prevPage()"
-    [disabled]="page === 1"
-    class="px-4 py-2 flex items-center gap-2 rounded-lg border border-gray-300 text-gray-700 
+  <!-- Pagination -->
+  <div class="flex items-center justify-center gap-4 mt-6" *ngIf="!isLoading && total > 0">
+    <!-- Nút Trang trước -->
+    <button (click)="prevPage()" [disabled]="page === 1" class="px-4 py-2 flex items-center gap-2 rounded-lg border border-gray-300 text-gray-700 
            bg-white hover:bg-gray-100 shadow-sm transition 
-           disabled:opacity-40 disabled:cursor-not-allowed"
-  >
-    <i class="fas fa-chevron-left"></i>
-    <span>Trang trước</span>
-  </button>
+           disabled:opacity-40 disabled:cursor-not-allowed">
+      <i class="fas fa-chevron-left"></i>
+      <span>Trang trước</span>
+    </button>
 
-  <!-- Thông tin số trang -->
-  <div class="px-5 py-2 bg-white shadow rounded-lg text-gray-700 font-medium">
-    Trang 
-    <span class="font-semibold">{{ page }}</span> /
-    <span class="font-semibold">{{ Math.ceil(total / pageSize) }}</span>
-    · Tổng 
-    <span class="font-semibold">{{ total | number }}</span> bài
+    <!-- Thông tin số trang -->
+    <div class="px-5 py-2 bg-white shadow rounded-lg text-gray-700 font-medium">
+      Trang
+      <span class="font-semibold">{{ page }}</span> /
+      <span class="font-semibold">{{ Math.ceil(total / pageSize) }}</span>
+      · Tổng
+      <span class="font-semibold">{{ total | number }}</span> bài
+    </div>
+
+    <!-- Nút Trang sau -->
+    <button (click)="nextPage()" [disabled]="page * pageSize >= total" class="px-4 py-2 flex items-center gap-2 rounded-lg border border-gray-300 text-gray-700 
+           bg-white hover:bg-gray-100 shadow-sm transition 
+           disabled:opacity-40 disabled:cursor-not-allowed">
+      <span>Trang sau</span>
+      <i class="fas fa-chevron-right"></i>
+    </button>
   </div>
-
-  <!-- Nút Trang sau -->
-  <button
-    (click)="nextPage()"
-    [disabled]="page * pageSize >= total"
-    class="px-4 py-2 flex items-center gap-2 rounded-lg border border-gray-300 text-gray-700 
-           bg-white hover:bg-gray-100 shadow-sm transition 
-           disabled:opacity-40 disabled:cursor-not-allowed"
-  >
-    <span>Trang sau</span>
-    <i class="fas fa-chevron-right"></i>
-  </button>
-</div>
 
 
 
@@ -188,7 +187,7 @@
         <i class="fas fa-times"></i>
       </button>
     </div>
-    
+
     <form [formGroup]="articleForm" (ngSubmit)="saveArticle()" class="modal-form">
       <!-- Row 1: Danh mục và Trạng thái -->
       <div class="form-row">
@@ -201,7 +200,7 @@
             </option>
           </select>
         </div>
-        
+
         <div class="form-group">
           <label for="status">Trạng thái</label>
           <select id="status" formControlName="status">
@@ -211,51 +210,48 @@
           </select>
         </div>
       </div>
-      
+
       <!-- Tiêu đề -->
       <div class="form-group">
         <label for="title">Tiêu đề</label>
-        <input 
-          type="text" 
-          id="title"
-          formControlName="title"
-          placeholder="VD: 10 mẹo đạt 900+ TOEIC"
-        >
-        <div class="error-message" *ngIf="articleForm.get('title')?.errors?.['required'] && articleForm.get('title')?.touched">
+        <input type="text" id="title" formControlName="title" placeholder="VD: 10 mẹo đạt 900+ TOEIC">
+        <div class="error-message"
+          *ngIf="articleForm.get('title')?.errors?.['required'] && articleForm.get('title')?.touched">
           Tiêu đề là bắt buộc
         </div>
-        <div class="error-message" *ngIf="articleForm.get('title')?.errors?.['minlength'] && articleForm.get('title')?.touched">
+        <div class="error-message"
+          *ngIf="articleForm.get('title')?.errors?.['minlength'] && articleForm.get('title')?.touched">
           Tiêu đề phải có ít nhất 5 ký tự
         </div>
       </div>
-      
+
       <!-- Tóm tắt -->
       <div class="form-group">
         <label for="summary">Tóm tắt</label>
-        <textarea 
-          id="summary"
-          formControlName="summary"
-          rows="3"
-          placeholder="Nhập đoạn mô tả/tóm tắt..."
-        ></textarea>
-        <div class="error-message" *ngIf="articleForm.get('summary')?.errors?.['required'] && articleForm.get('summary')?.touched">
+        <textarea id="summary" formControlName="summary" rows="3" placeholder="Nhập đoạn mô tả/tóm tắt..."></textarea>
+        <div class="error-message"
+          *ngIf="articleForm.get('summary')?.errors?.['required'] && articleForm.get('summary')?.touched">
           Tóm tắt là bắt buộc
         </div>
-        <div class="error-message" *ngIf="articleForm.get('summary')?.errors?.['minlength'] && articleForm.get('summary')?.touched">
+        <div class="error-message"
+          *ngIf="articleForm.get('summary')?.errors?.['minlength'] && articleForm.get('summary')?.touched">
           Tóm tắt phải có ít nhất 20 ký tự
         </div>
       </div>
-      
+
       <!-- Các phần nội dung -->
       <div class="form-group">
         <label>Các phần nội dung</label>
-        
+
         <div formArrayName="sections">
-          <div *ngFor="let section of sections.controls; let i = index" 
-               [formGroupName]="i" 
-               class="section-item">
-            
+          <div *ngFor="let section of sections.controls; let i = index" [formGroupName]="i" class="section-item">
+
             <div class="section-header">
+              <div class="section-title-group">
+                <label>Tiêu đề phần</label>
+                <input type="text" formControlName="sectionTitle" placeholder="Nhập tiêu đề phần...">
+              </div>
+
               <div class="section-type-group">
                 <label>Loại phần</label>
                 <select formControlName="type">
@@ -264,22 +260,19 @@
                   </option>
                 </select>
               </div>
-              
+
               <div class="section-content-group">
                 <label>Nội dung</label>
-                <textarea 
-                  formControlName="content"
-                  rows="3"
-                  placeholder="Nhập nội dung..."
-                ></textarea>
+                <textarea formControlName="content" rows="3" placeholder="Nhập nội dung..."></textarea>
               </div>
             </div>
-            
+
             <div class="section-controls">
               <button type="button" class="btn-control btn-up" (click)="moveSectionUp(i)" [disabled]="i === 0">
                 <i class="fas fa-arrow-up"></i>
               </button>
-              <button type="button" class="btn-control btn-down" (click)="moveSectionDown(i)" [disabled]="i === sections.length - 1">
+              <button type="button" class="btn-control btn-down" (click)="moveSectionDown(i)"
+                [disabled]="i === sections.length - 1">
                 <i class="fas fa-arrow-down"></i>
               </button>
               <button type="button" class="btn-control btn-remove" (click)="removeSection(i)">
@@ -288,24 +281,19 @@
             </div>
           </div>
         </div>
-        
+
         <button type="button" class="btn-add-section" (click)="addSection()">
           <i class="fas fa-plus"></i> Thêm phần
         </button>
       </div>
-      
+
       <!-- Tags -->
       <div class="form-group">
         <label for="tags">Tags</label>
-        <input 
-          type="text" 
-          id="tags"
-          formControlName="tags"
-          placeholder="VD: TOEIC, Listening, 900 điểm"
-        >
+        <input type="text" id="tags" formControlName="tags" placeholder="VD: TOEIC, Listening, 900 điểm">
         <small class="form-hint">Phân cách các tag bằng dấu phẩy</small>
       </div>
-      
+
       <div class="modal-actions">
         <button type="button" class="btn-secondary" (click)="closeModal()">
           Lưu nháp

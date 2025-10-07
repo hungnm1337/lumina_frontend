@@ -671,4 +671,244 @@
       grid-template-columns: 1fr;
     }
   }
+
+  // ========== TEXT-TO-SPEECH STYLES ==========
+  .word {
+    cursor: pointer;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      color: #2563eb;
+      transform: scale(1.02);
+
+      .speak-icon {
+        opacity: 1;
+        transform: scale(1.1);
+      }
+    }
+
+    .speak-icon {
+      font-size: 18px;
+      color: #3b82f6;
+      opacity: 0.6;
+      transition: all 0.3s ease;
+      animation: pulse 2s infinite;
+    }
+  }
+
+  .example-text {
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+    padding: 8px;
+    border-radius: 6px;
+
+    &:hover {
+      background: #f0f9ff;
+      color: #1e40af;
+
+      .speak-icon-small {
+        opacity: 1;
+        transform: scale(1.1);
+      }
+    }
+
+    .speak-icon-small {
+      font-size: 14px;
+      color: #3b82f6;
+      opacity: 0.5;
+      margin-left: 6px;
+      transition: all 0.3s ease;
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  // ========== ADDITIONAL VOCABULARY INFO ==========
+  .definition-section {
+    margin: 12px 0;
+    padding: 12px;
+    background: #f8fafc;
+    border-left: 3px solid #3b82f6;
+    border-radius: 6px;
+
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+      font-size: 13px;
+
+      i {
+        color: #3b82f6;
+      }
+    }
+
+    .section-text {
+      color: #1e293b;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+  }
+
+  .example-section {
+    margin: 12px 0;
+    
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+      font-size: 13px;
+
+      i {
+        color: #10b981;
+      }
+    }
+  }
+
+  .vocab-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: #64748b;
+
+      i {
+        color: #94a3b8;
+        font-size: 12px;
+      }
+
+      .meta-label {
+        font-weight: 500;
+        color: #64748b;
+      }
+
+      .meta-value {
+        color: #1e293b;
+        font-weight: 600;
+
+        &.difficulty-beginner {
+          color: #10b981;
+        }
+
+        &.difficulty-intermediate {
+          color: #f59e0b;
+        }
+
+        &.difficulty-advanced {
+          color: #ef4444;
+        }
+
+        &.status-badge {
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 11px;
+          background: #fee2e2;
+          color: #991b1b;
+
+          &.active {
+            background: #d1fae5;
+            color: #065f46;
+          }
+        }
+      }
+    }
+  }
+
+  // Update existing styles
+  .word-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+
+    .pos-tag {
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .definition {
+      flex: 1;
+      color: #1e293b;
+      font-size: 15px;
+      font-weight: 500;
+    }
+  }
+
+  // Pronunciation styling
+  .word-title {
+    .pronunciation {
+      font-size: 14px;
+      color: #64748b;
+      font-style: italic;
+      font-weight: 500;
+      margin-top: 2px;
+    }
+  }
+
+  // Category tag colors
+  .category-tag {
+    &.color-blue {
+      background: #3b82f6;
+      color: white;
+    }
+
+    &.color-purple {
+      background: #8b5cf6;
+      color: white;
+    }
+
+    &.color-green {
+      background: #10b981;
+      color: white;
+    }
+
+    &.color-red {
+      background: #ef4444;
+      color: white;
+    }
+
+    &.color-orange {
+      background: #f59e0b;
+      color: white;
+    }
+
+    &.color-indigo {
+      background: #6366f1;
+      color: white;
+    }
+
+    &.color-gray {
+      background: #6b7280;
+      color: white;
+    }
+  }
 }
