@@ -15,7 +15,7 @@ export class UserSlideDashboardComponent implements OnInit, OnDestroy {
   activeSlides: SlideDTO[] = [];
 
   currentIndex = 0;
-  autoplayIntervalMs = 4000;
+  autoplayIntervalMs = 2000;
   isAutoplay = true;
   isHovered = false;
   timer: any = null;

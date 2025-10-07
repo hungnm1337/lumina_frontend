@@ -2,7 +2,6 @@ import { Routes } from '@angular/router';
 import { ErrorComponent } from './Views/Common/error/error.component';
 import { HomepageComponent } from './Views/Common/homepage/homepage.component';
 import { UserDashboardComponent } from './Views/User/Dashboard/dashboard/dashboard.component';
-import { MenuComponent } from './Views/Manage/Menu/menu/menu.component';
 import { ExamsComponent } from './Views/User/exams/exams.component';
 import { ExamPartComponent } from './Views/User/exam-part/exam-part.component';
 import { PartQuestionComponent } from './Views/User/part-question/part-question.component';
@@ -33,12 +32,8 @@ export const routes: Routes = [
   },
   {
     path: 'manager',
-    children: [
-      { path: 'events', component: ManageEventsDashboardComponent },
-      { path: '', redirectTo: 'events', pathMatch: 'full' },
-      {path: 'slides', component: DashboardSlideComponent},
-      {path: '', redirectTo: 'slides', pathMatch: 'full'},
-    ],
+    loadChildren: () =>
+      import('./Views/Manage/manager.module').then((m) => m.ManagerModule),
     canActivate: [RoleGuard],
     data: { roles: [2] }
   },
