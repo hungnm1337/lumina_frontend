@@ -24,7 +24,7 @@
       </div>
 
       <!-- Vocabulary Items -->
-      <div class="vocabulary-item" *ngFor="let vocab of filteredVocabularies">
+      <div class="vocabulary-item" *ngFor="let vocab of pagedVocabularies">
         <!-- Word Header -->
         <div class="word-header">
           <div class="word-title">
@@ -42,7 +42,10 @@
               <i class="fas fa-trash"></i>
             </button>
           </div>
+
         </div>
+
+
 
         <!-- Word Content -->
         <div class="word-content">
@@ -64,6 +67,41 @@
           </div>
         </div>
       </div>
+     <!-- Pagination -->
+<div 
+  class="flex items-center justify-center gap-4 mt-6"
+  *ngIf="!isLoading && filteredVocabularies.length > 0"
+>
+  <!-- Prev button -->
+  <button
+    (click)="prevPage()"
+    [disabled]="page === 1"
+    class="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 
+           hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+  >
+    <i class="fas fa-chevron-left"></i>
+    <span>Trang trước</span>
+  </button>
+
+  <!-- Page info -->
+  <div class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 rounded-lg shadow-sm">
+    Trang <span class="font-semibold text-gray-900">{{ page }}</span>
+    / {{ totalPages }} · Tổng
+    <span class="font-semibold text-gray-900">{{ totalItems | number }}</span> từ
+  </div>
+
+  <!-- Next button -->
+  <button
+    (click)="nextPage()"
+    [disabled]="page === totalPages"
+    class="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 
+           hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+  >
+    <span>Trang sau</span>
+    <i class="fas fa-chevron-right"></i>
+  </button>
+</div>
+
 
       <!-- Empty State -->
       <div class="empty-state" *ngIf="filteredVocabularies.length === 0">
@@ -86,7 +124,7 @@
             <span class="count-label">Tổng từ vựng</span>
             <span class="count-number">{{ getTotalStats() | number }}</span>
           </div>
-          
+
           <div class="category-stats">
             <div class="category-stat" *ngFor="let list of vocabularyLists">
               <div class="category-info">
@@ -96,7 +134,7 @@
               <span class="category-count">{{ list.vocabularyCount }}</span>
             </div>
           </div>
-          
+
           <div class="filtered-count" *ngIf="searchTerm || selectedList || selectedPartOfSpeech">
             <span class="count-label">Kết quả hiện tại</span>
             <span class="count-number">{{ filteredVocabularies.length | number }}</span>
@@ -110,33 +148,18 @@
           <i class="fas fa-plus-circle"></i>
           <h3>Thêm nhanh</h3>
         </div>
-        <form class="quick-add-form" >
+        <form class="quick-add-form">
           <div class="form-group">
-            <input 
-              type="text" 
-              placeholder="Từ vựng" 
-              
-              name="quickWord"
-            >
+            <input type="text" placeholder="Từ vựng" name="quickWord">
           </div>
           <div class="form-group">
-            <input 
-              type="text" 
-              placeholder="Phiên âm" 
-             
-              name="quickPronunciation"
-            >
+            <input type="text" placeholder="Phiên âm" name="quickPronunciation">
           </div>
           <div class="form-group">
-            <input 
-              type="text" 
-              placeholder="Nghĩa tiếng Việt" 
-             
-              name="quickTranslation"
-            >
+            <input type="text" placeholder="Nghĩa tiếng Việt" name="quickTranslation">
           </div>
           <div class="form-group">
-            <select  name="quickDifficulty">
+            <select name="quickDifficulty">
               <option value="">Chọn chủ đề</option>
               <option *ngFor="let category of categories" [value]="category.id">
                 {{ category.icon }} {{ category.name }}
@@ -152,33 +175,19 @@
         <div class="filters-header">
           <i class="fas fa-filter"></i>
           <h3>Bộ lọc</h3>
-          <button 
-            class="btn-clear-filters" 
-            (click)="clearAllFilters()"
-            title="Xóa tất cả bộ lọc"
-          >
+          <button class="btn-clear-filters" (click)="clearAllFilters()" title="Xóa tất cả bộ lọc">
             <i class="fas fa-times"></i>
           </button>
         </div>
         <div class="filters-content">
           <div class="search-box">
             <i class="fas fa-search"></i>
-            <input 
-              type="text" 
-              placeholder="Tìm kiếm từ vựng..." 
-              [(ngModel)]="searchTerm"
-              (input)="onSearchChange()"
-            >
-            <button 
-              class="btn-clear-search" 
-              *ngIf="searchTerm"
-              (click)="clearSearch()"
-              title="Xóa tìm kiếm"
-            >
+            <input type="text" placeholder="Tìm kiếm từ vựng..." [(ngModel)]="searchTerm" (input)="onSearchChange()">
+            <button class="btn-clear-search" *ngIf="searchTerm" (click)="clearSearch()" title="Xóa tìm kiếm">
               <i class="fas fa-times"></i>
             </button>
           </div>
-          
+
           <div class="filter-group">
             <label>Danh sách từ vựng</label>
             <select [(ngModel)]="selectedList" (change)="onListChange()">
@@ -188,7 +197,7 @@
               </option>
             </select>
           </div>
-          
+
           <div class="filter-group">
             <label>Độ khó</label>
             <select [(ngModel)]="selectedDifficulty" (change)="onDifficultyChange()">
@@ -198,7 +207,7 @@
               </option>
             </select>
           </div>
-          
+
           <div class="filter-group">
             <label>Từ loại</label>
             <select [(ngModel)]="selectedPartOfSpeech" (change)="onPartOfSpeechChange()">
@@ -231,34 +240,25 @@
         <i class="fas fa-times"></i>
       </button>
     </div>
-    
+
     <form [formGroup]="vocabularyForm" (ngSubmit)="saveVocabulary()" class="modal-form">
       <!-- Form content giữ nguyên như trước -->
       <div class="form-row">
         <div class="form-group">
           <label for="word">Từ vựng *</label>
-          <input 
-            type="text" 
-            id="word"
-            formControlName="word"
-            placeholder="VD: accomplish"
-          >
-          <div class="error-message" *ngIf="vocabularyForm.get('word')?.errors?.['required'] && vocabularyForm.get('word')?.touched">
+          <input type="text" id="word" formControlName="word" placeholder="VD: accomplish">
+          <div class="error-message"
+            *ngIf="vocabularyForm.get('word')?.errors?.['required'] && vocabularyForm.get('word')?.touched">
             Từ vựng là bắt buộc
           </div>
         </div>
-        
+
         <div class="form-group">
           <label for="pronunciation">Phiên âm *</label>
-          <input 
-            type="text" 
-            id="pronunciation"
-            formControlName="pronunciation"
-            placeholder="VD: /əˈkʌmplɪʃ/"
-          >
+          <input type="text" id="pronunciation" formControlName="pronunciation" placeholder="VD: /əˈkʌmplɪʃ/">
         </div>
       </div>
-      
+
       <div class="form-row">
         <div class="form-group">
           <label for="category">Danh mục *</label>
@@ -269,7 +269,7 @@
             </option>
           </select>
         </div>
-        
+
         <div class="form-group">
           <label for="partOfSpeech">Từ loại *</label>
           <select id="partOfSpeech" formControlName="partOfSpeech">
@@ -280,7 +280,7 @@
           </select>
         </div>
       </div>
-      
+
       <div class="form-group">
         <label for="difficulty">Độ khó *</label>
         <select id="difficulty" formControlName="difficulty">
@@ -290,37 +290,23 @@
           </option>
         </select>
       </div>
-      
+
       <div class="form-group">
         <label for="definition">Định nghĩa (tiếng Anh) *</label>
-        <textarea 
-          id="definition"
-          formControlName="definition"
-          rows="3"
-          placeholder="Nhập định nghĩa bằng tiếng Anh..."
-        ></textarea>
+        <textarea id="definition" formControlName="definition" rows="3"
+          placeholder="Nhập định nghĩa bằng tiếng Anh..."></textarea>
       </div>
-      
+
       <div class="form-group">
         <label for="example">Ví dụ *</label>
-        <textarea 
-          id="example"
-          formControlName="example"
-          rows="2"
-          placeholder="Nhập câu ví dụ..."
-        ></textarea>
+        <textarea id="example" formControlName="example" rows="2" placeholder="Nhập câu ví dụ..."></textarea>
       </div>
-      
+
       <div class="form-group">
         <label for="translation">Bản dịch (tiếng Việt) *</label>
-        <input 
-          type="text" 
-          id="translation"
-          formControlName="translation"
-          placeholder="Nhập bản dịch tiếng Việt..."
-        >
+        <input type="text" id="translation" formControlName="translation" placeholder="Nhập bản dịch tiếng Việt...">
       </div>
-      
+
       <div class="modal-actions">
         <button type="button" class="btn-secondary" (click)="closeModal()">
           Hủy
@@ -331,5 +317,6 @@
         </button>
       </div>
     </form>
+
   </div>
 </div>

@@ -34,6 +34,7 @@ export interface QuestionDTO {
   questionNumber: number;
   prompt: PromptDTO;
   options: OptionDTO[];
+  sampleAnswer?: string;
 }
 
 export interface PromptDTO {
@@ -45,7 +46,11 @@ export interface PromptDTO {
   referenceAudioUrl?: string;
   passage: PassageDTO;
 }
+export interface PartDetailResponse {
+  part: ExamPartDTO;
 
+  questions: QuestionDTO[];
+}
 export interface PassageDTO {
   passageId: number;
   title: string;
@@ -57,4 +62,17 @@ export interface OptionDTO {
   questionId: number;
   content: string;
   isCorrect?: boolean;
+}
+
+export interface SpeakingScoringResult {
+  transcript: string;
+  savedAudioUrl: string;
+  overallScore: number;
+  pronunciationScore: number;
+  accuracyScore: number;
+  fluencyScore: number;
+  completenessScore: number;
+  grammarScore: number;
+  vocabularyScore: number;
+  contentScore: number;
 }
