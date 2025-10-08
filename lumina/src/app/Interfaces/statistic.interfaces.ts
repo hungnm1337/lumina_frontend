@@ -15,11 +15,11 @@ export interface StaffStats {
 
 export interface RecentActivity {
   id: number;
-  type: 'article' | 'test' | 'vocabulary' | string; // Thêm string để linh hoạt
+  type: 'article' | 'test' | 'vocabulary' | string; 
   title: string;
   action: string;
   timestamp: string;
-  status: 'published' | 'created' | 'updated' | 'reviewed' | string; // Thêm string để linh hoạt
+  status: 'published' | 'draft' | 'pending' | string; 
 }
 
 export interface StaffMetrics {

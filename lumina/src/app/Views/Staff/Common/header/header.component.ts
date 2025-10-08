@@ -1,17 +1,19 @@
-import { Component, EventEmitter, Output, OnInit } from '@angular/core';
+import { Component, EventEmitter, Output, OnInit, Input } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter, map, mergeMap } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-header',
-  standalone: true, // <-- THÊM LẠI DÒNG NÀY
-  imports: [CommonModule], // <-- VÀ DÒNG NÀY
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './header.component.html',
 })
 export class HeaderComponent implements OnInit {
-  @Output() sidebarToggle = new EventEmitter<void>();
-  pageTitle = 'Staff Panel'; // Default title
+  @Output() sidebarToggle = new EventEmitter();
+  @Input() sidebarOpen = true;
+
+  pageTitle = 'Bài viết'; // Default title
 
   constructor(private router: Router, private activatedRoute: ActivatedRoute) {}
 
@@ -28,7 +30,22 @@ export class HeaderComponent implements OnInit {
       mergeMap(route => route.data)
     ).subscribe(data => {
       // Set title from route data, or use default if not provided
-      this.pageTitle = data['title'] || 'Staff Panel';
+      this.pageTitle = data['title'] || this.getPageTitleFromUrl();
     });
+  }
+
+  toggleSidebar() {
+    this.sidebarToggle.emit();
+  }
+
+  private getPageTitleFromUrl(): string {
+    const url = this.router.url;
+    if (url.includes('dashboard')) return 'Bảng điều khiển';
+    if (url.includes('articles')) return 'Bài viết';
+    if (url.includes('questions')) return 'Câu hỏi';
+    if (url.includes('tests')) return 'Bài thi';
+    if (url.includes('vocabulary')) return 'Từ vựng';
+    if (url.includes('seasons')) return 'Mùa thi đấu';
+    return 'Staff Panel';
   }
 }

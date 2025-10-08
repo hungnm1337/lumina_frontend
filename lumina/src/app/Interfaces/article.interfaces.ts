@@ -57,6 +57,7 @@ export interface Article {
 export interface ArticleSection {
   type: 'đoạn văn' | 'hình ảnh' | 'video' | 'danh sách';
   content: string;
+  sectionTitle?: string; // Thêm sectionTitle để tương thích với backend
 }
 
 

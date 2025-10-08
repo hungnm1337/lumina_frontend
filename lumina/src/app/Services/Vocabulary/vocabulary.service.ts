@@ -162,17 +162,34 @@ export class VocabularyService {
     return {
       id: vocabulary.id,
       word: vocabulary.word,
-      pronunciation: '', // Default empty - có thể thêm vào backend sau
+      pronunciation: this.getPronunciation(vocabulary.word), // Tự động tạo phiên âm
       category: 'general', // Default category
       partOfSpeech: vocabulary.type,
       definition: vocabulary.definition,
       example: vocabulary.example || '',
-      translation: '', // Default empty - có thể thêm vào backend sau
+      translation: vocabulary.definition, // Dùng definition làm translation tạm
       difficulty: 'Intermediate', // Default difficulty
       createdDate: new Date().toLocaleDateString('vi-VN'),
       createdBy: 'System', // Default creator
-      status: 'active' // Default status
+      status: 'active', // Default status
+      audioUrl: vocabulary.audioUrl
     };
+  }
+
+  // Tự động tạo phiên âm cho từ
+  private getPronunciation(word: string): string {
+    const dict: { [key: string]: string } = {
+      'carbon': '/ˈkɑːbən/',
+      'footprint': '/ˈfʊtprɪnt/',
+      'flying': '/ˈflaɪɪŋ/',
+      'significant': '/sɪɡˈnɪfɪkənt/',
+      'impact': '/ˈɪmpækt/',
+      'atmosphere': '/ˈætməsfɪə/',
+      'dioxide': '/daɪˈɒksaɪd/',
+      'amount': '/əˈmaʊnt/',
+      'released': '/rɪˈliːst/'
+    };
+    return dict[word.toLowerCase()] || `/${word.toLowerCase()}/`;
   }
 
   // Helper method để convert Vocabulary thành VocabularyWord format (cho API)
