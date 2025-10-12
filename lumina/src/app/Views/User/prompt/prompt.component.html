@@ -3,6 +3,9 @@
     <div class="mb-3 justify-center flex">
       <img src="{{ prompt?.referenceImageUrl }}" alt="Reference Image" class="w-8/12 h-auto rounded-md object-cover" />
     </div>
+    <div>
+      picturecaption: {{ pictureCaption }}
+    </div>
   }
   @if (prompt?.passage?.title) {
     <h4 class="text-lg font-semibold text-gray-800">{{ prompt?.passage?.title }}</h4>
