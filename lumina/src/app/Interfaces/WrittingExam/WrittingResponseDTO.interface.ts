@@ -8,5 +8,5 @@ export interface WrittingResponseDTO {
 
    contentAccuracyFeedback: string;
 
-   correctedAnswerProposal: string;
+   correededAnswerProposal: string;
 }

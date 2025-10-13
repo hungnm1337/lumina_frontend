@@ -18,11 +18,11 @@ export class QuestionComponent {
   @Input() questions: QuestionDTO[] = [];
   currentIndex = 0;
   showExplain = false;
-  private advanceTimer: any = null;
   totalScore = 0;
   correctCount = 0;
   finished = false;
   savedAnswers: { questionId: number; optionId: number }[] = [];
+  latestPictureCaption: string = '';
 
   markAnswered(isCorrect: boolean): void {
     if (isCorrect) {
@@ -40,26 +40,36 @@ export class QuestionComponent {
   private revealExplainAndQueueNext(): void {
     if (this.showExplain) return;
     this.showExplain = true;
-    if (this.advanceTimer) {
-      clearTimeout(this.advanceTimer);
-    }
-    this.advanceTimer = setTimeout(() => {
-      this.nextQuestion();
-    },1500);
   }
 
   private nextQuestion(): void {
     if (this.currentIndex < this.questions.length - 1) {
       this.currentIndex += 1;
       this.showExplain = false;
+      this.latestPictureCaption = '';
     } else {
       this.finished = true;
       this.showExplain = true;
       this.loadSavedAnswers();
     }
   }
+
+  next(): void {
+    if (this.finished) return;
+    if (this.currentIndex >= this.questions.length - 1) {
+      this.finished = true;
+      this.showExplain = true;
+      this.loadSavedAnswers();
+      return;
+    }
+    this.nextQuestion();
+  }
   constructor(private router: Router, private authService: AuthService) {
     console.log('Questions:', this.questions);
+  }
+
+  onPictureCaption(caption: string): void {
+    this.latestPictureCaption = caption || '';
   }
 
   get percentCorrect(): number {
@@ -76,15 +86,12 @@ export class QuestionComponent {
   }
 
   resetQuiz(): void {
-    if (this.advanceTimer) {
-      clearTimeout(this.advanceTimer);
-      this.advanceTimer = null;
-    }
     this.currentIndex = 0;
     this.showExplain = false;
     this.totalScore = 0;
     this.correctCount = 0;
     this.finished = false;
+    this.latestPictureCaption = '';
   }
 
   goToExams() {

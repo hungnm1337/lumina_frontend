@@ -10,6 +10,9 @@ export class PictureCaptioningService {
   constructor(private httpClient: HttpClient) { }
 
   public GetCaptionOfPicture(pictureUrl: string) {
-    return this.httpClient.post<{ caption: string }>(`${this.apiUrl}/PictureCaptioning/generate-caption?imageUrl=${encodeURIComponent(pictureUrl)}`, {});
+    return this.httpClient.get<{ caption: string }>(
+      `${this.apiUrl}/PictureCaptioning/generate-caption`,
+      { params: { imageUrl: pictureUrl } }
+    );
   }
 }
