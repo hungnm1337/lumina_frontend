@@ -84,13 +84,16 @@ requestApproval(id: number): Observable<any> {
   return this.http.post(`${this.apiUrl}/${id}/request-approval`, {}, { headers });
 }
 // Duyệt bài viết
-reviewArticle(id: number, isApproved: boolean): Observable<any> {
+reviewArticle(id: number, isApproved: boolean, comment?: string): Observable<any> {
   const token = localStorage.getItem('lumina_token');
   const headers = new HttpHeaders({
     'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json'
   });
-  const body = { isApproved };
+  const body = { 
+    isApproved,
+    comment: comment || null
+  };
   return this.http.post(`${this.apiUrl}/${id}/review`, body, { headers });
 }
 
@@ -107,12 +110,24 @@ reviewArticle(id: number, isApproved: boolean): Observable<any> {
 
   // Helper method để convert ArticleResponse thành Article (cho UI)
   convertToArticle(response: ArticleResponse): Article {
+    // Map status properly
+    let status: 'published' | 'draft' | 'pending' = 'draft';
+    if (response.status) {
+      const statusLower = response.status.toLowerCase();
+      if (statusLower === 'published') status = 'published';
+      else if (statusLower === 'pending') status = 'pending';
+      else if (statusLower === 'rejected') status = 'draft'; // Map rejected back to draft for editing
+      else status = 'draft';
+    } else if (response.isPublished) {
+      status = 'published';
+    }
+
     return {
       id: response.articleId,
       title: response.title,
       summary: response.summary,
       category: response.categoryName,
-      status: response.isPublished ? 'published' : 'draft',
+      status: status,
       author: response.authorName,
       authorRole: 'Content Staff', // Default role
       publishDate: new Date(response.createdAt).toLocaleDateString('vi-VN'),
@@ -123,7 +138,8 @@ reviewArticle(id: number, isApproved: boolean): Observable<any> {
         type: this.mapSectionType(section.sectionTitle), // Map từ sectionTitle
         content: section.sectionContent,
         sectionTitle: section.sectionTitle
-      }))
+      })),
+      rejectionReason: response.rejectionReason || undefined
     };
   }
 
