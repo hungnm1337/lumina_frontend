@@ -2,10 +2,10 @@ import { Component, Input, Output, EventEmitter, OnChanges, OnDestroy, SimpleCha
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../Services/Auth/auth.service';
-import { WrittingRequestDTO } from '../../../Interfaces/WrittingExam/WrittingRequestDTO.interface';
+import { WritingRequestDTO } from '../../../Interfaces/WrittingExam/WritingRequestDTO.interface';
 import { FeedbackComponent } from "./Feedback/feedback/feedback.component";
-import { WrittingResponseDTO } from '../../../Interfaces/WrittingExam/WrittingResponseDTO.interface';
-import { WrittingExamPartOneService } from '../../../Services/Exam/Writting/writting-exam-part-one.service';
+import { WritingResponseDTO } from '../../../Interfaces/WrittingExam/WritingResponseDTO.interface';
+import { WritingExamPartOneService } from '../../../Services/Exam/Writing/writing-exam-part-one.service';
 @Component({
   selector: 'app-writing-answer-box',
   standalone: true,
@@ -21,14 +21,14 @@ export class WritingAnswerBoxComponent implements OnChanges, OnDestroy {
   @Input() pictureCaption: string | undefined;
   @Output() answered = new EventEmitter<boolean>();
 
-  feedbackResponse: WrittingResponseDTO | null = null;
-  writingRequest: WrittingRequestDTO | undefined;;
+  feedbackResponse: WritingResponseDTO | null = null;
+  writingRequest: WritingRequestDTO | undefined;;
   userAnswer: string = '';
   isLoadingFeedback: boolean = false;
   private autoSaveInterval: any = null;
   private readonly AUTO_SAVE_INTERVAL = 10000; // 10 seconds
 
-  constructor(private authService: AuthService, private writtingExamPartOneService: WrittingExamPartOneService) {
+  constructor(private authService: AuthService, private writingExamPartOneService: WritingExamPartOneService) {
     this.startAutoSave();
   }
 
@@ -108,7 +108,7 @@ export class WritingAnswerBoxComponent implements OnChanges, OnDestroy {
     console.log('WritingRequestDTO:', this.writingRequest);
 
     this.isLoadingFeedback = true;
-    this.writtingExamPartOneService.GetFeedbackOfWritingPartOne(this.writingRequest).subscribe({
+    this.writingExamPartOneService.GetFeedbackOfWritingPartOne(this.writingRequest).subscribe({
       next: (response) => {
         this.feedbackResponse = response;
         console.log('WritingFeedbackResponseDTO:', response);

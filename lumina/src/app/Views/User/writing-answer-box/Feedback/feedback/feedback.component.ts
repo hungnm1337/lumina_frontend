@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { WrittingResponseDTO } from '../../../../../Interfaces/WrittingExam/WrittingResponseDTO.interface';
+import { WritingResponseDTO } from '../../../../../Interfaces/WrittingExam/WritingResponseDTO.interface';
 
 @Component({
   selector: 'app-feedback',
@@ -9,5 +9,5 @@ import { WrittingResponseDTO } from '../../../../../Interfaces/WrittingExam/Writ
   styleUrl: './feedback.component.scss'
 })
 export class FeedbackComponent {
-  @Input() feedback: WrittingResponseDTO | null = null;
+  @Input() feedback: WritingResponseDTO | null = null;
 }

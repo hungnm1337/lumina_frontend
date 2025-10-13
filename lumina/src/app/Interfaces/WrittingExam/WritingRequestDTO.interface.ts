@@ -1,4 +1,4 @@
-export interface WrittingRequestDTO {
+export interface WritingRequestDTO {
   pictureCaption: string;
   vocabularyRequest: string;
   userAnswer: string;

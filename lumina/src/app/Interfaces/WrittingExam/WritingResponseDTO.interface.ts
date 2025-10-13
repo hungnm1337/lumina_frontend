@@ -1,4 +1,4 @@
-export interface WrittingResponseDTO {
+export interface WritingResponseDTO {
    totalScore: number;
    grammarFeedback: string;
 
