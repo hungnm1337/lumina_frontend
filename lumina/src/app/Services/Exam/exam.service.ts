@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { ExamDTO, ExamPartDTO } from '../../Interfaces/exam.interfaces';
 @Injectable({
   providedIn: 'root'
@@ -20,6 +20,13 @@ export class ExamService {
   }
   public GetExamPartDetailAndQuestion(partId: number): Observable<ExamPartDTO> {
     return this.httpClient.get<ExamPartDTO>(`${this.apiUrl}/exam/part/${partId}`);
+  }
+
+  public getExamsByTypeAndPart(examType?: string, partCode?: string): Observable<ExamDTO[]> {
+    let params = new HttpParams();
+    if (examType) params = params.set('examType', examType);
+    if (partCode) params = params.set('partCode', partCode);
+    return this.httpClient.get<ExamDTO[]>(`${this.apiUrl}/exam`, { params });
   }
 
 }
