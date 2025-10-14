@@ -28,6 +28,9 @@ export class PartQuestionComponent {
         next: (data) => {
           this.partDetail = data;
           console.log('Part detail loaded:', this.partDetail);
+          console.log('Questions count:', this.partDetail.questions?.length || 0);
+          console.log('Questions data:', this.partDetail.questions);
+          
           this.partInfo ={
             partId: this.partDetail.partId,
             examId: this.partDetail.examId,
@@ -38,6 +41,8 @@ export class PartQuestionComponent {
           };
           this.questions = this.partDetail.questions || [];
           this.isLoading = false;
+          
+          console.log('Final questions array:', this.questions);
         },
         error: (error) => {
           console.error('Error loading part detail:', error);

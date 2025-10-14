@@ -40,6 +40,10 @@ export const routes: Routes = [
           { path: 'exams', component: ExamsComponent },
           { path: 'exam/:id', component: ExamPartComponent },
           { path: 'part/:id', component: PartQuestionComponent },
+          { 
+            path: 'speaking-practice/:partCode', 
+            loadComponent: () => import('./Views/User/speaking-part-exams/speaking-part-exams.component').then(m => m.SpeakingPartExamsComponent) 
+          },
           { path: '', redirectTo: 'exams', pathMatch: 'full' },
           // {path: 'vocabulary', component: VocabularyComponent},
           // {path: 'notes', component: NotesComponent},
