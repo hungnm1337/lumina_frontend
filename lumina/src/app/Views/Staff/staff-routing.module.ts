@@ -4,7 +4,7 @@ import { StaffLayoutComponent } from './layout/staff-layout/staff-layout.compone
 import { DashboardComponent } from './Dashboard/dashboard/dashboard.component'; 
 import { ArticlesComponent } from './Articles/articles/articles.component';
 import { VocabularyComponent } from './Vocabulary/vocabulary/vocabulary.component';
-import { QuestionsComponent } from './Question/question/questions.component';
+import { QuestionsComponent } from './Questions/questions/questions.component'; 
 
 
 
@@ -15,7 +15,7 @@ const routes: Routes = [
     component: StaffLayoutComponent,
     children: [
       // Default route redirects to the dashboard
-      { path: '', redirectTo: 'question', pathMatch: 'full' },
+      { path: '', redirectTo: 'questions', pathMatch: 'full' },
 
       // Define child routes for each feature
       {
