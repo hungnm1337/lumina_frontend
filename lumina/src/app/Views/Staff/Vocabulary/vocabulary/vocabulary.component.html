@@ -1,343 +1,214 @@
+<!-- src/app/components/staff/vocabulary/vocabulary.component.html -->
 <div class="vocabulary-container">
-  <!-- Header Section with TOEIC branding -->
-  <div class="page-header">
-    <div class="header-content">
-      <div class="title-section">
-        <h1 class="page-title">
-          <span class="toeic-badge">TOEIC</span>
-          Vocabulary Management
-        </h1>
-        <p class="page-subtitle">
-          Master essential English vocabulary for TOEIC success
-        </p>
-      </div>
-      <div class="header-stats">
-        <div class="stat-card">
-          <div class="stat-number">{{getTotalStats()}}</div>
-          <div class="stat-label">Total Words</div>
+
+  <!-- =============================================================== -->
+  <!-- VIEW 1: HIỂN THỊ DANH SÁCH THƯ MỤC (VOCABULARY LISTS)          -->
+  <!-- =============================================================== -->
+  <div *ngIf="currentView === 'lists'">
+    <!-- Header Section -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="title-section">
+          <h1 class="page-title">
+            <i class="fas fa-graduation-cap"></i>
+            <span class="toeic-badge">TOEIC</span> 
+            Vocabulary Management
+          </h1>
+          <p class="page-subtitle">
+            <i class="fas fa-book-open"></i>
+            Organize your vocabulary into lists for focused learning
+          </p>
         </div>
-        <div class="stat-card">
-          <div class="stat-number">{{categories.length}}</div>
-          <div class="stat-label">Categories</div>
+      </div>
+      <button class="btn-primary" (click)="openCreateListModal()"><i class="fas fa-folder-plus"></i> Add New List</button>
+    </div>
+    <!-- Search Panel for Lists -->
+    <div class="search-filter-panel">
+      <div class="search-section">
+        <div class="search-input-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" [(ngModel)]="searchTerm" (input)="onSearchChange()" placeholder="Search vocabulary lists..." class="search-input">
+          <button *ngIf="searchTerm" (click)="clearSearch()" class="clear-search-btn"><i class="fas fa-times"></i></button>
         </div>
       </div>
     </div>
-    <button class="btn-primary" (click)="openModal()">
-      <i class="fas fa-plus"></i>
-      Add New Word
-    </button>
-  </div>
-
-  <!-- Advanced Search & Filter Panel -->
-  <div class="search-filter-panel">
-    <div class="search-section">
-      <div class="search-input-wrapper">
-        <i class="fas fa-search search-icon"></i>
-        <input
-          type="text"
-          [(ngModel)]="searchTerm"
-          (input)="onSearchChange()"
-          placeholder="Search words, definitions, translations..."
-          class="search-input">
-        <button 
-          *ngIf="searchTerm" 
-          (click)="clearSearch()" 
-          class="clear-search-btn">
-          <i class="fas fa-times"></i>
-        </button>
+    <!-- Loading/Content Grid -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></div><p>Loading lists...</p>
+    </div>
+    <div *ngIf="!isLoading && vocabularyLists.length > 0" class="folder-grid">
+      <div *ngFor="let list of vocabularyLists" class="folder-card" (click)="selectList(list)">
+        <div class="folder-icon"><i class="fas fa-folder"></i></div>
+        <div class="folder-details">
+          <h3 class="folder-name">{{ list.name }}</h3>
+          <p class="folder-meta">{{ list.vocabularyCount }} words · Created by {{ list.makeByName }}</p>
+        </div>
+        <div class="folder-arrow"><i class="fas fa-chevron-right"></i></div>
       </div>
     </div>
-
-    <div class="filters-section">
-      <div class="filter-group">
-        <label>Word List</label>
-        <select [(ngModel)]="selectedList" (change)="onListChange()" class="filter-select">
-          <option value="">All Lists</option>
-          <option 
-            *ngFor="let list of vocabularyLists" 
-            [value]="list.vocabularyListId">
-            {{list.name}}
-          </option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label>Category</label>
-        <select [(ngModel)]="selectedCategory" (change)="onCategoryChange()" class="filter-select">
-          <option value="">All Categories</option>
-          <option 
-            *ngFor="let category of categories" 
-            [value]="category.id">
-            {{category.icon}} {{category.name}}
-          </option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label>Difficulty</label>
-        <select [(ngModel)]="selectedDifficulty" (change)="onDifficultyChange()" class="filter-select">
-          <option value="">All Levels</option>
-          <option *ngFor="let difficulty of difficulties" [value]="difficulty">
-            {{difficulty}}
-          </option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label>Part of Speech</label>
-        <select [(ngModel)]="selectedPartOfSpeech" (change)="onPartOfSpeechChange()" class="filter-select">
-          <option value="">All Types</option>
-          <option *ngFor="let pos of partsOfSpeech" [value]="pos">
-            {{pos}}
-          </option>
-        </select>
-      </div>
-
-      <div class="filter-actions">
-        <button (click)="clearAllFilters()" class="btn-clear-filters">
-          <i class="fas fa-eraser"></i>
-          Clear All
-        </button>
-        <button (click)="refreshData()" class="btn-refresh">
-          <i class="fas fa-sync-alt"></i>
-          Refresh
-        </button>
-      </div>
+    <div *ngIf="!isLoading && vocabularyLists.length === 0" class="empty-state">
+      <div class="empty-icon"><i class="fas fa-folder-open"></i></div>
+      <h3>No vocabulary lists found</h3>
+      <p>Create your first list to start adding words.</p>
+      <button class="btn-add-first" (click)="openCreateListModal()"><i class="fas fa-plus"></i> Create First List</button>
     </div>
   </div>
 
-  <!-- Main Content Layout -->
-  <div class="main-content">
-    <!-- Vocabulary List -->
-    <div class="vocabulary-list-section">
-      <!-- Loading State -->
-      <div *ngIf="isLoading" class="loading-state">
-        <div class="loading-spinner">
-          <i class="fas fa-spinner fa-spin"></i>
+  <!-- =============================================================== -->
+  <!-- VIEW 2: HIỂN THỊ DANH SÁCH TỪ VỰNG (BÊN TRONG THƯ MỤC)         -->
+  <!-- =============================================================== -->
+  <div *ngIf="currentView === 'words' && selectedList">
+    <!-- Header Section for Words View -->
+    <div class="page-header">
+      <div class="header-content">
+        <button class="btn-back" (click)="showListView()"><i class="fas fa-arrow-left"></i> Back to Lists</button>
+        <div class="title-section">
+          <h1 class="page-title">
+            <i class="fas fa-folder-open folder-title-icon"></i> 
+            {{ selectedList.name }}
+            <span class="word-count-badge">{{ selectedList.vocabularyCount }} words</span>
+          </h1>
+          <p class="page-subtitle">
+            <i class="fas fa-cogs"></i>
+            Manage all words inside this list
+          </p>
         </div>
-        <p>Loading vocabulary...</p>
       </div>
-
-      <!-- Vocabulary Cards -->
-      <div *ngIf="!isLoading" class="vocabulary-grid">
-        <div 
-          *ngFor="let vocab of pagedVocabularies; let i = index" 
-          class="vocabulary-card"
-          [class.featured]="vocab.difficulty === 'Advanced'">
-          
-          <!-- Card Header -->
-          <div class="card-header">
-            <div class="word-section">
-              <h3 class="word-title" (click)="speakWord(vocab.word)">
-                {{vocab.word}}
-                <i class="fas fa-volume-up speak-icon"></i>
-              </h3>
-              <div class="pronunciation" *ngIf="vocab.pronunciation">
-                {{vocab.pronunciation}}
+      <button class="btn-primary" (click)="openModal()"><i class="fas fa-plus"></i> Add New Word</button>
+    </div>
+    <!-- Search Panel for Words -->
+    <div class="search-filter-panel">
+      <div class="search-section">
+        <div class="search-input-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" [(ngModel)]="searchTerm" (input)="onSearchChange()" placeholder="Search words in this list..." class="search-input">
+          <button *ngIf="searchTerm" (click)="clearSearch()" class="clear-search-btn"><i class="fas fa-times"></i></button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Vocabulary Grid View -->
+    <div class="main-content">
+      <div class="vocabulary-list-section">
+        <div *ngIf="isLoading" class="loading-state">
+          <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></div><p>Loading vocabulary...</p>
+        </div>
+        <div *ngIf="!isLoading" class="vocabulary-grid">
+          <div *ngFor="let vocab of pagedVocabularies" class="vocabulary-card">
+            <div class="card-header">
+              <div class="word-section">
+                <h3 class="word-title" (click)="speakWord(vocab.word)">{{vocab.word}} <i class="fas fa-volume-up speak-icon"></i></h3>
+                <div class="pronunciation" *ngIf="vocab.pronunciation">{{vocab.pronunciation}}</div>
+              </div>
+              <div class="card-actions">
+                <span class="category-badge"><i class="fas fa-tag"></i> {{getCategoryName(vocab.category)}}</span>
+                <div class="action-buttons">
+                  <button class="btn-action btn-study" title="Study with flashcards"><i class="fas fa-brain"></i></button>
+                  <button class="btn-action btn-quiz" title="Take quiz"><i class="fas fa-question-circle"></i></button>
+                  <button class="btn-action btn-edit" (click)="openModal(vocab)" title="Edit word"><i class="fas fa-edit"></i></button>
+                  <button class="btn-action btn-delete" (click)="deleteVocabulary(vocab.id)" title="Delete word"><i class="fas fa-trash"></i></button>
+                </div>
               </div>
             </div>
-            
-            <div class="card-actions">
-              <span class="category-badge" [ngClass]="'category-' + getCategoryColor(vocab.category)">
-                {{getCategoryIcon(vocab.category)}} {{getCategoryName(vocab.category)}}
-              </span>
-              <div class="action-buttons">
-                <button 
-                  class="btn-action btn-edit" 
-                  (click)="openModal(vocab)"
-                  title="Edit word">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button 
-                  class="btn-action btn-delete" 
-                  (click)="deleteVocabulary(vocab.id)"
-                  title="Delete word">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Card Content -->
-          <div class="card-content">
-            <!-- Part of Speech & Translation -->
-            <div class="word-meta">
-              <span class="pos-tag" [ngClass]="getPartOfSpeechClass(vocab.partOfSpeech)">
-                {{vocab.partOfSpeech}}
-              </span>
-              <span class="translation">
-                {{vocab.translation}}
-              </span>
-            </div>
-
-            <!-- Definition -->
-            <div class="definition-section">
-              <div class="section-header">
-                <i class="fas fa-book-open"></i>
-                <span>Definition</span>
+            <div class="card-content">
+              <div class="word-meta">
+                <span class="pos-tag">{{vocab.partOfSpeech}}</span>
+                <span class="translation">{{vocab.translation}}</span>
               </div>
               <p class="definition-text">{{vocab.definition}}</p>
-            </div>
-
-            <!-- Example -->
-            <div class="example-section" *ngIf="vocab.example">
-              <div class="section-header">
-                <i class="fas fa-quote-left"></i>
-                <span>Example</span>
-              </div>
-              <p class="example-text" (click)="speakExample(vocab.example)">
-                "{{vocab.example}}"
-                <i class="fas fa-volume-up example-speak-icon"></i>
-              </p>
-            </div>
-
-            <!-- Difficulty & Meta Info -->
-            <div class="card-footer">
-              <div class="difficulty-indicator">
-                <span class="difficulty-badge" [ngClass]="getDifficultyClass(vocab.difficulty)">
-                  {{vocab.difficulty}}
-                </span>
-              </div>
-              <div class="study-progress">
-                <span class="toeic-score">
-                  <i class="fas fa-star"></i>
-                  TOEIC Essential
-                </span>
-              </div>
+              <p class="example-text" *ngIf="vocab.example">"{{vocab.example}}"</p>
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Empty State -->
-      <div *ngIf="!isLoading && pagedVocabularies.length === 0" class="empty-state">
-        <div class="empty-icon">
-          <i class="fas fa-search"></i>
+        
+        <div *ngIf="!isLoading && pagedVocabularies.length === 0" class="empty-state">
+          <div class="empty-icon"><i class="fas fa-box-open"></i></div><h3>This list is empty</h3><p>Start by adding the first vocabulary word to this list.</p>
+          <button class="btn-add-first" (click)="openModal()"><i class="fas fa-plus"></i> Add First Word</button>
         </div>
-        <h3>No vocabulary found</h3>
-        <p>Try changing your filters or add new vocabulary words</p>
-        <button class="btn-add-first" (click)="openModal()">
-          <i class="fas fa-plus"></i>
-          Add Your First Word
-        </button>
-      </div>
-
-      <!-- Simplified Pagination -->
-      <div *ngIf="!isLoading && totalPages > 1" class="pagination-section">
-        <div class="pagination-info">
-          Page {{page}} / {{totalPages}} · Total {{totalItems | number}} words
-        </div>
-        <div class="pagination-controls">
-          <button 
-            class="btn-page" 
-            [disabled]="page <= 1" 
-            (click)="prevPage()">
-            <i class="fas fa-chevron-left"></i>
-            Previous
-          </button>
-          <span class="current-page">{{page}}</span>
-          <button 
-            class="btn-page" 
-            [disabled]="page >= totalPages" 
-            (click)="nextPage()">
-            Next
-            <i class="fas fa-chevron-right"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Sidebar with Statistics -->
-    <div class="vocabulary-sidebar">
-      <!-- TOEIC Progress Card -->
-      <div class="toeic-progress-card">
-        <div class="card-header">
-          <div class="toeic-logo">
-            <i class="fas fa-graduation-cap"></i>
-          </div>
-          <div class="progress-title">
-            <h3>TOEIC Progress</h3>
-            <p>Track your vocabulary mastery</p>
-          </div>
-        </div>
-        <div class="progress-stats">
-          <div class="progress-item">
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: 65%"></div>
+        <div *ngIf="!isLoading && totalPages > 1" class="pagination-section">
+          <div class="pagination-info">
+            <div class="pagination-stats">
+              <i class="fas fa-info-circle"></i>
+              <span>Showing {{getStartIndex()}} - {{getEndIndex()}} of {{totalItems}} words</span>
             </div>
-            <div class="progress-label">
-              <span class="progress-text">Mastery Level</span>
-              <span class="progress-value">65%</span>
+            <div class="pagination-page-info">
+              <span class="page-indicator">Page {{page}} of {{totalPages}}</span>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Category Statistics -->
-      <div class="stats-card">
-        <div class="card-header">
-          <i class="fas fa-chart-pie"></i>
-          <h3>Category Statistics</h3>
-        </div>
-        <div class="category-stats">
-          <div 
-            *ngFor="let category of categories" 
-            class="category-stat-item">
-            <div class="category-info">
-              <span class="category-icon">{{category.icon}}</span>
-              <span class="category-name">{{category.name}}</span>
+          <div class="pagination-controls">
+            <button class="btn-page btn-prev" [disabled]="page <= 1" (click)="prevPage()">
+              <i class="fas fa-chevron-left"></i>
+              <span>Previous</span>
+            </button>
+            <div class="page-numbers">
+              <button *ngFor="let pageNum of getPageNumbers()" 
+                      class="page-number" 
+                      [class.active]="pageNum === page"
+                      (click)="goToPage(pageNum)">
+                {{pageNum}}
+              </button>
             </div>
-            <div class="category-count">
-              <span class="count">{{category.count}}</span>
-              <div class="count-bar">
-                <div class="count-fill" style="width: 30%"></div>
-              </div>
-            </div>
+            <button class="btn-page btn-next" [disabled]="page >= totalPages" (click)="nextPage()">
+              <span>Next</span>
+              <i class="fas fa-chevron-right"></i>
+            </button>
           </div>
         </div>
-      </div>
 
-      <!-- Quick Study Actions -->
-      <div class="quick-actions-card">
-        <div class="card-header">
-          <i class="fas fa-lightning-bolt"></i>
-          <h3>Quick Study</h3>
-        </div>
-        <div class="action-buttons-grid">
-          <button class="quick-action-btn study-all">
-            <i class="fas fa-play"></i>
-            <span>Study All</span>
-          </button>
-          <button class="quick-action-btn practice">
-            <i class="fas fa-dumbbell"></i>
-            <span>Practice</span>
-          </button>
-          <button class="quick-action-btn quiz">
-            <i class="fas fa-question-circle"></i>
-            <span>Quiz Mode</span>
-          </button>
-          <button class="quick-action-btn review">
-            <i class="fas fa-redo"></i>
-            <span>Review</span>
-          </button>
-        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal Form (giữ nguyên logic, chỉ cập nhật styling) -->
-<div *ngIf="isModalOpen" class="modal-overlay" (click)="closeModal()">
+<!-- MODAL ĐỂ TẠO DANH SÁCH MỚI -->
+<div *ngIf="isListModalOpen" class="modal-overlay" (click)="closeCreateListModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <div class="modal-header-content">
+        <div class="modal-icon"><i class="fas fa-folder-plus"></i></div>
+        <div class="modal-title-section">
+          <h2>Create New Vocabulary List</h2>
+          <p>Start a new collection of words</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeCreateListModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <form [formGroup]="listForm" (ngSubmit)="saveNewList()" class="modal-form">
+      <div class="form-group">
+        <label for="list-name">List Name *</label>
+        <input id="list-name" type="text" formControlName="name" placeholder="e.g., TOEIC Business Vocabulary" class="form-input">
+        <div *ngIf="listForm.get('name')?.invalid && listForm.get('name')?.touched" class="error-message">
+          List name is required.
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="checkbox-wrapper">
+          <input id="isPublic" type="checkbox" formControlName="isPublic" class="form-checkbox">
+          <label for="isPublic">Make this list public for all users</label>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeCreateListModal()">Cancel</button>
+        <button type="submit" class="btn-primary" [disabled]="listForm.invalid || isSubmitting">
+          <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin"></i>
+          Create List
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL ĐỂ THÊM/CHỈNH SỬA TỪ VỰNG -->
+<!-- MODAL THÊM/CHỈNH SỬA TỪ VỰNG -->
+<div *ngIf="isModalOpen" class="modal-overlay" (click)="closeModal()">
+  <div class="modal-content vocabulary-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-content">
         <div class="modal-icon">
-          <i class="fas fa-book"></i>
+          <i class="fas fa-book-medical"></i>
         </div>
         <div class="modal-title-section">
-          <h2>
-            {{editingVocabulary ? 'Edit Vocabulary' : 'Add New Vocabulary'}}
-          </h2>
+          <h2>{{ editingVocabulary ? 'Edit Vocabulary' : 'Add New Vocabulary' }}</h2>
           <p>Build your TOEIC vocabulary collection</p>
         </div>
       </div>
@@ -347,98 +218,85 @@
     </div>
 
     <form [formGroup]="vocabularyForm" (ngSubmit)="saveVocabulary()" class="modal-form">
-      <div class="form-row">
-        <div class="form-group">
-          <label for="word">English Word *</label>
-          <input
-            id="word"
-            type="text"
-            formControlName="word"
-            placeholder="Enter English word..."
-            class="form-input">
-          <div *ngIf="vocabularyForm.get('word')?.invalid && vocabularyForm.get('word')?.touched" 
-               class="error-message">
-            Word is required
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="category">Category *</label>
-          <select id="category" formControlName="category" class="form-select">
-            <option value="">Select category...</option>
-            <option *ngFor="let category of categories" [value]="category.id">
-              {{category.icon}} {{category.name}}
-            </option>
-          </select>
-          <div *ngIf="vocabularyForm.get('category')?.invalid && vocabularyForm.get('category')?.touched" 
-               class="error-message">
-            Category is required
-          </div>
+      <!-- English Word -->
+      <div class="form-group full-width">
+        <label for="word">ENGLISH WORD <span class="required">*</span></label>
+        <input
+          id="word"
+          type="text"
+          formControlName="word"
+          class="form-input"
+          placeholder="Enter English word"
+        />
+        <div *ngIf="vocabularyForm.get('word')?.invalid && vocabularyForm.get('word')?.touched" class="error-message">
+          English word is required.
         </div>
       </div>
 
+      <!-- Row: Part of Speech, Category, Difficulty -->
       <div class="form-row">
         <div class="form-group">
-          <label for="partOfSpeech">Part of Speech *</label>
+          <label for="partOfSpeech">PART OF SPEECH <span class="required">*</span></label>
           <select id="partOfSpeech" formControlName="partOfSpeech" class="form-select">
-            <option value="">Select type...</option>
-            <option *ngFor="let pos of partsOfSpeech" [value]="pos">
-              {{pos}}
-            </option>
+            <option value="">Select part of speech</option>
+            <option *ngFor="let pos of partsOfSpeech" [value]="pos">{{ pos }}</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label for="difficulty">Difficulty Level *</label>
-          <select id="difficulty" formControlName="difficulty" class="form-select">
-            <option value="">Select level...</option>
-            <option *ngFor="let difficulty of difficulties" [value]="difficulty">
-              {{difficulty}}
-            </option>
+          <label for="category">CATEGORY <span class="required">*</span></label>
+          <select id="category" formControlName="category" class="form-select">
+            <option value="">Select category</option>
+            <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
           </select>
         </div>
+
       </div>
 
-      <div class="form-group">
-        <label for="definition">Definition *</label>
+      <!-- Definition -->
+      <div class="form-group full-width">
+        <label for="definition">DEFINITION <span class="required">*</span></label>
         <textarea
           id="definition"
           formControlName="definition"
           rows="3"
-          placeholder="Enter English definition..."
-          class="form-textarea"></textarea>
+          class="form-textarea"
+          placeholder="Enter word definition"
+        ></textarea>
       </div>
 
-      <div class="form-group">
-        <label for="translation">Vietnamese Translation *</label>
-        <input
+      <!-- Vietnamese Translation -->
+      <div class="form-group full-width">
+        <label for="translation">VIETNAMESE TRANSLATION <span class="required">*</span></label>
+        <textarea
           id="translation"
-          type="text"
           formControlName="translation"
-          placeholder="Enter Vietnamese meaning..."
-          class="form-input">
+          rows="2"
+          class="form-textarea"
+          placeholder="Enter Vietnamese translation"
+        ></textarea>
       </div>
 
-      <div class="form-group">
-        <label for="example">Example Sentence *</label>
+      <!-- Example Sentence -->
+      <div class="form-group full-width">
+        <label for="example">EXAMPLE SENTENCE <span class="required">*</span></label>
         <textarea
           id="example"
           formControlName="example"
-          rows="2"
-          placeholder="Enter example sentence..."
-          class="form-textarea"></textarea>
+          rows="3"
+          class="form-textarea"
+          placeholder="Enter example sentence"
+        ></textarea>
       </div>
 
+      <!-- Actions -->
       <div class="modal-actions">
         <button type="button" class="btn-secondary" (click)="closeModal()">
           Cancel
         </button>
-        <button 
-          type="submit" 
-          class="btn-primary" 
-          [disabled]="vocabularyForm.invalid || isSubmitting">
+        <button type="submit" class="btn-primary" [disabled]="vocabularyForm.invalid || isSubmitting">
           <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin"></i>
-          {{editingVocabulary ? 'Update Word' : 'Add Word'}}
+          {{ editingVocabulary ? 'Update Word' : 'Add Word' }}
         </button>
       </div>
     </form>
