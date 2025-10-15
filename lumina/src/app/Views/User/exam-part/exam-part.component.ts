@@ -32,6 +32,13 @@ export class ExamPartComponent {
           this.examDetail = data;
           this.isLoading = false;
           console.log('Exam detail loaded:', this.examDetail);
+          
+          // Auto-navigate to first part if it's a Speaking exam
+          if (data.examType?.toUpperCase().includes('SPEAKING') && data.examParts && data.examParts.length > 0) {
+            const firstPart = data.examParts[0];
+            console.log('Auto-navigating to Speaking part:', firstPart.partId);
+            this.router.navigate(['/homepage/user-dashboard/part', firstPart.partId]);
+          }
         },
         error: (error) => {
           console.error('Error loading exam detail:', error);

@@ -1,3 +1,5 @@
+// src/app/components/staff/vocabulary/vocabulary.component.ts
+
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -20,21 +22,33 @@ import {
   styleUrls: ['./vocabulary.component.scss']
 })
 export class VocabularyComponent implements OnInit {
+  // ----- TRẠNG THÁI GIAO DIỆN -----
+  currentView: 'lists' | 'words' = 'lists';
+  selectedList: VocabularyListResponse | null = null;
+
+  // ----- DỮ LIỆU -----
   vocabularies: Vocabulary[] = [];
   filteredVocabularies: Vocabulary[] = [];
   vocabularyLists: VocabularyListResponse[] = [];
   stats: VocabularyStats[] = [];
+
+  // ----- TRẠNG THÁI BỘ LỌC VÀ TÌM KIẾM -----
   searchTerm = '';
-  selectedList = '';
-  selectedCategory = '';
-  selectedDifficulty = '';
-  selectedPartOfSpeech = '';
+
+  // ----- TRẠNG THÁI MODAL TẠO TỪ VỰNG -----
   isModalOpen = false;
   editingVocabulary: Vocabulary | null = null;
   vocabularyForm: FormGroup;
+
+  // ----- TRẠNG THÁI MODAL TẠO DANH SÁCH -----
+  isListModalOpen = false;
+  listForm: FormGroup;
+
+  // ----- TRẠNG THÁI KHÁC -----
   isLoading = false;
   isSubmitting = false;
 
+  // ----- DỮ LIỆU TĨNH -----
   categories: VocabularyCategory[] = [
     { id: 'business', name: 'Business', icon: '💼', count: 0, color: 'blue' },
     { id: 'technology', name: 'Technology', icon: '💻', count: 0, color: 'purple' },
@@ -43,156 +57,125 @@ export class VocabularyComponent implements OnInit {
     { id: 'finance', name: 'Finance', icon: '💰', count: 0, color: 'orange' },
     { id: 'education', name: 'Education', icon: '🎓', count: 0, color: 'indigo' }
   ];
-
+  partsOfSpeech = ['Noun', 'Verb', 'Adjective', 'Adverb', 'Preposition', 'Conjunction', 'Phrasal Verb'];
+  
+  // ----- PHÂN TRANG -----
   page: number = 1;
-  pageSize: number = 5; 
+  pageSize: number = 5;
   totalItems: number = 0;
   totalPages: number = 0;
 
-  get pagedVocabularies() {
-    const start = (this.page - 1) * this.pageSize;
-    return this.filteredVocabularies.slice(start, start + this.pageSize);
-  }
-
-  updatePagination() {
-    this.totalItems = this.filteredVocabularies.length;
-    this.totalPages = Math.ceil(this.totalItems / this.pageSize) || 1;
-    if (this.page > this.totalPages) {
-      this.page = this.totalPages;
-    }
-  }
-
-  nextPage() {
-    if (this.page < this.totalPages) {
-      this.page++;
-    }
-  }
-
-  prevPage() {
-    if (this.page > 1) {
-      this.page--;
-    }
-  }
-
-  difficulties = ['Beginner', 'Intermediate', 'Advanced'];
-  partsOfSpeech = ['Noun', 'Verb', 'Adjective', 'Adverb', 'Preposition', 'Conjunction'];
-
   constructor(
     private fb: FormBuilder,
-    private router: Router,
     private vocabularyService: VocabularyService,
     private toastService: ToastService,
     private speechService: SpeechService
   ) {
+    // Form cho việc thêm/sửa từ vựng
     this.vocabularyForm = this.fb.group({
       word: ['', Validators.required],
       category: ['', Validators.required],
       partOfSpeech: ['', Validators.required],
       definition: ['', Validators.required],
-      example: ['', [Validators.required, Validators.minLength(10)]],
-      translation: ['', [Validators.required, Validators.minLength(5)]],
-      difficulty: ['', Validators.required]
+      example: ['', Validators.required],
+      translation: ['', Validators.required]
+    });
+
+    // Form cho việc tạo danh sách mới
+    this.listForm = this.fb.group({
+      name: ['', [Validators.required, Validators.maxLength(100)]],
+      isPublic: [false]
     });
   }
 
   ngOnInit() {
-
-    this.vocabularyForm = this.fb.group({
-      word: ['', Validators.required],
-      category: ['', Validators.required],
-      partOfSpeech: ['', Validators.required],
-      definition: ['', Validators.required],
-      example: ['', [Validators.required, Validators.minLength(10)]],
-      translation: ['', [Validators.required, Validators.minLength(5)]],
-      difficulty: ['', Validators.required]
-    });
-    this.loadData();
-  }
-
-  loadData() {
     this.loadVocabularyLists();
-    this.loadStats();
-    this.loadVocabularies();
   }
 
+  // ----- QUẢN LÝ GIAO DIỆN -----
+  selectList(list: VocabularyListResponse) {
+    this.selectedList = list;
+    this.currentView = 'words';
+    this.loadVocabularies(list.vocabularyListId);
+  }
+
+  showListView() {
+    this.currentView = 'lists';
+    this.selectedList = null;
+    this.vocabularies = [];
+    this.filteredVocabularies = [];
+    this.searchTerm = '';
+    this.loadVocabularyLists();
+  }
+
+  // ----- TẢI DỮ LIỆU -----
   loadVocabularyLists() {
-    this.vocabularyService.getVocabularyLists().subscribe({
-      next: (lists) => {
-        this.vocabularyLists = lists;
-      },
-      error: (error) => {
-        console.error('Error loading vocabulary lists:', error);
-        this.toastService.error('Không thể tải danh sách từ điển');
-      }
-    });
-  }
-
-  loadStats() {
-    this.vocabularyService.getVocabularyStats().subscribe({
-      next: (statsResponse) => {
-        this.stats = statsResponse.countsByList;
-      },
-      error: (error) => {
-        console.error('Error loading stats:', error);
-      }
-    });
-  }
-
-  loadVocabularies(listId?: number, search?: string) {
     this.isLoading = true;
-    this.vocabularyService.getVocabularies(listId, search).subscribe({
-      next: (vocabularies) => {
-        this.vocabularies = vocabularies.map(v => this.vocabularyService.convertToVocabulary(v));
-        this.filterVocabularies();
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading vocabularies:', error);
-        this.toastService.error('Không thể tải danh sách từ vựng');
-        this.isLoading = false;
-        this.vocabularies = [];
-        this.filterVocabularies();
-      }
+    this.vocabularyService.getVocabularyLists(this.searchTerm).subscribe({
+      next: (lists) => { this.vocabularyLists = lists; this.isLoading = false; },
+      error: (error) => { this.toastService.error('Không thể tải danh sách từ điển'); this.isLoading = false; }
     });
   }
 
-  filterVocabularies() {
-    this.filteredVocabularies = this.vocabularies.filter(vocab => {
-      const matchesSearch =
-        vocab.word.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        vocab.definition.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        vocab.translation.toLowerCase().includes(this.searchTerm.toLowerCase());
-      const matchesCategory = !this.selectedCategory || vocab.category === this.selectedCategory;
-      const matchesDifficulty = !this.selectedDifficulty || vocab.difficulty === this.selectedDifficulty;
-      const matchesPartOfSpeech = !this.selectedPartOfSpeech || vocab.partOfSpeech === this.selectedPartOfSpeech;
-      return matchesSearch && matchesCategory && matchesDifficulty && matchesPartOfSpeech;
+  loadVocabularies(listId: number) {
+    this.isLoading = true;
+    this.vocabularyService.getVocabularies(listId, this.searchTerm).subscribe({
+        next: (vocabularies) => {
+            this.vocabularies = vocabularies.map(v => this.vocabularyService.convertToVocabulary(v));
+            this.filterVocabularies();
+            this.isLoading = false;
+        },
+        error: (error) => { this.toastService.error('Không thể tải danh sách từ vựng'); this.isLoading = false; }
     });
+  }
+
+  // ----- TÌM KIẾM & LỌC -----
+  filterVocabularies() {
+    this.filteredVocabularies = this.vocabularies.filter(vocab =>
+      vocab.word.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+      vocab.definition.toLowerCase().includes(this.searchTerm.toLowerCase())
+    );
     this.page = 1;
     this.updatePagination();
   }
 
   onSearchChange() {
-    this.filterVocabularies();
-  }
-
-  onListChange() {
-    if (this.selectedList) {
-      this.loadVocabularies(parseInt(this.selectedList));
-    } else {
-      this.loadVocabularies();
+    if (this.currentView === 'lists') {
+      this.loadVocabularyLists();
+    } else if (this.currentView === 'words' && this.selectedList) {
+      this.loadVocabularies(this.selectedList.vocabularyListId);
     }
   }
 
-  onDifficultyChange() { this.filterVocabularies(); }
-  onCategoryChange() { this.filterVocabularies(); }
-  onPartOfSpeechChange() { this.filterVocabularies(); }
+  clearSearch() {
+    this.searchTerm = '';
+    this.onSearchChange();
+  }
 
+  // ----- MODAL DANH SÁCH -----
+  openCreateListModal() { this.isListModalOpen = true; this.listForm.reset({ isPublic: false }); }
+  closeCreateListModal() { this.isListModalOpen = false; }
+  saveNewList() {
+    if (this.listForm.invalid || this.isSubmitting) return;
+    this.isSubmitting = true;
+    this.vocabularyService.createVocabularyList(this.listForm.value).subscribe({
+      next: (newList) => {
+        this.toastService.success(`Đã tạo danh sách "${newList.name}"!`);
+        this.isSubmitting = false; this.closeCreateListModal(); this.loadVocabularyLists();
+      },
+      error: (err) => { this.toastService.error("Tạo danh sách thất bại."); this.isSubmitting = false; }
+    });
+  }
+
+  // ----- MODAL TỪ VỰNG (CRUD) -----
   openModal(vocabulary: Vocabulary | null = null) {
     this.editingVocabulary = vocabulary;
     this.isModalOpen = true;
     if (vocabulary) {
+      // Dùng patchValue để điền dữ liệu vào form khi chỉnh sửa
       this.vocabularyForm.patchValue(vocabulary);
     } else {
+      // Reset form khi tạo mới
       this.vocabularyForm.reset();
     }
   }
@@ -200,55 +183,72 @@ export class VocabularyComponent implements OnInit {
   closeModal() {
     this.isModalOpen = false;
     this.editingVocabulary = null;
-    this.vocabularyForm.reset();
   }
-
+  
   saveVocabulary() {
-    if (this.vocabularyForm.invalid || this.isSubmitting) {
+    console.log('saveVocabulary called');
+    console.log('Form valid:', this.vocabularyForm.valid);
+    console.log('Form errors:', this.vocabularyForm.errors);
+    console.log('Form value:', this.vocabularyForm.value);
+    console.log('isSubmitting:', this.isSubmitting);
+    console.log('selectedList:', this.selectedList);
+    
+    if (this.vocabularyForm.invalid || this.isSubmitting || !this.selectedList) {
+      if (!this.selectedList) {
+        this.toastService.error("Lỗi: Không có danh sách nào được chọn.");
+        return;
+      }
+      if (this.vocabularyForm.invalid) {
+        this.toastService.error("Vui lòng điền đầy đủ thông tin bắt buộc.");
+        return;
+      }
       return;
     }
+    
     this.isSubmitting = true;
     const formData = this.vocabularyForm.value;
+    console.log('Form data to submit:', formData);
 
+    // Logic cho CHỈNH SỬA
     if (this.editingVocabulary) {
       const updateData = {
-        word: formData.word,
-        typeOfWord: formData.partOfSpeech,
-        definition: formData.definition,
-        example: formData.example || undefined
+        word: formData.word, typeOfWord: formData.partOfSpeech, category: formData.category,
+        definition: formData.definition, example: formData.example
       };
+      console.log('Updating vocabulary:', updateData);
       this.vocabularyService.updateVocabulary(this.editingVocabulary.id, updateData).subscribe({
         next: () => {
           this.toastService.success('Cập nhật từ vựng thành công!');
-          this.loadData();
+          this.loadVocabularies(this.selectedList!.vocabularyListId);
           this.closeModal();
           this.isSubmitting = false;
         },
-        error: (error) => {
-          console.error('Error updating vocabulary:', error);
-          this.toastService.error('Không thể cập nhật từ vựng. Vui lòng thử lại.');
-          this.isSubmitting = false;
+        error: (error) => { 
+          console.error('Update vocabulary error:', error);
+          this.isSubmitting = false; 
+          this.toastService.error("Cập nhật thất bại."); 
         }
       });
-    } else {
+    } 
+    // Logic cho TẠO MỚI
+    else {
       const vocabularyData = {
-        vocabularyListId: this.vocabularyLists[0]?.vocabularyListId || 1,
-        word: formData.word,
-        typeOfWord: formData.partOfSpeech,
-        definition: formData.definition,
-        example: formData.example || undefined
+        vocabularyListId: this.selectedList.vocabularyListId, word: formData.word,
+        typeOfWord: formData.partOfSpeech, category: formData.category,
+        definition: formData.definition, example: formData.example
       };
+      console.log('Creating vocabulary:', vocabularyData);
       this.vocabularyService.createVocabulary(vocabularyData).subscribe({
         next: () => {
           this.toastService.success('Tạo từ vựng thành công!');
-          this.loadData();
+          this.loadVocabularies(this.selectedList!.vocabularyListId);
           this.closeModal();
           this.isSubmitting = false;
         },
-        error: (error) => {
-          console.error('Error creating vocabulary:', error);
-          this.toastService.error('Không thể tạo từ vựng. Vui lòng thử lại.');
-          this.isSubmitting = false;
+        error: (error) => { 
+          console.error('Create vocabulary error:', error);
+          this.isSubmitting = false; 
+          this.toastService.error("Tạo từ vựng thất bại."); 
         }
       });
     }
@@ -260,109 +260,44 @@ export class VocabularyComponent implements OnInit {
       this.vocabularyService.deleteVocabulary(id).subscribe({
         next: () => {
           this.toastService.success('Xóa từ vựng thành công!');
-          this.loadData(); // Tải lại toàn bộ dữ liệu để đồng bộ
+          if (this.selectedList) this.loadVocabularies(this.selectedList.vocabularyListId);
         },
-        error: (error) => {
-          console.error('Error deleting vocabulary:', error);
-          this.toastService.error('Không thể xóa từ vựng. Vui lòng thử lại.');
-          this.isLoading = false;
-        }
+        error: (error) => { this.toastService.error('Không thể xóa từ vựng.'); this.isLoading = false; }
       });
     }
   }
-  clearSearch() {
-    this.searchTerm = '';
-    this.filterVocabularies();
-  }
 
-  clearAllFilters() {
-    this.searchTerm = '';
-    this.selectedList = '';
-    this.selectedCategory = '';
-    this.selectedDifficulty = '';
-    this.selectedPartOfSpeech = '';
-    this.loadVocabularies();
-  }
-
-  refreshData() {
-    this.toastService.info('Đang làm mới dữ liệu...');
-    this.loadData();
-  }
-
-  // ========== TEXT-TO-SPEECH METHODS ==========
-
-  /**
-   * Phát âm từ vựng
-   */
-  speakWord(word: string) {
-    if (!word || word.trim() === '') {
-      this.toastService.warning('Từ vựng không hợp lệ để phát âm.');
-      return;
+  // ----- PHÂN TRANG -----
+  get pagedVocabularies() { const start = (this.page - 1) * this.pageSize; return this.filteredVocabularies.slice(start, start + this.pageSize); }
+  updatePagination() { this.totalItems = this.filteredVocabularies.length; this.totalPages = Math.ceil(this.totalItems / this.pageSize) || 1; if (this.page > this.totalPages) this.page = this.totalPages; }
+  nextPage() { if (this.page < this.totalPages) this.page++; }
+  prevPage() { if (this.page > 1) this.page--; }
+  goToPage(pageNum: number) { this.page = pageNum; }
+  
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const maxVisiblePages = 5;
+    const startPage = Math.max(1, this.page - Math.floor(maxVisiblePages / 2));
+    const endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
     }
-
-    try {
-      this.speechService.speakWord(word);
-      this.toastService.success(`Đang phát âm: "${word}"`);
-    } catch (error) {
-      console.error('Error speaking word:', error);
-      this.toastService.error('Không thể phát âm từ này.');
-    }
+    return pages;
+  }
+  
+  getStartIndex(): number {
+    return (this.page - 1) * this.pageSize + 1;
+  }
+  
+  getEndIndex(): number {
+    return Math.min(this.page * this.pageSize, this.totalItems);
   }
 
-  /**
-   * Phát âm câu ví dụ
-   */
-  speakExample(example: string) {
-    if (!example || example.trim() === '') {
-      this.toastService.warning('Câu ví dụ không hợp lệ để phát âm.');
-      return;
-    }
+  // ----- HELPERS & TEXT-TO-SPEECH -----
+  speakWord(word: string) { this.speechService.speakWord(word); }
+  getCategoryName(categoryId: string): string { const category = this.categories.find(c => c.id === categoryId); return category?.name || categoryId; }
+  getPartOfSpeechClass(partOfSpeech: string): string { const lower = partOfSpeech.toLowerCase(); if (lower.includes('verb')) return 'pos-verb'; if (lower.includes('noun')) return 'pos-noun'; return 'pos-other'; }
 
-    try {
-      this.speechService.speakExample(example);
-      this.toastService.success('Đang phát âm câu ví dụ...');
-    } catch (error) {
-      console.error('Error speaking example:', error);
-      this.toastService.error('Không thể phát âm câu ví dụ này.');
-    }
-  }
-
-  /**
-   * Dừng phát âm hiện tại
-   */
-  stopSpeaking() {
-    this.speechService.stop();
-  }
-
-  /**
-   * Kiểm tra có đang phát âm không
-   */
-  isSpeaking(): boolean {
-    return this.speechService.isSpeaking();
-  }
-
-  // Các hàm helper để hiển thị trên giao diện
-  getCategoryIcon(categoryId: string): string { return this.categories.find(c => c.id === categoryId)?.icon || '📝'; }
-  getCategoryName(categoryId: string): string { return this.categories.find(c => c.id === categoryId)?.name || categoryId; }
-  getCategoryColor(categoryId: string): string { return this.categories.find(c => c.id === categoryId)?.color || 'gray'; }
-  getTotalStats(): number { return this.stats.reduce((total, stat) => total + stat.total, 0); }
-
-  getDifficultyClass(difficulty: string): string {
-    switch (difficulty) {
-      case 'Beginner': return 'difficulty-beginner';
-      case 'Intermediate': return 'difficulty-intermediate';
-      case 'Advanced': return 'difficulty-advanced';
-      default: return 'difficulty-beginner';
-    }
-  }
-
-  getPartOfSpeechClass(partOfSpeech: string): string {
-    switch (partOfSpeech.toLowerCase()) {
-      case 'noun': return 'pos-noun';
-      case 'verb': return 'pos-verb';
-      case 'adjective': return 'pos-adjective';
-      case 'adverb': return 'pos-adverb';
-      default: return 'pos-other';
-    }
-  }
+  
 }

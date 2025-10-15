@@ -17,58 +17,134 @@
         </div>
         <div class="flex-1">
           <h2 class="text-2xl font-bold mb-1">{{ skillGroup.skillName }}</h2>
-          <p class="text-sm opacity-90">{{ skillGroup.exams.length }} bài thi</p>
+          <p class="text-sm opacity-90">
+            <span *ngIf="skillGroup.isSpeaking">5 speaking tasks</span>
+            <span *ngIf="!skillGroup.isSpeaking">{{ skillGroup.exams.length }} bài thi</span>
+          </p>
         </div>
       </div>
 
-      <!-- Exams Grid -->
-      <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Empty State -->
-        <div *ngIf="skillGroup.exams.length === 0" class="col-span-full text-center py-12">
-          <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-            <i [class]="skillGroup.icon" class="text-3xl text-gray-400"></i>
-          </div>
-          <p class="text-lg font-medium text-gray-500">
-            Chưa có bài thi cho kỹ năng {{ skillGroup.skillName.toLowerCase() }}
-          </p>
-        </div>
+      <!-- Content Grid -->
+      <div class="p-6">
+        <!-- Speaking Parts Grid -->
+        <div *ngIf="skillGroup.isSpeaking" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- First 4 parts in top row -->
+          <div *ngFor="let part of speakingParts.slice(0, 4)" 
+               class="bg-white border border-gray-200 rounded-xl p-4 transition-all duration-300 hover:border-purple-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer group"
+               (click)="selectSpeakingPart(part.partCode)">
+            
+            <!-- Gradient Header -->
+            <div class="h-20 bg-gradient-to-br p-3 text-white relative overflow-hidden rounded-lg mb-3"
+                 [class]="part.gradient">
+              <div class="absolute top-0 right-0 w-12 h-12 bg-white bg-opacity-10 rounded-full -translate-y-6 translate-x-6"></div>
+              
+              <div class="relative z-10">
+                <h3 class="text-sm font-bold mb-1">{{ part.title }}</h3>
+                <p class="text-xs opacity-90">{{ part.subtitle }}</p>
+              </div>
+            </div>
 
-        <!-- Exam Cards -->
-        <div *ngFor="let exam of skillGroup.exams"
-             class="bg-white border border-gray-200 rounded-2xl p-5 transition-all duration-300 hover:border-blue-300 hover:shadow-xl hover:-translate-y-2 relative overflow-hidden group cursor-pointer">
-          <!-- Top border accent -->
-          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
-
-          <!-- Exam Header -->
-          <div class="flex justify-between items-start mb-4">
-
-            <div class="mb-5">
-            <h3 class="text-lg font-bold text-gray-900 mb-3 line-clamp-2 leading-tight">{{ exam.name }}</h3>
-            <p class="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4">{{ exam.description }}</p>
-          </div>
-            <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-blue-50 transition-colors duration-300">
-              <i [class]="skillGroup.icon" class="text-sm text-gray-400 group-hover:text-blue-500"></i>
+            <!-- Content -->
+            <div>
+              <p class="text-gray-700 text-xs leading-relaxed mb-2">{{ part.taskType }}</p>
+              
+              <!-- Time Info -->
+              <div class="flex justify-between items-center text-xs text-gray-500">
+                <div class="flex items-center">
+                  <i class="fas fa-clock mr-1"></i>
+                  <span>{{ part.preparationTime }}</span>
+                </div>
+                <div class="flex items-center">
+                  <i class="fas fa-microphone mr-1"></i>
+                  <span>{{ part.speakingTime }}</span>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="flex items-center text-xs text-gray-500">
+        </div>
+
+        <!-- Fifth part in bottom row for Speaking -->
+        <div *ngIf="skillGroup.isSpeaking" class="mt-4 flex justify-start">
+          <div *ngFor="let part of speakingParts.slice(4, 5)" 
+               class="bg-white border border-gray-200 rounded-xl p-4 transition-all duration-300 hover:border-purple-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer group w-full max-w-xs"
+               (click)="selectSpeakingPart(part.partCode)">
+            
+            <!-- Gradient Header -->
+            <div class="h-20 bg-gradient-to-br p-3 text-white relative overflow-hidden rounded-lg mb-3"
+                 [class]="part.gradient">
+              <div class="absolute top-0 right-0 w-12 h-12 bg-white bg-opacity-10 rounded-full -translate-y-6 translate-x-6"></div>
+              
+              <div class="relative z-10">
+                <h3 class="text-sm font-bold mb-1">{{ part.title }}</h3>
+                <p class="text-xs opacity-90">{{ part.subtitle }}</p>
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div>
+              <p class="text-gray-700 text-xs leading-relaxed mb-2">{{ part.taskType }}</p>
+              
+              <!-- Time Info -->
+              <div class="flex justify-between items-center text-xs text-gray-500">
+                <div class="flex items-center">
+                  <i class="fas fa-clock mr-1"></i>
+                  <span>{{ part.preparationTime }}</span>
+                </div>
+                <div class="flex items-center">
+                  <i class="fas fa-microphone mr-1"></i>
+                  <span>{{ part.speakingTime }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Regular Exams Grid for non-Speaking skills -->
+        <div *ngIf="!skillGroup.isSpeaking" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Empty State -->
+          <div *ngIf="skillGroup.exams.length === 0" class="col-span-full text-center py-12">
+            <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+              <i [class]="skillGroup.icon" class="text-3xl text-gray-400"></i>
+            </div>
+            <p class="text-lg font-medium text-gray-500">
+              Chưa có bài thi cho kỹ năng {{ skillGroup.skillName.toLowerCase() }}
+            </p>
+          </div>
+
+          <!-- Exam Cards -->
+          <div *ngFor="let exam of skillGroup.exams"
+               class="bg-white border border-gray-200 rounded-2xl p-5 transition-all duration-300 hover:border-blue-300 hover:shadow-xl hover:-translate-y-2 relative overflow-hidden group cursor-pointer">
+            <!-- Top border accent -->
+            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+
+            <!-- Exam Header -->
+            <div class="flex justify-between items-start mb-4">
+              <div class="mb-5">
+                <h3 class="text-lg font-bold text-gray-900 mb-3 line-clamp-2 leading-tight">{{ exam.name }}</h3>
+                <p class="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4">{{ exam.description }}</p>
+              </div>
+              <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-blue-50 transition-colors duration-300">
+                <i [class]="skillGroup.icon" class="text-sm text-gray-400 group-hover:text-blue-500"></i>
+              </div>
+            </div>
+            <div class="flex items-center text-xs text-gray-500">
               <i class="fas fa-user mr-2"></i>
               <span class="truncate">{{ exam.createdByName }}</span>
             </div>
-          <!-- Exam Content -->
-
+            <!-- Exam Content -->
             <div class="flex items-center text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-full">
               <i class="fas fa-calendar-alt mr-1"></i>
               Ngày tạo: {{ formatDate(exam.createdAt) }}
             </div>
-          <!-- Exam Footer -->
-          <div class="space-y-3">
-
-            <button class="w-full flex items-center justify-center px-4 py-3 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
-                    [class]="getButtonColor(skillGroup.color)"
-                    (click)="startExam(exam)">
-              <i class="fas fa-play mr-2"></i>
-              Bắt đầu thi
-            </button>
+            <!-- Exam Footer -->
+            <div class="space-y-3">
+              <button class="w-full flex items-center justify-center px-4 py-3 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+                      [class]="getButtonColor(skillGroup.color)"
+                      (click)="startExam(exam)">
+                <i class="fas fa-play mr-2"></i>
+                Bắt đầu thi
+              </button>
+            </div>
           </div>
         </div>
       </div>

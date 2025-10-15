@@ -159,21 +159,27 @@ export class VocabularyService {
 
   // Helper method để convert VocabularyWord thành Vocabulary (cho UI)
   convertToVocabulary(vocabulary: VocabularyWord): Vocabulary {
-    return {
+    console.log('Converting vocabulary:', vocabulary);
+    console.log('Category from API:', vocabulary.category);
+    
+    const converted = {
       id: vocabulary.id,
       word: vocabulary.word,
       pronunciation: this.getPronunciation(vocabulary.word), // Tự động tạo phiên âm
-      category: 'general', // Default category
+      category: vocabulary.category || 'general', // Sử dụng category từ API hoặc default
       partOfSpeech: vocabulary.type,
       definition: vocabulary.definition,
       example: vocabulary.example || '',
       translation: vocabulary.definition, // Dùng definition làm translation tạm
-      difficulty: 'Intermediate', // Default difficulty
+      difficulty: 'Intermediate' as 'Beginner' | 'Intermediate' | 'Advanced', // Default difficulty
       createdDate: new Date().toLocaleDateString('vi-VN'),
       createdBy: 'System', // Default creator
-      status: 'active', // Default status
+      status: 'active' as 'active' | 'inactive', // Default status
       audioUrl: vocabulary.audioUrl
     };
+    
+    console.log('Converted result:', converted);
+    return converted;
   }
 
   // Tự động tạo phiên âm cho từ

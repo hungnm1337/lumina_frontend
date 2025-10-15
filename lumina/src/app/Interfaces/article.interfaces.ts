@@ -30,6 +30,7 @@ export interface ArticleResponse {
   createdAt: string;
   authorName: string;
   categoryName: string;
+  rejectionReason?: string | null;
   sections: ArticleSectionResponse[];
 }
 
@@ -52,6 +53,7 @@ export interface Article {
   likes: number;
   tags: string[];
   sections: ArticleSection[];
+  rejectionReason?: string;
 }
 
 export interface ArticleSection {

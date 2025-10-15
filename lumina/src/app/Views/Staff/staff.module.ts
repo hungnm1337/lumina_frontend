@@ -1,8 +1,7 @@
 import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { RouterModule,RouterOutlet } from '@angular/router';
+import { FormsModule ,ReactiveFormsModule} from '@angular/forms';
 import { NgClass,NgIf,CommonModule  } from '@angular/common';
-import { RouterOutlet } from '@angular/router'; 
 
 
 import { StaffRoutingModule } from './staff-routing.module'; 
@@ -15,6 +14,7 @@ import { StaffRoutingModule } from './staff-routing.module';
     StaffRoutingModule,
     RouterModule,
     FormsModule,
+    ReactiveFormsModule,
     NgClass,
     NgIf
   ]

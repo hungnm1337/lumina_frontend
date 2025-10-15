@@ -115,6 +115,12 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
+    // Validate fullName
+    if (!this.form.fullName || this.form.fullName.trim().length === 0) {
+      this.toast.error('Tên không được để trống');
+      return;
+    }
+
     this.loading.set(true);
     this.userService.updateProfile(this.form).subscribe({
       next: (u) => {
@@ -123,7 +129,16 @@ export class ProfileComponent implements OnInit {
         this.avatarStatus = '';
         this.toast.success('Cập nhật hồ sơ thành công');
       },
-      error: () => this.toast.error('Cập nhật thất bại'),
+      error: (err) => {
+        console.error('Update profile error:', err);
+        const errorMessage = err.error?.message || 'Cập nhật thất bại';
+        const errors = err.error?.errors;
+        if (errors && errors.length > 0) {
+          this.toast.error(`${errorMessage}: ${errors.join(', ')}`);
+        } else {
+          this.toast.error(errorMessage);
+        }
+      },
       complete: () => this.loading.set(false),
     });
   }

@@ -7,6 +7,80 @@ $toeic-blue: #3b82f6;
 $toeic-red: #ef4444;
 $toeic-purple: #8b5cf6;
 
+// Rejection Alert Styles
+.rejection-alert {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fca5a5;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.1);
+
+  .alert-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+
+    i {
+      color: $toeic-red;
+      font-size: 16px;
+    }
+
+    .alert-title {
+      font-weight: 600;
+      color: #dc2626;
+      font-size: 14px;
+    }
+  }
+
+  .alert-content {
+    .rejection-reason {
+      color: #7f1d1d;
+      font-size: 14px;
+      line-height: 1.5;
+      margin: 0 0 12px 0;
+      padding: 12px;
+      background: white;
+      border-radius: 8px;
+      border-left: 4px solid $toeic-red;
+    }
+
+    .rejection-hint {
+      color: #6b7280;
+      font-size: 13px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      i {
+        color: $toeic-blue;
+      }
+    }
+  }
+}
+
+// Resubmit button styles
+.btn-resubmit {
+  background: linear-gradient(135deg, $toeic-primary 0%, $toeic-secondary 100%) !important;
+  color: white !important;
+  position: relative;
+
+  .resubmit-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: $toeic-red;
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+}
+
 .articles-container {
   padding: 24px;
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);

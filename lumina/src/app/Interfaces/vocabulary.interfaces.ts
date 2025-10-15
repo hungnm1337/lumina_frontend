@@ -5,6 +5,7 @@ export interface VocabularyWord {
   listId: number;
   word: string;
   type: string;
+  category?: string;
   definition: string;
   example?: string;
   audioUrl?: string; // Thêm trường này

@@ -142,9 +142,11 @@
                 <button 
                   *ngIf="article.status === 'draft' && isStaff" 
                   class="btn-action btn-submit" 
+                  [class.btn-resubmit]="article.rejectionReason"
                   (click)="submitForApproval(article.id)"
-                  title="Submit for approval">
+                  [title]="article.rejectionReason ? 'Gửi lại để duyệt' : 'Submit for approval'">
                   <i class="fas fa-paper-plane"></i>
+                  <span *ngIf="article.rejectionReason" class="resubmit-badge">Gửi lại</span>
                 </button>
                 
                 <!-- ONLY MANAGER CAN APPROVE/REJECT -->
@@ -191,6 +193,21 @@
             <!-- Summary -->
             <div class="article-summary">
               <p class="summary-text">{{article.summary}}</p>
+            </div>
+
+            <!-- Rejection Reason Alert -->
+            <div *ngIf="article.rejectionReason" class="rejection-alert">
+              <div class="alert-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span class="alert-title">Bài viết đã bị từ chối</span>
+              </div>
+              <div class="alert-content">
+                <p class="rejection-reason">{{ article.rejectionReason }}</p>
+                <p class="rejection-hint">
+                  <i class="fas fa-info-circle"></i>
+                  Vui lòng sửa lại bài viết theo góp ý và gửi lại để duyệt.
+                </p>
+              </div>
             </div>
 
             <!-- Article Info -->

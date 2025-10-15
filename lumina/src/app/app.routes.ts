@@ -15,6 +15,8 @@ import { RoleGuard } from './Services/Auth/role.guard';
 import { ManageEventsDashboardComponent } from './Views/Manage/Event/dashboardevent.component';
 import { UserEventsDashboardComponent } from './Views/User/event-dashboard/dashboardevent.component';
 import { DashboardSlideComponent } from './Views/Manage/Slide/dashboardslide.component';
+import { BlogComponent } from './Views/Common/blog/blog.component';
+import { BlogDetailComponent } from './Views/Common/blog-detail/blog-detail.component';
 export const routes: Routes = [
   {
     path: 'admin',
@@ -51,6 +53,10 @@ export const routes: Routes = [
           { path: 'exams', component: ExamsComponent },
           { path: 'exam/:id', component: ExamPartComponent },
           { path: 'part/:id', component: PartQuestionComponent },
+          { 
+            path: 'speaking-practice/:partCode', 
+            loadComponent: () => import('./Views/User/speaking-part-exams/speaking-part-exams.component').then(m => m.SpeakingPartExamsComponent) 
+          },
           { path: '', redirectTo: 'exams', pathMatch: 'full' },
           // {path: 'vocabulary', component: VocabularyComponent},
           // {path: 'notes', component: NotesComponent},
@@ -69,6 +75,8 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'blog', component: BlogComponent },
+  { path: 'blog/:id', component: BlogDetailComponent },
 
   { path: '', redirectTo: '/homepage', pathMatch: 'full' },
   { path: '**', component: ErrorComponent },

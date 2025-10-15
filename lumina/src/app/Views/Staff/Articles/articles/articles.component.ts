@@ -360,8 +360,20 @@ export class ArticlesComponent implements OnInit {
       this.isLoading = true;
       this.articleService.requestApproval(id).subscribe({
         next: () => {
-          this.toastService.success('Đã gửi yêu cầu phê duyệt!');
+          // Check if this is a resubmission (article has rejection reason)
           const article = this.filteredArticles.find(a => a.id === id);
+          const isResubmission = article?.rejectionReason;
+          
+          if (isResubmission) {
+            this.toastService.success('Bài viết đã được gửi lại để duyệt!');
+            // Clear rejection reason after successful resubmission
+            if (article) {
+              article.rejectionReason = undefined;
+            }
+          } else {
+            this.toastService.success('Đã gửi yêu cầu phê duyệt!');
+          }
+          
           if (article) {
             article.status = 'pending';
           }
