@@ -38,15 +38,16 @@ export class QuestionComponent implements OnChanges {
   @Input() questions: QuestionDTO[] = [];
   currentIndex = 0;
   showExplain = false;
-  private advanceTimer: any = null;
   totalScore = 0;
   correctCount = 0;
   finished = false;
   savedAnswers: { questionId: number; optionId: number }[] = [];
+  latestPictureCaption: string = '';
   speakingResults: Map<number, SpeakingScoringResult> = new Map();
   showSpeakingSummary = false;
   speakingQuestionResults: QuestionResult[] = [];
   isSpeakingSubmitting = false; // New: Track speaking submission status
+  private advanceTimer: any = null;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['questions']) {
@@ -123,7 +124,11 @@ export class QuestionComponent implements OnChanges {
   }
 
   onTimeout(): void {
-    this.revealExplainAndQueueNext();
+    // Khi hết thời gian: chỉ hiển thị giải thích, KHÔNG tự động sang câu tiếp theo
+    this.showExplain = true;
+    if (this.advanceTimer) {
+      clearTimeout(this.advanceTimer);
+    }
   }
 
   private revealExplainAndQueueNext(): void {
@@ -134,7 +139,7 @@ export class QuestionComponent implements OnChanges {
     }
     this.advanceTimer = setTimeout(() => {
       this.nextQuestion();
-    }, 1500);
+    }, 300000);
   }
 
   private nextQuestion(): void {
@@ -153,6 +158,7 @@ export class QuestionComponent implements OnChanges {
     if (this.currentIndex < this.questions.length - 1) {
       this.currentIndex += 1;
       this.showExplain = false;
+      this.latestPictureCaption = '';
     } else {
       // Bài thi kết thúc
       this.showExplain = true;
@@ -210,8 +216,23 @@ export class QuestionComponent implements OnChanges {
       }
     }
   }
+
+  next(): void {
+    if (this.finished) return;
+    if (this.currentIndex >= this.questions.length - 1) {
+      this.finished = true;
+      this.showExplain = true;
+      this.loadSavedAnswers();
+      return;
+    }
+    this.nextQuestion();
+  }
   constructor(private router: Router, private authService: AuthService) {
     console.log('Questions:', this.questions);
+  }
+
+  onPictureCaption(caption: string): void {
+    this.latestPictureCaption = caption || '';
   }
 
   get percentCorrect(): number {
@@ -228,15 +249,12 @@ export class QuestionComponent implements OnChanges {
   }
 
   resetQuiz(): void {
-    if (this.advanceTimer) {
-      clearTimeout(this.advanceTimer);
-      this.advanceTimer = null;
-    }
     this.currentIndex = 0;
     this.showExplain = false;
     this.totalScore = 0;
     this.correctCount = 0;
     this.finished = false;
+    this.latestPictureCaption = '';
     this.speakingResults.clear();
     this.speakingQuestionResults = [];
     this.showSpeakingSummary = false;

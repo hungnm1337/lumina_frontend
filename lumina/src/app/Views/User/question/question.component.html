@@ -29,7 +29,11 @@
 
   <div class="grid gap-4 mt-3">
     <div class="space-y-2">
-      <app-prompt [prompt]="questions[currentIndex].prompt"></app-prompt>
+      <app-prompt
+        [prompt]="questions[currentIndex].prompt"
+        [resetAt]="currentIndex"
+        (pictureCaptionChange)="onPictureCaption($event)"
+      ></app-prompt>
     </div>
   </div>
 
@@ -46,6 +50,8 @@
       [questionId]="questions[currentIndex].questionId"
       [disabled]="showExplain"
       [resetAt]="currentIndex"
+      [contentText]="questions[currentIndex].prompt?.passage?.contentText"
+      [pictureCaption]="latestPictureCaption"
       (answered)="markAnswered($event)"
     ></app-writing-answer-box>
     } @else if (questions[currentIndex].questionType.includes('Speaking')) {
@@ -58,6 +64,17 @@
       (submitting)="onSpeakingSubmitting($event)"
     ></app-speaking-answer-box>
     }
+
+
+
+  <div class="mt-4 flex items-center justify-between">
+    <div class="text-sm text-gray-500">Câu {{ currentIndex + 1 }} / {{ questions.length }}</div>
+    @if (showExplain && !finished) {
+      <button class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700" (click)="next()">Tiếp</button>
+    } @else if (showExplain && finished) {
+      <button class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700" (click)="goToExams()">Xem kết quả</button>
+    }
+  </div>
   </div>
 
   @if (showExplain) {
