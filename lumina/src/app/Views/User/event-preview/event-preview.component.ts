@@ -3,13 +3,13 @@ import { CommonModule } from '@angular/common';
 import { EventService, EventDTO, PaginatedResultDTO } from '../../../Services/Event/event.service';
 
 @Component({
-  selector: 'app-user-events-dashboard',
+  selector: 'app-event-preview',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './dashboardevent.component.html',
-  styleUrl: './dashboardevent.component.scss'
+  templateUrl: './event-preview.component.html',
+  styleUrl: './event-preview.component.scss'
 })
-export class UserEventsDashboardComponent implements OnInit {
+export class EventPreviewComponent implements OnInit {
   isLoading = false;
   errorMessage: string | null = null;
   events: EventDTO[] = [];
@@ -20,13 +20,12 @@ export class UserEventsDashboardComponent implements OnInit {
     this.fetchEvents();
   }
 
-  // SỬA: Đổi từ private thành public để template có thể gọi
   fetchEvents(): void {
     this.isLoading = true;
     this.errorMessage = null;
-    this.eventService.GetAllEventsPaginated(1, 1000).subscribe({
+    this.eventService.GetAllEventsPaginated(1, 3).subscribe({
       next: (result) => {
-        // Show all events and sort by start date (newest first)
+        // Show only 3 latest events for homepage preview
         this.events = result.items
           .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
         this.isLoading = false;
@@ -80,7 +79,6 @@ export class UserEventsDashboardComponent implements OnInit {
 
   // Get event image (placeholder if not available)
   getEventImage(event: EventDTO): string {
-    // SỬA: EventDTO không có imageUrl, dùng placeholder
     return 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80';
   }
 }

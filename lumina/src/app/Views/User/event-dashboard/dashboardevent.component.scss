@@ -5,6 +5,7 @@ $toeic-purple: #6366f1;
 $toeic-purple-dark: #4f46e5;
 $toeic-success: #10b981;
 $toeic-blue: #3b82f6;
+$toeic-warning: #f59e0b;
 
 // Events Section
 .events-section {
@@ -352,6 +353,26 @@ $toeic-blue: #3b82f6;
 
               span {
                 color: $toeic-success;
+              }
+            }
+
+            &.upcoming {
+              i {
+                color: $toeic-warning;
+              }
+
+              span {
+                color: $toeic-warning;
+              }
+            }
+
+            &.past {
+              i {
+                color: #94a3b8;
+              }
+
+              span {
+                color: #94a3b8;
               }
             }
           }
