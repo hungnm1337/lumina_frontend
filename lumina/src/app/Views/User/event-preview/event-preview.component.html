@@ -8,11 +8,15 @@
           <i class="fas fa-calendar-alt"></i>
           <span>Sự kiện</span>
         </div>
-        <h2 class="section-title">Tất cả sự kiện</h2>
+        <h2 class="section-title">Sự kiện nổi bật</h2>
         <p class="section-subtitle">
-          Khám phá tất cả các sự kiện học TOEIC và tham gia để nâng cao kỹ năng của bạn
+          Tham gia ngay những sự kiện học TOEIC miễn phí và nhận quà hấp dẫn
         </p>
       </div>
+      <a href="/homepage/events" class="btn-view-all">
+        <span>Xem tất cả</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
     </div>
 
     <!-- Loading State -->
@@ -54,7 +58,7 @@
            [attr.data-aos]="'fade-up'"
            [attr.data-aos-delay]="i * 100">
         
-        <!-- Event Image - SỬA: Dùng method getEventImage() -->
+        <!-- Event Image -->
         <div class="event-image">
           <img 
             [src]="getEventImage(event)" 
@@ -95,8 +99,7 @@
             <div class="event-date">
               <i class="fas fa-calendar-day"></i>
               <span>{{ event.startDate | date:'dd Tháng MM, yyyy' }}</span>
-            </div>
- 
+            </div>          
           </div>
 
           <!-- Featured Badge (cho card đầu tiên) -->

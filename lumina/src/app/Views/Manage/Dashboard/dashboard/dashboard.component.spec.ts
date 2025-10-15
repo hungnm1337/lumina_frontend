@@ -11,10 +11,10 @@ describe('DashboardComponent', () => {
   let slideServiceSpy: jasmine.SpyObj<SlideService>;
 
   beforeEach(async () => {
-    eventServiceSpy = jasmine.createSpyObj('EventService', ['GetAllEvents']);
+    eventServiceSpy = jasmine.createSpyObj('EventService', ['GetAllEventsPaginated']);
     slideServiceSpy = jasmine.createSpyObj('SlideService', ['getAllSlides']);
 
-    eventServiceSpy.GetAllEvents.and.returnValue(of([]));
+    eventServiceSpy.GetAllEventsPaginated.and.returnValue(of({ items: [], total: 0, page: 1, pageSize: 10, totalPages: 0, hasNext: false, hasPrevious: false }));
     slideServiceSpy.getAllSlides.and.returnValue(of([]));
 
     await TestBed.configureTestingModule({

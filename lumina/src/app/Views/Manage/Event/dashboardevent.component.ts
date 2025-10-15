@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { EventService, EventDTO } from '../../../Services/Event/event.service';
+import { EventService, EventDTO, PaginatedResultDTO } from '../../../Services/Event/event.service';
 
 @Component({
   selector: 'app-manage-events-dashboard',
@@ -59,9 +59,9 @@ export class ManageEventsDashboardComponent implements OnInit {
   private fetchEvents(): void {
     this.isLoading = true;
     this.errorMessage = null;
-    this.eventService.GetAllEvents().subscribe({
-      next: (events) => {
-        this.events = events;
+    this.eventService.GetAllEventsPaginated(1, 1000).subscribe({
+      next: (result) => {
+        this.events = result.items;
         this.applyFilters();
         this.isLoading = false;
       },
@@ -236,7 +236,8 @@ export class ManageEventsDashboardComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading = false;
-          this.errorMessage = error.error?.message || 'Tạo sự kiện thất bại';
+          console.error('Create event error:', error);
+          this.errorMessage = error.error?.message || error.message || 'Tạo sự kiện thất bại';
         },
       });
     } else {
