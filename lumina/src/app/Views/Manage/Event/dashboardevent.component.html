@@ -1,0 +1,396 @@
+<div class="vocabulary-container">
+  <!-- TOEIC Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">Dashboard Events</h1>
+      <p class="page-subtitle">Quản lý sự kiện hiển thị trên dashboard</p>
+    </div>
+    <button class="btn-primary" (click)="openCreateModal()">
+      <i class="fas fa-plus"></i>
+      Tạo sự kiện mới
+    </button>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <i class="fas fa-exclamation-circle"></i>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Main Layout -->
+  <div class="main-layout">
+    <!-- Events List Section -->
+    <div class="vocabulary-list">
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Đang tải danh sách sự kiện...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && filteredEvents.length === 0" class="empty-state">
+        <i class="fas fa-calendar-alt"></i>
+        <h3>Không tìm thấy sự kiện nào</h3>
+        <p>Thử thay đổi bộ lọc hoặc tìm kiếm</p>
+      </div>
+
+      <!-- Events Grid -->
+      <div *ngIf="!isLoading && filteredEvents.length > 0">
+        <div *ngFor="let event of filteredEvents" class="vocabulary-item">
+          <!-- Event Header -->
+          <div class="word-header">
+            <div class="word-title">
+              <h2 class="word">{{ event.eventName }}</h2>
+              <p class="pronunciation">
+                {{ event.startDate | date:'dd/MM/yyyy' }} - {{ event.endDate | date:'dd/MM/yyyy' }}
+              </p>
+            </div>
+            <div class="word-actions">
+              <!-- Status Badge -->
+              <span class="category-tag" [ngClass]="{
+                'color-green': getEventStatus(event) === 'active',
+                'color-blue': getEventStatus(event) === 'upcoming',
+                'color-red': getEventStatus(event) === 'past'
+              }">
+                {{ getStatusLabel(getEventStatus(event)) }}
+              </span>
+              
+              <!-- Action Buttons -->
+              <button class="btn-action btn-view" (click)="openDetailModal(event)" title="Xem chi tiết">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="btn-action btn-edit" (click)="openEditModal(event)" title="Chỉnh sửa">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn-action btn-delete" (click)="delete(event)" title="Xóa">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Event Content -->
+          <div class="word-content">
+            <div class="word-info">
+              <span class="pos-tag pos-noun">Sự kiện</span>
+              <span class="definition">{{ event.content || 'Không có mô tả' }}</span>
+            </div>
+
+            <!-- Event Meta Information -->
+            <div class="vocab-meta">
+              <div class="meta-item">
+                <i class="fas fa-play-circle"></i>
+                <span class="meta-label">Bắt đầu:</span>
+                <span class="meta-value">{{ event.startDate | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+              <div class="meta-item">
+                <i class="fas fa-stop-circle"></i>
+                <span class="meta-label">Kết thúc:</span>
+                <span class="meta-value">{{ event.endDate | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+              <div class="meta-item">
+                <i class="fas fa-clock"></i>
+                <span class="meta-label">Thời lượng:</span>
+                <span class="meta-value">{{ getEventDuration(event) }}</span>
+              </div>
+              <div class="meta-item">
+                <i class="fas fa-info-circle"></i>
+                <span class="meta-label">Trạng thái:</span>
+                <span class="meta-value status-badge" [class.active]="getEventStatus(event) === 'active'"
+                      [class.upcoming]="getEventStatus(event) === 'upcoming'"
+                      [class.past]="getEventStatus(event) === 'past'">
+                  {{ getStatusLabel(getEventStatus(event)) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Section -->
+    <div class="vocabulary-sidebar">
+      <!-- Statistics Card -->
+      <div class="stats-card">
+        <div class="stats-header">
+          <i class="fas fa-chart-bar"></i>
+          <h3>Thống kê Sự kiện</h3>
+        </div>
+        <div class="total-count">
+          <span class="count-label">Tổng số sự kiện</span>
+          <span class="count-number">{{ events.length }}</span>
+        </div>
+        <div class="category-stats">
+          <div class="category-stat">
+            <div class="category-info">
+              <i class="fas fa-circle-notch category-icon" style="color: #10b981;"></i>
+              <span class="category-name">Đang diễn ra</span>
+            </div>
+            <span class="category-count">{{ activeEventsCount }}</span>
+          </div>
+          <div class="category-stat">
+            <div class="category-info">
+              <i class="fas fa-clock category-icon" style="color: #3b82f6;"></i>
+              <span class="category-name">Sắp diễn ra</span>
+            </div>
+            <span class="category-count">{{ upcomingEventsCount }}</span>
+          </div>
+          <div class="category-stat">
+            <div class="category-info">
+              <i class="fas fa-check-circle category-icon" style="color: #6b7280;"></i>
+              <span class="category-name">Đã kết thúc</span>
+            </div>
+            <span class="category-count">{{ pastEventsCount }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters Card -->
+      <div class="filters-card">
+        <div class="filters-header">
+          <i class="fas fa-filter"></i>
+          <h3>Bộ lọc</h3>
+        </div>
+        
+        <!-- Search Box -->
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (input)="onSearchChange()"
+            placeholder="Tìm kiếm sự kiện..."
+            class="search-input">
+        </div>
+
+        <!-- Status Filter -->
+        <div class="filter-group">
+          <label>Trạng thái</label>
+          <select [(ngModel)]="filterStatus" (change)="onFilterChange()">
+            <option value="all">Tất cả</option>
+            <option value="active">Đang diễn ra</option>
+            <option value="upcoming">Sắp diễn ra</option>
+            <option value="past">Đã kết thúc</option>
+          </select>
+        </div>
+
+        <!-- Sort Options -->
+        <div class="filter-group">
+          <label>Sắp xếp theo</label>
+          <select [(ngModel)]="sortBy" (change)="onSortChange()">
+            <option value="startDate">Ngày bắt đầu</option>
+            <option value="endDate">Ngày kết thúc</option>
+            <option value="eventName">Tên sự kiện</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Thứ tự</label>
+          <select [(ngModel)]="sortOrder" (change)="onSortChange()">
+            <option value="asc">Tăng dần</option>
+            <option value="desc">Giảm dần</option>
+          </select>
+        </div>
+
+        <!-- Clear Filters Button -->
+        <button class="btn-quick-add" (click)="clearFilters()">
+          <i class="fas fa-eraser"></i>
+          Xóa bộ lọc
+        </button>
+      </div>
+
+      <!-- Quick Add Card -->
+      <div class="quick-add-card">
+        <div class="quick-add-header">
+          <i class="fas fa-rocket"></i>
+          <h3>Thêm nhanh</h3>
+        </div>
+        <div class="quick-add-form">
+          <div class="form-group">
+            <input
+              type="text"
+              [(ngModel)]="form.eventName"
+              placeholder="Tên sự kiện..."
+              class="form-input">
+          </div>
+          <div class="form-group">
+            <textarea
+              [(ngModel)]="form.content"
+              placeholder="Mô tả sự kiện..."
+              rows="2"
+              class="form-input"></textarea>
+          </div>
+          <div class="form-group">
+            <input
+              type="date"
+              [(ngModel)]="form.startDate"
+              placeholder="Ngày bắt đầu"
+              class="form-input">
+          </div>
+          <div class="form-group">
+            <input
+              type="date"
+              [(ngModel)]="form.endDate"
+              placeholder="Ngày kết thúc"
+              class="form-input">
+          </div>
+          <button class="btn-quick-add" (click)="submit()" [disabled]="isLoading">
+            <i class="fas fa-plus"></i>
+            Thêm sự kiện
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div *ngIf="showModal && !isEditing && selectedEvent" class="modal-overlay" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-content">
+        <div class="modal-icon">
+          <i class="fas fa-calendar-alt"></i>
+        </div>
+        <div class="modal-title-section">
+          <h2>Chi tiết Sự kiện</h2>
+          <p>Xem thông tin sự kiện</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeModal()" type="button">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-form">
+      <div class="form-group">
+        <label>Tên sự kiện</label>
+        <p class="view-text">{{ selectedEvent.eventName }}</p>
+      </div>
+
+      <div class="form-group">
+        <label>Mô tả</label>
+        <p class="view-text">{{ selectedEvent.content || 'Không có mô tả' }}</p>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ngày bắt đầu</label>
+          <p class="view-text">{{ selectedEvent.startDate | date:'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+
+        <div class="form-group">
+          <label>Ngày kết thúc</label>
+          <p class="view-text">{{ selectedEvent.endDate | date:'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Trạng thái</label>
+        <span class="category-tag" [ngClass]="{
+          'color-green': getEventStatus(selectedEvent) === 'active',
+          'color-blue': getEventStatus(selectedEvent) === 'upcoming',
+          'color-red': getEventStatus(selectedEvent) === 'past'
+        }">
+          {{ getStatusLabel(getEventStatus(selectedEvent)) }}
+        </span>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeModal()">
+          Đóng
+        </button>
+        <button type="button" class="btn-primary" (click)="openEditModal(selectedEvent)">
+          <i class="fas fa-edit"></i>
+          Chỉnh sửa
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div *ngIf="showModal && isEditing" class="modal-overlay" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-content">
+        <div class="modal-icon">
+          <i class="fas fa-edit"></i>
+        </div>
+        <div class="modal-title-section">
+          <h2>{{ editingId ? 'Chỉnh sửa Sự kiện' : 'Tạo Sự kiện mới' }}</h2>
+          <p>{{ editingId ? 'Cập nhật thông tin sự kiện' : 'Thêm sự kiện mới vào hệ thống' }}</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeModal()" type="button">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Alert Messages in Modal -->
+    <div *ngIf="errorMessage" class="alert alert-error" style="margin: 0 24px;">
+      <i class="fas fa-exclamation-circle"></i>
+      {{ errorMessage }}
+    </div>
+
+    <form (ngSubmit)="submit()" class="modal-form">
+      <div class="form-group">
+        <label for="eventName">Tên Sự kiện *</label>
+        <input
+          id="eventName"
+          type="text"
+          [(ngModel)]="form.eventName"
+          name="eventName"
+          placeholder="Nhập tên sự kiện..."
+          required
+          class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label for="content">Mô tả</label>
+        <textarea
+          id="content"
+          [(ngModel)]="form.content"
+          name="content"
+          placeholder="Nhập mô tả sự kiện..."
+          rows="4"
+          class="form-input"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="startDate">Ngày bắt đầu *</label>
+          <input
+            id="startDate"
+            type="date"
+            [(ngModel)]="form.startDate"
+            name="startDate"
+            required
+            class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label for="endDate">Ngày kết thúc *</label>
+          <input
+            id="endDate"
+            type="date"
+            [(ngModel)]="form.endDate"
+            name="endDate"
+            required
+            class="form-input">
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeModal()" [disabled]="isLoading">
+          Hủy
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="isLoading">
+          <i *ngIf="isLoading" class="fas fa-spinner fa-spin"></i>
+          <i *ngIf="!isLoading && editingId" class="fas fa-save"></i>
+          <i *ngIf="!isLoading && !editingId" class="fas fa-plus"></i>
+          {{ editingId ? 'Cập nhật' : 'Tạo mới' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,148 @@
+<!-- Hero Slider Container -->
+<div class="hero-slider-container">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="loading-spinner">
+      <div class="spinner-ring"></div>
+      <p>Đang tải...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage && !isLoading" class="error-state">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>{{ errorMessage }}</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="isEmpty" class="empty-state">
+    <i class="fas fa-images"></i>
+    <p>Chưa có slide nào được kích hoạt</p>
+  </div>
+
+  <!-- Main Slider -->
+  <div 
+    *ngIf="!isLoading && !isEmpty && activeSlides.length > 0"
+    class="hero-slider"
+    (mouseenter)="pauseAutoplay()"
+    (mouseleave)="resumeAutoplay()"
+    (touchstart)="onTouchStart($event)"
+    (touchend)="onTouchEnd($event)">
+    
+    <!-- Slides -->
+    <div class="slides-wrapper">
+      <div 
+        *ngFor="let slide of activeSlides; let i = index; trackBy: trackById"
+        class="slide-item"
+        [class.active]="i === currentIndex"
+        [class.prev]="i === currentIndex - 1 || (currentIndex === 0 && i === activeSlides.length - 1)"
+        [class.next]="i === currentIndex + 1 || (currentIndex === activeSlides.length - 1 && i === 0)">
+        
+        <!-- Slide Background Image -->
+        <div class="slide-background">
+          <img 
+            [src]="slide.slideUrl" 
+            [alt]="slide.slideName"
+            class="slide-image"
+            loading="lazy">
+          <div class="slide-overlay"></div>
+        </div>
+
+        <!-- Slide Content -->
+        <div class="slide-content">
+          <div class="content-wrapper">
+            <!-- TOEIC Badge -->
+            <div class="toeic-badge">
+              <i class="fas fa-star"></i>
+              <span>Lumina TOEIC</span>
+            </div>
+
+            <!-- Slide Title -->
+            <h1 class="slide-title">{{ slide.slideName }}</h1>
+
+            <!-- Slide Description (if available) -->
+            <p *ngIf="slide.slideUrl" class="slide-description">
+              Nền tảng luyện thi TOEIC hàng đầu Việt Nam
+            </p>
+
+            <!-- CTA Buttons -->
+            <div class="slide-actions">
+              <a href="/practice" class="btn-primary">
+                <i class="fas fa-play-circle"></i>
+                Bắt đầu luyện thi
+              </a>
+              <a href="/courses" class="btn-secondary">
+                <i class="fas fa-graduation-cap"></i>
+                Xem khóa học
+              </a>
+            </div>
+
+            <!-- Features Highlights -->
+            <div class="features-highlights">
+              <div class="feature-item">
+                <i class="fas fa-check-circle"></i>
+                <span>Miễn phí 100%</span>
+              </div>
+              <div class="feature-item">
+                <i class="fas fa-clock"></i>
+                <span>Học mọi lúc</span>
+              </div>
+              <div class="feature-item">
+                <i class="fas fa-trophy"></i>
+                <span>Chuẩn TOEIC</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Controls -->
+    <div class="slider-controls">
+      <!-- Previous Button -->
+      <button 
+        class="control-btn prev-btn"
+        (click)="prev()"
+        [disabled]="activeSlides.length <= 1"
+        aria-label="Previous slide">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+
+      <!-- Next Button -->
+      <button 
+        class="control-btn next-btn"
+        (click)="next()"
+        [disabled]="activeSlides.length <= 1"
+        aria-label="Next slide">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <!-- Slide Indicators -->
+    <div class="slide-indicators">
+      <button
+        *ngFor="let slide of activeSlides; let i = index"
+        class="indicator-dot"
+        [class.active]="i === currentIndex"
+        (click)="goTo(i)"
+        [attr.aria-label]="'Go to slide ' + (i + 1)">
+      </button>
+    </div>
+
+    <!-- Autoplay Toggle -->
+    <button 
+      class="autoplay-toggle"
+      (click)="toggleAutoplay()"
+      [class.paused]="!isAutoplay"
+      [attr.aria-label]="isAutoplay ? 'Pause autoplay' : 'Resume autoplay'">
+      <i [class]="isAutoplay ? 'fas fa-pause' : 'fas fa-play'"></i>
+    </button>
+
+    <!-- Slide Counter -->
+    <div class="slide-counter">
+      <span class="current">{{ currentIndex + 1 }}</span>
+      <span class="separator">/</span>
+      <span class="total">{{ activeSlides.length }}</span>
+    </div>
+  </div>
+</div>

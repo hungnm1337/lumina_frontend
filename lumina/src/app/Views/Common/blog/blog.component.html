@@ -1,0 +1,256 @@
+<app-header></app-header>
+
+<!-- Blog Hero Section -->
+<div class="blog-hero">
+  <div class="hero-content">
+    <h1 class="hero-title">Blog TOEIC</h1>
+    <p class="hero-subtitle">Khám phá kiến thức, mẹo học tập và kinh nghiệm thi TOEIC từ các chuyên gia hàng đầu</p>
+    
+    <div class="hero-stats">
+      <div class="stat-item">
+        <i class="fas fa-file-alt"></i>
+        <span>500+ bài viết</span>
+      </div>
+      <div class="stat-item">
+        <i class="fas fa-users"></i>
+        <span>50+ tác giả</span>
+      </div>
+      <div class="stat-item">
+        <i class="fas fa-eye"></i>
+        <span>1M+ lượt đọc</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Search and Filter Section -->
+<div class="search-filter-section">
+  <div class="search-container">
+    <div class="search-input-group">
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery"
+        placeholder="Tìm kiếm bài viết..." 
+        class="search-input"
+        (keyup.enter)="onSearch()"
+      >
+      <button class="search-btn" (click)="onSearch()">
+        <i class="fas fa-search"></i>
+      </button>
+    </div>
+    
+    <div class="filter-group">
+      <select [(ngModel)]="selectedCategory" class="filter-select">
+        <option value="all">Tất cả chủ đề</option>
+        <option value="study-tips">Mẹo học tập</option>
+        <option value="grammar">Ngữ pháp</option>
+        <option value="vocabulary">Từ vựng</option>
+        <option value="listening">Nghe</option>
+        <option value="reading">Đọc</option>
+      </select>
+      
+      <select [(ngModel)]="selectedSort" class="filter-select">
+        <option value="newest">Mới nhất</option>
+        <option value="popular">Phổ biến</option>
+        <option value="trending">Xu hướng</option>
+      </select>
+    </div>
+  </div>
+  
+  <div class="category-buttons">
+    <button 
+      *ngFor="let category of filterCategories" 
+      [class.active]="selectedCategory === category.id"
+      (click)="onCategorySelect(category.id)"
+      class="category-btn"
+    >
+      <i [class]="category.icon"></i>
+      {{ category.name }}
+    </button>
+  </div>
+</div>
+
+<!-- Featured Articles Section -->
+<div class="featured-section">
+  <div class="section-header">
+    <h2 class="section-title">Bài viết nổi bật</h2>
+    <p class="section-subtitle">Những bài viết được đọc và chia sẻ nhiều nhất</p>
+  </div>
+  
+  <div class="articles-grid featured-grid" *ngIf="!isLoading">
+    <div *ngFor="let article of featuredArticles" class="article-card featured-card" (click)="goToArticleDetail(article.articleId)">
+      <div class="card-header">
+        <div class="card-tags">
+          <span class="tag featured-tag">Nổi bật</span>
+        </div>
+      </div>
+      
+      <div class="card-image">
+        <div class="image-placeholder" [style.background-color]="getCardBackgroundColor(article.articleId)">
+          {{ article.title.substring(0, 20) }}
+        </div>
+      </div>
+      
+      <div class="card-content">
+        <div class="card-meta">
+          <span [class]="'category-tag ' + getCategoryColor(article.categoryName)">{{ article.categoryName }}</span>
+          <span class="read-time">{{ getReadTime(article.summary) }}</span>
+        </div>
+        
+        <h3 class="card-title">{{ article.title }}</h3>
+        <p class="card-summary">{{ article.summary }}</p>
+        
+        <div class="card-author">
+          <div [class]="'author-avatar ' + getAuthorAvatarColor(0)">
+            {{ article.authorName.charAt(0).toUpperCase() }}
+          </div>
+          <div class="author-info">
+            <span class="author-name">{{ article.authorName }}</span>
+            <span class="publish-date">{{ formatDate(article.createdAt) }}</span>
+          </div>
+        </div>
+        
+        <div class="card-stats">
+          <div class="stat">
+            <i class="fas fa-heart"></i>
+            <span>0</span>
+          </div>
+          <div class="stat">
+            <i class="fas fa-comment"></i>
+            <span>0</span>
+          </div>
+          <div class="stat">
+            <i class="fas fa-eye"></i>
+            <span>0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Đang tải bài viết...</p>
+  </div>
+  
+  <!-- Error State -->
+  <div *ngIf="error" class="error-state">
+    <p>{{ error }}</p>
+    <button (click)="loadPublishedArticles()" class="retry-btn">Thử lại</button>
+  </div>
+</div>
+
+<!-- Latest Articles Section -->
+<div class="latest-section">
+  <div class="section-header">
+    <h2 class="section-title">Bài viết mới nhất</h2>
+    <p class="section-subtitle">Cập nhật kiến thức TOEIC mới nhất</p>
+    <button class="view-more-btn">+ Xem thêm</button>
+  </div>
+  
+  <div class="articles-grid latest-grid" *ngIf="!isLoading">
+    <div *ngFor="let article of latestArticles" class="article-card latest-card" (click)="goToArticleDetail(article.articleId)">
+      <div class="card-header">
+        <div class="card-tags">
+          <span class="tag trending-tag">Mới</span>
+        </div>
+      </div>
+      
+      <div class="card-image">
+        <div class="image-placeholder" [style.background-color]="getCardBackgroundColor(article.articleId)">
+          {{ article.title.substring(0, 20) }}
+        </div>
+      </div>
+      
+      <div class="card-content">
+        <div class="card-meta">
+          <span [class]="'category-tag ' + getCategoryColor(article.categoryName)">{{ article.categoryName }}</span>
+          <span class="read-time">{{ getReadTime(article.summary) }}</span>
+        </div>
+        
+        <h3 class="card-title">{{ article.title }}</h3>
+        <p class="card-summary">{{ article.summary }}</p>
+        
+        <div class="card-author">
+          <div [class]="'author-avatar ' + getAuthorAvatarColor(0)">
+            {{ article.authorName.charAt(0).toUpperCase() }}
+          </div>
+          <div class="author-info">
+            <span class="author-name">{{ article.authorName }}</span>
+            <span class="publish-date">{{ formatDate(article.createdAt) }}</span>
+          </div>
+        </div>
+        
+        <div class="card-stats">
+          <div class="stat">
+            <i class="fas fa-heart"></i>
+            <span>0</span>
+          </div>
+          <div class="stat">
+            <i class="fas fa-comment"></i>
+            <span>0</span>
+          </div>
+          <div class="stat">
+            <i class="fas fa-eye"></i>
+            <span>0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Newsletter Signup Section -->
+<div class="newsletter-section">
+  <div class="newsletter-content">
+    <div class="newsletter-icon">
+      <i class="fas fa-envelope"></i>
+    </div>
+    <h2 class="newsletter-title">Đăng ký nhận bài viết mới</h2>
+    <p class="newsletter-subtitle">Nhận thông báo về bài viết mới và mẹo học TOEIC hiệu quả qua email</p>
+    
+    <div class="newsletter-form">
+      <input 
+        type="email" 
+        [(ngModel)]="newsletterEmail"
+        placeholder="Nhập email của bạn..." 
+        class="newsletter-input"
+      >
+      <button class="newsletter-btn" (click)="onSubscribeNewsletter()">Đăng ký</button>
+    </div>
+    
+    <p class="newsletter-note">Miễn phí và có thể hủy đăng ký bất cứ lúc nào</p>
+  </div>
+</div>
+
+<!-- Featured Authors Section -->
+<div class="authors-section">
+  <div class="section-header">
+    <h2 class="section-title">Tác giả nổi bật</h2>
+    <p class="section-subtitle">Những chuyên gia TOEIC hàng đầu</p>
+  </div>
+  
+  <div class="authors-grid">
+    <div *ngFor="let author of featuredAuthors" class="author-card">
+      <div [class]="'author-avatar ' + author.avatarColor">
+        {{ author.avatar }}
+      </div>
+      <h3 class="author-name">{{ author.name }}</h3>
+      <p class="author-expertise">{{ author.expertise }}</p>
+      <div class="author-stats">
+        <span class="articles-count">{{ author.articlesCount }} bài viết</span>
+        <span class="followers-count">{{ author.followers }} followers</span>
+      </div>
+      <button 
+        [class]="author.isFollowing ? 'follow-btn following' : 'follow-btn'"
+        (click)="onFollowAuthor(author.id)"
+      >
+        {{ author.isFollowing ? 'Đang theo dõi' : '+ Theo dõi' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+
+

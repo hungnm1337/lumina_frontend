@@ -1,0 +1,118 @@
+<!-- Events Section -->
+<section class="events-section">
+  <div class="container">
+    <!-- Section Header -->
+    <div class="section-header">
+      <div class="header-content">
+        <div class="section-badge">
+          <i class="fas fa-calendar-alt"></i>
+          <span>Sự kiện</span>
+        </div>
+        <h2 class="section-title">Sự kiện nổi bật</h2>
+        <p class="section-subtitle">
+          Tham gia ngay những sự kiện học TOEIC miễn phí và nhận quà hấp dẫn
+        </p>
+      </div>
+      <a href="/events" class="btn-view-all">
+        <span>Xem tất cả</span>
+        <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="skeleton-cards">
+        <div *ngFor="let item of [1,2,3]" class="skeleton-card">
+          <div class="skeleton-image"></div>
+          <div class="skeleton-content">
+            <div class="skeleton-title"></div>
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text short"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !isLoading" class="error-state">
+      <i class="fas fa-exclamation-circle"></i>
+      <p>{{ errorMessage }}</p>
+      <button class="btn-retry" (click)="fetchEvents()">
+        <i class="fas fa-redo"></i>
+        Thử lại
+      </button>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && !errorMessage && events.length === 0" class="empty-state">
+      <i class="fas fa-calendar-times"></i>
+      <h3>Chưa có sự kiện nào</h3>
+      <p>Các sự kiện sẽ được cập nhật sớm. Hãy quay lại sau nhé!</p>
+    </div>
+
+    <!-- Events Grid -->
+    <div *ngIf="!isLoading && !errorMessage && events.length > 0" class="events-grid">
+      <div *ngFor="let event of events | slice:0:3; let i = index" 
+           class="event-card"
+           [class.featured]="i === 0"
+           [attr.data-aos]="'fade-up'"
+           [attr.data-aos-delay]="i * 100">
+        
+        <!-- Event Image - SỬA: Dùng method getEventImage() -->
+        <div class="event-image">
+          <img 
+            [src]="getEventImage(event)" 
+            [alt]="event.eventName"
+            loading="lazy">
+          <div class="event-overlay">
+            <div class="event-status" [class.active]="isEventActive(event)">
+              <i class="fas fa-circle"></i>
+              <span>{{ getEventStatus(event) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Event Content -->
+        <div class="event-content">
+          <!-- Event Meta -->
+          <div class="event-meta">
+            <div class="meta-item">
+              <i class="fas fa-calendar"></i>
+              <span>{{ event.startDate | date:'dd/MM/yyyy' }}</span>
+            </div>
+            <div class="meta-item">
+              <i class="fas fa-clock"></i>
+              <span>{{ getDuration(event) }}</span>
+            </div>
+          </div>
+
+          <!-- Event Title -->
+          <h3 class="event-title">{{ event.eventName }}</h3>
+
+          <!-- Event Description -->
+          <p class="event-description">
+            {{ event.content || 'Sự kiện học TOEIC miễn phí với nhiều phần quà hấp dẫn' }}
+          </p>
+
+          <!-- Event Footer -->
+          <div class="event-footer">
+            <div class="event-date">
+              <i class="fas fa-calendar-day"></i>
+              <span>{{ event.startDate | date:'dd Tháng MM, yyyy' }}</span>
+            </div>
+            <a [href]="'/events/' + event.eventId" class="btn-join">
+              <span>Tham gia</span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+
+          <!-- Featured Badge (cho card đầu tiên) -->
+          <div *ngIf="i === 0" class="featured-badge">
+            <i class="fas fa-star"></i>
+            <span>Nổi bật</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

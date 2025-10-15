@@ -5,8 +5,10 @@ export interface VocabularyWord {
   listId: number;
   word: string;
   type: string;
+  category?: string;
   definition: string;
   example?: string;
+  audioUrl?: string; // Thêm trường này
 }
 
 export interface VocabularyListCreate {
@@ -42,6 +44,10 @@ export interface Vocabulary {
   createdDate: string;
   createdBy: string;
   status: 'active' | 'inactive';
+  audioUrl?: string; 
+  isGeneratingAudio?: boolean;
+  
+
 }
 
 export interface VocabularyCategory {
