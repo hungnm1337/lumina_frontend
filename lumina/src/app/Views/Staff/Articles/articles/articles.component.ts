@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -25,9 +25,8 @@ export class ArticlesComponent implements OnInit {
   searchTerm = '';
   selectedCategory = '';
   selectedStatus = '';
-  // pagination & sorting
   page = 1;
-  pageSize = 10;
+  pageSize = 6;
   total = 0;
   sortBy: 'createdAt' | 'title' | 'category' = 'createdAt';
   sortDir: 'asc' | 'desc' = 'desc';
@@ -36,10 +35,8 @@ export class ArticlesComponent implements OnInit {
   articleForm: FormGroup;
   isLoading = false;
   isSubmitting = false;
-
   categories: ArticleCategory[] = [];
   categoryNames: string[] = [];
-
   sectionTypes = [
     { value: 'đoạn văn', label: 'Đoạn văn' },
     { value: 'hình ảnh', label: 'Hình ảnh' },
@@ -80,7 +77,6 @@ export class ArticlesComponent implements OnInit {
         console.error('Error loading categories:', error);
         this.toastService.error('Không thể tải danh mục bài viết');
         this.isLoading = false;
-        // Fallback to default categories
         this.categoryNames = [
           'Listening Tips', 
           'Reading Strategies', 
@@ -95,14 +91,12 @@ export class ArticlesComponent implements OnInit {
 
   loadArticles() {
     this.isLoading = true;
-    // query with current pagination/sorting & filters
     this.articleService.queryArticles({
       page: this.page,
       pageSize: this.pageSize,
       sortBy: this.sortBy,
       sortDir: this.sortDir,
       search: this.searchTerm || undefined,
-      // Category filter maps by name; backend expects id, so keep client-side until we add mapping
       isPublished: this.selectedStatus === 'published' ? true : this.selectedStatus === 'draft' ? false : undefined
     }).subscribe({
       next: (res) => {
@@ -174,7 +168,6 @@ export class ArticlesComponent implements OnInit {
   }
 
   onCategoryChange() {
-    // hiện tại category filter là client-side do backend dùng id; vẫn filter ở client
     this.page = 1;
     this.filterArticles();
   }
@@ -183,8 +176,6 @@ export class ArticlesComponent implements OnInit {
     this.page = 1;
     this.loadArticles();
   }
-
-  // pagination controls
   nextPage() {
     if (this.page * this.pageSize < this.total) {
       this.page += 1;
@@ -215,8 +206,6 @@ export class ArticlesComponent implements OnInit {
   openModal(article: Article | null = null) {
     this.editingArticle = article;
     this.isModalOpen = true;
-    
-    // Clear existing sections
     while (this.sections.length !== 0) {
       this.sections.removeAt(0);
     }

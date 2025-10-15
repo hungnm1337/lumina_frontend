@@ -1,26 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-
-interface StaffStats {
-  totalArticles: number;
-  totalQuestions: number;
-  totalTests: number;
-  totalVocabulary: number;
-  articlesThisMonth: number;
-  questionsThisMonth: number;
-  testsThisMonth: number;
-  vocabularyThisMonth: number;
-}
-
-interface RecentActivity {
-  id: number;
-  type: 'article' | 'question' | 'test' | 'vocabulary';
-  title: string;
-  action: string;
-  timestamp: string;
-  status: 'created' | 'updated' | 'published' | 'reviewed';
-}
+import { StatisticService } from '../../../../Services/Statistic/statistic.service';
+import { ToastService } from '../../../../Services/Toast/toast.service';
+import { StaffStats, RecentActivity, StaffMetrics } from '../../../../Interfaces/statistic.interfaces';
 
 interface QuickAction {
   title: string;
@@ -35,98 +18,58 @@ interface QuickAction {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss'
+  styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
   staffStats: StaffStats = {
-    totalArticles: 24,
-    totalQuestions: 1247,
-    totalTests: 18,
-    totalVocabulary: 856,
-    articlesThisMonth: 5,
-    questionsThisMonth: 89,
-    testsThisMonth: 3,
-    vocabularyThisMonth: 42
+    totalArticles: 0, totalQuestions: 0, totalTests: 0, totalVocabulary: 0,
+    articlesThisMonth: 0, questionsThisMonth: 0, testsThisMonth: 0, vocabularyThisMonth: 0,
+    articlesLastMonth: 0, questionsLastMonth: 0, testsLastMonth: 0, vocabularyLastMonth: 0
   };
 
-  recentActivities: RecentActivity[] = [
-    {
-      id: 1,
-      type: 'article',
-      title: '10 Tips cải thiện Listening TOEIC',
-      action: 'Đã xuất bản bài viết',
-      timestamp: '5 phút trước',
-      status: 'published'
-    },
-    {
-      id: 2,
-      type: 'question',
-      title: 'Listening Part 1 - Question #145',
-      action: 'Tạo câu hỏi mới',
-      timestamp: '15 phút trước',
-      status: 'created'
-    },
-    {
-      id: 3,
-      type: 'test',
-      title: 'TOEIC Mock Test 2024 - Set 5',
-      action: 'Cập nhật bài thi',
-      timestamp: '1 giờ trước',
-      status: 'updated'
-    },
-    {
-      id: 4,
-      type: 'vocabulary',
-      title: 'Business English - Unit 3',
-      action: 'Thêm từ vựng mới',
-      timestamp: '2 giờ trước',
-      status: 'created'
-    },
-    {
-      id: 5,
-      type: 'article',
-      title: 'Reading Strategies for Part 7',
-      action: 'Chờ duyệt bài viết',
-      timestamp: '3 giờ trước',
-      status: 'reviewed'
-    }
-  ];
+  recentActivities: RecentActivity[] = [];
+  metrics: StaffMetrics = {
+    productivityGrowth: 0, contentLikes: 0, qualityRating: 0
+  };
+
+  isLoading = false;
+  error: string | null = null;
 
   quickActions: QuickAction[] = [
-    {
-      title: 'Tạo bài viết mới',
-      description: 'Viết hướng dẫn học TOEIC',
-      icon: 'fas fa-edit',
-      route: '/staff/articles',
-      color: 'purple'
-    },
-    {
-      title: 'Thêm câu hỏi',
-      description: 'Tạo câu hỏi luyện tập',
-      icon: 'fas fa-question-circle',
-      route: '/staff/questions',
-      color: 'blue'
-    },
-    {
-      title: 'Tạo bài thi',
-      description: 'Thiết kế bài thi mới',
-      icon: 'fas fa-clipboard-list',
-      route: '/staff/tests',
-      color: 'green'
-    },
-    {
-      title: 'Quản lý từ vựng',
-      description: 'Bổ sung từ vựng mới',
-      icon: 'fas fa-spell-check',
-      route: '/staff/vocabulary',
-      color: 'orange'
-    }
+    { title: 'Tạo bài viết mới', description: 'Viết hướng dẫn học TOEIC', icon: 'fas fa-edit', route: '/staff/articles', color: 'purple' },
+    { title: 'Thêm câu hỏi', description: 'Tạo câu hỏi luyện tập', icon: 'fas fa-question-circle', route: '/staff/questions', color: 'blue' },
+    { title: 'Tạo bài thi', description: 'Thiết kế bài thi mới', icon: 'fas fa-clipboard-list', route: '/staff/tests', color: 'green' },
+    { title: 'Quản lý từ vựng', description: 'Bổ sung từ vựng mới', icon: 'fas fa-spell-check', route: '/staff/vocabulary', color: 'orange' }
   ];
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private statisticService: StatisticService,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit() {
-    // Initialize dashboard data
+    this.loadDashboardData();
+  }
+
+  loadDashboardData() {
+    this.isLoading = true;
+    this.error = null;
+
+    this.statisticService.getStaffDashboardStats().subscribe({
+      next: (response) => {
+        this.staffStats = response.stats;
+        this.recentActivities = response.recentActivities;
+        this.metrics = response.metrics;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error loading dashboard data:', err);
+        this.error = 'Không thể tải dữ liệu dashboard. Vui lòng thử lại.';
+        this.toastService.error(this.error);
+        this.isLoading = false;
+      }
+    });
   }
 
   navigateTo(route: string) {
@@ -174,11 +117,13 @@ export class DashboardComponent implements OnInit {
   }
 
   getGrowthPercentage(current: number, previous: number): number {
-    if (previous === 0) return 0;
-    return Math.round(((current - previous) / previous) * 100);
+    if (previous === 0) return current > 0 ? 100 : 0;
+    const percentage = ((current - previous) / previous) * 100;
+    return Math.round(percentage * 10) / 10; // Làm tròn đến 1 chữ số thập phân
   }
 
   getTotalContent(): number {
+    if (!this.staffStats) return 0;
     return this.staffStats.totalArticles + 
            this.staffStats.totalQuestions + 
            this.staffStats.totalTests + 
@@ -186,6 +131,7 @@ export class DashboardComponent implements OnInit {
   }
 
   getThisMonthContent(): number {
+    if (!this.staffStats) return 0;
     return this.staffStats.articlesThisMonth + 
            this.staffStats.questionsThisMonth + 
            this.staffStats.testsThisMonth + 
@@ -198,5 +144,9 @@ export class DashboardComponent implements OnInit {
     const dayName = days[now.getDay()];
     const date = now.toLocaleDateString('vi-VN');
     return `${dayName}, ${date}`;
+  }
+
+  refreshData() {
+    this.loadDashboardData();
   }
 }

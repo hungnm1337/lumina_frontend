@@ -1,0 +1,340 @@
+<div class="speaking-summary-container p-6 bg-white rounded-lg shadow-lg">
+  <!-- Header with TOEIC Score -->
+  <div class="text-center mb-8">
+    <h2 class="text-3xl font-bold text-gray-800 mb-4">
+      🎉 Kết quả TOEIC Speaking Test
+    </h2>
+
+    <!-- TOEIC Score Card -->
+    <div
+      class="inline-block p-8 bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-300 rounded-xl shadow-md"
+    >
+      <div class="mb-3">
+        <span class="text-6xl font-bold text-blue-600">{{ toeicScore }}</span>
+        <span class="text-2xl text-gray-600">/200</span>
+      </div>
+      <div
+        [class]="
+          'px-4 py-2 rounded-full text-lg font-semibold ' +
+          levelBgColor +
+          ' ' +
+          levelColor
+        "
+      >
+        {{ toeicLevel }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Overall Skills Breakdown -->
+  <div class="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+    <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">
+      📊 Phân tích kỹ năng tổng quát
+    </h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Azure Skills (Pronunciation & Delivery) -->
+      <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <h4 class="text-lg font-semibold text-gray-700 mb-3 flex items-center">
+          <span class="text-2xl mr-2">🎤</span>
+          Phát âm & Phát biểu
+        </h4>
+        <div class="space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="text-gray-600">Pronunciation:</span>
+            <div class="flex items-center">
+              <div class="w-32 h-2 bg-gray-200 rounded-full mr-2">
+                <div
+                  class="h-2 bg-blue-500 rounded-full"
+                  [style.width.%]="
+                    getAverageScore('pronunciationScore', 'azure')
+                  "
+                ></div>
+              </div>
+              <span class="font-bold text-blue-600 w-12 text-right">
+                {{ getAverageScore("pronunciationScore", "azure").toFixed(1) }}
+              </span>
+            </div>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-gray-600">Accuracy:</span>
+            <div class="flex items-center">
+              <div class="w-32 h-2 bg-gray-200 rounded-full mr-2">
+                <div
+                  class="h-2 bg-blue-500 rounded-full"
+                  [style.width.%]="getAverageScore('accuracyScore', 'azure')"
+                ></div>
+              </div>
+              <span class="font-bold text-blue-600 w-12 text-right">
+                {{ getAverageScore("accuracyScore", "azure").toFixed(1) }}
+              </span>
+            </div>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-gray-600">Fluency:</span>
+            <div class="flex items-center">
+              <div class="w-32 h-2 bg-gray-200 rounded-full mr-2">
+                <div
+                  class="h-2 bg-blue-500 rounded-full"
+                  [style.width.%]="getAverageScore('fluencyScore', 'azure')"
+                ></div>
+              </div>
+              <span class="font-bold text-blue-600 w-12 text-right">
+                {{ getAverageScore("fluencyScore", "azure").toFixed(1) }}
+              </span>
+            </div>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-gray-600">Completeness:</span>
+            <div class="flex items-center">
+              <div class="w-32 h-2 bg-gray-200 rounded-full mr-2">
+                <div
+                  class="h-2 bg-blue-500 rounded-full"
+                  [style.width.%]="
+                    getAverageScore('completenessScore', 'azure')
+                  "
+                ></div>
+              </div>
+              <span class="font-bold text-blue-600 w-12 text-right">
+                {{ getAverageScore("completenessScore", "azure").toFixed(1) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NLP Skills (Grammar & Content) -->
+      <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <h4 class="text-lg font-semibold text-gray-700 mb-3 flex items-center">
+          <span class="text-2xl mr-2">📝</span>
+          Ngữ pháp & Nội dung
+        </h4>
+        <div class="space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="text-gray-600">Grammar:</span>
+            <div class="flex items-center">
+              <div class="w-32 h-2 bg-gray-200 rounded-full mr-2">
+                <div
+                  class="h-2 bg-green-500 rounded-full"
+                  [style.width.%]="getAverageScore('grammarScore', 'nlp')"
+                ></div>
+              </div>
+              <span class="font-bold text-green-600 w-12 text-right">
+                {{ getAverageScore("grammarScore", "nlp").toFixed(1) }}
+              </span>
+            </div>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-gray-600">Vocabulary:</span>
+            <div class="flex items-center">
+              <div class="w-32 h-2 bg-gray-200 rounded-full mr-2">
+                <div
+                  class="h-2 bg-green-500 rounded-full"
+                  [style.width.%]="getAverageScore('vocabularyScore', 'nlp')"
+                ></div>
+              </div>
+              <span class="font-bold text-green-600 w-12 text-right">
+                {{ getAverageScore("vocabularyScore", "nlp").toFixed(1) }}
+              </span>
+            </div>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-gray-600">Content:</span>
+            <div class="flex items-center">
+              <div class="w-32 h-2 bg-gray-200 rounded-full mr-2">
+                <div
+                  class="h-2 bg-green-500 rounded-full"
+                  [style.width.%]="getAverageScore('contentScore', 'nlp')"
+                ></div>
+              </div>
+              <span class="font-bold text-green-600 w-12 text-right">
+                {{ getAverageScore("contentScore", "nlp").toFixed(1) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Individual Question Results -->
+  <div class="mb-6">
+    <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">
+      📋 Kết quả chi tiết từng câu
+    </h3>
+
+    <div class="space-y-4">
+      @for (item of results; track item.questionNumber) {
+      <div
+        class="border border-gray-300 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+      >
+        <!-- Question Header -->
+        <div
+          class="bg-gradient-to-r from-gray-100 to-gray-50 p-4 border-b border-gray-200"
+        >
+          <div class="flex justify-between items-center">
+            <h4 class="font-semibold text-gray-800">
+              Câu {{ item.questionNumber }}
+            </h4>
+            <span
+              class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold"
+            >
+              {{ item.result.overallScore.toFixed(1) }}/100
+            </span>
+          </div>
+          <p class="text-sm text-gray-600 mt-1">{{ item.questionText }}</p>
+        </div>
+
+        <!-- Question Details -->
+        <div class="p-4 bg-white">
+          <!-- Transcript -->
+          <div class="mb-3 p-3 bg-gray-50 rounded-md">
+            <h5 class="text-xs font-semibold text-gray-600 mb-1 uppercase">
+              <i class="fas fa-file-alt mr-1"></i>
+              Nội dung bạn đã nói:
+            </h5>
+            <p class="text-gray-800 text-sm italic">
+              {{ item.result.transcript }}
+            </p>
+          </div>
+
+          <!-- Scores Grid -->
+          <div class="grid grid-cols-2 gap-3 mb-3">
+            <div class="p-2 bg-blue-50 rounded border border-blue-100">
+              <h6 class="text-xs font-semibold text-gray-600 mb-1">Phát âm</h6>
+              <div class="grid grid-cols-2 gap-1 text-xs">
+                <div>
+                  Pronunciation:
+                  <strong class="text-blue-600">{{
+                    item.result.pronunciationScore.toFixed(1)
+                  }}</strong>
+                </div>
+                <div>
+                  Accuracy:
+                  <strong class="text-blue-600">{{
+                    item.result.accuracyScore.toFixed(1)
+                  }}</strong>
+                </div>
+                <div>
+                  Fluency:
+                  <strong class="text-blue-600">{{
+                    item.result.fluencyScore.toFixed(1)
+                  }}</strong>
+                </div>
+                <div>
+                  Completeness:
+                  <strong class="text-blue-600">{{
+                    item.result.completenessScore.toFixed(1)
+                  }}</strong>
+                </div>
+              </div>
+            </div>
+            <div class="p-2 bg-green-50 rounded border border-green-100">
+              <h6 class="text-xs font-semibold text-gray-600 mb-1">Nội dung</h6>
+              <div class="grid grid-cols-2 gap-1 text-xs">
+                <div>
+                  Grammar:
+                  <strong class="text-green-600">{{
+                    item.result.grammarScore.toFixed(1)
+                  }}</strong>
+                </div>
+                <div>
+                  Vocabulary:
+                  <strong class="text-green-600">{{
+                    item.result.vocabularyScore.toFixed(1)
+                  }}</strong>
+                </div>
+                <div class="col-span-2">
+                  Content:
+                  <strong class="text-green-600">{{
+                    item.result.contentScore.toFixed(1)
+                  }}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Audio Player -->
+          @if (item.result.savedAudioUrl) {
+          <div class="p-2 bg-gray-50 rounded border border-gray-200">
+            <h6 class="text-xs font-semibold text-gray-600 mb-1">
+              <i class="fas fa-volume-up mr-1"></i>
+              Nghe lại:
+            </h6>
+            <audio controls class="w-full h-8">
+              <source [src]="item.result.savedAudioUrl" type="audio/mpeg" />
+              Trình duyệt của bạn không hỗ trợ phát audio.
+            </audio>
+          </div>
+          }
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- Tips & Recommendations -->
+  <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+    <h4 class="font-semibold text-yellow-800 mb-2">
+      💡 Lời khuyên để cải thiện
+    </h4>
+    <ul class="text-sm text-yellow-700 space-y-1 list-disc list-inside">
+      @if (getAverageScore('pronunciationScore', 'azure') < 70) {
+      <li>Luyện phát âm các âm khó, nghe và lặp lại nhiều lần.</li>
+      } @if (getAverageScore('fluencyScore', 'azure') < 70) {
+      <li>Tập nói liền mạch, giảm thiểu các khoảng dừng không cần thiết.</li>
+      } @if (getAverageScore('grammarScore', 'nlp') < 70) {
+      <li>Ôn lại ngữ pháp cơ bản, đặc biệt là thì và cấu trúc câu.</li>
+      } @if (getAverageScore('vocabularyScore', 'nlp') < 70) {
+      <li>
+        Mở rộng vốn từ vựng, đặc biệt là từ vựng học thuật và chuyên ngành.
+      </li>
+      } @if (getAverageScore('contentScore', 'nlp') < 70) {
+      <li>Luyện tập tổ chức ý, trả lời đúng trọng tâm câu hỏi.</li>
+      }
+    </ul>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+    <button
+      (click)="onRetryTest()"
+      class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-md flex items-center justify-center"
+    >
+      <svg
+        class="w-5 h-5 mr-2"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+        ></path>
+      </svg>
+      Làm lại bài thi
+    </button>
+
+    <button
+      (click)="onTryOtherTest()"
+      class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold shadow-md flex items-center justify-center"
+    >
+      <svg
+        class="w-5 h-5 mr-2"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+        ></path>
+      </svg>
+      Làm đề khác
+    </button>
+  </div>
+</div>
