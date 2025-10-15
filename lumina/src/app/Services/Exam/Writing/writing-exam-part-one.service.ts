@@ -14,6 +14,6 @@ export class WritingExamPartOneService {
   constructor(private httpClient: HttpClient) { }
 
   public GetFeedbackOfWritingPartOne(request : WritingRequestDTO): Observable<WritingResponseDTO> {
-    return this.httpClient.post<WritingResponseDTO>(`${this.apiUrl}/WrittingExam/feedback`, request);
+    return this.httpClient.post<WritingResponseDTO>(`${this.apiUrl}/WritingExam/feedback`, request);
   }
 }
