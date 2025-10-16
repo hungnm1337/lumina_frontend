@@ -17,6 +17,7 @@ import { UserEventsDashboardComponent } from './Views/User/event-dashboard/dashb
 import { DashboardSlideComponent } from './Views/Manage/Slide/dashboardslide.component';
 import { BlogComponent } from './Views/Common/blog/blog.component';
 import { BlogDetailComponent } from './Views/Common/blog-detail/blog-detail.component';
+import { UserVocabularyComponent } from './Views/User/vocabulary/vocabulary.component';
 export const routes: Routes = [
   {
     path: 'admin',
@@ -77,6 +78,7 @@ export const routes: Routes = [
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'blog', component: BlogComponent },
   { path: 'blog/:id', component: BlogDetailComponent },
+    { path: 'tu-vung', component: UserVocabularyComponent },
 
   { path: '', redirectTo: '/homepage', pathMatch: 'full' },
   { path: '**', component: ErrorComponent },
