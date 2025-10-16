@@ -42,7 +42,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm opacity-90">Tổng câu hỏi</p>
-                                <p class="text-2xl font-bold">1,247</p>
+                                <p class="text-2xl font-bold">{{ questionStats.totalQuestions }}</p>
                             </div>
                             <i class="fas fa-question-circle text-2xl opacity-80"></i>
                         </div>
@@ -50,8 +50,8 @@
                     <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-4 text-white">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm opacity-90">Đã duyệt</p>
-                                <p class="text-2xl font-bold">1,089</p>
+                                <p class="text-sm opacity-90">Đã sử dụng</p>
+                                <p class="text-2xl font-bold">{{ questionStats.usedQuestions }}</p>
                             </div>
                             <i class="fas fa-check-circle text-2xl opacity-80"></i>
                         </div>
@@ -59,8 +59,8 @@
                     <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg p-4 text-white">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm opacity-90">Chờ duyệt</p>
-                                <p class="text-2xl font-bold">158</p>
+                                <p class="text-sm opacity-90">Chưa sử dụng</p>
+                                <p class="text-2xl font-bold">{{ questionStats.unusedQuestions }}</p>
                             </div>
                             <i class="fas fa-clock text-2xl opacity-80"></i>
                         </div>
@@ -69,12 +69,17 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm opacity-90">Chủ đề</p>
-                                <p class="text-2xl font-bold">24</p>
+                                <!-- Fix cứng số part theo skill -->
+                                <div class="text-xs opacity-90 mb-1">
+                                    Listening: 4 part -&nbsp;&nbsp;Reading: 3 part<br />
+                                    Speaking: 6 part -&nbsp;&nbsp;Writing: 3 part
+                                </div>
                             </div>
                             <i class="fas fa-tags text-2xl opacity-80"></i>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
         <!-- Filters and Search -->

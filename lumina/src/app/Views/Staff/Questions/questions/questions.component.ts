@@ -51,6 +51,7 @@ export class QuestionsComponent implements OnInit {
       this.parts = res || [];
     });
     this.loadPassages();
+    this.loadStatistics();
   }
 
   passages: any[] = [];
@@ -235,25 +236,25 @@ export class QuestionsComponent implements OnInit {
     this.filterPartsBySkill();
   }
 
-  // filterPartsBySkill() {
-  //   if (!this.selectedSkill) {
-  //     this.filteredParts = [];
-  //   } else {
-  //     const skillUpper = this.selectedSkill.toUpperCase();
-  //     this.filteredParts = this.parts.filter(p => p.partCode.toUpperCase().includes(skillUpper));
-  //   }
-  // }
-
   filterPartsBySkill() {
-  if (!this.selectedSkill) {
-    this.filteredParts = [];
-  } else {
-    const skillUpper = this.selectedSkill.toUpperCase();
-    this.filteredParts = this.parts.filter(p => 
-      p.skillType && p.skillType.toUpperCase() === skillUpper
-    );
+    if (!this.selectedSkill) {
+      this.filteredParts = [];
+    } else {
+      const skillUpper = this.selectedSkill.toUpperCase();
+      this.filteredParts = this.parts.filter(p => p.partCode.toUpperCase().includes(skillUpper));
+    }
   }
-}
+
+//   filterPartsBySkill() {
+//   if (!this.selectedSkill) {
+//     this.filteredParts = [];
+//   } else {
+//     const skillUpper = this.selectedSkill.toUpperCase();
+//     this.filteredParts = this.parts.filter(p => 
+//       p.skillType && p.skillType.toUpperCase() === skillUpper
+//     );
+//   }
+// }
 
 
 
@@ -574,6 +575,17 @@ this.isQuestionModalOpen = true;
   }
 
 
-
+//statistics
+questionStats: any = {};
+loadStatistics() {
+  this.questionService.getStatistics().subscribe({
+    next: (res) => {
+      this.questionStats = res;
+    },
+    error: () => {
+      this.questionStats = { totalQuestions: 0, usedQuestions: 0, unusedQuestions: 0 };
+    }
+  });
+}
 
 }
