@@ -38,7 +38,7 @@ export class QuestionsComponent implements OnInit {
       promptText: ['', Validators.required],
       skill: ['', Validators.required],
       partId: ['', Validators.required],
-      promptId: [null], 
+      promptId: [null],
       referenceImageUrl: [''], // có thể null hoặc ''
       referenceAudioUrl: [''], // có thể null hoặc ''
       questions: this.fb.array([])
@@ -138,18 +138,28 @@ export class QuestionsComponent implements OnInit {
   }
 
 
-  addQuestion() {
-    this.questions.push(this.fb.group({
-      stemText: ['', Validators.required],
-      questionExplain: [''],
-      options: this.fb.array([
-        this.createOption(),
-        this.createOption(),
-        this.createOption(),
-        this.createOption(),
-      ])
-    }));
+ addQuestion() {
+  // Tạo cấu hình đầy đủ trường mỗi lần add
+  const questionGroup: any = {
+    stemText: ['', Validators.required],
+    questionExplain: [''],
+    scoreWeight: [1, Validators.required],
+    time: [30, Validators.required],
+  };
+
+  if (this.selectedSkill !== 'Speaking' && this.selectedSkill !== 'Writing') {
+    questionGroup.options = this.fb.array([
+      this.createOption(),
+      this.createOption(),
+      this.createOption(),
+      this.createOption(),
+    ]);
   }
+
+  this.questions.push(this.fb.group(questionGroup));
+}
+
+
 
   removeQuestion(index: number) {
     this.questions.removeAt(index);
@@ -162,9 +172,11 @@ export class QuestionsComponent implements OnInit {
     });
   }
 
-  getOptions(qIdx: number): FormArray {
-    return (this.questions.at(qIdx).get('options') as FormArray);
+  getOptions(i: number): FormArray {
+    const group = this.questions.at(i) as FormGroup;
+    return (group.get('options') as FormArray) || this.fb.array([]);
   }
+
 
 
 
@@ -200,6 +212,49 @@ export class QuestionsComponent implements OnInit {
       });
     }
   }
+  selectedSkill: string = '';
+  filteredParts: any[] = [];
+
+
+  // Xử lý khi đổi skill, reset câu hỏi
+  onSkillChange(event: any) {
+    this.selectedSkill = event.target.value;
+
+    // Xoá câu hỏi cũ
+    while (this.questions.length !== 0) {
+      this.questions.removeAt(0);
+    }
+
+    // Thêm câu hỏi mới phù hợp skill
+    this.addQuestion();
+
+    // Reset partId
+    this.promptForm.patchValue({ partId: '' });
+
+    // Cập nhật filtered parts
+    this.filterPartsBySkill();
+  }
+
+  // filterPartsBySkill() {
+  //   if (!this.selectedSkill) {
+  //     this.filteredParts = [];
+  //   } else {
+  //     const skillUpper = this.selectedSkill.toUpperCase();
+  //     this.filteredParts = this.parts.filter(p => p.partCode.toUpperCase().includes(skillUpper));
+  //   }
+  // }
+
+  filterPartsBySkill() {
+  if (!this.selectedSkill) {
+    this.filteredParts = [];
+  } else {
+    const skillUpper = this.selectedSkill.toUpperCase();
+    this.filteredParts = this.parts.filter(p => 
+      p.skillType && p.skillType.toUpperCase() === skillUpper
+    );
+  }
+}
+
 
 
 
@@ -208,7 +263,7 @@ export class QuestionsComponent implements OnInit {
       alert('Vui lòng nhập đủ thông tin');
       return;
     }
-    // Build đúng DTO cho API:
+
     const f = this.promptForm.value;
     const dto = {
       Passage: {
@@ -218,46 +273,45 @@ export class QuestionsComponent implements OnInit {
       Prompt: {
         Skill: f.skill,
         PromptText: f.promptText,
-        ReferenceImageUrl: f.referenceImageUrl,   // BỔ SUNG TRƯỜNG NÀY
-        ReferenceAudioUrl: f.referenceAudioUrl,   // BỔ SUNG TRƯỜNG NÀY
-
+        ReferenceImageUrl: f.referenceImageUrl,
+        ReferenceAudioUrl: f.referenceAudioUrl,
       },
       Questions: f.questions.map((q: any) => ({
         Question: {
           PartId: f.partId,
-          QuestionType: "SINGLE_CHOICE",
+          QuestionType: 'SINGLE_CHOICE',  // bạn có thể tùy chỉnh logic xác định question type
           StemText: q.stemText,
-          ScoreWeight: 1,
+          ScoreWeight: q.scoreWeight,
           QuestionExplain: q.questionExplain,
-          Time: 30,
-          QuestionNumber: 1
+          Time: q.time,
+          QuestionNumber: 1,
         },
-        Options: q.options.map((opt: any) => ({
-          Content: opt.content,
-          IsCorrect: !!opt.isCorrect
-        }))
+        Options: (f.skill === 'Speaking' || f.skill === 'Writing')
+          ? []
+          : q.options.map((opt: any) => ({
+            Content: (opt as any).content,
+            IsCorrect: !!(opt as any).isCorrect
+          }))
       }))
     };
 
-    this.questionService.createPromptWithQuestions(dto)
-      .subscribe({
-        next: res => {
-          alert('Tạo thành công!');
-          this.closeModal();
-        },
-        error: err => {
-          // Xử lý lấy message chi tiết trả về từ backend
-          let errorMsg = 'Có lỗi xảy ra';
-          if (err.error && err.error.error) {
-            errorMsg = err.error.error;
-          } else if (err.error) {
-            errorMsg = typeof err.error === "string" ? err.error : JSON.stringify(err.error);
-          } else if (err.message) {
-            errorMsg = err.message;
-          }
-          alert('Lỗi: ' + errorMsg);
+    this.questionService.createPromptWithQuestions(dto).subscribe({
+      next: res => {
+        alert('Tạo thành công!');
+        this.closeModal();
+      },
+      error: err => {
+        let errorMsg = 'Có lỗi xảy ra';
+        if (err.error && err.error.error) {
+          errorMsg = err.error.error;
+        } else if (err.error) {
+          errorMsg = typeof err.error === "string" ? err.error : JSON.stringify(err.error);
+        } else if (err.message) {
+          errorMsg = err.message;
         }
-      });
+        alert('Lỗi: ' + errorMsg);
+      }
+    });
   }
 
   onExcelFileSelected(event: any) {
@@ -325,7 +379,7 @@ export class QuestionsComponent implements OnInit {
     const dto = this.editPassageForm.value;
     this.questionService.editPassage(dto).subscribe({
       next: () => {
-       this.showMessage('Cập nhật thành công!', 'success');
+        this.showMessage('Cập nhật thành công!', 'success');
         this.isEditModalOpen = false;
         this.loadPassages(); // reload lại danh sách
       },
@@ -339,59 +393,78 @@ export class QuestionsComponent implements OnInit {
   }
 
   showMessage(msg: string, type: 'success' | 'error' = 'success') {
-  this.message = msg;
-  this.messageType = type;
-  setTimeout(() => this.message = '', 3000); // tự động ẩn sau 3s
-}
+    this.message = msg;
+    this.messageType = type;
+    setTimeout(() => this.message = '', 3000); // tự động ẩn sau 3s
+  }
 
-isQuestionModalOpen = false;
-questionForm!: FormGroup;
-isEditQuestion = false;
-editQuestionIndex: number|null = null;
+  isQuestionModalOpen = false;
+  questionForm!: FormGroup;
+  isEditQuestion = false;
+  editQuestionIndex: number | null = null;
 
-// Mở modal để thêm câu hỏi mới
-openModalAdd() {
+
+  currentSkill: string = '';
+  // Mở modal để thêm câu hỏi mới
+openModalAdd(prompt: any) {
   this.isEditQuestion = false;
   this.isQuestionModalOpen = true;
-  this.questionForm = this.fb.group({
+  this.currentSkill = prompt.skill || '';
+  this.currentPartId = prompt.partId || null;
+  this.currentPromptId = prompt.promptId || null;
+console.log('openModalAdd - currentPartId:', this.currentPartId);
+  const formObj: any = {
     stemText: ['', Validators.required],
     questionExplain: [''],
     scoreWeight: [1, Validators.required],
-    time: [30, Validators.required],
-    options: this.fb.array([
+    time: [30, Validators.required]
+  };
+
+  if (this.currentSkill !== 'Speaking' && this.currentSkill !== 'Writing') {
+    formObj.options = this.fb.array([
       this.createOption(), this.createOption(), this.createOption(), this.createOption()
-    ])
-  });
+    ]);
+  }
+  this.questionForm = this.fb.group(formObj);
 }
 
-// Mở modal để sửa câu hỏi (truyền dữ liệu cũ vào form)
-editQuestionIdx: number | null = null;
 
-currentPartId: number | null = null;
 
-currentPromptId: number | null = null;
+
+  // Mở modal để sửa câu hỏi (truyền dữ liệu cũ vào form)
+  editQuestionIdx: number | null = null;
+
+  currentPartId: number | null = null;
+
+  currentPromptId: number | null = null;
 
 editQuestion(q: any, prompt: any) {
   this.isEditQuestion = true;
   this.editQuestionIdx = q.questionId;
-  this.currentPartId = prompt.partId; // lấy partId ở đây
+  this.currentPartId = prompt.partId;
   this.currentPromptId = prompt.promptId;
+this.isQuestionModalOpen = true;
+  // Lấy skill đúng từ prompt trả về từ API
+  this.currentSkill = prompt.skill || '';
 
-  this.isQuestionModalOpen = true;
-  this.questionForm = this.fb.group({
+  const formObj: any = {
     stemText: [q.stemText, Validators.required],
     questionExplain: [q.questionExplain || ''],
     scoreWeight: [q.scoreWeight ?? 1, Validators.required],
-    time: [q.time ?? 30, Validators.required],
-    options: this.fb.array(
-      (q.options && q.options.length ? q.options : [1,2,3,4]).map((opt: any) =>
+    time: [q.time ?? 30, Validators.required]
+  };
+
+  if (this.currentSkill !== 'Speaking' && this.currentSkill !== 'Writing') {
+    formObj.options = this.fb.array(
+      (q.options && q.options.length ? q.options : [1, 2, 3, 4]).map((opt: any) =>
         this.fb.group({
           content: [opt?.content || '', Validators.required],
           isCorrect: [!!opt?.isCorrect]
         })
       )
-    )
-  });
+    );
+  }
+  this.questionForm = this.fb.group(formObj);
 }
 
 
@@ -399,18 +472,20 @@ editQuestion(q: any, prompt: any) {
 
 
 
-closeQuestionModal() {
-  this.isQuestionModalOpen = false;
-}
 
-// Truy xuất mảng options
-get options(): FormArray {
-  return this.questionForm.get('options') as FormArray;
-}
 
-// Xử lý submit
-// Thêm mới câu hỏi
-saveQuestion() {
+  closeQuestionModal() {
+    this.isQuestionModalOpen = false;
+  }
+
+  // Truy xuất mảng options
+  get options(): FormArray {
+    return this.questionForm.get('options') as FormArray;
+  }
+
+  // Xử lý submit
+  // Thêm mới câu hỏi
+  saveQuestion() {
   if (this.questionForm.invalid) {
     this.showMessage('Vui lòng nhập đủ thông tin!', 'error');
     return;
@@ -422,10 +497,14 @@ saveQuestion() {
     return;
   }
 
-  const correctOptionCount = value.options.filter((opt: any) => opt.isCorrect).length;
-  const questionType = correctOptionCount === 1 ? 'SINGLE_CHOICE' : 'MULTIPLE_CHOICE';
+  let questionType = 'SINGLE_CHOICE'; // Mặc định cho Speaking và Writing
 
-  const dto = {
+  if (this.currentSkill !== 'Speaking' && this.currentSkill !== 'Writing' && Array.isArray(value.options)) {
+    const correctOptionCount = value.options.filter((opt: any) => opt.isCorrect).length;
+    questionType = correctOptionCount === 1 ? 'SINGLE_CHOICE' : 'MULTIPLE_CHOICE';
+  }
+
+  const dto: any = {
     questionId: this.isEditQuestion ? this.editQuestionIdx : null,
     partId: this.currentPartId,
     promptId: this.currentPromptId,
@@ -434,14 +513,16 @@ saveQuestion() {
     scoreWeight: +value.scoreWeight,
     time: +value.time,
     questionType: questionType,
-    options: value.options.map((opt: any) => ({
-      content: opt.content,
-      isCorrect: !!opt.isCorrect
-    }))
   };
 
-  // Gọi API tiếp theo
-
+  if (this.currentSkill !== 'Speaking' && this.currentSkill !== 'Writing' && Array.isArray(value.options)) {
+    dto.options = value.options.map((opt: any) => ({
+      content: opt.content,
+      isCorrect: !!opt.isCorrect,
+    }));
+  } else {
+    dto.options = [];
+  }
 
   console.log('Sending DTO:', dto);
 
@@ -476,20 +557,21 @@ saveQuestion() {
 
 
 
-// Xóa question (với xác nhận)
-deleteQuestion(q: any) {
-  if (confirm('Bạn có chắc chắn muốn xóa câu hỏi này?')) {
-    this.questionService.deleteQuestion(q.questionId).subscribe({
-      next: (res) => {
-        this.showMessage(res?.message || 'Xóa câu hỏi thành công!', 'success');
-        this.loadPassages();
-      },
-      error: (err) => {
-        this.showMessage(err.error?.message || 'Xóa câu hỏi thất bại!', 'error');
-      }
-    });
+
+  // Xóa question (với xác nhận)
+  deleteQuestion(q: any) {
+    if (confirm('Bạn có chắc chắn muốn xóa câu hỏi này?')) {
+      this.questionService.deleteQuestion(q.questionId).subscribe({
+        next: (res) => {
+          this.showMessage(res?.message || 'Xóa câu hỏi thành công!', 'success');
+          this.loadPassages();
+        },
+        error: (err) => {
+          this.showMessage(err.error?.message || 'Xóa câu hỏi thất bại!', 'error');
+        }
+      });
+    }
   }
-}
 
 
 

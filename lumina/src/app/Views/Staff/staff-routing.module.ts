@@ -5,6 +5,7 @@ import { DashboardComponent } from './Dashboard/dashboard/dashboard.component';
 import { ArticlesComponent } from './Articles/articles/articles.component';
 import { VocabularyComponent } from './Vocabulary/vocabulary/vocabulary.component';
 import { QuestionsComponent } from './Questions/questions/questions.component'; 
+import { ExamsComponent } from './exams/exams.component';
 
 
 
@@ -22,6 +23,11 @@ const routes: Routes = [
         path: 'dashboard',
         component: DashboardComponent, 
         data: { title: 'Bảng điều khiển' } 
+      },
+       {
+        path: 'exams',
+        component: ExamsComponent, 
+        data: { title: 'Bài Thi' } 
       },
       {
         path: 'questions',

@@ -19,7 +19,7 @@ export class SidebarComponent {
       items: [
         { path: 'dashboard', name: 'Bảng điều khiển', icon: 'fas fa-tachometer-alt' },
         { path: 'questions', name: 'Câu hỏi', icon: 'fas fa-question-circle' },
-        { path: 'tests', name: 'Bài thi', icon: 'fas fa-clipboard-list' },
+        { path: 'exams', name: 'Bài thi', icon: 'fas fa-clipboard-list' },
         { path: 'articles', name: 'Bài viết', icon: 'fas fa-edit' },
       ],
     },

@@ -1,0 +1,423 @@
+    <div id="questions-management" class="content-section p-6 bg-gray-100 min-h-screen">
+                <div class="space-y-6">
+                    <!-- Header with Stats -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800">Quản lý bài thi</h3>
+                                <p class="text-gray-600 mt-1">Tạo và quản lý bài thi với 4 kỹ năng: Nghe - Nói - Đọc - Viết</p>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <button onclick="openExamModal()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                    <i class="fas fa-plus mr-2"></i>Tạo bài thi
+                                </button>
+                                <button onclick="importExams()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                    <i class="fas fa-upload mr-2"></i>Import Excel
+                                </button>
+                                <button onclick="exportExams()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                                    <i class="fas fa-download mr-2"></i>Export
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Quick Stats -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-4 text-white">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm opacity-90">Tổng bài thi</p>
+                                        <p class="text-2xl font-bold">347</p>
+                                    </div>
+                                    <i class="fas fa-file-alt text-2xl opacity-80"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-4 text-white">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm opacity-90">Đang hoạt động</p>
+                                        <p class="text-2xl font-bold">289</p>
+                                    </div>
+                                    <i class="fas fa-play-circle text-2xl opacity-80"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg p-4 text-white">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm opacity-90">Nháp</p>
+                                        <p class="text-2xl font-bold">58</p>
+                                    </div>
+                                    <i class="fas fa-edit text-2xl opacity-80"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-4 text-white">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm opacity-90">Lượt thi</p>
+                                        <p class="text-2xl font-bold">12,847</p>
+                                    </div>
+                                    <i class="fas fa-users text-2xl opacity-80"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Skills Overview -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-4">Thống kê theo kỹ năng</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="bg-gradient-to-br from-red-100 to-red-200 rounded-lg p-4 border border-red-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="flex items-center space-x-2 mb-2">
+                                            <i class="fas fa-headphones text-red-600"></i>
+                                            <span class="text-sm font-medium text-red-800">Listening (Nghe)</span>
+                                        </div>
+                                        <div class="text-2xl font-bold text-red-700">89</div>
+                                        <div class="text-xs text-red-600">bài thi</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg p-4 border border-blue-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="flex items-center space-x-2 mb-2">
+                                            <i class="fas fa-microphone text-blue-600"></i>
+                                            <span class="text-sm font-medium text-blue-800">Speaking (Nói)</span>
+                                        </div>
+                                        <div class="text-2xl font-bold text-blue-700">67</div>
+                                        <div class="text-xs text-blue-600">bài thi</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-br from-green-100 to-green-200 rounded-lg p-4 border border-green-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="flex items-center space-x-2 mb-2">
+                                            <i class="fas fa-book-open text-green-600"></i>
+                                            <span class="text-sm font-medium text-green-800">Reading (Đọc)</span>
+                                        </div>
+                                        <div class="text-2xl font-bold text-green-700">124</div>
+                                        <div class="text-xs text-green-600">bài thi</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg p-4 border border-purple-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="flex items-center space-x-2 mb-2">
+                                            <i class="fas fa-pen text-purple-600"></i>
+                                            <span class="text-sm font-medium text-purple-800">Writing (Viết)</span>
+                                        </div>
+                                        <div class="text-2xl font-bold text-purple-700">67</div>
+                                        <div class="text-xs text-purple-600">bài thi</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filters and Search -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+                            <div class="lg:col-span-2">
+                                <div class="relative">
+                                    <input type="text" placeholder="Tìm kiếm bài thi..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option>Tất cả kỹ năng</option>
+                                    <option>🎧 Listening (Nghe)</option>
+                                    <option>🎤 Speaking (Nói)</option>
+                                    <option>📖 Reading (Đọc)</option>
+                                    <option>✍️ Writing (Viết)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option>Tất cả cấp độ</option>
+                                    <option>Beginner (A1-A2)</option>
+                                    <option>Intermediate (B1-B2)</option>
+                                    <option>Advanced (C1-C2)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option>Tất cả trạng thái</option>
+                                    <option>Đang hoạt động</option>
+                                    <option>Nháp</option>
+                                    <option>Tạm dừng</option>
+                                    <option>Đã xóa</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Exams Table -->
+                    <div class="bg-white rounded-xl shadow-sm">
+                        <div class="p-6 border-b border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-lg font-semibold text-gray-800">Danh sách bài thi</h4>
+                                <div class="flex items-center space-x-3">
+                                    <button class="text-gray-600 hover:text-gray-800">
+                                        <i class="fas fa-filter mr-1"></i>Lọc nâng cao
+                                    </button>
+                                    <div class="text-sm text-gray-500">
+                                        Hiển thị 1-20 trong 347 bài thi
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <input type="checkbox" class="rounded border-gray-300">
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên bài thi</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kỹ năng</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cấp độ</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thời gian</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lượt thi</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày tạo</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <input type="checkbox" class="rounded border-gray-300">
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="max-w-xs">
+                                                <div class="text-sm font-medium text-gray-900 truncate">
+                                                    IELTS Listening Practice Test 1
+                                                </div>
+                                                <div class="text-sm text-gray-500">
+                                                    40 câu hỏi • 4 phần
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-headphones text-red-500 mr-2"></i>
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                    Listening
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                Intermediate
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            30 phút
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                Hoạt động
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            1,247
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            15/01/2024
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <button onclick="viewExam(1)" class="text-blue-600 hover:text-blue-900 mr-3">Xem</button>
+                                            <button onclick="editExam(1)" class="text-yellow-600 hover:text-yellow-900 mr-3">Sửa</button>
+                                            <button onclick="deleteExam(1)" class="text-red-600 hover:text-red-900">Xóa</button>
+                                        </td>
+                                    </tr>
+
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <input type="checkbox" class="rounded border-gray-300">
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="max-w-xs">
+                                                <div class="text-sm font-medium text-gray-900 truncate">
+                                                    TOEFL Speaking Task 1-4
+                                                </div>
+                                                <div class="text-sm text-gray-500">
+                                                    4 tasks • Ghi âm
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-microphone text-blue-500 mr-2"></i>
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                    Speaking
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                                Advanced
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            17 phút
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                Nháp
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            89
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            14/01/2024
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <button onclick="viewExam(2)" class="text-blue-600 hover:text-blue-900 mr-3">Xem</button>
+                                            <button onclick="editExam(2)" class="text-yellow-600 hover:text-yellow-900 mr-3">Sửa</button>
+                                            <button onclick="deleteExam(2)" class="text-red-600 hover:text-red-900">Xóa</button>
+                                        </td>
+                                    </tr>
+
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <input type="checkbox" class="rounded border-gray-300">
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="max-w-xs">
+                                                <div class="text-sm font-medium text-gray-900 truncate">
+                                                    Academic Reading Comprehension
+                                                </div>
+                                                <div class="text-sm text-gray-500">
+                                                    3 passages • 40 câu hỏi
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-book-open text-green-500 mr-2"></i>
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                    Reading
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                                Advanced
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            60 phút
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                Hoạt động
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            2,156
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            13/01/2024
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <button onclick="viewExam(3)" class="text-blue-600 hover:text-blue-900 mr-3">Xem</button>
+                                            <button onclick="editExam(3)" class="text-yellow-600 hover:text-yellow-900 mr-3">Sửa</button>
+                                            <button onclick="deleteExam(3)" class="text-red-600 hover:text-red-900">Xóa</button>
+                                        </td>
+                                    </tr>
+
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <input type="checkbox" class="rounded border-gray-300">
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="max-w-xs">
+                                                <div class="text-sm font-medium text-gray-900 truncate">
+                                                    Essay Writing Task 2
+                                                </div>
+                                                <div class="text-sm text-gray-500">
+                                                    1 essay • 250+ từ
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-pen text-purple-500 mr-2"></i>
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                                    Writing
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                Intermediate
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            40 phút
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                Hoạt động
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            847
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            12/01/2024
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <button onclick="viewExam(4)" class="text-blue-600 hover:text-blue-900 mr-3">Xem</button>
+                                            <button onclick="editExam(4)" class="text-yellow-600 hover:text-yellow-900 mr-3">Sửa</button>
+                                            <button onclick="deleteExam(4)" class="text-red-600 hover:text-red-900">Xóa</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="px-6 py-4 border-t border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm text-gray-500">
+                                    Hiển thị <span class="font-medium">1</span> đến <span class="font-medium">20</span> trong <span class="font-medium">347</span> kết quả
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button class="px-3 py-1 text-sm text-gray-500 bg-white border border-gray-300 rounded hover:bg-gray-50">
+                                        Trước
+                                    </button>
+                                    <button class="px-3 py-1 text-sm text-white bg-blue-600 border border-blue-600 rounded">
+                                        1
+                                    </button>
+                                    <button class="px-3 py-1 text-sm text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50">
+                                        2
+                                    </button>
+                                    <button class="px-3 py-1 text-sm text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50">
+                                        3
+                                    </button>
+                                    <span class="px-3 py-1 text-sm text-gray-500">...</span>
+                                    <button class="px-3 py-1 text-sm text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50">
+                                        18
+                                    </button>
+                                    <button class="px-3 py-1 text-sm text-gray-500 bg-white border border-gray-300 rounded hover:bg-gray-50">
+                                        Sau
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    </div>
