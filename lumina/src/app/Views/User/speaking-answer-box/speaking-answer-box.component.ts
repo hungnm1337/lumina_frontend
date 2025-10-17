@@ -13,6 +13,7 @@ import {
   SpeakingScoringResult,
 } from '../../../Services/Speaking/speaking.service';
 import { ToastService } from '../../../Services/Toast/toast.service';
+import { SpeakingQuestionStateService } from '../../../Services/Speaking/speaking-question-state.service';
 
 type RecordingState =
   | 'idle'
@@ -32,6 +33,7 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
   @Input() questionId: number = 0;
   @Input() disabled: boolean = false;
   @Input() resetAt: number = 0;
+  @Input() questionTime: number = 0; // Time limit for this question
   @Output() answered = new EventEmitter<boolean>();
   @Output() scoringResult = new EventEmitter<SpeakingScoringResult>();
   @Output() submitting = new EventEmitter<boolean>(); // New: Notify parent về trạng thái submit
@@ -47,51 +49,120 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
   result: SpeakingScoringResult | null = null;
   errorMessage: string = '';
 
+  // Cache for audio URL to prevent ExpressionChangedAfterItHasBeenCheckedError
+  private audioUrl: string | null = null;
+
   constructor(
     private speakingService: SpeakingService,
-    private toastService: ToastService
-  ) {}
+    private toastService: ToastService,
+    private speakingStateService: SpeakingQuestionStateService
+  ) {
+    // Initialize with idle state
+    this.state = 'idle';
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['resetAt']) {
-      // CASE 1: Đang RECORDING → Stop trước, rồi submit
-      if (this.state === 'recording') {
-        console.log(
-          '[SpeakingAnswerBox] Auto-stopping recording due to timeout'
-        );
-        this.stopRecording();
+    // Initialize state service if not exists
+    if (changes['questionId'] && this.questionId) {
+      this.speakingStateService.initializeQuestion(this.questionId);
+      // Restore state for the new question
+      this.restoreStateFromService();
+    }
 
-        // Delay để audioBlob được tạo trong mediaRecorder.onstop
+    if (changes['resetAt']) {
+      // If currently recording, stop and save as draft before navigating
+      if (this.state === 'recording') {
+        this.stopRecording();
+        // Wait a bit for the recording to be saved, then restore state
         setTimeout(() => {
-          if (this.audioBlob) {
-            console.log('[SpeakingAnswerBox] Auto-submitting after stop');
-            this.toastService.warning('Hết thời gian! Tự động nộp bài...');
-            this.submitRecording();
-          }
-        }, 500);
+          this.restoreStateFromService();
+        }, 100);
+      } else {
+        // For speaking questions: preserve state when navigating
+        this.restoreStateFromService();
       }
-      // CASE 2: Đã có audio chưa submit (user đã stop nhưng chưa kịp nộp)
-      else if (
-        this.audioBlob &&
-        this.state !== 'submitted' &&
-        this.state !== 'processing'
-      ) {
+    }
+  }
+
+  private restoreStateFromService(): void {
+    const savedState = this.speakingStateService.getQuestionState(
+      this.questionId
+    );
+    console.log(
+      `[SpeakingAnswerBox] restoreStateFromService: questionId=${this.questionId}, savedState=`,
+      savedState
+    );
+
+    if (savedState) {
+      // Clear previous audio URL cache
+      if (this.audioUrl) {
+        URL.revokeObjectURL(this.audioUrl);
+        this.audioUrl = null;
+      }
+
+      // Restore state from service
+      this.audioBlob = savedState.audioBlob;
+      this.recordingTime = savedState.recordingTime;
+      this.result = savedState.result;
+      this.errorMessage = savedState.errorMessage;
+
+      console.log(
+        `[SpeakingAnswerBox] Restored audioBlob:`,
+        this.audioBlob ? 'EXISTS' : 'NULL'
+      );
+      console.log(
+        `[SpeakingAnswerBox] Restored recordingTime:`,
+        this.recordingTime
+      );
+      console.log(
+        `[SpeakingAnswerBox] Restored result:`,
+        this.result ? 'EXISTS' : 'NULL'
+      );
+
+      // Set component state based on saved state
+      // PRIORITY: If result exists, always show submitted state regardless of saved state
+      if (savedState.result) {
+        this.state = 'submitted';
         console.log(
-          '[SpeakingAnswerBox] Auto-submitting existing audio due to timeout'
+          `[SpeakingAnswerBox] Result exists, setting state to 'submitted'`
         );
-        this.toastService.warning('Hết thời gian! Tự động nộp bài...');
-        this.submitRecording();
+      } else if (
+        savedState.state === 'submitted' ||
+        savedState.state === 'scored'
+      ) {
+        this.state = 'submitted';
+      } else if (savedState.state === 'has_recording') {
+        this.state = 'idle'; // Show the recording is ready to submit
+      } else if (savedState.state === 'scoring') {
+        // Only show processing if no result exists
+        this.state = 'processing';
+        console.log(
+          `[SpeakingAnswerBox] No result found, setting state to 'processing' for scoring state`
+        );
+      } else if (savedState.state === 'in_progress') {
+        this.state = 'idle'; // Reset to idle if was in progress
+      } else {
+        this.state = 'idle';
       }
-      // CASE 3: Không có gì để submit → Reset bình thường
-      else {
-        this.resetComponent();
-      }
+      console.log(
+        `[SpeakingAnswerBox] Restored state: component.state=${this.state}`
+      );
+    } else {
+      // No saved state, reset component
+      console.log(`[SpeakingAnswerBox] No saved state, resetting component`);
+      this.resetComponent();
     }
   }
 
   ngOnDestroy(): void {
     this.stopRecording();
     this.clearTimer();
+
+    // Clean up audio URL
+    if (this.audioUrl) {
+      URL.revokeObjectURL(this.audioUrl);
+      this.audioUrl = null;
+    }
   }
 
   async startRecording(): Promise<void> {
@@ -121,6 +192,25 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
       this.mediaRecorder.onstop = () => {
         this.audioBlob = new Blob(this.audioChunks, { type: mimeType });
         stream.getTracks().forEach((track) => track.stop());
+
+        // Clear previous audio URL cache
+        if (this.audioUrl) {
+          URL.revokeObjectURL(this.audioUrl);
+          this.audioUrl = null;
+        }
+
+        // Save recording to state service as draft
+        if (this.audioBlob) {
+          console.log(
+            `[SpeakingAnswerBox] Saving recording to state service, size:`,
+            this.audioBlob.size
+          );
+          this.speakingStateService.saveRecording(
+            this.questionId,
+            this.audioBlob,
+            this.recordingTime
+          );
+        }
       };
 
       this.mediaRecorder.start();
@@ -128,6 +218,11 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
       this.recordingTime = 0;
       this.startTimer();
       this.toastService.info('Đang ghi âm...');
+
+      // Update state service
+      this.speakingStateService.updateQuestionState(this.questionId, {
+        state: 'in_progress',
+      });
     } catch (error) {
       console.error('Error accessing microphone:', error);
       this.errorMessage =
@@ -142,7 +237,16 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
       this.mediaRecorder.stop();
       this.clearTimer();
       this.state = 'idle';
-      this.toastService.success('Đã dừng ghi âm');
+      this.toastService.success(
+        'Đã dừng ghi âm - Bản ghi đã được lưu như bản nháp'
+      );
+
+      // Save recording to state service as draft
+      // Note: audioBlob will be available in mediaRecorder.onstop callback
+      console.log(
+        `[SpeakingAnswerBox] stopRecording called, audioBlob:`,
+        this.audioBlob ? 'EXISTS' : 'NULL'
+      );
     }
   }
 
@@ -156,15 +260,25 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
     this.errorMessage = '';
     this.submitting.emit(true); // ← Notify parent: Bắt đầu submit
 
+    // Immediately mark as scoring in shared state so UI shows loading when navigating away
+    console.log(
+      `[SpeakingAnswerBox] Marking question ${this.questionId} as 'scoring' before API call`
+    );
+    this.speakingStateService.markAsScoring(this.questionId);
+
     try {
-      const result = await this.speakingService
-        .submitSpeakingAnswer(this.audioBlob, this.questionId)
-        .toPromise();
+      // Submit via service-level method to ensure continuity across navigation
+      const result = await this.speakingStateService.submitAnswerAndStore(
+        this.questionId,
+        this.audioBlob
+      );
 
       if (result) {
         this.result = result;
         this.state = 'submitted';
         this.toastService.success('Đã nộp bài thành công!');
+
+        // State already saved by service method
 
         // Emit kết quả để parent component có thể xử lý
         this.scoringResult.emit(result);
@@ -186,7 +300,17 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
     this.stopRecording();
     this.audioBlob = null;
     this.audioChunks = [];
+
+    // Clear audio URL cache
+    if (this.audioUrl) {
+      URL.revokeObjectURL(this.audioUrl);
+      this.audioUrl = null;
+    }
+
     this.resetComponent();
+
+    // Clear from state service
+    this.speakingStateService.clearRecording(this.questionId);
   }
 
   private resetComponent(): void {
@@ -204,17 +328,13 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
     this.recordingTimer = setInterval(() => {
       this.recordingTime++;
 
-      // Auto-stop sau 120 giây (2 phút) và TỰ ĐỘNG SUBMIT
-      if (this.recordingTime >= 120) {
+      // Auto-stop based on question time limit (if set) or default 120 seconds
+      const timeLimit = this.questionTime > 0 ? this.questionTime : 120;
+      if (this.recordingTime >= timeLimit) {
         this.stopRecording();
-
-        // Auto-submit sau khi stop (delay 500ms để đảm bảo audioBlob đã được tạo)
-        setTimeout(() => {
-          if (this.audioBlob) {
-            this.toastService.warning('Hết thời gian! Tự động nộp bài...');
-            this.submitRecording();
-          }
-        }, 500);
+        this.toastService.warning(
+          'Hết thời gian ghi âm! Bản ghi đã được lưu như bản nháp.'
+        );
       }
     }, 1000);
   }
@@ -273,5 +393,12 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
 
   get isError(): boolean {
     return this.state === 'error';
+  }
+
+  getAudioUrl(): string | null {
+    if (this.audioBlob && !this.audioUrl) {
+      this.audioUrl = URL.createObjectURL(this.audioBlob);
+    }
+    return this.audioUrl;
   }
 }
