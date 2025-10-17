@@ -109,15 +109,23 @@ export class QuestionComponent implements OnChanges, OnDestroy {
       result.overallScore !== null &&
       result.overallScore !== undefined
     ) {
-      // Lưu kết quả speaking cho câu hỏi này
+      // Lưu kết quả cho câu hỏi (map theo questionId, không đẩy trùng vào mảng)
       this.speakingResults.set(q.questionId, result);
 
-      // Lưu vào array để hiển thị summary
-      this.speakingQuestionResults.push({
+      // Cập nhật mảng summary không bị trùng: thay thế nếu đã tồn tại
+      const existingIndex = this.speakingQuestionResults.findIndex(
+        (x) => x.questionNumber === this.currentIndex + 1
+      );
+      const item = {
         questionNumber: this.currentIndex + 1,
         questionText: q.stemText,
         result: result,
-      });
+      };
+      if (existingIndex >= 0) {
+        this.speakingQuestionResults[existingIndex] = item;
+      } else {
+        this.speakingQuestionResults.push(item);
+      }
 
       // Tính điểm dựa trên overallScore (0-100) chuyển sang scoreWeight
       // Giả sử scoreWeight tối đa là 10, scale theo tỷ lệ
