@@ -1,6 +1,7 @@
 <div class="speaking-answer-container">
   <!-- Trạng thái: Idle hoặc Error - Sẵn sàng ghi âm -->
-  @if (canStartRecording) {
+  @if (canStartRecording || (!hasRecording && !isRecording && !isProcessing &&
+  !isSubmitted)) {
   <div class="text-center py-8">
     <div class="mb-4">
       <svg
@@ -103,12 +104,28 @@
         <div class="flex items-center gap-3">
           <i class="fas fa-check-circle text-green-600 text-2xl"></i>
           <div>
-            <p class="font-medium text-green-800">Đã ghi âm thành công</p>
+            <p class="font-medium text-green-800">
+              Bản ghi âm đã được lưu (bản nháp)
+            </p>
             <p class="text-sm text-green-600">
               Thời lượng: {{ formattedTime }}
             </p>
+            <p class="text-xs text-green-500 mt-1">
+              Bạn có thể ghi lại hoặc nộp bài để chấm điểm
+            </p>
           </div>
         </div>
+      </div>
+
+      <!-- Audio Player for Draft Recording -->
+      <div class="mb-4 p-3 bg-white rounded-md border border-gray-200">
+        <h5 class="text-sm font-semibold text-gray-700 mb-2">
+          <i class="fas fa-volume-up mr-1"></i>
+          Nghe lại bản ghi âm:
+        </h5>
+        <audio controls class="w-full" [src]="getAudioUrl()">
+          Trình duyệt của bạn không hỗ trợ phát audio.
+        </audio>
       </div>
     </div>
 
@@ -171,14 +188,13 @@
   </div>
   }
 
-  <!-- Trạng thái: Submitted - Đã nộp bài (không hiển thị điểm) -->
-  @if (isSubmitted && result) {
+  <!-- Trạng thái: Submitted - Đã nộp bài (ẩn chi tiết cho đến khi kết thúc bài thi) -->
+  @if (isSubmitted) {
   <div class="py-6">
     <div
       class="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg shadow-sm"
     >
-      <!-- Success Icon & Message -->
-      <div class="text-center mb-4">
+      <div class="text-center">
         <div
           class="inline-flex items-center justify-center w-16 h-16 bg-green-500 rounded-full mb-3"
         >
@@ -196,43 +212,11 @@
             ></path>
           </svg>
         </div>
-        <h3 class="text-2xl font-bold text-gray-800">Đã nộp bài thành công!</h3>
+        <h3 class="text-2xl font-bold text-gray-800">Đã nộp và chấm xong!</h3>
         <p class="text-sm text-gray-600 mt-2">
-          Câu trả lời của bạn đã được ghi nhận và chấm điểm. Bạn có thể xem kết
-          quả chi tiết sau khi hoàn thành tất cả câu hỏi.
+          Kết quả chi tiết sẽ được hiển thị ở phần tổng kết khi bạn nhấn "Nộp
+          bài thi".
         </p>
-      </div>
-
-      <!-- Transcript Preview -->
-      <div class="mb-4 p-3 bg-white rounded-md border border-gray-200">
-        <h4 class="text-sm font-semibold text-gray-700 mb-2">
-          <i class="fas fa-file-alt mr-1"></i>
-          Nội dung bạn đã nói:
-        </h4>
-        <p class="text-gray-800 italic">{{ result.transcript }}</p>
-      </div>
-
-      <!-- Audio Player - Nghe lại -->
-      @if (result.savedAudioUrl) {
-      <div class="p-3 bg-white rounded-md border border-gray-200">
-        <h5 class="text-sm font-semibold text-gray-700 mb-2">
-          <i class="fas fa-volume-up mr-1"></i>
-          Nghe lại bản ghi của bạn:
-        </h5>
-        <audio controls class="w-full">
-          <source [src]="result.savedAudioUrl" type="audio/mpeg" />
-          Trình duyệt của bạn không hỗ trợ phát audio.
-        </audio>
-      </div>
-      }
-
-      <!-- Info message -->
-      <div
-        class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md text-blue-700 text-sm text-center"
-      >
-        <i class="fas fa-info-circle mr-1"></i>
-        Điểm số và phân tích chi tiết sẽ được hiển thị sau khi bạn hoàn thành
-        tất cả câu hỏi Speaking.
       </div>
     </div>
   </div>

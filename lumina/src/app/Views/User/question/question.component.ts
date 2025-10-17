@@ -1,4 +1,11 @@
-import { Component, Input, input, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  input,
+  OnChanges,
+  SimpleChanges,
+  OnDestroy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OptionsComponent } from '../options/options.component';
 import { PromptComponent } from '../prompt/prompt.component';
@@ -13,6 +20,11 @@ import { AuthService } from '../../../Services/Auth/auth.service';
 import { WritingAnswerBoxComponent } from '../writing-answer-box/writing-answer-box.component';
 import { SpeakingAnswerBoxComponent } from '../speaking-answer-box/speaking-answer-box.component';
 import { SpeakingSummaryComponent } from '../speaking-summary/speaking-summary.component';
+import {
+  SpeakingQuestionStateService,
+  QuestionState,
+} from '../../../Services/Speaking/speaking-question-state.service';
+import { Subscription } from 'rxjs';
 
 interface QuestionResult {
   questionNumber: number;
@@ -34,7 +46,7 @@ interface QuestionResult {
   ],
   templateUrl: './question.component.html',
 })
-export class QuestionComponent implements OnChanges {
+export class QuestionComponent implements OnChanges, OnDestroy {
   @Input() questions: QuestionDTO[] = [];
   currentIndex = 0;
   showExplain = false;
@@ -49,10 +61,35 @@ export class QuestionComponent implements OnChanges {
   isSpeakingSubmitting = false; // New: Track speaking submission status
   private advanceTimer: any = null;
 
+  // New: Speaking navigation and state management
+  private stateSubscription: Subscription = new Subscription();
+  scoringQueue: number[] = [];
+  isProcessingQueue = false;
+  resetCounter = 0; // Force trigger resetAt changes
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['questions']) {
       console.log('QuestionComponent - Questions changed:', this.questions);
-      console.log('QuestionComponent - Questions length:', this.questions?.length || 0);
+      console.log(
+        'QuestionComponent - Questions length:',
+        this.questions?.length || 0
+      );
+
+      // Initialize speaking question states
+      if (this.hasSpeakingQuestions()) {
+        this.questions.forEach((q) => {
+          if (this.isSpeakingQuestion(q.questionType)) {
+            this.speakingStateService.initializeQuestion(q.questionId);
+          }
+        });
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.stateSubscription.unsubscribe();
+    if (this.advanceTimer) {
+      clearTimeout(this.advanceTimer);
     }
   }
 
@@ -72,15 +109,23 @@ export class QuestionComponent implements OnChanges {
       result.overallScore !== null &&
       result.overallScore !== undefined
     ) {
-      // Lưu kết quả speaking cho câu hỏi này
+      // Lưu kết quả cho câu hỏi (map theo questionId, không đẩy trùng vào mảng)
       this.speakingResults.set(q.questionId, result);
 
-      // Lưu vào array để hiển thị summary
-      this.speakingQuestionResults.push({
+      // Cập nhật mảng summary không bị trùng: thay thế nếu đã tồn tại
+      const existingIndex = this.speakingQuestionResults.findIndex(
+        (x) => x.questionNumber === this.currentIndex + 1
+      );
+      const item = {
         questionNumber: this.currentIndex + 1,
         questionText: q.stemText,
         result: result,
-      });
+      };
+      if (existingIndex >= 0) {
+        this.speakingQuestionResults[existingIndex] = item;
+      } else {
+        this.speakingQuestionResults.push(item);
+      }
 
       // Tính điểm dựa trên overallScore (0-100) chuyển sang scoreWeight
       // Giả sử scoreWeight tối đa là 10, scale theo tỷ lệ
@@ -92,6 +137,9 @@ export class QuestionComponent implements OnChanges {
       if (result.overallScore >= 60) {
         this.correctCount += 1;
       }
+
+      // Check if all questions are completed
+      this.checkSpeakingCompletion();
     }
   }
 
@@ -99,32 +147,33 @@ export class QuestionComponent implements OnChanges {
     this.isSpeakingSubmitting = isSubmitting;
     console.log('[QuestionComponent] Speaking submitting:', isSubmitting);
 
-    // Nếu submit xong và đang chờ next → next ngay
-    if (!isSubmitting && this.advanceTimer) {
+    // For speaking: don't auto-advance after submission
+    // User will manually navigate using Previous/Next buttons
+    if (!isSubmitting) {
       console.log(
-        '[QuestionComponent] Submit completed, proceeding to next question'
+        '[QuestionComponent] Speaking submission completed - staying on current question'
       );
-      if (this.advanceTimer) {
-        clearTimeout(this.advanceTimer);
-      }
 
-      // Nếu là câu cuối → check speaking results sau khi submit xong
-      if (this.currentIndex >= this.questions.length - 1) {
-        console.log(
-          '[QuestionComponent] Last question, checking speaking results after submission'
-        );
-        // Delay một chút để đảm bảo onSpeakingResult() đã được gọi
-        setTimeout(() => {
-          this.checkSpeakingResultsAfterSubmission();
-        }, 100);
-      } else {
-        this.nextQuestion();
-      }
+      // Note: State is managed entirely by the speaking-answer-box component
+      // No need to call markAsSubmitted() here as it's handled in submitRecording()
     }
   }
 
   onTimeout(): void {
-    // Khi hết thời gian: chỉ hiển thị giải thích, KHÔNG tự động sang câu tiếp theo
+    const currentQuestion = this.questions[this.currentIndex];
+
+    // For speaking questions: only show warning, don't trigger any action
+    if (
+      currentQuestion &&
+      this.isSpeakingQuestion(currentQuestion.questionType)
+    ) {
+      console.log(
+        '[QuestionComponent] Timer timeout for speaking question - no action taken'
+      );
+      return;
+    }
+
+    // For non-speaking questions: show explanation as before
     this.showExplain = true;
     if (this.advanceTimer) {
       clearTimeout(this.advanceTimer);
@@ -180,40 +229,36 @@ export class QuestionComponent implements OnChanges {
 
   // New method: Check if test has speaking questions
   private hasSpeakingQuestions(): boolean {
-    return this.questions.some((q) => q.questionType === 'SPEAKING');
+    return this.questions.some((q) => this.isSpeakingQuestion(q.questionType));
   }
 
-  // New method: Check speaking results after submission completes
-  private checkSpeakingResultsAfterSubmission(): void {
+  // New method: Check if a question type is a speaking question
+  isSpeakingQuestion(questionType: string): boolean {
+    const speakingTypes = [
+      'READ_ALOUD',
+      'DESCRIBE_PICTURE',
+      'RESPOND_QUESTIONS',
+      'RESPOND_WITH_INFO',
+      'EXPRESS_OPINION',
+    ];
+    return speakingTypes.includes(questionType);
+  }
+
+  // New method: Check if all speaking questions are completed
+  private checkSpeakingCompletion(): void {
+    if (!this.hasSpeakingQuestions()) {
+      return;
+    }
+
+    const allCompleted = this.speakingStateService.areAllQuestionsCompleted();
     console.log(
-      '[QuestionComponent] Checking speaking results after submission...'
-    );
-    console.log(
-      '[QuestionComponent] speakingQuestionResults.length:',
-      this.speakingQuestionResults.length
+      '[QuestionComponent] All speaking questions completed:',
+      allCompleted
     );
 
-    // SPEAKING TEST: Luôn hiển thị summary, bất kể có results hay không
-    if (this.hasSpeakingQuestions()) {
-      console.log(
-        '[QuestionComponent] Speaking test - showing summary regardless of results'
-      );
+    if (allCompleted) {
       this.showSpeakingSummary = true;
-      this.finished = false; // KHÔNG hiển thị màn "Hoàn thành"
-    } else {
-      // Non-speaking test logic
-      if (this.speakingQuestionResults.length > 0) {
-        console.log(
-          '[QuestionComponent] Speaking results found, showing summary'
-        );
-        this.showSpeakingSummary = true;
-        this.finished = false;
-      } else {
-        console.log(
-          '[QuestionComponent] No speaking results, showing completion screen'
-        );
-        this.finished = true;
-      }
+      this.finished = false; // Don't show completion screen for speaking tests
     }
   }
 
@@ -227,8 +272,141 @@ export class QuestionComponent implements OnChanges {
     }
     this.nextQuestion();
   }
-  constructor(private router: Router, private authService: AuthService) {
+
+  // New: Navigation methods for speaking questions
+  previousQuestion(): void {
+    if (this.currentIndex > 0) {
+      this.navigateToQuestion(this.currentIndex - 1);
+    }
+  }
+
+  nextQuestionManual(): void {
+    if (this.currentIndex < this.questions.length - 1) {
+      this.navigateToQuestion(this.currentIndex + 1);
+    }
+  }
+
+  navigateToQuestion(index: number): void {
+    if (index < 0 || index >= this.questions.length) return;
+
+    const currentQuestion = this.questions[this.currentIndex];
+    const targetQuestion = this.questions[index];
+
+    // For speaking questions: handle state preservation
+    if (
+      currentQuestion &&
+      this.isSpeakingQuestion(currentQuestion.questionType)
+    ) {
+      this.handleSpeakingNavigation(currentQuestion.questionId);
+    }
+
+    this.currentIndex = index;
+    this.showExplain = false;
+    this.latestPictureCaption = '';
+
+    // Force trigger resetAt change for speaking questions
+    this.resetCounter++;
+  }
+
+  private handleSpeakingNavigation(questionId: number): void {
+    // If current question was submitted, add to scoring queue
+    const state = this.speakingStateService.getQuestionState(questionId);
+    if (state?.state === 'submitted') {
+      this.addToScoringQueue(questionId);
+    }
+    // Note: If user was recording, the recording will be auto-stopped and saved as draft
+    // when the speaking-answer-box component receives the resetAt change
+  }
+
+  private restoreSpeakingState(questionId: number): void {
+    // State will be restored by the SpeakingAnswerBoxComponent
+    // when it receives the new resetAt value
+  }
+
+  private addToScoringQueue(questionId: number): void {
+    if (!this.scoringQueue.includes(questionId)) {
+      this.scoringQueue.push(questionId);
+      this.speakingStateService.markAsScoring(questionId);
+      this.processScoringQueue();
+    }
+  }
+
+  private async processScoringQueue(): Promise<void> {
+    if (this.isProcessingQueue || this.scoringQueue.length === 0) {
+      return;
+    }
+
+    this.isProcessingQueue = true;
+
+    while (this.scoringQueue.length > 0) {
+      const questionId = this.scoringQueue.shift()!;
+      await this.scoreQuestion(questionId);
+    }
+
+    this.isProcessingQueue = false;
+
+    // Check if all questions are completed
+    if (
+      this.hasSpeakingQuestions() &&
+      this.speakingStateService.areAllQuestionsCompleted()
+    ) {
+      this.showSpeakingSummary = true;
+    }
+  }
+
+  private async scoreQuestion(questionId: number): Promise<void> {
+    try {
+      // The actual scoring is handled by the backend when the user submits
+      // This method just updates the UI state
+      console.log(
+        `[QuestionComponent] Processing score for question ${questionId}`
+      );
+
+      // Wait a bit to simulate processing time
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // The actual result will come through onSpeakingResult()
+      // This is just for UI feedback
+    } catch (error) {
+      console.error(
+        `[QuestionComponent] Error processing score for question ${questionId}:`,
+        error
+      );
+      this.speakingStateService.setError(questionId, 'Lỗi khi chấm điểm');
+    }
+  }
+
+  private updateSpeakingResults(states: Map<number, any>): void {
+    // Update speakingQuestionResults when states change
+    this.speakingQuestionResults = [];
+    states.forEach((state, questionId) => {
+      if (state.result) {
+        const question = this.questions.find(
+          (q) => q.questionId === questionId
+        );
+        if (question) {
+          this.speakingQuestionResults.push({
+            questionNumber: this.questions.indexOf(question) + 1,
+            questionText: question.stemText,
+            result: state.result,
+          });
+        }
+      }
+    });
+  }
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private speakingStateService: SpeakingQuestionStateService
+  ) {
     console.log('Questions:', this.questions);
+
+    // Subscribe to state changes
+    this.stateSubscription = this.speakingStateService
+      .getStates()
+      .subscribe((states) => {
+        this.updateSpeakingResults(states);
+      });
   }
 
   onPictureCaption(caption: string): void {
@@ -259,6 +437,11 @@ export class QuestionComponent implements OnChanges {
     this.speakingQuestionResults = [];
     this.showSpeakingSummary = false;
     this.isSpeakingSubmitting = false; // Reset speaking submission flag
+
+    // Reset speaking state management
+    this.speakingStateService.resetAllStates();
+    this.scoringQueue = [];
+    this.isProcessingQueue = false;
   }
 
   closeSpeakingSummary(): void {
@@ -337,5 +520,90 @@ export class QuestionComponent implements OnChanges {
     const opt = q.options?.find((o) => o.optionId === optionId);
     if (!opt || typeof opt.isCorrect !== 'boolean') return null;
     return opt.isCorrect === true;
+  }
+
+  // New: Helper methods for UI
+  getQuestionState(questionId: number): QuestionState {
+    const state = this.speakingStateService.getQuestionState(questionId);
+    return state?.state || 'not_started';
+  }
+
+  getQuestionStateIcon(questionId: number): string {
+    const state = this.getQuestionState(questionId);
+    switch (state) {
+      case 'not_started':
+        return '🔵';
+      case 'in_progress':
+        return '🟡';
+      case 'has_recording':
+        return '🟡';
+      case 'submitted':
+        return '⏳';
+      case 'scoring':
+        return '⏱️';
+      case 'scored':
+        return '✅';
+      default:
+        return '🔵';
+    }
+  }
+
+  getQuestionStateText(questionId: number): string {
+    const state = this.getQuestionState(questionId);
+    switch (state) {
+      case 'not_started':
+        return 'Chưa làm';
+      case 'in_progress':
+        return 'Đang làm';
+      case 'has_recording':
+        return 'Có ghi âm';
+      case 'submitted':
+        return 'Đã nộp';
+      case 'scoring':
+        return 'Đang chấm';
+      case 'scored':
+        return 'Đã có điểm';
+      default:
+        return 'Chưa làm';
+    }
+  }
+
+  canNavigateToQuestion(index: number): boolean {
+    return index >= 0 && index < this.questions.length;
+  }
+
+  isCurrentQuestion(index: number): boolean {
+    return index === this.currentIndex;
+  }
+
+  // New: Finish speaking exam
+  finishSpeakingExam(): void {
+    if (!this.hasSpeakingQuestions()) {
+      return;
+    }
+
+    // Check if all questions are completed
+    const allCompleted = this.speakingStateService.areAllQuestionsCompleted();
+
+    if (allCompleted) {
+      this.showSpeakingSummary = true;
+      this.finished = false;
+    } else {
+      // Show warning about incomplete questions
+      const incompleteQuestions = this.questions.filter((q) => {
+        if (!this.isSpeakingQuestion(q.questionType)) return false;
+        const state = this.speakingStateService.getQuestionState(q.questionId);
+        return state?.state !== 'scored' && state?.state !== 'submitted';
+      });
+
+      if (incompleteQuestions.length > 0) {
+        alert(
+          `Bạn còn ${incompleteQuestions.length} câu chưa hoàn thành. Vui lòng hoàn thành tất cả câu hỏi trước khi nộp bài.`
+        );
+      } else {
+        this.showSpeakingSummary = true;
+        this.finished = false;
+      }
+    }
   }
 }
