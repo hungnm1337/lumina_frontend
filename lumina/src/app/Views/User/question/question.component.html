@@ -50,7 +50,7 @@
       [questionId]="questions[currentIndex].questionId"
       [disabled]="showExplain"
       [resetAt]="currentIndex"
-      [contentText]="questions[currentIndex].prompt?.passage?.contentText"
+      [contentText]="questions[currentIndex].prompt.passage.contentText"
       [pictureCaption]="latestPictureCaption"
       (answered)="markAnswered($event)"
     ></app-writing-answer-box>
@@ -65,16 +65,26 @@
     ></app-speaking-answer-box>
     }
 
-
-
-  <div class="mt-4 flex items-center justify-between">
-    <div class="text-sm text-gray-500">Câu {{ currentIndex + 1 }} / {{ questions.length }}</div>
-    @if (showExplain && !finished) {
-      <button class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700" (click)="next()">Tiếp</button>
-    } @else if (showExplain && finished) {
-      <button class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700" (click)="goToExams()">Xem kết quả</button>
-    }
-  </div>
+    <div class="mt-4 flex items-center justify-between">
+      <div class="text-sm text-gray-500">
+        Câu {{ currentIndex + 1 }} / {{ questions.length }}
+      </div>
+      @if (showExplain && !finished) {
+      <button
+        class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+        (click)="next()"
+      >
+        Tiếp
+      </button>
+      } @else if (showExplain && finished) {
+      <button
+        class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
+        (click)="goToExams()"
+      >
+        Xem kết quả
+      </button>
+      }
+    </div>
   </div>
 
   @if (showExplain) {
