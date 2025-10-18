@@ -1,3 +1,4 @@
+
 @if (questions && questions.length > 0 && !finished) {
 <div
   class="bg-white rounded-lg border border-gray-200 shadow-sm p-5 flex flex-col gap-3"
@@ -40,31 +41,40 @@
 
   <div class="mt-2">
     @if (questions[currentIndex].questionType === 'SINGLE_CHOICE') {
-    <app-options
-      [options]="questions[currentIndex].options"
-      [disabled]="showExplain"
-      [resetAt]="currentIndex"
-      (answered)="markAnswered($event)"
-    ></app-options>
+      @if (isListeningQuestion(questions[currentIndex].questionType)) {
+        <app-listening
+          [options]="questions[currentIndex].options"
+          [disabled]="showExplain"
+          [resetAt]="currentIndex"
+          (answered)="markAnswered($event)"
+        ></app-listening>
+      } @else {
+        <app-reading
+          [options]="questions[currentIndex].options"
+          [disabled]="showExplain"
+          [resetAt]="currentIndex"
+          (answered)="markAnswered($event)"
+        ></app-reading>
+      }
     } @else if (questions[currentIndex].questionType === 'WRITTING') {
-    <app-writing-answer-box
-      [questionId]="questions[currentIndex].questionId"
-      [disabled]="showExplain"
-      [resetAt]="currentIndex"
-      [contentText]="questions[currentIndex].prompt.passage.contentText"
-      [pictureCaption]="latestPictureCaption"
-      (answered)="markAnswered($event)"
-    ></app-writing-answer-box>
+      <app-writing
+        [questionId]="questions[currentIndex].questionId"
+        [disabled]="showExplain"
+        [resetAt]="currentIndex"
+        [contentText]="questions[currentIndex].prompt.contentText"
+        [pictureCaption]="latestPictureCaption"
+        (answered)="markAnswered($event)"
+      ></app-writing>
     } @else if (isSpeakingQuestion(questions[currentIndex].questionType)) {
-    <app-speaking-answer-box
-      [questionId]="questions[currentIndex].questionId"
-      [disabled]="showExplain"
-      [resetAt]="resetCounter"
-      [questionTime]="questions[currentIndex].time"
-      (answered)="markAnswered($event)"
-      (scoringResult)="onSpeakingResult($event)"
-      (submitting)="onSpeakingSubmitting($event)"
-    ></app-speaking-answer-box>
+      <app-speaking
+        [questionId]="questions[currentIndex].questionId"
+        [disabled]="showExplain"
+        [resetAt]="resetCounter"
+        [questionTime]="questions[currentIndex].time"
+        (answered)="markAnswered($event)"
+        (scoringResult)="onSpeakingResult($event)"
+        (submitting)="onSpeakingSubmitting($event)"
+      ></app-speaking>
     }
 
     <!-- Navigation for Speaking Questions -->

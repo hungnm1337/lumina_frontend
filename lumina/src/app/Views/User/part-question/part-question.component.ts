@@ -1,14 +1,15 @@
 import { Component } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ExamService } from '../../../Services/Exam/exam.service';
 import { PartDetailComponent } from "../part-detail/part-detail.component";
 import { QuestionComponent } from "../question/question.component";
+import { WritingComponent } from "../question/writing/writing.component";
 import { ExamPartDTO, QuestionDTO } from '../../../Interfaces/exam.interfaces';
 
 @Component({
   selector: 'app-part-question',
   standalone: true,
-  imports: [PartDetailComponent, QuestionComponent],
+  imports: [PartDetailComponent, QuestionComponent, WritingComponent],
   templateUrl: './part-question.component.html',
   styleUrl: './part-question.component.scss'
 })
@@ -18,7 +19,10 @@ export class PartQuestionComponent {
   partInfo: ExamPartDTO | null = null;
   questions: QuestionDTO[] = [];
   isLoading = true;
-  constructor(private route: ActivatedRoute, private examService: ExamService) {
+  examType: string = '';
+  isWritingExam = false;
+
+  constructor(private route: ActivatedRoute, private examService: ExamService, private router: Router) {
       this.partId = Number(this.route.snapshot.paramMap.get('id'));
       this.loadPartDetail();
   }
@@ -30,7 +34,10 @@ export class PartQuestionComponent {
           console.log('Part detail loaded:', this.partDetail);
           console.log('Questions count:', this.partDetail.questions?.length || 0);
           console.log('Questions data:', this.partDetail.questions);
-          
+
+          // Load exam detail to get exam type
+          this.loadExamType();
+
           this.partInfo ={
             partId: this.partDetail.partId,
             examId: this.partDetail.examId,
@@ -41,7 +48,7 @@ export class PartQuestionComponent {
           };
           this.questions = this.partDetail.questions || [];
           this.isLoading = false;
-          
+
           console.log('Final questions array:', this.questions);
         },
         error: (error) => {
@@ -50,5 +57,26 @@ export class PartQuestionComponent {
         }
       });
     }
+  }
+
+  private loadExamType(): void {
+    if (this.partDetail?.examId) {
+      this.examService.GetExamDetailAndPart(this.partDetail.examId).subscribe({
+        next: (examData) => {
+          this.examType = examData.examType || '';
+          this.isWritingExam = this.examType.toUpperCase().includes('WRITTING');
+          console.log('Exam type:', this.examType);
+          console.log('Is writing exam:', this.isWritingExam);
+        },
+        error: (error) => {
+          console.error('Error loading exam type:', error);
+        }
+      });
+    }
+  }
+
+  onWritingAnswered(isCorrect: boolean): void {
+    console.log('Writing answer submitted:', isCorrect);
+    // Handle writing answer submission if needed
   }
 }

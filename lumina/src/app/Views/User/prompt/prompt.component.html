@@ -49,16 +49,15 @@
     </div>
     }
   </div>
-  } } @if (prompt?.passage?.title) {
+  } } @if (prompt?.title) {
   <h4 class="text-lg font-semibold text-gray-800">
-    {{ prompt?.passage?.title }}
+    {{ prompt?.title }}
   </h4>
-  } @if (prompt?.promptText) {
-  <p class="text-gray-900 leading-relaxed">{{ prompt?.promptText }}</p>
-  } @if (prompt?.passage?.contentText) {
+  }
+   @if (prompt?.contentText) {
   <div class="pt-2 border-t border-gray-100">
     <p class="text-gray-700 whitespace-pre-line leading-relaxed">
-      {{ prompt?.passage?.contentText }}
+      {{ prompt?.contentText }}
     </p>
   </div>
   }

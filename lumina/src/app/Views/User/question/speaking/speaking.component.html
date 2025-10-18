@@ -1,0 +1,9 @@
+<app-speaking-answer-box
+  [questionId]="questionId"
+  [disabled]="disabled"
+  [resetAt]="resetAt"
+  [questionTime]="questionTime"
+  (answered)="onAnswered($event)"
+  (scoringResult)="onScoringResult($event)"
+  (submitting)="onSubmitting($event)"
+></app-speaking-answer-box>

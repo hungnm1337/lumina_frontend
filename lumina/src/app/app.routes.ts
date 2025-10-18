@@ -17,6 +17,7 @@ import { UserEventsDashboardComponent } from './Views/User/event-dashboard/dashb
 import { DashboardSlideComponent } from './Views/Manage/Slide/dashboardslide.component';
 import { BlogComponent } from './Views/Common/blog/blog.component';
 import { BlogDetailComponent } from './Views/Common/blog-detail/blog-detail.component';
+import { WritingComponent } from './Views/User/question/writing/writing.component';
 export const routes: Routes = [
   {
     path: 'admin',
@@ -52,7 +53,7 @@ export const routes: Routes = [
         children: [
           { path: 'exams', component: ExamsComponent },
           { path: 'exam/:id', component: ExamPartComponent },
-          { path: 'part/:id', component: PartQuestionComponent },
+          { path: 'writing-part/:id', component: WritingComponent },
           { path: '', redirectTo: 'exams', pathMatch: 'full' },
           // {path: 'vocabulary', component: VocabularyComponent},
           // {path: 'notes', component: NotesComponent},

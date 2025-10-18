@@ -7,7 +7,6 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { OptionsComponent } from '../options/options.component';
 import { PromptComponent } from '../prompt/prompt.component';
 import { TimeComponent } from '../time/time.component';
 import {
@@ -17,9 +16,11 @@ import {
 } from '../../../Interfaces/exam.interfaces';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../Services/Auth/auth.service';
-import { WritingAnswerBoxComponent } from '../writing-answer-box/writing-answer-box.component';
-import { SpeakingAnswerBoxComponent } from '../speaking-answer-box/speaking-answer-box.component';
 import { SpeakingSummaryComponent } from '../speaking-summary/speaking-summary.component';
+import { ListeningComponent } from './listening/listening.component';
+import { ReadingComponent } from './reading/reading.component';
+import { SpeakingComponent } from './speaking/speaking.component';
+import { WritingComponent } from './writing/writing.component';
 import {
   SpeakingQuestionStateService,
   QuestionState,
@@ -37,12 +38,13 @@ interface QuestionResult {
   standalone: true,
   imports: [
     CommonModule,
-    OptionsComponent,
     PromptComponent,
     TimeComponent,
-    WritingAnswerBoxComponent,
-    SpeakingAnswerBoxComponent,
     SpeakingSummaryComponent,
+    ListeningComponent,
+    ReadingComponent,
+    SpeakingComponent,
+    WritingComponent,
   ],
   templateUrl: './question.component.html',
 })
@@ -242,6 +244,17 @@ export class QuestionComponent implements OnChanges, OnDestroy {
       'EXPRESS_OPINION',
     ];
     return speakingTypes.includes(questionType);
+  }
+
+  // New method: Check if a question type is a listening question
+  isListeningQuestion(questionType: string): boolean {
+    const listeningTypes = [
+      'LISTENING_PART_1',
+      'LISTENING_PART_2',
+      'LISTENING_PART_3',
+      'LISTENING_PART_4',
+    ];
+    return listeningTypes.includes(questionType);
   }
 
   // New method: Check if all speaking questions are completed
