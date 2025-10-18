@@ -214,4 +214,15 @@ export class VocabularyService {
       example: vocabulary.example || undefined
     };
   }
+
+  // Gửi yêu cầu phê duyệt vocabulary list
+  requestApproval(listId: number): Observable<any> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post(`${this.vocabularyListsUrl}/${listId}/request-approval`, {}, { headers });
+  }
 }

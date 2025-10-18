@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HeaderComponent } from '../../Common/header/header.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-user-vocabulary',
@@ -31,7 +32,7 @@ export class UserVocabularyComponent implements OnInit {
     }
   ];
 
-  constructor() { }
+  constructor(private router: Router) { }
 
   ngOnInit() {
     // Component vocabulary cho User
@@ -39,8 +40,7 @@ export class UserVocabularyComponent implements OnInit {
 
   // Các hàm xử lý sự kiện click
   startFlashcards(): void {
-    console.log('Bắt đầu học Flashcards...');
-    // Tại đây bạn sẽ xử lý logic điều hướng đến trang Flashcards
+    this.router.navigate(['/flashcards']); 
   }
 
   startQuiz(): void {

@@ -42,8 +42,24 @@
         <div class="folder-details">
           <h3 class="folder-name">{{ list.name }}</h3>
           <p class="folder-meta">{{ list.vocabularyCount }} words · Created by {{ list.makeByName }}</p>
+          <div class="status-section">
+            <span class="status-badge" [ngClass]="getStatusClass(list.status)">
+              {{ getStatusText(list.status) }}
+            </span>
+            <span *ngIf="list.rejectionReason" class="rejection-reason">
+              <i class="fas fa-exclamation-triangle"></i> {{ list.rejectionReason }}
+            </span>
+          </div>
         </div>
-        <div class="folder-arrow"><i class="fas fa-chevron-right"></i></div>
+        <div class="folder-actions">
+          <div *ngIf="list.status === 'draft' || list.status === 'rejected'" class="action-buttons">
+            <button class="btn-request-approval" (click)="requestApproval(list, $event)" 
+                    [disabled]="isSubmitting">
+              <i class="fas fa-paper-plane"></i> Send for Review
+            </button>
+          </div>
+          <div class="folder-arrow"><i class="fas fa-chevron-right"></i></div>
+        </div>
       </div>
     </div>
     <div *ngIf="!isLoading && vocabularyLists.length === 0" class="empty-state">

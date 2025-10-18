@@ -1,0 +1,155 @@
+<app-header></app-header>
+
+<div class="deck-detail-container">
+  <!-- Header -->
+  <div class="top-header">
+    <button class="back-btn" routerLink="/decks">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Quay lại
+    </button>
+    
+    <div class="header-info">
+      <h1 class="deck-name">{{ deck?.title || 'Flashcards' }}</h1>
+      <p class="progress-text">Thẻ {{ currentTermIndex + 1 }} / {{ terms.length }}</p>
+    </div>
+
+    <div class="header-actions">
+      <button class="action-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Xáo trộn
+      </button>
+      <button class="action-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" fill="currentColor"/>
+          <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        Tự động
+      </button>
+    </div>
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="progress-bar-wrapper" *ngIf="terms.length > 0">
+    <div class="progress-bar">
+      <div class="progress-fill" [style.width.%]="((currentTermIndex + 1) / terms.length) * 100"></div>
+    </div>
+  </div>
+
+  <!-- Main Flashcard -->
+  <div class="flashcard-container" *ngIf="terms.length > 0">
+    <div class="flashcard-main" (click)="toggleFlip()">
+      <div class="flashcard-content" [class.flipped]="isFlipped">
+        <!-- Front: Question -->
+        <div class="flashcard-face front">
+          <div class="card-text">{{ terms[currentTermIndex].question }}</div>
+          <button class="audio-btn" (click)="playAudio($event)" type="button">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Back: Answer -->
+        <div class="flashcard-face back">
+          <div class="card-text">{{ terms[currentTermIndex].answer }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Control Buttons -->
+    <div class="control-buttons">
+      <button class="control-btn hard" (click)="markAsDifficult()" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Khó
+      </button>
+
+      <button class="control-btn prev" (click)="previousTerm()" [disabled]="currentTermIndex === 0" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Trước
+      </button>
+
+      <button class="control-btn next primary" (click)="nextTerm()" [disabled]="currentTermIndex === terms.length - 1" type="button">
+        Tiếp
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <button class="control-btn easy" (click)="markAsEasy()" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Dễ
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-cards" *ngIf="terms.length > 0">
+    <div class="stat-card easy">
+      <div class="stat-number">{{ easyCount }}</div>
+      <div class="stat-label">Đã biết</div>
+    </div>
+
+    <div class="stat-card learning">
+      <div class="stat-number">{{ learningCount }}</div>
+      <div class="stat-label">Đang học</div>
+    </div>
+
+    <div class="stat-card hard">
+      <div class="stat-number">{{ difficultCount }}</div>
+      <div class="stat-label">Khó</div>
+    </div>
+  </div>
+
+  <!-- THÊM PHẦN NÀY: Vocabulary List -->
+  <div class="vocabulary-section" *ngIf="terms.length > 0">
+    <div class="section-header">
+      <h2 class="section-title">Danh sách từ vựng</h2>
+      <div class="section-info">
+        <span class="term-count">{{ terms.length }} câu hỏi</span>
+      </div>
+    </div>
+
+    <div class="vocabulary-list">
+      <div 
+        *ngFor="let term of terms; let i = index"
+        class="vocab-item"
+        [class.active]="i === currentTermIndex"
+        (click)="jumpToTerm(i)">
+        
+        <div class="vocab-index">{{ i + 1 }}</div>
+        
+        <div class="vocab-content">
+          <div class="vocab-question">{{ term.question }}</div>
+          <div class="vocab-answer">{{ term.answer }}</div>
+        </div>
+
+        <div class="vocab-actions">
+          <button class="play-audio-btn" (click)="playAudio($event)" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M11 5L6 9H2v6h4l5 4V5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="terms.length === 0">
+    <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+      <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <h3>Chưa có câu hỏi nào</h3>
+    <p>Bộ thẻ này chưa có nội dung để học.</p>
+  </div>
+</div>
