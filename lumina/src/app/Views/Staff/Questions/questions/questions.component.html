@@ -115,61 +115,64 @@
                     <table class="w-full">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3">Chủ đề Passage</th>
+                                <th class="px-6 py-3">Tiêu đề</th>
                                 <th class="px-6 py-3">Nội dung Passage</th>
                                 <th class="px-6 py-3">Prompt</th>
-                                <th class="px-6 py-3">Skill</th>
+                                <th class="px-6 py-3">Kỹ năng</th>
                                 <th class="px-6 py-3">Câu hỏi</th>
                                 <th class="px-6 py-3">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <tr *ngFor="let passage of passages">
-                                <td class="px-6 py-4">{{ passage.title }}</td>
-                                <td class="px-6 py-4 whitespace-pre-line">{{ passage.contentText }}</td>
+                            <tr *ngFor="let prompt of prompts">
+                                <td class="px-6 py-4 whitespace-pre-line">{{ prompt.title }}</td>
+                                <td class="px-6 py-4 whitespace-pre-line">{{ prompt.contentText }}</td>
                                 <td class="px-6 py-4">
-                                    <div *ngIf="passage.prompt">
-                                        <div *ngIf="passage.prompt.promptText; ">{{
-                                            passage.prompt.promptText }}</div>
-                                        <div *ngIf="passage.prompt.referenceImageUrl">
-                                            <img [src]="passage.prompt.referenceImageUrl"
+                                    <div *ngIf="prompt.referenceImageUrl || prompt.referenceAudioUrl; else noPrompt">
+
+                                        <div *ngIf="prompt.referenceImageUrl">
+                                            <img [src]="prompt.referenceImageUrl"
                                                 class="my-2 max-w-[150px] rounded shadow" />
                                         </div>
-                                        <div *ngIf="passage.prompt.referenceAudioUrl">
-                                            <audio controls [src]="passage.prompt.referenceAudioUrl"></audio>
+
+                                        <div *ngIf="prompt.referenceAudioUrl">
+                                            <audio controls [src]="prompt.referenceAudioUrl"></audio>
                                         </div>
                                     </div>
-                                    <div *ngIf="!passage.prompt"><i class="text-gray-400">Không có prompt</i></div>
+
+                                    <ng-template #noPrompt>
+                                        <i class="text-gray-400">Không có prompt</i>
+                                    </ng-template>
                                 </td>
-                                <td class="px-6 py-4">{{ passage.prompt?.skill || '—' }}</td>
+
+                                <td class="px-6 py-4">{{ prompt.skill || '—' }}</td>
                                 <td class="px-6 py-4">
-                                    <ng-container *ngIf="passage.prompt?.questions?.length > 0; else noQuestions">
+                                    <ng-container *ngIf="prompt.questions?.length > 0; else noQuestions">
                                         <button class="text-blue-600 font-medium mb-2"
-                                            (click)="passage.showQuestions = !passage.showQuestions">
-                                            {{ passage.showQuestions ? 'Ẩn' : 'Xem' }} ({{
-                                            passage.prompt.questions.length }}) câu hỏi
+                                            (click)="prompt.showQuestions = !prompt.showQuestions">
+                                            {{ prompt.showQuestions ? 'Ẩn' : 'Xem' }} ({{ prompt.questions.length }})
+                                            câu hỏi
                                         </button>
-                                        <div *ngIf="passage.showQuestions" style="max-height:300px;overflow:auto"
+                                        <div *ngIf="prompt.showQuestions" style="max-height:300px;overflow:auto"
                                             class="mt-2 bg-gray-50 rounded p-2 shadow-inner">
-                                            <button (click)="openModalAdd(passage.prompt)"
+                                            <button (click)="openModalAdd(prompt)"
                                                 class="bg-green-300 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
                                                 <i class="fas fa-plus mr-2"></i>Thêm câu hỏi
                                             </button>
-                                            <div *ngFor="let q of passage.prompt.questions; let qi=index"
+                                            <div *ngFor="let q of prompt.questions; let qi=index"
                                                 class="mb-3 border-b pb-2">
-                                                <div class="font-medium">{{ qi+1 }}. {{ q.stemText }}</div>
+                                                <div class="font-medium">{{ qi + 1 }}. {{ q.stemText }}</div>
                                                 <ul class="pl-4 mb-1">
                                                     <li *ngFor="let opt of q.options"
-                                                        [ngClass]="{'font-bold text-green-700':opt.isCorrect}">
-                                                        {{ opt.content }}
-                                                        <span *ngIf="opt.isCorrect">(Đúng)</span>
+                                                        [ngClass]="{'font-bold text-green-700': opt.isCorrect}">
+                                                        {{ opt.content }} <span *ngIf="opt.isCorrect">(Đúng)</span>
                                                     </li>
                                                 </ul>
                                                 <div *ngIf="q.questionExplain"
                                                     class="text-xs italic text-gray-500 mb-1">
                                                     Giải thích: {{ q.questionExplain }}
                                                 </div>
-                                                <button (click)="editQuestion(q, passage.prompt)"
+                                                <button (click)="editQuestion(q, prompt)"
                                                     class="text-yellow-700 mr-2">Sửa</button>
                                                 <button (click)="deleteQuestion(q)" class="text-red-700">Xóa</button>
                                             </div>
@@ -180,12 +183,15 @@
                                     </ng-template>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <button class="text-green-700" (click)="editPassage(passage)">Sửa</button>
+                                    <button class="text-green-700" (click)="editPrompt(prompt)">Sửa</button>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+
+
+
 
 
 
@@ -216,21 +222,12 @@
 
                     <!-- Phần chọn Passage (gộp Title, ContentText) -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tiêu đề Passage</label>
-                        <input type="text" formControlName="passageTitle"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                        <label>Tiêu đề Passage</label>
+                        <input formControlName="title" type="text" class="w-full border rounded p-2" />
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Nội dung Passage</label>
-                        <textarea formControlName="passageContent" rows="2"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg"></textarea>
-                    </div>
-
-                    <!-- Prompt -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Nội dung Prompt</label>
-                        <textarea formControlName="promptText" rows="2"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg"></textarea>
+                        <label>Nội dung Passage</label>
+                        <textarea formControlName="contentText" rows="3" class="w-full border rounded p-2"></textarea>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Link hình ảnh tham khảo</label>
@@ -387,10 +384,8 @@
 
         <div *ngIf="isEditModalOpen" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
             <div class="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-auto">
-
-                <h3 class="text-lg font-semibold mb-4">Chỉnh sửa Passage & Prompt</h3>
-
-                <form [formGroup]="editPassageForm" (ngSubmit)="saveEditPassage()">
+                <h3 class="text-lg font-semibold mb-4">Chỉnh sửa Nội Dung Prompt</h3>
+                <form [formGroup]="editPromptForm" (ngSubmit)="saveEditPrompt()">
 
                     <label class="block mb-1 font-medium">Tiêu đề Passage</label>
                     <input formControlName="title" type="text" class="w-full border p-2 rounded mb-3" />
@@ -398,31 +393,22 @@
                     <label class="block mb-1 font-medium">Nội dung Passage</label>
                     <textarea formControlName="contentText" rows="3" class="w-full border p-2 rounded mb-3"></textarea>
 
-                    <div formGroupName="prompt">
+                    <label class="block mb-1 font-medium">Skill</label>
+                    <select formControlName="skill" class="w-full border p-2 rounded mb-3">
+                        <option value="">Chọn skill</option>
+                        <option *ngFor="let skill of skills" [value]="skill">{{ skill }}</option>
+                    </select>
 
-                        <label class="block mb-1 font-medium">Skill</label>
-                        <select formControlName="skill" class="w-full border p-2 rounded mb-3">
-                            <option value="">Chọn skill</option>
-                            <option *ngFor="let skill of skills" [value]="skill">{{ skill }}</option>
-                        </select>
+                    <label class="block mb-1 font-medium">Link ảnh tham khảo(Link ảnh đã upload lên Cloundinary)</label>
+                    <input formControlName="referenceImageUrl" type="text" class="w-full border p-2 rounded mb-3" />
 
-                        <label class="block mb-1 font-medium">Nội dung Prompt</label>
-                        <textarea formControlName="promptText" rows="2"
-                            class="w-full border p-2 rounded mb-3"></textarea>
-
-                        <label class="block mb-1 font-medium">Link ảnh tham khảo(Link ảnh đã upload lên
-                            Cloundinary)</label>
-                        <input formControlName="referenceImageUrl" type="text" class="w-full border p-2 rounded mb-3" />
-
-                        <label class="block mb-1 font-medium">Link audio tham khảo(Link audio đã upload lên
-                            Cloundinary)</label>
-                        <input formControlName="referenceAudioUrl" type="text" class="w-full border p-2 rounded mb-3" />
-
-                    </div>
+                    <label class="block mb-1 font-medium">Link audio tham khảo(Link audio đã upload lên
+                        Cloundinary)</label>
+                    <input formControlName="referenceAudioUrl" type="text" class="w-full border p-2 rounded mb-3" />
 
                     <div class="flex justify-end space-x-3 mt-6">
                         <button type="button" (click)="closeEditModal()" class="px-4 py-2 rounded border">Hủy</button>
-                        <button type="submit" [disabled]="editPassageForm.invalid"
+                        <button type="submit" [disabled]="editPromptForm.invalid"
                             class="bg-green-600 text-white px-4 py-2 rounded">
                             Lưu
                         </button>
@@ -430,6 +416,7 @@
                 </form>
             </div>
         </div>
+
 
         <!-- Modal Thêm/Sửa câu hỏi -->
         <div *ngIf="isQuestionModalOpen"
@@ -447,7 +434,7 @@
                         <label class="block mb-1">Nội dung câu hỏi</label>
                         <input formControlName="stemText" class="w-full px-2 py-1 border border-gray-300 rounded" />
                     </div>
-                    <div>
+                    <div *ngIf="currentSkill !== 'Speaking' && currentSkill !== 'Writing'">
                         <label class="block mb-1">Giải thích (nếu có)</label>
                         <input formControlName="questionExplain"
                             class="w-full px-2 py-1 border border-gray-300 rounded" />
