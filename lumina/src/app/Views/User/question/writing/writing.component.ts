@@ -1,24 +1,47 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+  OnInit,
+  OnDestroy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AuthService } from '../../../../Services/Auth/auth.service';
+import { BaseQuestionService } from '../../../../Services/Question/base-question.service';
 import { WritingRequestDTO } from '../../../../Interfaces/WrittingExam/WritingRequestDTO.interface';
 import { FeedbackComponent } from '../../writing-answer-box/Feedback/feedback/feedback.component';
 import { WritingResponseDTO } from '../../../../Interfaces/WrittingExam/WritingResponseDTO.interface';
 import { WritingExamPartOneService } from '../../../../Services/Exam/Writing/writing-exam-part-one.service';
-import { ExamPartDTO, QuestionDTO } from '../../../../Interfaces/exam.interfaces';
-import { ActivatedRoute, Router } from '@angular/router';
-import { ExamService } from '../../../../Services/Exam/exam.service';
-import { PartDetailComponent } from '../../part-detail/part-detail.component';
+import {
+  ExamPartDTO,
+  QuestionDTO,
+} from '../../../../Interfaces/exam.interfaces';
+import { TimeComponent } from '../../time/time.component';
+import { PromptComponent } from '../../prompt/prompt.component';
 
 @Component({
   selector: 'app-writing',
   standalone: true,
-  imports: [CommonModule, FormsModule, FeedbackComponent,PartDetailComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TimeComponent,
+    PromptComponent,
+  ],
   templateUrl: './writing.component.html',
-  styleUrl: './writing.component.scss'
+  styleUrl: './writing.component.scss',
 })
-export class WritingComponent implements OnChanges {
+export class WritingComponent implements OnChanges, OnInit, OnDestroy {
+  @Input() questions: QuestionDTO[] = [];
+  @Input() partInfo: ExamPartDTO | null = null;
+  @Output() writingAnswered = new EventEmitter<boolean>();
+
+  // Legacy inputs for backward compatibility
   @Input() questionId: number = 0;
   @Input() disabled: boolean = false;
   @Input() resetAt: number = 0;
@@ -26,14 +49,16 @@ export class WritingComponent implements OnChanges {
   @Input() pictureCaption: string | undefined;
   @Output() answered = new EventEmitter<boolean>();
 
-  partId: number | null = null;
-  partDetail: ExamPartDTO | null = null;
-  partInfo: ExamPartDTO | null = null;
-  questions: QuestionDTO[] = [];
-  isLoading = true;
-  examType: string = '';
-  isWritingExam = false;
+  // State management
+  currentIndex = 0;
+  showExplain = false;
+  totalScore = 0;
+  correctCount = 0;
+  finished = false;
+  latestPictureCaption: string = '';
+  private advanceTimer: any = null;
 
+  // Writing-specific properties
   feedbackResponse: WritingResponseDTO | null = null;
   writingRequest: WritingRequestDTO | undefined;
   userAnswer: string = '';
@@ -42,74 +67,114 @@ export class WritingComponent implements OnChanges {
   private readonly AUTO_SAVE_INTERVAL = 10000; // 10 seconds
 
   constructor(
+    private router: Router,
     private authService: AuthService,
-    private writingExamPartOneService: WritingExamPartOneService,
-    private route: ActivatedRoute, private examService: ExamService, private router: Router
+    private baseQuestionService: BaseQuestionService,
+    private writingExamPartOneService: WritingExamPartOneService
   ) {
     this.startAutoSave();
   }
-  private loadPartDetail(): void {
-    if (this.partId) {
-      this.examService.GetExamPartDetailAndQuestion(this.partId).subscribe({
-        next: (data) => {
-          this.partDetail = data;
-          console.log('Part detail loaded:', this.partDetail);
-          console.log('Questions count:', this.partDetail.questions?.length || 0);
-          console.log('Questions data:', this.partDetail.questions);
+  ngOnInit(): void {
+    this.loadSavedAnswer();
+  }
 
-          // Load exam detail to get exam type
-          this.loadExamType();
-
-          this.partInfo = {
-            partId: this.partDetail.partId,
-            examId: this.partDetail.examId,
-            partCode: this.partDetail.partCode,
-            title: this.partDetail.title,
-            orderIndex: this.partDetail.orderIndex,
-            questions: []
-          };
-          this.questions = this.partDetail.questions || [];
-          this.isLoading = false;
-
-          console.log('Final questions array:', this.questions);
-        },
-        error: (error) => {
-          console.error('Error loading part detail:', error);
-          this.isLoading = false;
-        }
-      });
+  ngOnDestroy(): void {
+    this.stopAutoSave();
+    if (this.advanceTimer) {
+      clearTimeout(this.advanceTimer);
     }
   }
 
-  private loadExamType(): void {
-    if (this.partDetail?.examId) {
-      this.examService.GetExamDetailAndPart(this.partDetail.examId).subscribe({
-        next: (examData) => {
-          this.examType = examData.examType || '';
-          this.isWritingExam = this.examType.toUpperCase().includes('WRITTING');
-          console.log('Exam type:', this.examType);
-          console.log('Is writing exam:', this.isWritingExam);
-        },
-        error: (error) => {
-          console.error('Error loading exam type:', error);
-        }
-      });
-    }
-  }
-
-  onWritingAnswered(isCorrect: boolean): void {
-    console.log('Writing answer submitted:', isCorrect);
-    // Handle writing answer submission if needed
-  }
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['questions'] && this.questions && this.questions.length > 0) {
+      console.log('✅ WritingComponent - Questions changed:', this.questions);
+      console.log(
+        '✅ WritingComponent - Questions length:',
+        this.questions.length
+      );
+
+      // ✅ Debug từng câu hỏi
+      this.questions.forEach((q, index) => {
+        console.log(`Question ${index}:`, {
+          questionId: q.questionId,
+          stemText: q.stemText,
+          questionType: q.questionType,
+          hasPrompt: !!q.prompt,
+          promptContentText: q.prompt?.contentText,
+          promptTitle: q.prompt?.title,
+        });
+      });
+
+      this.resetQuiz();
+    }
+
     if (changes['resetAt'] || changes['questionId']) {
       this.loadSavedAnswer();
-      // Reset feedback state when question changes
       this.feedbackResponse = null;
       this.isLoadingFeedback = false;
     }
   }
 
+  // Navigation methods
+  markAnswered(isCorrect: boolean): void {
+    if (isCorrect) {
+      const q = this.questions[this.currentIndex];
+      this.totalScore += q?.scoreWeight ?? 0;
+      this.correctCount += 1;
+    }
+    this.revealExplainAndQueueNext();
+  }
+
+  onTimeout(): void {
+    this.showExplain = true;
+    if (this.advanceTimer) {
+      clearTimeout(this.advanceTimer);
+    }
+  }
+
+  next(): void {
+    if (this.finished) return;
+    if (this.currentIndex >= this.questions.length - 1) {
+      this.finished = true;
+      this.showExplain = true;
+      return;
+    }
+    this.nextQuestion();
+  }
+
+  private nextQuestion(): void {
+    if (this.currentIndex < this.questions.length - 1) {
+      this.currentIndex += 1;
+      this.showExplain = false;
+      this.latestPictureCaption = '';
+      this.feedbackResponse = null;
+      this.isLoadingFeedback = false;
+      this.loadSavedAnswer();
+    } else {
+      this.showExplain = true;
+      this.finished = true;
+    }
+  }
+
+  private revealExplainAndQueueNext(): void {
+    if (this.showExplain) return;
+    this.showExplain = true;
+    if (this.advanceTimer) {
+      clearTimeout(this.advanceTimer);
+    }
+    this.advanceTimer = setTimeout(() => {
+      this.nextQuestion();
+    }, 300000); // 5 minutes auto-advance
+  }
+
+  // Legacy support
+  onWritingAnswered(isCorrect: boolean): void {
+    this.markAnswered(isCorrect);
+    this.writingAnswered.emit(isCorrect);
+    this.answered.emit(isCorrect);
+  }
+
+  // LocalStorage methods
   private getStorageKey(): string | null {
     const userId = this.authService.getCurrentUser()?.id;
     if (userId === undefined || userId === null) return null;
@@ -126,7 +191,9 @@ export class WritingComponent implements OnChanges {
 
       const savedAnswers = JSON.parse(raw);
       if (savedAnswers && typeof savedAnswers === 'object') {
-        this.userAnswer = savedAnswers[this.questionId] || '';
+        const currentQuestionId =
+          this.questions[this.currentIndex]?.questionId || this.questionId;
+        this.userAnswer = savedAnswers[currentQuestionId] || '';
       }
     } catch {
       this.userAnswer = '';
@@ -149,7 +216,9 @@ export class WritingComponent implements OnChanges {
         }
       }
 
-      savedAnswers[this.questionId] = this.userAnswer;
+      const currentQuestionId =
+        this.questions[this.currentIndex]?.questionId || this.questionId;
+      savedAnswers[currentQuestionId] = this.userAnswer;
       localStorage.setItem(key, JSON.stringify(savedAnswers));
     } catch {
       // Best-effort only; ignore storage errors
@@ -162,29 +231,36 @@ export class WritingComponent implements OnChanges {
 
   onSubmit(): void {
     if (this.disabled || !this.userAnswer.trim()) return;
-    const vocabularyRequest = this.contentText || '';
-    const pictureCaption = this.pictureCaption || '';
+    const currentQuestion = this.questions[this.currentIndex];
+    const vocabularyRequest =
+      currentQuestion?.prompt?.contentText || this.contentText || '';
+    const pictureCaption =
+      this.latestPictureCaption || this.pictureCaption || '';
+
     this.writingRequest = {
       pictureCaption: pictureCaption,
       vocabularyRequest: vocabularyRequest,
-      userAnswer: this.userAnswer
+      userAnswer: this.userAnswer,
     };
-    // For now, just log or emit success. You can emit the DTO via another Output if needed.
+
     console.log('WritingRequestDTO:', this.writingRequest);
 
     this.isLoadingFeedback = true;
-    this.writingExamPartOneService.GetFeedbackOfWritingPartOne(this.writingRequest).subscribe({
-      next: (response: WritingResponseDTO) => {
-        this.feedbackResponse = response;
-        console.log('WritingFeedbackResponseDTO:', response);
-        this.isLoadingFeedback = false;
-      },
-      error: (error: any) => {
-        console.error('Error fetching writing feedback:', error);
-        this.isLoadingFeedback = false;
-      }
-    });
-    this.answered.emit(true);
+    this.writingExamPartOneService
+      .GetFeedbackOfWritingPartOne(this.writingRequest)
+      .subscribe({
+        next: (response: WritingResponseDTO) => {
+          this.feedbackResponse = response;
+          console.log('WritingFeedbackResponseDTO:', response);
+          this.isLoadingFeedback = false;
+          this.markAnswered(true); // Assume correct for now
+        },
+        error: (error: any) => {
+          console.error('Error fetching writing feedback:', error);
+          this.isLoadingFeedback = false;
+          this.markAnswered(false);
+        },
+      });
   }
 
   onSave(): void {
@@ -203,5 +279,39 @@ export class WritingComponent implements OnChanges {
       clearInterval(this.autoSaveInterval);
       this.autoSaveInterval = null;
     }
+  }
+
+  // Summary helpers
+  get percentCorrect(): number {
+    const total = this.questions?.length ?? 0;
+    if (total === 0) return 0;
+    return Math.round((this.correctCount / total) * 100);
+  }
+
+  get feedbackText(): string {
+    const p = this.percentCorrect;
+    if (p < 30) return 'Bạn cần cố gắng nhiều hơn';
+    if (p < 60) return 'Lần sau bạn chắc chắn sẽ làm tốt hơn';
+    return 'Bạn hãy tiếp tục phát huy nhé';
+  }
+
+  // Actions
+  resetQuiz(): void {
+    this.currentIndex = 0;
+    this.showExplain = false;
+    this.totalScore = 0;
+    this.correctCount = 0;
+    this.finished = false;
+    this.latestPictureCaption = '';
+    this.feedbackResponse = null;
+    this.isLoadingFeedback = false;
+  }
+
+  goToExams(): void {
+    this.router.navigate(['homepage/user-dashboard/exams']);
+  }
+
+  onPictureCaption(caption: string): void {
+    this.latestPictureCaption = caption || '';
   }
 }
