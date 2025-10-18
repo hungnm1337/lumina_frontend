@@ -1,42 +1,65 @@
-<div class="bg-white border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm space-y-3">
+<div
+  class="bg-white border border-gray-200 rounded-lg p-4 md:p-5 shadow-sm space-y-3"
+>
   @if(prompt?.referenceImageUrl) {
   <div class="mb-3 justify-center flex">
-    <img src="{{ prompt?.referenceImageUrl }}" alt="Reference Image" class="w-8/12 h-auto rounded-md object-cover" />
+    <img
+      src="{{ prompt?.referenceImageUrl }}"
+      alt="Reference Image"
+      class="w-8/12 h-auto rounded-md object-cover"
+    />
   </div>
+  @if (!isSpeakingQuestion()) {
   <button
     class="btn border-s-blue-400 inline-flex items-center gap-2 px-4 py-2 rounded-md border border-blue-500 text-blue-600 hover:bg-blue-50 active:bg-blue-100 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
-    (click)="generateCaption()" [disabled]="isLoading">
+    (click)="generateCaption()"
+    [disabled]="isLoading"
+  >
     <span class="i-mdi-image-text"></span>
     <span>Generate Hint </span>
     @if (isLoading) {
-    <svg class="animate-spin h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+    <svg
+      class="animate-spin h-4 w-4 text-blue-600"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        class="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        stroke-width="4"
+      ></circle>
+      <path
+        class="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+      ></path>
     </svg>
     }
   </button>
   <div class="mt-3">
-
     @if (pictureCaption && isShowCaption) {
-      <div
-      class="p-3 rounded-md bg-gray-50 border border-gray-200 text-gray-800 whitespace-pre-line">
+    <div
+      class="p-3 rounded-md bg-gray-50 border border-gray-200 text-gray-800 whitespace-pre-line"
+    >
       {{ pictureCaption }}
-    </div>}
-
-    
+    </div>
+    }
   </div>
-  }
-  @if (prompt?.passage?.title) {
-  <h4 class="text-lg font-semibold text-gray-800">{{ prompt?.passage?.title }}</h4>
-  }
-
-  @if (prompt?.promptText) {
+  } } @if (prompt?.passage?.title) {
+  <h4 class="text-lg font-semibold text-gray-800">
+    {{ prompt?.passage?.title }}
+  </h4>
+  } @if (prompt?.promptText) {
   <p class="text-gray-900 leading-relaxed">{{ prompt?.promptText }}</p>
-  }
-
-  @if (prompt?.passage?.contentText) {
+  } @if (prompt?.passage?.contentText) {
   <div class="pt-2 border-t border-gray-100">
-    <p class="text-gray-700 whitespace-pre-line leading-relaxed">{{ prompt?.passage?.contentText }}</p>
+    <p class="text-gray-700 whitespace-pre-line leading-relaxed">
+      {{ prompt?.passage?.contentText }}
+    </p>
   </div>
   }
 </div>
