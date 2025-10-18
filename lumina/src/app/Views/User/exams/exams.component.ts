@@ -32,12 +32,21 @@ export class ExamsComponent {
     this.examService.GetAllExams().subscribe({
       next: (data) => {
         this.exams = data;
+        console.log('✅ All exams loaded:', this.exams);
+        console.log('✅ Total exams:', this.exams.length);
+        console.log(
+          '✅ Exam types:',
+          this.exams.map((e) => ({
+            id: e.examId,
+            type: e.examType,
+            active: e.isActive,
+          }))
+        );
         this.categorizeExamsBySkill();
         this.isLoading = false;
-        console.log('Exams loaded:', this.exams);
       },
       error: (error) => {
-        console.error('Error loading exams:', error);
+        console.error('❌ Error loading exams:', error);
         this.isLoading = false;
       },
     });
@@ -66,23 +75,51 @@ export class ExamsComponent {
       },
       {
         skillName: 'Writing',
-        skillCodes: ['WRITING', 'TOEIC_WRITTING', 'TOEIC_WRITING_TEST'],
+        // ✅ Thêm nhiều biến thể cho Writing
+        skillCodes: [
+          'WRITTING',
+          'WRITING',
+          'TOEIC_WRITTING',
+          'TOEIC_WRITING',
+          'TOEIC_WRITING_TEST',
+          'TOEIC_WRITTING_TEST',
+        ],
         icon: 'fas fa-pen',
         color: 'orange',
       },
     ];
 
-    this.skillGroups = skills.map((skill) => ({
-      skillName: skill.skillName,
-      skillCode: skill.skillCodes[0], // Keep first code for display
-      icon: skill.icon,
-      color: skill.color,
-      exams: this.exams.filter((exam) =>
+    this.skillGroups = skills.map((skill) => {
+      const filteredExams = this.exams.filter((exam) =>
         skill.skillCodes.some((code) =>
           exam.examType?.toUpperCase().includes(code.toUpperCase())
         )
-      ),
-    }));
+      );
+
+      console.log(`✅ ${skill.skillName} - Matching codes:`, skill.skillCodes);
+      console.log(
+        `✅ ${skill.skillName} - Filtered exams:`,
+        filteredExams.length,
+        filteredExams
+      );
+
+      return {
+        skillName: skill.skillName,
+        skillCode: skill.skillCodes[0],
+        icon: skill.icon,
+        color: skill.color,
+        exams: filteredExams,
+      };
+    });
+
+    console.log(
+      '✅ Skill groups after categorization:',
+      this.skillGroups.map((g) => ({
+        skill: g.skillName,
+        count: g.exams.length,
+        examIds: g.exams.map((e) => e.examId),
+      }))
+    );
 
     // Add "Other" category for unmatched exams
     const matchedExamIds = new Set();
