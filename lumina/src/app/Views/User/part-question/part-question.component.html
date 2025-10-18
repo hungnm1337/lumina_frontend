@@ -1,45 +1,30 @@
 <app-part-detail [partInfo]="partInfo"></app-part-detail>
 
+@if
+
 @if (isWritingExam) {
-  <!-- Writing Exam - Show Writing Component -->
-  <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5 flex flex-col gap-3">
-    <div class="flex items-start justify-between gap-3">
-      <h3 class="text-lg font-semibold text-gray-800 flex-1">
-        {{ partInfo?.title }}
-      </h3>
-      <span class="text-xs text-gray-500 inline-flex items-center gap-2">
-        <span class="bg-orange-100 text-orange-700 px-2 py-1 rounded font-medium">
-          Writing Exam
-        </span>
-      </span>
-    </div>
-
-    @if (questions && questions.length > 0) {
-      @for (question of questions; track question.questionId; let i = $index) {
-        <div class="border border-gray-200 rounded-lg p-4 mb-4">
-          <div class="mb-3">
-            <h4 class="font-medium text-gray-900 mb-2">Câu {{ i + 1 }}: {{ question.stemText }}</h4>
-            @if (question.prompt?.contentText) {
-              <div class="text-sm text-gray-600 mb-2">
-                <strong>Yêu cầu:</strong> {{ question.prompt.contentText }}
-              </div>
-            }
-          </div>
-
-          <app-writing
-            [questionId]="question.questionId"
-            [disabled]="false"
-            [resetAt]="i"
-            [contentText]="question.prompt?.contentText"
-            [pictureCaption]="''"
-            (answered)="onWritingAnswered($event)"
-          ></app-writing>
-        </div>
-      }
-    }
-  </div>
+  <app-writing
+    [partInfo]="partInfo"
+    [questions]="questions"
+    (writingAnswered)="onWritingAnswered($event)">
+  </app-writing>
+} @else (isReadingExam) {
+  <app-reading
+    [partInfo]="partInfo"
+    [questions]="questions"
+    (readingAnswered)="onReadingAnswered($event)">
+  </app-reading>
+} @else (isListeningExam) {
+  <app-listening
+    [partInfo]="partInfo"
+    [questions]="questions"
+    (listeningAnswered)="onListeningAnswered($event)">
+  </app-listening>
 } @else {
-  <!-- Regular Exam - Show Question Component -->
-  <app-question [questions]="questions"></app-question>
+  <app-speaking
+    [partInfo]="partInfo"
+    [questions]="questions"
+    (speakingAnswered)="onSpeakingAnswered($event)">
+  </app-speaking>
 }
 
