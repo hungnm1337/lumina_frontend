@@ -1,0 +1,215 @@
+<app-header></app-header>
+
+<!-- Back to Blog Link -->
+<div class="back-to-blog">
+  <button (click)="goBackToBlog()" class="back-btn">
+    <i class="fas fa-arrow-left"></i>
+    Quay lại blog
+  </button>
+</div>
+
+<!-- Article Content -->
+<div class="article-container" *ngIf="!isLoading && article">
+  <div class="article-content">
+    <!-- Article Metadata -->
+    <div class="article-meta">
+      <span [class]="'category-tag ' + getCategoryColor(article.categoryName)">{{ article.categoryName }}</span>
+      <span class="publish-date">{{ formatDate(article.createdAt) }}</span>
+      <span class="read-time">{{ getReadTime(article.summary) }}</span>
+    </div>
+
+    <!-- Article Title -->
+    <h1 class="article-title">{{ article.title }}</h1>
+
+    <!-- Author Info -->
+    <div class="author-section">
+      <div class="author-info">
+        <div [class]="'author-avatar ' + getAuthorAvatarColor(article.authorName)">
+          {{ article.authorName.charAt(0).toUpperCase() }}
+        </div>
+        <div class="author-details">
+          <h3 class="author-name">{{ article.authorName }}</h3>
+          <p class="author-title">Content Creator</p>
+        </div>
+      </div>
+      <div class="article-actions">
+        <button class="action-btn like-btn" (click)="onLikeArticle()">
+          <i class="fas fa-heart"></i>
+          {{ articleLikes }}
+        </button>
+        <button class="action-btn share-btn" (click)="onShareArticle()">
+          <i class="fas fa-bookmark"></i>
+          Chia sẻ bài viết
+        </button>
+      </div>
+    </div>
+
+    <!-- Article Introduction -->
+    <div class="article-intro">
+      <p>{{ article.summary }}</p>
+    </div>
+
+    <!-- Article Content Sections -->
+    <div class="content-sections">
+      <div *ngIf="article.sections && article.sections.length > 0; else noContent">
+        <div *ngFor="let section of article.sections; let i = index" class="content-section">
+          <h2 class="section-title">{{ section.sectionTitle }}</h2>
+          <div class="section-content" [innerHTML]="section.sectionContent"></div>
+        </div>
+      </div>
+      <ng-template #noContent>
+        <div class="no-content">
+          <p>Nội dung bài viết đang được cập nhật...</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Tags -->
+    <div class="article-tags">
+      <span class="tag">{{ article.categoryName }}</span>
+    </div>
+
+    <!-- Share Buttons -->
+    <div class="share-section">
+      <h4 class="share-title">Chia sẻ bài viết</h4>
+      <div class="share-buttons">
+        <button class="share-btn facebook">
+          <i class="fab fa-facebook-f"></i>
+        </button>
+        <button class="share-btn twitter">
+          <i class="fab fa-twitter"></i>
+        </button>
+        <button class="share-btn linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </button>
+        <button class="share-btn other">
+          <i class="fas fa-share-alt"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Author Bio -->
+    <div class="author-bio">
+      <div class="author-bio-header">
+        <div [class]="'author-avatar ' + getAuthorAvatarColor(article.authorName)">
+          {{ article.authorName.charAt(0).toUpperCase() }}
+        </div>
+        <div class="author-bio-info">
+          <h3 class="author-name">{{ article.authorName }}</h3>
+          <p class="author-bio-text">Content Creator chuyên nghiệp với nhiều năm kinh nghiệm trong lĩnh vực giáo dục TOEIC.</p>
+          <div class="author-stats">
+            <span class="stat">1 bài viết</span>
+            <span class="stat">0 followers</span>
+            <span class="stat">0 likes</span>
+          </div>
+        </div>
+        <button 
+          [class]="isFollowing ? 'follow-btn following' : 'follow-btn'"
+          (click)="onFollowAuthor()"
+        >
+          {{ isFollowing ? 'Đang theo dõi' : '+ Theo dõi' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Comments Section -->
+<div class="comments-section">
+  <div class="comments-container">
+    <h2 class="comments-title">Bình luận ({{ articleCommentsCount }})</h2>
+    
+    <!-- Comment Input -->
+    <div class="comment-input-section">
+      <div class="comment-input-header">
+        <div class="user-avatar">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="comment-input-content">
+          <textarea 
+            [(ngModel)]="newComment"
+            placeholder="Viết bình luận của bạn..." 
+            class="comment-textarea"
+            rows="3"
+          ></textarea>
+          <div class="comment-input-actions">
+            <div class="comment-options">
+              <a href="#" class="comment-option">Emoji</a>
+              <a href="#" class="comment-option">Hình ảnh</a>
+            </div>
+            <button class="submit-comment-btn" (click)="onSubmitComment()">
+              <i class="fas fa-paper-plane"></i>
+              Gửi bình luận
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comments Sort -->
+    <div class="comments-sort">
+      <a href="#" class="sort-link active">{{ sortComments }}</a>
+    </div>
+
+    <!-- Comments List -->
+    <div class="comments-list">
+      <div *ngFor="let comment of comments" class="comment-item">
+        <div class="comment-avatar">
+          <div [class]="'avatar ' + comment.author.avatarColor">
+            {{ comment.author.avatar }}
+          </div>
+        </div>
+        <div class="comment-content">
+          <div class="comment-header">
+            <span class="comment-author">{{ comment.author.name }}</span>
+            <span class="comment-time">{{ comment.timestamp }}</span>
+          </div>
+          <p class="comment-text">{{ comment.content }}</p>
+          <div class="comment-actions">
+            <button 
+              [class]="comment.isLiked ? 'action-btn liked' : 'action-btn'"
+              (click)="onLikeComment(comment.id)"
+            >
+              <i class="fas fa-heart"></i>
+              {{ comment.likes }}
+            </button>
+            <button class="action-btn reply-btn" (click)="onReplyComment(comment.id)">
+              Trả lời
+            </button>
+            <a href="#" class="replies-link" *ngIf="comment.replies > 0">
+              {{ comment.replies }} phản hồi
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- View More Comments -->
+    <div class="view-more-comments">
+      <button class="view-more-btn">
+        <i class="fas fa-chevron-down"></i>
+        Xem thêm bình luận
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Loading State -->
+<div *ngIf="isLoading" class="loading-state">
+  <div class="loading-spinner"></div>
+  <p>Đang tải bài viết...</p>
+</div>
+
+<!-- Error State -->
+<div *ngIf="error" class="error-state">
+  <p>{{ error }}</p>
+  <button (click)="loadArticle()" class="retry-btn">Thử lại</button>
+</div>
+
+<!-- Related Articles Section -->
+<div class="related-articles" *ngIf="!isLoading && article">
+  <div class="related-container">
+    <h2 class="related-title">Bài viết liên quan</h2>
+    <!-- Related articles content will be added here -->
+  </div>
+</div>

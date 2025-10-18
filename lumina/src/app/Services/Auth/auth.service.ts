@@ -20,7 +20,7 @@ import { GoogleLoginRequest } from '../../Interfaces/auth.interfaces';
 })
 export class AuthService {
   private apiUrl = `${environment.apiUrl}/auth`;
-private tokenKey = 'authToken';
+  private tokenKey = 'authToken';
   private currentUserSource = new BehaviorSubject<AuthUserResponse | null>(
     null
   );
@@ -76,7 +76,7 @@ private tokenKey = 'authToken';
     );
   }
 
- logout() {
+  logout() {
     localStorage.removeItem('lumina_token');
     localStorage.removeItem('lumina_user');
     this.currentUserSource.next(null);
@@ -93,59 +93,59 @@ private tokenKey = 'authToken';
     return this.currentUserSource.value;
   }
 
-getDecodedToken(): any | null {
-  const token = localStorage.getItem('lumina_token');
-  if (!token) return null;
-  try {
-    return JSON.parse(atob(token.split('.')[1] || ''));
-  } catch {
+  getDecodedToken(): any | null {
+    const token = localStorage.getItem('lumina_token');
+    if (!token) return null;
+    try {
+      return JSON.parse(atob(token.split('.')[1] || ''));
+    } catch {
+      return null;
+    }
+  }
+
+  getRoleClaim(): string | null {
+    const payload = this.getDecodedToken();
+    if (!payload) return null;
+    return (
+      payload['role'] ||
+      payload['roles'] ||
+      payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
+      null
+    );
+  }
+
+  getRoleId(): number | null {
+    const payload = this.getDecodedToken();
+    if (!payload) return null;
+    // backend có thể đặt claim roleId hoặc map từ role name
+    const byId = payload['roleId'] || payload['RoleId'];
+    if (byId && !isNaN(Number(byId))) return Number(byId);
+    // fallback: map từ tên role
+    const role = (this.getRoleClaim() || '').toString().toLowerCase();
+    if (!role) return null;
+    if (role.includes('admin')) return 1;
+    if (role.includes('manager')) return 2;
+    if (role.includes('staff')) return 3;
+    if (role.includes('user')) return 4;
     return null;
   }
-}
 
-getRoleClaim(): string | null {
-  const payload = this.getDecodedToken();
-  if (!payload) return null;
-  return (
-    payload['role'] ||
-    payload['roles'] ||
-    payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
-    null
-  );
-}
-
-getRoleId(): number | null {
-  const payload = this.getDecodedToken();
-  if (!payload) return null;
-  // backend có thể đặt claim roleId hoặc map từ role name
-  const byId = payload['roleId'] || payload['RoleId'];
-  if (byId && !isNaN(Number(byId))) return Number(byId);
-  // fallback: map từ tên role
-  const role = (this.getRoleClaim() || '').toString().toLowerCase();
-  if (!role) return null;
-  if (role.includes('admin')) return 1;
-  if (role.includes('manager')) return 2;
-  if (role.includes('staff')) return 3;
-  if (role.includes('user')) return 4;
-  return null;
-}
-
-navigateByRole(): void {
-  const roleId = this.getRoleId();
-  switch (roleId) {
-    case 1:
-      this.router.navigate(['/admin']);
-      break;
-    case 2:
-      this.router.navigate(['/manager']);
-      break;
-    case 3:
-      this.router.navigate(['/staff/dashboard']);
-      break;
-    case 4:
-    default:
-      this.router.navigate(['/homepage/user-dashboard']);
-      break;
+  navigateByRole(): void {
+    const roleId = this.getRoleId();
+    switch (roleId) {
+      case 1:
+        this.router.navigate(['/admin']);
+        break;
+      case 2:
+        this.router.navigate(['/manager']);
+        break;
+      case 3:
+        this.router.navigate(['/staff/dashboard']);
+        break;
+      case 4:
+      default:
+        this.router.navigate(['/homepage/user-dashboard']);
+        break;
+    }
   }
-}
 }

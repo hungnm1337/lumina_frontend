@@ -1,16 +1,83 @@
-/* Styling for the active navigation link */
+// Enhanced styling for the active navigation link
 .nav-item.active {
-  background-color: #eef2ff; /* Tailwind's bg-indigo-50 */
-  color: #4338ca; /* Tailwind's text-indigo-700 */
-  font-weight: 600; /* Tailwind's font-semibold */
+  @apply bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md;
+  
+  // Icon styling for active state  
+  .bg-gray-50 {
+    @apply bg-white/20 shadow-none;
+  }
+  
+  i {
+    @apply text-white;
+  }
+  
+  
+  
+  // Remove hover effects when active
+  &:hover {
+    @apply from-blue-500 to-indigo-600 text-white;
+    
+    .bg-gray-50 {
+      @apply bg-white/20;
+    }
+  }
 }
 
-/* Add a subtle left border to indicate the active link */
-.nav-item.active {
-  box-shadow: inset 3px 0 0 0 #4f46e5; /* Tailwind's indigo-600 */
+// Tooltip for collapsed sidebar
+.nav-item[title]:hover::after {
+  content: attr(title);
+  @apply absolute left-full ml-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap z-50 pointer-events-none;
+  top: 50%;
+  transform: translateY(-50%);
+  animation: tooltip-fade 0.2s ease-out;
 }
 
-/* Style the icon within the active link to match the text color */
-.nav-item.active i {
-  color: #4f46e5; /* Tailwind's indigo-600 */
+@keyframes tooltip-fade {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+// Smooth scroll for navigation
+nav {
+  scroll-behavior: smooth;
+  
+  &::-webkit-scrollbar {
+    width: 3px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+    
+    &:hover {
+      @apply bg-gray-400;
+    }
+  }
+}
+
+// Animation enhancements
+.nav-item {
+  &:hover {
+    transform: translateX(2px);
+  }
+  
+  &.active {
+    transform: translateX(2px) scale(1.01);
+  }
+}
+
+// Mobile responsive
+@media (max-width: 1024px) {
+  .w-72 {
+    @apply w-64;
+  }
 }

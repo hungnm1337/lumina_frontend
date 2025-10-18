@@ -53,7 +53,8 @@ export class ArticleService {
     search?: string;
     categoryId?: number;
     isPublished?: boolean;
-  }): Observable<{ items: ArticleResponse[]; total: number; page: number; pageSize: number; }> {
+    status?: 'draft' | 'pending' | 'published'; 
+    }): Observable<{ items: ArticleResponse[]; total: number; page: number; pageSize: number; }> {
     const httpParams: any = {};
     if (params.page) httpParams.page = params.page;
     if (params.pageSize) httpParams.pageSize = params.pageSize;
@@ -62,7 +63,7 @@ export class ArticleService {
     if (params.search) httpParams.search = params.search;
     if (params.categoryId) httpParams.categoryId = params.categoryId;
     if (typeof params.isPublished === 'boolean') httpParams.isPublished = params.isPublished;
-
+    if (params.status) httpParams.status = params.status;
     return this.http.get<{ items: ArticleResponse[]; total: number; page: number; pageSize: number; }>(`${this.apiUrl}/query`, { params: httpParams });
   }
 
@@ -76,15 +77,25 @@ export class ArticleService {
     return this.http.put<ArticleResponse>(`${this.apiUrl}/${id}`, data, { headers });
   }
 
-  // Publish / Unpublish
-  setPublish(id: number, publish: boolean): Observable<any> {
-    const token = localStorage.getItem('lumina_token');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    });
-    return this.http.post(`${this.apiUrl}/${id}/publish`, { publish }, { headers });
-  }
+ // Gửi yêu cầu phê duyệt
+requestApproval(id: number): Observable<any> {
+  const token = localStorage.getItem('lumina_token');
+  const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+  return this.http.post(`${this.apiUrl}/${id}/request-approval`, {}, { headers });
+}
+// Duyệt bài viết
+reviewArticle(id: number, isApproved: boolean, comment?: string): Observable<any> {
+  const token = localStorage.getItem('lumina_token');
+  const headers = new HttpHeaders({
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  });
+  const body = { 
+    isApproved,
+    comment: comment || null
+  };
+  return this.http.post(`${this.apiUrl}/${id}/review`, body, { headers });
+}
 
   // Xóa article
   deleteArticle(id: number): Observable<any> {
@@ -99,12 +110,24 @@ export class ArticleService {
 
   // Helper method để convert ArticleResponse thành Article (cho UI)
   convertToArticle(response: ArticleResponse): Article {
+    // Map status properly
+    let status: 'published' | 'draft' | 'pending' = 'draft';
+    if (response.status) {
+      const statusLower = response.status.toLowerCase();
+      if (statusLower === 'published') status = 'published';
+      else if (statusLower === 'pending') status = 'pending';
+      else if (statusLower === 'rejected') status = 'draft'; // Map rejected back to draft for editing
+      else status = 'draft';
+    } else if (response.isPublished) {
+      status = 'published';
+    }
+
     return {
       id: response.articleId,
       title: response.title,
       summary: response.summary,
       category: response.categoryName,
-      status: response.isPublished ? 'published' : 'draft',
+      status: status,
       author: response.authorName,
       authorRole: 'Content Staff', // Default role
       publishDate: new Date(response.createdAt).toLocaleDateString('vi-VN'),
@@ -112,10 +135,25 @@ export class ArticleService {
       likes: 0,
       tags: [], // Default - có thể thêm vào backend sau
       sections: response.sections.map(section => ({
-        type: 'đoạn văn' as const, // Default type
-        content: section.sectionContent
-      }))
+        type: this.mapSectionType(section.sectionTitle), // Map từ sectionTitle
+        content: section.sectionContent,
+        sectionTitle: section.sectionTitle
+      })),
+      rejectionReason: response.rejectionReason || undefined
     };
+  }
+
+  // Helper method để map section title thành type
+  private mapSectionType(sectionTitle: string): 'đoạn văn' | 'hình ảnh' | 'video' | 'danh sách' {
+    const title = sectionTitle.toLowerCase();
+    if (title.includes('hình') || title.includes('ảnh') || title.includes('image')) {
+      return 'hình ảnh';
+    } else if (title.includes('video') || title.includes('phim')) {
+      return 'video';
+    } else if (title.includes('danh sách') || title.includes('list')) {
+      return 'danh sách';
+    }
+    return 'đoạn văn'; // Default
   }
 
   // Helper method để convert Article thành ArticleCreate (cho API)

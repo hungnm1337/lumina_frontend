@@ -159,20 +159,43 @@ export class VocabularyService {
 
   // Helper method để convert VocabularyWord thành Vocabulary (cho UI)
   convertToVocabulary(vocabulary: VocabularyWord): Vocabulary {
-    return {
+    console.log('Converting vocabulary:', vocabulary);
+    console.log('Category from API:', vocabulary.category);
+    
+    const converted = {
       id: vocabulary.id,
       word: vocabulary.word,
-      pronunciation: '', // Default empty - có thể thêm vào backend sau
-      category: 'general', // Default category
+      pronunciation: this.getPronunciation(vocabulary.word), // Tự động tạo phiên âm
+      category: vocabulary.category || 'general', // Sử dụng category từ API hoặc default
       partOfSpeech: vocabulary.type,
       definition: vocabulary.definition,
       example: vocabulary.example || '',
-      translation: '', // Default empty - có thể thêm vào backend sau
-      difficulty: 'Intermediate', // Default difficulty
+      translation: vocabulary.definition, // Dùng definition làm translation tạm
+      difficulty: 'Intermediate' as 'Beginner' | 'Intermediate' | 'Advanced', // Default difficulty
       createdDate: new Date().toLocaleDateString('vi-VN'),
       createdBy: 'System', // Default creator
-      status: 'active' // Default status
+      status: 'active' as 'active' | 'inactive', // Default status
+      audioUrl: vocabulary.audioUrl
     };
+    
+    console.log('Converted result:', converted);
+    return converted;
+  }
+
+  // Tự động tạo phiên âm cho từ
+  private getPronunciation(word: string): string {
+    const dict: { [key: string]: string } = {
+      'carbon': '/ˈkɑːbən/',
+      'footprint': '/ˈfʊtprɪnt/',
+      'flying': '/ˈflaɪɪŋ/',
+      'significant': '/sɪɡˈnɪfɪkənt/',
+      'impact': '/ˈɪmpækt/',
+      'atmosphere': '/ˈætməsfɪə/',
+      'dioxide': '/daɪˈɒksaɪd/',
+      'amount': '/əˈmaʊnt/',
+      'released': '/rɪˈliːst/'
+    };
+    return dict[word.toLowerCase()] || `/${word.toLowerCase()}/`;
   }
 
   // Helper method để convert Vocabulary thành VocabularyWord format (cho API)

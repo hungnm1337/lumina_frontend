@@ -2,7 +2,6 @@ import { Routes } from '@angular/router';
 import { ErrorComponent } from './Views/Common/error/error.component';
 import { HomepageComponent } from './Views/Common/homepage/homepage.component';
 import { UserDashboardComponent } from './Views/User/Dashboard/dashboard/dashboard.component';
-import { MenuComponent } from './Views/Manage/Menu/menu/menu.component';
 import { ExamsComponent } from './Views/User/exams/exams.component';
 import { ExamPartComponent } from './Views/User/exam-part/exam-part.component';
 import { PartQuestionComponent } from './Views/User/part-question/part-question.component';
@@ -13,6 +12,11 @@ import { RegisterComponent } from './Views/Auth/register/register.component'; //
 import { ForgotPasswordComponent } from './Views/Auth/forgot-password/forgot-password.component'; // <-- THÊM
 import { AuthGuard } from './Services/Auth/auth.guard'; 
 import { RoleGuard } from './Services/Auth/role.guard';
+import { ManageEventsDashboardComponent } from './Views/Manage/Event/dashboardevent.component';
+import { UserEventsDashboardComponent } from './Views/User/event-dashboard/dashboardevent.component';
+import { DashboardSlideComponent } from './Views/Manage/Slide/dashboardslide.component';
+import { BlogComponent } from './Views/Common/blog/blog.component';
+import { BlogDetailComponent } from './Views/Common/blog-detail/blog-detail.component';
 export const routes: Routes = [
   {
     path: 'admin',
@@ -29,10 +33,19 @@ export const routes: Routes = [
     data: { roles: [3] }
   },
   {
+    path: 'manager',
+    loadChildren: () =>
+      import('./Views/Manage/manager.module').then((m) => m.ManagerModule),
+    canActivate: [RoleGuard],
+    data: { roles: [2] }
+  },
+  {
     path: 'homepage',
     component: HomepageComponent,
     children: [
       { path: '', component: ContentHomepageComponent },
+      { path: 'events', component: UserEventsDashboardComponent },
+      { path: 'slides', component: DashboardSlideComponent},
       {
         path: 'user-dashboard',
         component: UserDashboardComponent,
@@ -40,6 +53,10 @@ export const routes: Routes = [
           { path: 'exams', component: ExamsComponent },
           { path: 'exam/:id', component: ExamPartComponent },
           { path: 'part/:id', component: PartQuestionComponent },
+          { 
+            path: 'speaking-practice/:partCode', 
+            loadComponent: () => import('./Views/User/speaking-part-exams/speaking-part-exams.component').then(m => m.SpeakingPartExamsComponent) 
+          },
           { path: '', redirectTo: 'exams', pathMatch: 'full' },
           // {path: 'vocabulary', component: VocabularyComponent},
           // {path: 'notes', component: NotesComponent},
@@ -58,6 +75,8 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'blog', component: BlogComponent },
+  { path: 'blog/:id', component: BlogDetailComponent },
 
   { path: '', redirectTo: '/homepage', pathMatch: 'full' },
   { path: '**', component: ErrorComponent },

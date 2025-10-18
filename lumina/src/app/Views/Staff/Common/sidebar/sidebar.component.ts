@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -11,8 +11,9 @@ import { RouterModule } from '@angular/router';
 })
 export class SidebarComponent {
   @Input() isOpen = true;
+  @Output() sidebarToggle = new EventEmitter<void>();
 
-  // Dữ liệu menu cho sidebar, tương thích với file HTML mới
+  // Dữ liệu menu cho sidebar, giữ nguyên logic cũ
   navGroups = [
     {
       title: 'Quản lý Nội dung',
@@ -24,11 +25,23 @@ export class SidebarComponent {
       ],
     },
     {
-      title: 'Quản lý Tài nguyên',
+      title: 'Quản lý Tài nguyên', 
       items: [
         { path: 'vocabulary', name: 'Từ vựng', icon: 'fas fa-spell-check' },
         { path: 'seasons', name: 'Mùa thi đấu', icon: 'fas fa-trophy' },
       ],
     },
   ];
+
+  // Thêm methods để xử lý toggle
+  toggleSidebar() {
+    this.sidebarToggle.emit();
+  }
+
+  closeSidebar() {
+    // Chỉ emit khi sidebar đang mở để đóng lại
+    if (this.isOpen) {
+      this.sidebarToggle.emit();
+    }
+  }
 }

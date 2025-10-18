@@ -30,6 +30,7 @@ export interface ArticleResponse {
   createdAt: string;
   authorName: string;
   categoryName: string;
+  rejectionReason?: string | null;
   sections: ArticleSectionResponse[];
 }
 
@@ -52,11 +53,13 @@ export interface Article {
   likes: number;
   tags: string[];
   sections: ArticleSection[];
+  rejectionReason?: string;
 }
 
 export interface ArticleSection {
   type: 'đoạn văn' | 'hình ảnh' | 'video' | 'danh sách';
   content: string;
+  sectionTitle?: string; // Thêm sectionTitle để tương thích với backend
 }
 
 

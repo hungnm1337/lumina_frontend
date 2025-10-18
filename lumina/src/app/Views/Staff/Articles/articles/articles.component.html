@@ -1,318 +1,581 @@
 ﻿<div class="articles-container">
-  <!-- Header Section -->
+  <!-- TOEIC Header Section - STAFF VERSION -->
   <div class="page-header">
     <div class="header-content">
-      <h1 class="page-title">Bài viết kiến thức</h1>
-      <p class="page-subtitle">Tạo nội dung học tập cho từng kỹ năng</p>
-    </div>
-    <button class="btn-primary" (click)="openModal()">
-      <i class="fas fa-plus"></i>
-      Tạo bài viết mới
-    </button>
-  </div>
-
-  <!-- Filters Section -->
-  <div class="filters-section">
-    <div class="search-box">
-      <i class="fas fa-search"></i>
-      <input 
-        type="text" 
-        placeholder="Tìm kiếm bài viết..." 
-        [(ngModel)]="searchTerm"
-        (input)="onSearchChange()"
-      >
+      <div class="title-section">
+        <h1 class="page-title">
+          <span class="toeic-badge">TOEIC</span>
+          Article Management
+        </h1>
+        <p class="page-subtitle">
+          Create educational content for TOEIC skill development
+        </p>
+      </div>
+      <div class="header-stats">
+        <div class="stat-card">
+          <div class="stat-number">{{total || 0}}</div>
+          <div class="stat-label">Total Articles</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{{categories.length}}</div>
+          <div class="stat-label">Categories</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{{getPublishedCount()}}</div>
+          <div class="stat-label">Published</div>
+        </div>
+      </div>
     </div>
     
-    <div class="filter-group">
-        <select [(ngModel)]="selectedCategory" (change)="onCategoryChange()">
-          <option value="">Tất cả danh mục</option>
-          <option *ngFor="let category of categoryNames" [value]="category">
-            {{ category }}
+    <!-- CREATE BUTTON - STAFF CAN CREATE -->
+    <div class="header-actions" *ngIf="isStaff">
+      <button class="btn-create-article" (click)="openModal()">
+        <i class="fas fa-plus"></i>
+        <span class="btn-text">Create Article</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Advanced Search & Filter Panel -->
+  <div class="search-filter-panel">
+    <div class="search-section">
+      <div class="search-input-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (input)="onSearchChange()"
+          placeholder="Search articles, content, categories..."
+          class="search-input">
+        <button 
+          *ngIf="searchTerm" 
+          (click)="searchTerm = ''; onSearchChange()" 
+          class="clear-search-btn">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="filters-section">
+      <div class="filter-group">
+        <label>Category</label>
+        <select [(ngModel)]="selectedCategory" (change)="onCategoryChange()" class="filter-select">
+          <option value="">All Categories</option>
+          <option *ngFor="let category of categories" [value]="category.name">
+            {{category.name}}
           </option>
         </select>
-      
-      <select [(ngModel)]="selectedStatus" (change)="onStatusChange()">
-        <option value="">Tất cả trạng thái</option>
-        <option value="published">Đã xuất bản</option>
-        <option value="draft">Bản nháp</option>
-        <option value="pending">Chờ duyệt</option>
-      </select>
-
-      <!-- Sorting -->
-      <select [(ngModel)]="sortBy" (change)="changeSort(sortBy, sortDir)">
-        <option value="createdAt">Mới nhất</option>
-        <option value="title">Tiêu đề (A-Z)</option>
-        <option value="category">Danh mục</option>
-      </select>
-      <select [(ngModel)]="sortDir" (change)="changeSort(sortBy, sortDir)">
-        <option value="desc">Giảm dần</option>
-        <option value="asc">Tăng dần</option>
-      </select>
-
-      <!-- Page size -->
-      <select [ngModel]="pageSize" (ngModelChange)="changePageSize($event)">
-        <option [ngValue]="10">10 / trang</option>
-        <option [ngValue]="20">20 / trang</option>
-        <option [ngValue]="50">50 / trang</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- Loading State -->
-  <div class="loading-state" *ngIf="isLoading">
-    <i class="fas fa-spinner fa-spin"></i>
-    <p>Đang tải bài viết...</p>
-  </div>
-
-  <!-- Articles Grid -->
-  <div class="articles-grid" *ngIf="!isLoading">
-    <div class="article-card" *ngFor="let article of filteredArticles">
-      <div class="article-status">
-        <span [class]="getStatusClass(article.status)">
-          {{ getStatusText(article.status) }}
-        </span>
       </div>
-      
-      <div class="article-content">
-        <h3 class="article-title">{{ article.title }}</h3>
-        <p class="article-excerpt">{{ article.summary }}</p>
-        
-        <div class="article-meta">
-          <div class="meta-item">
-            <i class="fas fa-tag"></i>
-            <span>{{ article.category }}</span>
-          </div>
-          <div class="meta-item">
-            <i class="fas fa-calendar"></i>
-            <span>{{ article.publishDate }}</span>
-          </div>
-          <div class="meta-item">
-            <i class="fas fa-eye"></i>
-            <span>{{ article.views | number }} lượt xem</span>
-          </div>
-          <div class="meta-item">
-            <i class="fas fa-heart"></i>
-            <span>{{ article.likes | number }} lượt thích</span>
-          </div>
-        </div>
-        
-        <div class="author-info">
-          <div class="author-avatar">
-            <i class="fas fa-user"></i>
-          </div>
-          <div class="author-details">
-            <span class="author-name">{{ article.author }}</span>
-            <span class="author-role">{{ article.authorRole }}</span>
-          </div>
-        </div>
+
+      <div class="filter-group">
+        <label>Status</label>
+        <select [(ngModel)]="selectedStatus" (change)="onStatusChange()" class="filter-select">
+          <option value="">All Status</option>
+          <option value="draft">Draft</option>
+          <option value="pending">Pending</option>
+          <option value="published">Published</option>
+        </select>
       </div>
-      
-      <div class="article-actions">
-        <button class="btn-action btn-edit" (click)="openModal(article)">
-          <i class="fas fa-edit"></i>
+
+      <div class="filter-group">
+        <label>Sort By</label>
+        <select [(ngModel)]="sortBy" (change)="changeSort(sortBy, sortDir)" class="filter-select">
+          <option value="createdAt">Date Created</option>
+          <option value="title">Title</option>
+          <option value="category">Category</option>
+        </select>
+      </div>
+
+      <div class="filter-actions">
+        <button (click)="selectedCategory = ''; selectedStatus = ''; onFilterChange()" class="btn-clear-filters">
+          <i class="fas fa-eraser"></i>
+          Clear All
         </button>
-        <button 
-          class="btn-action btn-publish" 
-          *ngIf="article.status !== 'published'"
-          (click)="publishArticle(article.id)"
-        >
-          <i class="fas fa-upload"></i>
-        </button>
-        <button class="btn-action btn-delete" (click)="deleteArticle(article.id)" [disabled]="isLoading">
-          <i class="fas fa-trash" [class.fa-spin]="isLoading"></i>
+        <button (click)="loadArticles()" class="btn-refresh">
+          <i class="fas fa-sync-alt"></i>
+          Refresh
         </button>
       </div>
     </div>
   </div>
 
- <!-- Pagination -->
-<div class="flex items-center justify-center gap-4 mt-6" *ngIf="!isLoading && total > 0">
-  <!-- Nút Trang trước -->
-  <button
-    (click)="prevPage()"
-    [disabled]="page === 1"
-    class="px-4 py-2 flex items-center gap-2 rounded-lg border border-gray-300 text-gray-700 
-           bg-white hover:bg-gray-100 shadow-sm transition 
-           disabled:opacity-40 disabled:cursor-not-allowed"
-  >
-    <i class="fas fa-chevron-left"></i>
-    <span>Trang trước</span>
-  </button>
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Articles List -->
+    <div class="articles-list-section">
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-state">
+        <div class="loading-spinner">
+          <i class="fas fa-spinner fa-spin"></i>
+        </div>
+        <p>Loading articles...</p>
+      </div>
 
-  <!-- Thông tin số trang -->
-  <div class="px-5 py-2 bg-white shadow rounded-lg text-gray-700 font-medium">
-    Trang 
-    <span class="font-semibold">{{ page }}</span> /
-    <span class="font-semibold">{{ Math.ceil(total / pageSize) }}</span>
-    · Tổng 
-    <span class="font-semibold">{{ total | number }}</span> bài
+      <!-- Articles Grid -->
+      <div *ngIf="!isLoading" class="articles-grid">
+        <div 
+          *ngFor="let article of filteredArticles; let i = index" 
+          class="article-card"
+          [class.featured]="article.status === 'published'">
+          
+          <!-- Card Header -->
+          <div class="card-header">
+            <div class="article-status-section">
+              <span class="status-badge" [ngClass]="getStatusClass(article.status)">
+                <i class="fas fa-circle status-dot"></i>
+                {{getStatusText(article.status)}}
+              </span>
+            </div>
+            
+            <div class="card-actions">
+              <div class="action-buttons">
+                <!-- STAFF CAN EDIT -->
+                <button 
+                  *ngIf="isStaff"
+                  class="btn-action btn-edit" 
+                  (click)="openModal(article)"
+                  title="Edit article">
+                  <i class="fas fa-edit"></i>
+                </button>
+                
+                <!-- STAFF CAN SUBMIT FOR APPROVAL -->
+                <button 
+                  *ngIf="article.status === 'draft' && isStaff" 
+                  class="btn-action btn-submit" 
+                  [class.btn-resubmit]="article.rejectionReason"
+                  (click)="submitForApproval(article.id)"
+                  [title]="article.rejectionReason ? 'Gửi lại để duyệt' : 'Submit for approval'">
+                  <i class="fas fa-paper-plane"></i>
+                  <span *ngIf="article.rejectionReason" class="resubmit-badge">Gửi lại</span>
+                </button>
+                
+                <!-- ONLY MANAGER CAN APPROVE/REJECT -->
+                <ng-container *ngIf="canApproveReject()">
+                  <button 
+                    *ngIf="article.status === 'pending'" 
+                    class="btn-action btn-approve" 
+                    (click)="approveArticle(article.id)"
+                    title="Approve & publish">
+                    <i class="fas fa-check"></i>
+                  </button>
+                  <button 
+                    *ngIf="article.status === 'pending'" 
+                    class="btn-action btn-reject" 
+                    (click)="rejectArticle(article.id)"
+                    title="Reject article">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </ng-container>
+                
+                <!-- STAFF CAN DELETE -->
+                <button 
+                  *ngIf="isStaff"
+                  class="btn-action btn-delete" 
+                  (click)="deleteArticle(article.id)"
+                  title="Delete article">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Content -->
+          <div class="card-content">
+            <!-- Title & Category -->
+            <div class="article-meta-top">
+              <h3 class="article-title">{{article.title}}</h3>
+              <span class="category-tag">
+                <i class="fas fa-tag"></i>
+                {{article.category}}
+              </span>
+            </div>
+
+            <!-- Summary -->
+            <div class="article-summary">
+              <p class="summary-text">{{article.summary}}</p>
+            </div>
+
+            <!-- Rejection Reason Alert -->
+            <div *ngIf="article.rejectionReason" class="rejection-alert">
+              <div class="alert-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span class="alert-title">Bài viết đã bị từ chối</span>
+              </div>
+              <div class="alert-content">
+                <p class="rejection-reason">{{ article.rejectionReason }}</p>
+                <p class="rejection-hint">
+                  <i class="fas fa-info-circle"></i>
+                  Vui lòng sửa lại bài viết theo góp ý và gửi lại để duyệt.
+                </p>
+              </div>
+            </div>
+
+            <!-- Article Info -->
+            <div class="article-info-section">
+              <div class="info-item">
+                <i class="fas fa-file-alt"></i>
+                <span>{{getSectionCount(article)}} sections</span>
+              </div>
+              <div class="info-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span>{{getArticleDate(article) | date:'MMM dd, yyyy'}}</span>
+              </div>
+              <div class="info-item">
+                <i class="fas fa-user"></i>
+                <span>{{getAuthorName(article)}}</span>
+              </div>
+            </div>
+
+            <!-- Tags -->
+            <div class="tags-section" *ngIf="article.tags && article.tags.length > 0">
+              <div class="tags-container">
+                <span *ngFor="let tag of article.tags" class="tag-item">
+                  {{tag}}
+                </span>
+              </div>
+            </div>
+
+            <!-- TOEIC Skills Indicator -->
+            <div class="toeic-skills-footer">
+              <span class="toeic-indicator">
+                <i class="fas fa-star"></i>
+                TOEIC Learning Content
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && filteredArticles.length === 0" class="empty-state">
+        <div class="empty-icon">
+          <i class="fas fa-file-alt"></i>
+        </div>
+        <h3>No articles found</h3>
+        <p>Try changing your filters or create your first article</p>
+        <button class="btn-add-first" (click)="openModal()" *ngIf="isStaff">
+          <i class="fas fa-plus"></i>
+          Create Your First Article
+        </button>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="!isLoading && total > pageSize" class="pagination-section">
+        <div class="pagination-info">
+          Page {{page}} / {{Math.ceil(total / pageSize)}} · Total {{total | number}} articles
+        </div>
+        <div class="pagination-controls">
+          <button 
+            class="btn-page" 
+            [disabled]="page <= 1" 
+            (click)="prevPage()">
+            <i class="fas fa-chevron-left"></i>
+            Previous
+          </button>
+          <span class="current-page">{{page}}</span>
+          <button 
+            class="btn-page" 
+            [disabled]="page * pageSize >= total" 
+            (click)="nextPage()">
+            Next
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar with Statistics - STAFF VERSION -->
+    <div class="articles-sidebar">
+      <!-- TOEIC Staff Content Card -->
+      <div class="toeic-content-card">
+        <div class="card-header">
+          <div class="toeic-logo">
+            <i class="fas fa-user-edit"></i>
+          </div>
+          <div class="content-title">
+            <h3>Staff Dashboard</h3>
+            <p>Content creation & management</p>
+          </div>
+        </div>
+        <div class="content-stats">
+          <div class="stat-item">
+            <div class="stat-icon published">
+              <i class="fas fa-globe"></i>
+            </div>
+            <div class="stat-details">
+              <span class="stat-value">{{getPublishedCount()}}</span>
+              <span class="stat-label">Published</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon pending">
+              <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-details">
+              <span class="stat-value">{{getPendingCount()}}</span>
+              <span class="stat-label">Pending</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon draft">
+              <i class="fas fa-edit"></i>
+            </div>
+            <div class="stat-details">
+              <span class="stat-value">{{getDraftCount()}}</span>
+              <span class="stat-label">My Drafts</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Distribution -->
+      <div class="stats-card">
+        <div class="card-header">
+          <i class="fas fa-chart-pie"></i>
+          <h3>Category Distribution</h3>
+        </div>
+        <div class="category-stats">
+          <div *ngFor="let category of categories" class="category-stat-item">
+            <div class="category-info">
+              <span class="category-icon">📚</span>
+              <span class="category-name">{{category.name}}</span>
+            </div>
+            <div class="category-count">
+              <span class="count">{{getCategoryCount(category.name)}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Staff Quick Actions -->
+      <div class="quick-actions-card" *ngIf="isStaff">
+        <div class="card-header">
+          <i class="fas fa-lightning-bolt"></i>
+          <h3>Staff Actions</h3>
+        </div>
+        <div class="action-buttons-grid">
+          <!-- MAIN CREATE BUTTON -->
+          <button class="quick-action-btn create-main" (click)="openModal()">
+            <i class="fas fa-plus-circle"></i>
+            <span>Create Article</span>
+          </button>
+          
+          <button class="quick-action-btn drafts" (click)="showMyDrafts()">
+            <i class="fas fa-edit"></i>
+            <span>My Drafts</span>
+          </button>
+          <button class="quick-action-btn pending" (click)="showPendingReview()">
+            <i class="fas fa-clock"></i>
+            <span>Pending Review</span>
+          </button>
+          <button class="quick-action-btn published" (click)="showPublished()">
+            <i class="fas fa-globe"></i>
+            <span>Published</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
-
-  <!-- Nút Trang sau -->
-  <button
-    (click)="nextPage()"
-    [disabled]="page * pageSize >= total"
-    class="px-4 py-2 flex items-center gap-2 rounded-lg border border-gray-300 text-gray-700 
-           bg-white hover:bg-gray-100 shadow-sm transition 
-           disabled:opacity-40 disabled:cursor-not-allowed"
-  >
-    <span>Trang sau</span>
-    <i class="fas fa-chevron-right"></i>
-  </button>
 </div>
 
-
-
-  <!-- Empty State -->
-  <div class="empty-state" *ngIf="!isLoading && filteredArticles.length === 0">
-    <i class="fas fa-file-alt"></i>
-    <h3>Không tìm thấy bài viết nào</h3>
-    <p>Hãy thử thay đổi bộ lọc hoặc tạo bài viết mới</p>
-  </div>
-</div>
-
-<!-- Modal - Giống y hệt form trong ảnh -->
-<div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal()">
+<!-- Enhanced Modal Form - STAFF VERSION -->
+<div *ngIf="isModalOpen" class="modal-overlay" (click)="closeModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <div class="modal-header-content">
         <div class="modal-icon">
-          <i class="fas fa-edit"></i>
+          <i class="fas fa-file-alt"></i>
         </div>
         <div class="modal-title-section">
-          <h2>{{ editingArticle ? 'Chỉnh sửa bài viết' : 'Tạo bài viết mới' }}</h2>
-          <p>Nhấp nội dung và định dạng theo từng section</p>
+          <h2>
+            {{editingArticle ? 'Edit Article' : 'Create New Article'}}
+          </h2>
+          <p>Build engaging TOEIC learning content</p>
         </div>
       </div>
-      <button class="btn-close" (click)="closeModal()">
+      <button class="btn-close" (click)="closeModal()" type="button">
         <i class="fas fa-times"></i>
       </button>
     </div>
-    
+
     <form [formGroup]="articleForm" (ngSubmit)="saveArticle()" class="modal-form">
-      <!-- Row 1: Danh mục và Trạng thái -->
+      <!-- Basic Information -->
       <div class="form-row">
         <div class="form-group">
-          <label for="category">Danh mục</label>
-          <select id="category" formControlName="category">
-            <option value="">Chọn danh mục</option>
+          <label for="category">Category</label>
+          <select id="category" formControlName="category" class="form-select" required>
+            <option value="">Select category...</option>
             <option *ngFor="let category of categoryNames" [value]="category">
-              {{ category }}
+              {{category}}
             </option>
           </select>
+          <div *ngIf="articleForm.get('category')?.invalid && articleForm.get('category')?.touched" 
+               class="error-message">
+            Category is required
+          </div>
         </div>
-        
+
         <div class="form-group">
-          <label for="status">Trạng thái</label>
-          <select id="status" formControlName="status">
-            <option value="draft">📝 Bản nháp</option>
-            <option value="pending">⏳ Chờ duyệt</option>
-            <option value="published">✅ Đã xuất bản</option>
+          <label for="status">Status</label>
+          <select id="status" formControlName="status" class="form-select" required>
+            <option value="draft">Draft</option>
+            <!-- STAFF CAN SET PENDING -->
+            <option value="pending" *ngIf="isStaff">Pending Review</option>
+            <!-- ONLY MANAGER CAN SET PUBLISHED -->
+            <option value="published" *ngIf="isManagerRole()">Published</option>
           </select>
         </div>
       </div>
-      
-      <!-- Tiêu đề -->
+
       <div class="form-group">
-        <label for="title">Tiêu đề</label>
-        <input 
-          type="text" 
+        <label for="title">Article Title</label>
+        <input
           id="title"
+          type="text"
           formControlName="title"
-          placeholder="VD: 10 mẹo đạt 900+ TOEIC"
-        >
-        <div class="error-message" *ngIf="articleForm.get('title')?.errors?.['required'] && articleForm.get('title')?.touched">
-          Tiêu đề là bắt buộc
-        </div>
-        <div class="error-message" *ngIf="articleForm.get('title')?.errors?.['minlength'] && articleForm.get('title')?.touched">
-          Tiêu đề phải có ít nhất 5 ký tự
+          placeholder="Enter engaging article title..."
+          class="form-input"
+          required>
+        <div *ngIf="articleForm.get('title')?.invalid && articleForm.get('title')?.touched" 
+             class="error-message">
+          Title must be at least 5 characters
         </div>
       </div>
-      
-      <!-- Tóm tắt -->
+
       <div class="form-group">
-        <label for="summary">Tóm tắt</label>
-        <textarea 
+        <label for="summary">Summary</label>
+        <textarea
           id="summary"
           formControlName="summary"
           rows="3"
-          placeholder="Nhập đoạn mô tả/tóm tắt..."
-        ></textarea>
-        <div class="error-message" *ngIf="articleForm.get('summary')?.errors?.['required'] && articleForm.get('summary')?.touched">
-          Tóm tắt là bắt buộc
-        </div>
-        <div class="error-message" *ngIf="articleForm.get('summary')?.errors?.['minlength'] && articleForm.get('summary')?.touched">
-          Tóm tắt phải có ít nhất 20 ký tự
+          placeholder="Brief description of the article content..."
+          class="form-textarea"
+          required></textarea>
+        <div *ngIf="articleForm.get('summary')?.invalid && articleForm.get('summary')?.touched" 
+             class="error-message">
+          Summary must be at least 20 characters
         </div>
       </div>
-      
-      <!-- Các phần nội dung -->
-      <div class="form-group">
-        <label>Các phần nội dung</label>
-        
+
+      <!-- Content Sections - FULL FUNCTIONALITY -->
+      <div class="sections-container">
+        <div class="sections-header">
+          <h3>Article Sections</h3>
+          <p>Create structured content with multiple sections</p>
+        </div>
+
+        <!-- Dynamic Sections -->
         <div formArrayName="sections">
-          <div *ngFor="let section of sections.controls; let i = index" 
-               [formGroupName]="i" 
-               class="section-item">
+          <div *ngFor="let sectionGroup of sections.controls; let i = index" 
+               class="section-item" 
+               [formGroupName]="i">
             
+            <!-- Section Header -->
             <div class="section-header">
+              <div class="section-number">{{i + 1}}</div>
+              
+              <div class="section-form-group">
+                <label>Section Title</label>
+                <input
+                  type="text"
+                  formControlName="sectionTitle"
+                  placeholder="Enter section title..."
+                  class="form-input">
+                <div *ngIf="sectionGroup.get('sectionTitle')?.invalid && sectionGroup.get('sectionTitle')?.touched" 
+                     class="error-message">
+                  Section title is required
+                </div>
+              </div>
+              
               <div class="section-type-group">
-                <label>Loại phần</label>
-                <select formControlName="type">
+                <label>Type</label>
+                <select formControlName="type" class="form-select">
                   <option *ngFor="let type of sectionTypes" [value]="type.value">
-                    {{ type.label }}
+                    {{type.label}}
                   </option>
                 </select>
               </div>
-              
-              <div class="section-content-group">
-                <label>Nội dung</label>
-                <textarea 
-                  formControlName="content"
-                  rows="3"
-                  placeholder="Nhập nội dung..."
-                ></textarea>
+            </div>
+
+            <!-- Section Content -->
+            <div class="section-content">
+              <label>Content</label>
+              <textarea
+                formControlName="content"
+                rows="4"
+                placeholder="Enter section content..."
+                class="form-textarea"></textarea>
+              <div *ngIf="sectionGroup.get('content')?.invalid && sectionGroup.get('content')?.touched" 
+                   class="error-message">
+                Content is required
               </div>
             </div>
-            
+
+            <!-- Section Controls -->
             <div class="section-controls">
-              <button type="button" class="btn-control btn-up" (click)="moveSectionUp(i)" [disabled]="i === 0">
+              <button
+                type="button"
+                class="btn-control btn-up"
+                (click)="moveSectionUp(i)"
+                [disabled]="i === 0">
                 <i class="fas fa-arrow-up"></i>
+                Up
               </button>
-              <button type="button" class="btn-control btn-down" (click)="moveSectionDown(i)" [disabled]="i === sections.length - 1">
+              <button
+                type="button"
+                class="btn-control btn-down"
+                (click)="moveSectionDown(i)"
+                [disabled]="i === sections.length - 1">
                 <i class="fas fa-arrow-down"></i>
+                Down
               </button>
-              <button type="button" class="btn-control btn-remove" (click)="removeSection(i)">
-                <i class="fas fa-trash text-red"></i> Xóa
+              <button
+                type="button"
+                class="btn-control btn-remove"
+                (click)="removeSection(i)"
+                [disabled]="sections.length === 1">
+                <i class="fas fa-trash"></i>
+                Remove
               </button>
             </div>
           </div>
         </div>
-        
-        <button type="button" class="btn-add-section" (click)="addSection()">
-          <i class="fas fa-plus"></i> Thêm phần
+
+        <!-- Add Section Button -->
+        <button
+          type="button"
+          class="btn-add-section"
+          (click)="addSection()">
+          <i class="fas fa-plus"></i>
+          Add Section
         </button>
       </div>
-      
+
       <!-- Tags -->
       <div class="form-group">
         <label for="tags">Tags</label>
-        <input 
-          type="text" 
+        <input
           id="tags"
+          type="text"
           formControlName="tags"
-          placeholder="VD: TOEIC, Listening, 900 điểm"
-        >
-        <small class="form-hint">Phân cách các tag bằng dấu phẩy</small>
+          placeholder="Enter tags separated by commas..."
+          class="form-input">
+        <small class="form-hint">Separate multiple tags with commas</small>
       </div>
-      
+
+      <!-- Modal Actions -->
       <div class="modal-actions">
         <button type="button" class="btn-secondary" (click)="closeModal()">
-          Lưu nháp
+          Cancel
         </button>
-        <button type="submit" class="btn-primary" [disabled]="!articleForm.valid || isSubmitting">
-          <span *ngIf="isSubmitting" class="loading-spinner"></span>
-          {{ isSubmitting ? 'Đang xử lý...' : (editingArticle ? 'Cập nhật' : 'Lưu & Xuất bản') }}
+        <button 
+          type="submit" 
+          class="btn-primary" 
+          [disabled]="articleForm.invalid || isSubmitting">
+          <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin"></i>
+          <i *ngIf="!isSubmitting && !editingArticle" class="fas fa-plus"></i>
+          <i *ngIf="!isSubmitting && editingArticle" class="fas fa-save"></i>
+          {{editingArticle ? 'Update Article' : 'Create Article'}}
         </button>
       </div>
     </form>

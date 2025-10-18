@@ -1,4 +1,4 @@
-import { Component, Input, input } from '@angular/core';
+import { Component, Input, input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OptionsComponent } from '../options/options.component';
 import { PromptComponent } from '../prompt/prompt.component';
@@ -34,7 +34,7 @@ interface QuestionResult {
   ],
   templateUrl: './question.component.html',
 })
-export class QuestionComponent {
+export class QuestionComponent implements OnChanges {
   @Input() questions: QuestionDTO[] = [];
   currentIndex = 0;
   showExplain = false;
@@ -48,6 +48,13 @@ export class QuestionComponent {
   speakingQuestionResults: QuestionResult[] = [];
   isSpeakingSubmitting = false; // New: Track speaking submission status
   private advanceTimer: any = null;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['questions']) {
+      console.log('QuestionComponent - Questions changed:', this.questions);
+      console.log('QuestionComponent - Questions length:', this.questions?.length || 0);
+    }
+  }
 
   markAnswered(isCorrect: boolean): void {
     if (isCorrect) {

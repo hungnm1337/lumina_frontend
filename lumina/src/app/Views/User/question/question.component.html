@@ -54,7 +54,7 @@
       [pictureCaption]="latestPictureCaption"
       (answered)="markAnswered($event)"
     ></app-writing-answer-box>
-    } @else if (questions[currentIndex].questionType === 'SPEAKING') {
+    } @else if (questions[currentIndex].questionType.includes('Speaking')) {
     <app-speaking-answer-box
       [questionId]="questions[currentIndex].questionId"
       [disabled]="showExplain"
