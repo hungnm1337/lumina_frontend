@@ -74,11 +74,6 @@ export class ExamPartComponent {
 
   startPart(partId: number): void {
     console.log('Starting part ID:', partId);
-    // Navigate to part detail or start exam
-    if(this.examDetail?.examType?.toUpperCase().includes('WRI')){
-      this.router.navigate(['/homepage/user-dashboard/writing-part', partId]);;
-      return;
-    }
     this.router.navigate(['/homepage/user-dashboard/part', partId]);
   }
 

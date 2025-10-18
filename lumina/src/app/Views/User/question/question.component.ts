@@ -44,7 +44,7 @@ interface QuestionResult {
     ListeningComponent,
     ReadingComponent,
     SpeakingComponent,
-    WritingComponent,
+    
   ],
   templateUrl: './question.component.html',
 })

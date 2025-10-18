@@ -1,30 +1,13 @@
 <app-part-detail [partInfo]="partInfo"></app-part-detail>
-
-@if
-
 @if (isWritingExam) {
   <app-writing
-    [partInfo]="partInfo"
-    [questions]="questions"
-    (writingAnswered)="onWritingAnswered($event)">
+  [questions]="questions">
   </app-writing>
-} @else (isReadingExam) {
-  <app-reading
-    [partInfo]="partInfo"
-    [questions]="questions"
-    (readingAnswered)="onReadingAnswered($event)">
-  </app-reading>
-} @else (isListeningExam) {
-  <app-listening
-    [partInfo]="partInfo"
-    [questions]="questions"
-    (listeningAnswered)="onListeningAnswered($event)">
-  </app-listening>
+} @else if(isReadingExam) {
+
+} @else if(isListeningExam) {
+
 } @else {
-  <app-speaking
-    [partInfo]="partInfo"
-    [questions]="questions"
-    (speakingAnswered)="onSpeakingAnswered($event)">
-  </app-speaking>
+
 }
 

@@ -20,6 +20,7 @@ export class WritingAnswerBoxComponent implements OnChanges, OnDestroy {
   @Input() contentText: string | undefined;
   @Input() pictureCaption: string | undefined;
   @Output() answered = new EventEmitter<boolean>();
+  @Output() answerChange = new EventEmitter<{questionId: number, answer: string}>();
 
   feedbackResponse: WritingResponseDTO | null = null;
   writingRequest: WritingRequestDTO | undefined;;
@@ -92,7 +93,11 @@ export class WritingAnswerBoxComponent implements OnChanges, OnDestroy {
   }
 
   onAnswerChange(): void {
-    // No auto-save on typing - only manual save and 10s interval
+    // Emit answer change event for parent component
+    this.answerChange.emit({
+      questionId: this.questionId,
+      answer: this.userAnswer
+    });
   }
 
   onSubmit(): void {

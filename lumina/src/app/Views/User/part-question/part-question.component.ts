@@ -5,6 +5,7 @@ import { PartDetailComponent } from "../part-detail/part-detail.component";
 import { QuestionComponent } from "../question/question.component";
 import { WritingComponent } from "../question/writing/writing.component";
 import { ExamPartDTO, QuestionDTO } from '../../../Interfaces/exam.interfaces';
+import { flush } from '@angular/core/testing';
 
 @Component({
   selector: 'app-part-question',
@@ -17,10 +18,11 @@ export class PartQuestionComponent {
   partId: number | null = null;
   partDetail: ExamPartDTO | null = null;
   partInfo: ExamPartDTO | null = null;
-  questions: QuestionDTO[] = [];
-  isLoading = true;
-  examType: string = '';
-  isWritingExam = false;
+  questions: QuestionDTO[] | null = null;
+
+  isWritingExam : boolean = false;
+  isReadingExam: boolean = false;
+  isListeningExam: boolean = false;
 
   constructor(private route: ActivatedRoute, private examService: ExamService, private router: Router) {
       this.partId = Number(this.route.snapshot.paramMap.get('id'));
@@ -33,10 +35,22 @@ export class PartQuestionComponent {
           this.partDetail = data;
           console.log('Part detail loaded:', this.partDetail);
           console.log('Questions count:', this.partDetail.questions?.length || 0);
-          console.log('Questions data:', this.partDetail.questions);
+          this.questions = this.partDetail.questions;
+          console.log('Questions data:', this.questions);
 
-          // Load exam detail to get exam type
-          this.loadExamType();
+          // tùy vào part code có chứa "writing , reading, listening"
+
+          if(this.partDetail.partCode.search('WRI')){
+            this.isWritingExam = true;
+            console.log('isWritingExam set to true');
+          }else if(this.partDetail.partCode.search('REA')){
+            this.isReadingExam = true;
+            console.log('isReadingExam set to true');
+          }
+          else if(this.partDetail.partCode.search('LIS')){
+            this.isListeningExam = true;
+            console.log('isListeningExam set to true');
+          }
 
           this.partInfo ={
             partId: this.partDetail.partId,
@@ -46,37 +60,11 @@ export class PartQuestionComponent {
             orderIndex: this.partDetail.orderIndex,
             questions: []
           };
-          this.questions = this.partDetail.questions || [];
-          this.isLoading = false;
-
-          console.log('Final questions array:', this.questions);
         },
         error: (error) => {
           console.error('Error loading part detail:', error);
-          this.isLoading = false;
         }
       });
     }
-  }
-
-  private loadExamType(): void {
-    if (this.partDetail?.examId) {
-      this.examService.GetExamDetailAndPart(this.partDetail.examId).subscribe({
-        next: (examData) => {
-          this.examType = examData.examType || '';
-          this.isWritingExam = this.examType.toUpperCase().includes('WRITTING');
-          console.log('Exam type:', this.examType);
-          console.log('Is writing exam:', this.isWritingExam);
-        },
-        error: (error) => {
-          console.error('Error loading exam type:', error);
-        }
-      });
-    }
-  }
-
-  onWritingAnswered(isCorrect: boolean): void {
-    console.log('Writing answer submitted:', isCorrect);
-    // Handle writing answer submission if needed
   }
 }

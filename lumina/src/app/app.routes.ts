@@ -53,7 +53,7 @@ export const routes: Routes = [
         children: [
           { path: 'exams', component: ExamsComponent },
           { path: 'exam/:id', component: ExamPartComponent },
-          { path: 'writing-part/:id', component: WritingComponent },
+          { path: 'part/:id', component: PartQuestionComponent },
           { path: '', redirectTo: 'exams', pathMatch: 'full' },
           // {path: 'vocabulary', component: VocabularyComponent},
           // {path: 'notes', component: NotesComponent},

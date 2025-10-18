@@ -56,16 +56,7 @@
           (answered)="markAnswered($event)"
         ></app-reading>
       }
-    } @else if (questions[currentIndex].questionType === 'WRITTING') {
-      <app-writing
-        [questionId]="questions[currentIndex].questionId"
-        [disabled]="showExplain"
-        [resetAt]="currentIndex"
-        [contentText]="questions[currentIndex].prompt.contentText"
-        [pictureCaption]="latestPictureCaption"
-        (answered)="markAnswered($event)"
-      ></app-writing>
-    } @else if (isSpeakingQuestion(questions[currentIndex].questionType)) {
+    }  @else if (isSpeakingQuestion(questions[currentIndex].questionType)) {
       <app-speaking
         [questionId]="questions[currentIndex].questionId"
         [disabled]="showExplain"
