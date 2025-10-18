@@ -39,22 +39,16 @@ export interface QuestionDTO {
 
 export interface PromptDTO {
   promptId: number;
-  passageId?: number;
   skill: string;
-  promptText?: string;
+   title: string;
+  contentText: string;
   referenceImageUrl?: string;
   referenceAudioUrl?: string;
-  passage: PassageDTO;
 }
 export interface PartDetailResponse {
   part: ExamPartDTO;
 
   questions: QuestionDTO[];
-}
-export interface PassageDTO {
-  passageId: number;
-  title: string;
-  contentText: string;
 }
 
 export interface OptionDTO {
