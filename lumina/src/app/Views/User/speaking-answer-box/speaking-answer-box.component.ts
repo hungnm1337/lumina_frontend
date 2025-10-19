@@ -11,10 +11,9 @@ import { CommonModule } from '@angular/common';
 import {
   SpeakingService,
   SpeakingScoringResult,
-} from '../../../Services/Speaking/speaking.service';
+} from '../../../Services/Exam/Speaking/speaking.service';
 import { ToastService } from '../../../Services/Toast/toast.service';
-import { SpeakingQuestionStateService } from '../../../Services/Speaking/speaking-question-state.service';
-
+import { SpeakingQuestionStateService } from '../../../Services/Exam/Speaking/speaking-question-state.service';
 type RecordingState =
   | 'idle'
   | 'recording'
