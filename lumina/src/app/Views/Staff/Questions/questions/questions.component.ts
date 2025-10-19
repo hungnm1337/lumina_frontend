@@ -1,6 +1,13 @@
 import { ExamPartService } from './../../../../Services/ExamPart/exam-part.service';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormArray,
+  Validators,
+  ReactiveFormsModule,
+  FormsModule,
+} from '@angular/forms';
 import { QuestionService } from '../../../../Services/Question/question.service';
 import { CommonModule } from '@angular/common';
 import { UploadService } from '../../../../Services/Upload/upload.service';
@@ -10,7 +17,7 @@ import { UploadService } from '../../../../Services/Upload/upload.service';
   templateUrl: './questions.component.html',
   styleUrls: ['./questions.component.scss'],
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, FormsModule]
+  imports: [ReactiveFormsModule, CommonModule, FormsModule],
 })
 export class QuestionsComponent implements OnInit {
   isModalOpen = false;
@@ -26,7 +33,6 @@ export class QuestionsComponent implements OnInit {
   message: string = '';
   messageType: string = 'success'; // hoặc 'error'
 
-
   constructor(
     private fb: FormBuilder,
     private examPartService: ExamPartService,
@@ -39,9 +45,9 @@ export class QuestionsComponent implements OnInit {
       skill: ['', Validators.required],
       partId: ['', Validators.required],
       promptId: [null],
-      referenceImageUrl: [null], // có thể null hoặc ''
-      referenceAudioUrl: [null], // có thể null hoặc ''
-      questions: this.fb.array([])
+      referenceImageUrl: [''], // có thể null hoặc ''
+      referenceAudioUrl: [''], // có thể null hoặc ''
+      questions: this.fb.array([]),
     });
     this.addQuestion(); // khởi tạo 1 question mẫu
   }
@@ -62,7 +68,6 @@ export class QuestionsComponent implements OnInit {
   loading = false;
   uploading = false;
 
-
   // Lấy danh sách câu hỏi từ API, hỗ trợ filter, search, paging
   loadPrompts() {
     this.loading = true;
@@ -79,12 +84,11 @@ export class QuestionsComponent implements OnInit {
         this.totalPages = res.totalPages || 1;
         this.loading = false;
       },
-      error: () => { this.loading = false; }
+      error: () => {
+        this.loading = false;
+      },
     });
   }
-
-
-
 
   onPartFilterChange() {
     this.page = 1;
@@ -121,7 +125,7 @@ export class QuestionsComponent implements OnInit {
     this.uploadedUrl = null;
 
     this.mediaService.uploadFile(file).subscribe({
-      next: res => {
+      next: (res) => {
         if (res && res.url) {
           this.uploadedUrl = res.url;
         }
@@ -130,7 +134,7 @@ export class QuestionsComponent implements OnInit {
       error: () => {
         this.uploading = false;
         alert('Upload thất bại!');
-      }
+      },
     });
   }
 
@@ -138,7 +142,6 @@ export class QuestionsComponent implements OnInit {
   copyUrl(url: string) {
     navigator.clipboard.writeText(url);
   }
-
 
   addQuestion() {
     // Tạo cấu hình đầy đủ trường mỗi lần add
@@ -161,8 +164,6 @@ export class QuestionsComponent implements OnInit {
     this.questions.push(this.fb.group(questionGroup));
   }
 
-
-
   removeQuestion(index: number) {
     this.questions.removeAt(index);
   }
@@ -170,7 +171,7 @@ export class QuestionsComponent implements OnInit {
   createOption(): FormGroup {
     return this.fb.group({
       content: ['', Validators.required],
-      isCorrect: [false]
+      isCorrect: [false],
     });
   }
 
@@ -178,9 +179,6 @@ export class QuestionsComponent implements OnInit {
     const group = this.questions.at(i) as FormGroup;
     return (group.get('options') as FormArray) || this.fb.array([]);
   }
-
-
-
 
   openImportModal() {
     this.isImportModalOpen = true;
@@ -202,21 +200,19 @@ export class QuestionsComponent implements OnInit {
     this.isModalOpen = false;
   }
 
-
   uploadMedia(event: any, field: 'referenceImageUrl' | 'referenceAudioUrl') {
     const file = event.target.files[0];
     if (file) {
       this.mediaService.uploadFile(file).subscribe({
-        next: res => {
+        next: (res) => {
           this.promptForm.patchValue({ [field]: res.url });
         },
-        error: () => alert('Upload thất bại!')
+        error: () => alert('Upload thất bại!'),
       });
     }
   }
   selectedSkill: string = '';
   filteredParts: any[] = [];
-
 
   // Xử lý khi đổi skill, reset câu hỏi
   onSkillChange(event: any) {
@@ -257,8 +253,16 @@ export class QuestionsComponent implements OnInit {
   //   }
   // }
 
-
-
+  // filterPartsBySkill() {
+  //   if (!this.selectedSkill) {
+  //     this.filteredParts = [];
+  //   } else {
+  //     const skillUpper = this.selectedSkill.toUpperCase();
+  //     this.filteredParts = this.parts.filter(
+  //       (p) => p.skillType && p.skillType.toUpperCase() === skillUpper
+  //     );
+  //   }
+  // }
 
   savePrompt() {
     if (this.promptForm.invalid) {
@@ -309,17 +313,20 @@ export class QuestionsComponent implements OnInit {
         this.closeModal();
         this.loadPrompts();
       },
-       error: err => {
+      error: (err) => {
         let errorMsg = 'Có lỗi xảy ra';
         if (err.error && err.error.error) {
           errorMsg = err.error.error;
         } else if (err.error) {
-          errorMsg = typeof err.error === "string" ? err.error : JSON.stringify(err.error);
+          errorMsg =
+            typeof err.error === 'string'
+              ? err.error
+              : JSON.stringify(err.error);
         } else if (err.message) {
           errorMsg = err.message;
         }
         alert('Lỗi: ' + errorMsg);
-      }
+      },
     });
   }
 
@@ -337,32 +344,28 @@ export class QuestionsComponent implements OnInit {
       alert('Vui lòng nhập PartId và chọn file Excel');
       return;
     }
-    this.questionService.importQuestionsExcel(this.excelFile, this.importPartId)
+    this.questionService
+      .importQuestionsExcel(this.excelFile, this.importPartId)
       .subscribe({
         next: () => {
           alert('Import thành công!');
           this.closeImportModal();
         },
-        error: err => {
+        error: (err) => {
           let errorMsg = 'Lỗi import file excel!';
           if (err.error && err.error.error) {
             errorMsg = err.error.error;
-          } else if (err.error && typeof err.error === "string") {
+          } else if (err.error && typeof err.error === 'string') {
             errorMsg = err.error;
           }
           alert('Lỗi: ' + errorMsg);
-        }
+        },
       });
   }
-
-
 
   toggleShowQuestions(passage: any) {
     passage.showQuestions = !passage.showQuestions;
   }
-
-
-
 
   // Mở modal và load dữ liệu passage, prompt vào form
   // editPassage(passage: any) {
@@ -410,7 +413,7 @@ export class QuestionsComponent implements OnInit {
         this.isEditModalOpen = false;
         this.loadPrompts(); // reload lại danh sách
       },
-      error: () => alert('Có lỗi khi cập nhật passage')
+      error: () => alert('Có lỗi khi cập nhật passage'),
     });
   }
 
@@ -422,14 +425,13 @@ export class QuestionsComponent implements OnInit {
   showMessage(msg: string, type: 'success' | 'error' = 'success') {
     this.message = msg;
     this.messageType = type;
-    setTimeout(() => this.message = '', 3000); // tự động ẩn sau 3s
+    setTimeout(() => (this.message = ''), 3000); // tự động ẩn sau 3s
   }
 
   isQuestionModalOpen = false;
   questionForm!: FormGroup;
   isEditQuestion = false;
   editQuestionIndex: number | null = null;
-
 
   currentSkill: string = '';
   // Mở modal để thêm câu hỏi mới
@@ -590,8 +592,11 @@ export class QuestionsComponent implements OnInit {
           this.loadPrompts();
         },
         error: (err) => {
-          this.showMessage(err.error?.message || 'Xóa câu hỏi thất bại!', 'error');
-        }
+          this.showMessage(
+            err.error?.message || 'Xóa câu hỏi thất bại!',
+            'error'
+          );
+        },
       });
     }
   }

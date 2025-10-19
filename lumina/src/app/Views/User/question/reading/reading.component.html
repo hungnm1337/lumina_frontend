@@ -1,3 +1,4 @@
+<!-- Main question view -->
 @if (questions && questions.length > 0 && !finished) {
 <div
   class="bg-white rounded-lg border border-gray-200 shadow-sm p-5 flex flex-col gap-3"
@@ -39,33 +40,17 @@
   </div>
 
   <div class="mt-2">
-    @if (questions[currentIndex].questionType === 'SINGLE_CHOICE') { @if
-    (isListeningQuestion(questions[currentIndex].questionType)) {
-    <app-listening
+    <!-- Reading Options -->
+    @if (questions[currentIndex].questionType === 'SINGLE_CHOICE') {
+    <app-options
       [options]="questions[currentIndex].options"
       [disabled]="showExplain"
       [resetAt]="currentIndex"
       (answered)="markAnswered($event)"
-    ></app-listening>
-    } @else {
-    <app-reading
-      [options]="questions[currentIndex].options"
-      [disabled]="showExplain"
-      [resetAt]="currentIndex"
-      (answered)="markAnswered($event)"
-    ></app-reading>
-    } } @else if (questions[currentIndex].questionType === 'WRITTING') {
-    <app-writing
-      [questionId]="questions[currentIndex].questionId"
-      [disabled]="showExplain"
-      [resetAt]="currentIndex"
-      [contentText]="questions[currentIndex].prompt.contentText"
-      [pictureCaption]="latestPictureCaption"
-      (answered)="markAnswered($event)"
-    ></app-writing>
+    ></app-options>
     }
 
-    <!-- Navigation for Non-Speaking Questions (Original) -->
+    <!-- Navigation -->
     <div class="mt-4 flex items-center justify-between">
       <div class="text-sm text-gray-500">
         Câu {{ currentIndex + 1 }} / {{ questions.length }}
@@ -96,7 +81,10 @@
   </div>
   }
 </div>
-} @if (finished) {
+}
+
+<!-- Summary view -->
+@if (finished) {
 <div class="mt-4 bg-white rounded-lg border border-gray-200 shadow-sm p-5">
   <div class="flex items-center justify-between">
     <div class="text-gray-800 font-semibold">Hoàn thành</div>
@@ -181,4 +169,14 @@
     </div>
   </div>
 </div>
+}
+
+<!-- Legacy support: Simple options view when used in question.component -->
+@if (!questions || questions.length === 0) {
+<app-options
+  [options]="options"
+  [disabled]="disabled"
+  [resetAt]="resetAt"
+  (answered)="onAnswered($event)"
+></app-options>
 }
