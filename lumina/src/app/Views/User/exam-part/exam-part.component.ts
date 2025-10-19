@@ -9,7 +9,7 @@ import { ExamDTO } from '../../../Interfaces/exam.interfaces';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './exam-part.component.html',
-  styleUrl: './exam-part.component.scss'
+  styleUrl: './exam-part.component.scss',
 })
 export class ExamPartComponent {
   examDetail: ExamDTO | null = null;
@@ -32,18 +32,11 @@ export class ExamPartComponent {
           this.examDetail = data;
           this.isLoading = false;
           console.log('Exam detail loaded:', this.examDetail);
-          
-          // Auto-navigate to first part if it's a Speaking exam
-          if (data.examType?.toUpperCase().includes('SPEAKING') && data.examParts && data.examParts.length > 0) {
-            const firstPart = data.examParts[0];
-            console.log('Auto-navigating to Speaking part:', firstPart.partId);
-            this.router.navigate(['/homepage/user-dashboard/part', firstPart.partId]);
-          }
         },
         error: (error) => {
           console.error('Error loading exam detail:', error);
           this.isLoading = false;
-        }
+        },
       });
     }
   }
@@ -52,31 +45,37 @@ export class ExamPartComponent {
     return new Date(date).toLocaleDateString('vi-VN', {
       year: 'numeric',
       month: '2-digit',
-      day: '2-digit'
+      day: '2-digit',
     });
   }
 
   getSkillColor(examType: string): string {
-    if (examType?.toUpperCase().includes('LISTENING')) return 'blue';
-    if (examType?.toUpperCase().includes('READING')) return 'green';
-    if (examType?.toUpperCase().includes('SPEAKING')) return 'purple';
-    if (examType?.toUpperCase().includes('WRITING')) return 'orange';
+    const type = examType?.toUpperCase() || '';
+    if (type.includes('LISTENING')) return 'blue';
+    if (type.includes('READING')) return 'green';
+    if (type.includes('SPEAKING')) return 'purple';
+    if (type.includes('WRIT')) return 'orange'; // ✅ Match cả WRITTING và WRITING
     return 'gray';
   }
 
   getSkillGradient(color: string): string {
     switch (color) {
-      case 'blue': return 'from-blue-500 to-blue-700';
-      case 'green': return 'from-green-500 to-green-700';
-      case 'purple': return 'from-purple-500 to-purple-700';
-      case 'orange': return 'from-orange-500 to-orange-700';
-      default: return 'from-gray-500 to-gray-700';
+      case 'blue':
+        return 'from-blue-500 to-blue-700';
+      case 'green':
+        return 'from-green-500 to-green-700';
+      case 'purple':
+        return 'from-purple-500 to-purple-700';
+      case 'orange':
+        return 'from-orange-500 to-orange-700';
+      default:
+        return 'from-gray-500 to-gray-700';
     }
   }
 
   startPart(partId: number): void {
     console.log('Starting part ID:', partId);
-    // Navigate to part detail or start exam
+    // Navigate to part-question component for all exam types
     this.router.navigate(['/homepage/user-dashboard/part', partId]);
   }
 

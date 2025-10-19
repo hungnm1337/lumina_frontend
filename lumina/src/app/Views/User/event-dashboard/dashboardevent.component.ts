@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EventService, EventDTO } from '../../../Services/Event/event.service';
+import { EventService, EventDTO, PaginatedResultDTO } from '../../../Services/Event/event.service';
 
 @Component({
   selector: 'app-user-events-dashboard',
@@ -24,12 +24,11 @@ export class UserEventsDashboardComponent implements OnInit {
   fetchEvents(): void {
     this.isLoading = true;
     this.errorMessage = null;
-    this.eventService.GetAllEvents().subscribe({
-      next: (events) => {
-        // Filter only active events and sort by start date
-        this.events = events
-          .filter(e => this.isEventActive(e) || this.isEventUpcoming(e))
-          .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+    this.eventService.GetAllEventsPaginated(1, 1000).subscribe({
+      next: (result) => {
+        // Show all events and sort by start date (newest first)
+        this.events = result.items
+          .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
         this.isLoading = false;
       },
       error: () => {

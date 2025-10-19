@@ -14,6 +14,16 @@ export interface EventDTO {
   updateBy?: number;
 }
 
+export interface PaginatedResultDTO<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
 
 @Injectable({
   providedIn: 'root',
@@ -31,8 +41,23 @@ export class EventService {
     });
   }
 
-  public GetAllEvents(): Observable<EventDTO[]> {
-    return this.httpClient.get<EventDTO[]>(`${this.apiUrl}/Event`, {
+
+  public GetAllEventsPaginated(page: number = 1, pageSize: number = 10, from?: Date, to?: Date, keyword?: string): Observable<PaginatedResultDTO<EventDTO>> {
+    let params = new URLSearchParams();
+    params.set('page', page.toString());
+    params.set('pageSize', pageSize.toString());
+    
+    if (from) {
+      params.set('from', from.toISOString());
+    }
+    if (to) {
+      params.set('to', to.toISOString());
+    }
+    if (keyword) {
+      params.set('keyword', keyword);
+    }
+
+    return this.httpClient.get<PaginatedResultDTO<EventDTO>>(`${this.apiUrl}/Event?${params.toString()}`, {
       headers: this.getAuthHeaders(),
     });
   }
@@ -43,6 +68,9 @@ export class EventService {
 
   public CreateEvent(payload: EventDTO): Observable<EventDTO> {
     const body = this.cleanPayload(this.normalizePayload(payload));
+    console.log('Creating event with payload:', body);
+    console.log('API URL:', `${this.apiUrl}/Event`);
+    console.log('Auth headers:', this.getAuthHeaders());
     return this.httpClient.post<EventDTO>(`${this.apiUrl}/Event`, body, {
       headers: this.getAuthHeaders(),
     });

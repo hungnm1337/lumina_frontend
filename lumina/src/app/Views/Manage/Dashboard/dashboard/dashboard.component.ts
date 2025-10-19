@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { EventService, EventDTO } from '../../../../Services/Event/event.service';
+import { EventService, EventDTO, PaginatedResultDTO } from '../../../../Services/Event/event.service';
 import { SlideService } from '../../../../Services/Slide/slide.service';
 import { SlideDTO } from '../../../../Interfaces/slide.interface';
 
@@ -88,13 +88,13 @@ export class DashboardComponent implements OnInit {
     this.errorMessage = null;
 
     forkJoin({
-      events: this.eventService.GetAllEvents(),
+      events: this.eventService.GetAllEventsPaginated(1, 1000),
       slides: this.slideService.getAllSlides()
     }).subscribe({
       next: ({ events, slides }) => {
-        this.computeEventMetrics(events || []);
+        this.computeEventMetrics(events?.items || []);
         this.computeSlideMetrics(slides || []);
-        this.composeRecentActivities(events || [], slides || []);
+        this.composeRecentActivities(events?.items || [], slides || []);
         this.isLoading = false;
       },
       error: (err) => {

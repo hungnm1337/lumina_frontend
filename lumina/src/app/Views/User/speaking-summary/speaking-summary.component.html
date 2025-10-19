@@ -164,7 +164,7 @@
     </h3>
 
     <div class="space-y-4">
-      @for (item of results; track item.questionNumber) {
+      @for (item of results; track $index) {
       <div
         class="border border-gray-300 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
       >

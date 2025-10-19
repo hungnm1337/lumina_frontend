@@ -1,0 +1,277 @@
+<!-- Main question view -->
+@if (questions && questions.length > 0 && !finished) {
+<div
+  class="bg-white rounded-lg border border-gray-200 shadow-sm p-5 flex flex-col gap-3"
+>
+  <div class="flex items-start justify-between gap-3">
+    <div class="space-y-2">
+      <app-time
+        [time]="questions[currentIndex].time"
+        [resetAt]="currentIndex"
+        [paused]="showExplain"
+        (timeout)="onTimeout()"
+      ></app-time>
+    </div>
+
+    <!-- ✅ Hiển thị câu hỏi -->
+    <h3 class="text-lg font-semibold text-gray-800 flex-1">
+      {{ questions[currentIndex].stemText || "Không có nội dung câu hỏi" }}
+    </h3>
+
+    <span class="text-xs text-gray-500 inline-flex items-center gap-2">
+      <span class="bg-gray-100 px-2 py-1 rounded">
+        Type: {{ questions[currentIndex].questionType }}
+      </span>
+      <span class="bg-gray-100 px-2 py-1 rounded">
+        Score: {{ questions[currentIndex].scoreWeight }}
+      </span>
+      <span class="bg-orange-100 text-orange-700 px-2 py-1 rounded font-medium">
+        Điểm của bạn: {{ totalScore }}
+      </span>
+    </span>
+  </div>
+
+  <!-- ✅ Debug: Hiển thị thông tin prompt -->
+  <div
+    class="text-xs text-gray-500 p-2 bg-yellow-50 border border-yellow-200 rounded"
+  >
+    <strong>Debug Info:</strong><br />
+    Current Index: {{ currentIndex }}<br />
+    Has Prompt: {{ questions[currentIndex].prompt ? "Yes" : "No" }}<br />
+    Prompt ContentText: {{ questions[currentIndex].prompt.contentText || "N/A"
+    }}<br />
+    Prompt Title: {{ questions[currentIndex].prompt.title || "N/A" }}
+  </div>
+
+  <div class="grid gap-4 mt-3">
+    <div class="space-y-2">
+      <!-- ✅ Kiểm tra prompt trước khi render -->
+      @if (questions[currentIndex].prompt) {
+      <app-prompt
+        [prompt]="questions[currentIndex].prompt"
+        [resetAt]="currentIndex"
+        [questionType]="questions[currentIndex].questionType"
+        (pictureCaptionChange)="onPictureCaption($event)"
+      ></app-prompt>
+      } @else {
+      <div class="p-4 bg-red-50 border border-red-200 rounded text-red-700">
+        ⚠️ Không có prompt cho câu hỏi này
+      </div>
+      }
+    </div>
+  </div>
+
+  <div class="mt-2">
+    <!-- Writing Answer Box -->
+    @if (questions[currentIndex].questionType === 'WRITTING') {
+    <div class="border border-gray-200 rounded-lg p-4">
+      <div class="mb-3">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          Câu trả lời của bạn:
+        </label>
+        <textarea
+          [(ngModel)]="userAnswer"
+          (ngModelChange)="onAnswerChange()"
+          [disabled]="showExplain"
+          class="w-full h-32 p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+          placeholder="Nhập câu trả lời của bạn..."
+        ></textarea>
+      </div>
+
+      <div class="flex gap-2">
+        <button
+          (click)="onSave()"
+          class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+        >
+          Lưu
+        </button>
+        <button
+          (click)="onSubmit()"
+          [disabled]="!userAnswer.trim() || isLoadingFeedback"
+          class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
+        >
+          @if (isLoadingFeedback) { Đang xử lý... } @else { Gửi bài }
+        </button>
+      </div>
+
+      <!-- Feedback Display -->
+      @if (feedbackResponse) {
+      <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+        <h4 class="font-medium text-blue-900 mb-2">Phản hồi:</h4>
+        <div class="text-sm text-blue-800 space-y-2">
+          <p>
+            <strong>Điểm tổng:</strong> {{ feedbackResponse.totalScore }}/10
+          </p>
+          <p>
+            <strong>Ngữ pháp:</strong> {{ feedbackResponse.grammarFeedback }}
+          </p>
+          <p>
+            <strong>Từ vựng:</strong> {{ feedbackResponse.vocabularyFeedback }}
+          </p>
+          <p>
+            <strong>Kiểm tra từ bắt buộc:</strong>
+            {{ feedbackResponse.requiredWordsCheck }}
+          </p>
+          <p>
+            <strong>Độ chính xác nội dung:</strong>
+            {{ feedbackResponse.contentAccuracyFeedback }}
+          </p>
+          @if (feedbackResponse.correededAnswerProposal) {
+          <p>
+            <strong>Đáp án gợi ý:</strong>
+            {{ feedbackResponse.correededAnswerProposal }}
+          </p>
+          }
+        </div>
+      </div>
+      }
+    </div>
+    }
+
+    <!-- Navigation -->
+    <div class="mt-4 flex items-center justify-between">
+      <div class="text-sm text-gray-500">
+        Câu {{ currentIndex + 1 }} / {{ questions.length }}
+      </div>
+      @if (showExplain && !finished) {
+      <button
+        class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+        (click)="next()"
+      >
+        Tiếp
+      </button>
+      } @else if (showExplain && finished) {
+      <button
+        class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
+        (click)="goToExams()"
+      >
+        Xem kết quả
+      </button>
+      }
+    </div>
+  </div>
+
+  @if (showExplain) {
+  <div
+    class="mt-3 p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-800 text-sm"
+  >
+    {{ questions[currentIndex].questionExplain }}
+  </div>
+  }
+</div>
+}
+
+<!-- Summary view -->
+@if (finished) {
+<div class="mt-4 bg-white rounded-lg border border-gray-200 shadow-sm p-5">
+  <div class="flex items-center justify-between">
+    <div class="text-gray-800 font-semibold">Hoàn thành</div>
+    <div class="text-sm text-gray-600">Điểm: {{ totalScore }}</div>
+  </div>
+  <div class="mt-3 text-gray-700">
+    Bạn đã hoàn thành {{ questions.length }} câu hỏi.
+  </div>
+  <div
+    class="mt-2 p-3 rounded-md"
+    [ngClass]="{
+      'bg-red-50 text-red-700 border border-red-200': percentCorrect < 30,
+      'bg-yellow-50 text-yellow-700 border border-yellow-200':
+        percentCorrect >= 30 && percentCorrect < 60,
+      'bg-green-50 text-green-700 border border-green-200': percentCorrect >= 60
+    }"
+  >
+    {{ feedbackText }}
+  </div>
+  <div class="flex gap-4">
+    <div class="mt-4">
+      <button
+        class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+        (click)="resetQuiz()"
+      >
+        Làm lại
+      </button>
+    </div>
+
+    <div class="mt-4">
+      <button
+        class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+        (click)="goToExams()"
+      >
+        Các đề khác
+      </button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Legacy support: Simple writing view when used in question.component -->
+@if (!questions || questions.length === 0) {
+<div class="border border-gray-200 rounded-lg p-4">
+  <div class="mb-3">
+    <label class="block text-sm font-medium text-gray-700 mb-2">
+      Câu trả lời của bạn:
+    </label>
+    <textarea
+      [(ngModel)]="userAnswer"
+      (ngModelChange)="onAnswerChange()"
+      [disabled]="disabled"
+      class="w-full h-32 p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+      placeholder="Nhập câu trả lời của bạn..."
+    ></textarea>
+  </div>
+
+  <div class="flex gap-2">
+    <button
+      (click)="onSave()"
+      class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+    >
+      Lưu
+    </button>
+    <button
+      (click)="onSubmit()"
+      [disabled]="!userAnswer.trim() || isLoadingFeedback"
+      class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
+    >
+      @if (isLoadingFeedback) { Đang xử lý... } @else { Gửi bài }
+    </button>
+  </div>
+
+  <!-- Feedback Display -->
+  @if (feedbackResponse) {
+  <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+    <h4 class="font-medium text-blue-900 mb-2">Phản hồi:</h4>
+    <div class="text-sm text-blue-800 space-y-2">
+      <p><strong>Điểm tổng:</strong> {{ feedbackResponse.totalScore }}/10</p>
+      <p><strong>Ngữ pháp:</strong> {{ feedbackResponse.grammarFeedback }}</p>
+      <p><strong>Từ vựng:</strong> {{ feedbackResponse.vocabularyFeedback }}</p>
+      <p>
+        <strong>Kiểm tra từ bắt buộc:</strong>
+        {{ feedbackResponse.requiredWordsCheck }}
+      </p>
+      <p>
+        <strong>Độ chính xác nội dung:</strong>
+        {{ feedbackResponse.contentAccuracyFeedback }}
+      </p>
+      @if (feedbackResponse.correededAnswerProposal) {
+      <p>
+        <strong>Đáp án gợi ý:</strong>
+        {{ feedbackResponse.correededAnswerProposal }}
+      </p>
+      }
+    </div>
+  </div>
+  }
+</div>
+}
+
+<!-- ✅ Thêm message khi không có questions -->
+@else if (!questions || questions.length === 0) {
+<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-5 text-center">
+  <p class="text-yellow-800 font-medium">
+    ⚠️ Không có câu hỏi Writing nào được tải
+  </p>
+  <p class="text-sm text-yellow-600 mt-2">
+    Vui lòng kiểm tra dữ liệu trong database hoặc API
+  </p>
+</div>
+}

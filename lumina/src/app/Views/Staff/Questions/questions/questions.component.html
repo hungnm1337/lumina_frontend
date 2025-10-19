@@ -125,7 +125,7 @@
                                 <td class="px-6 py-4">
                                     <div *ngIf="passage.prompt">
                                         <div *ngIf="passage.prompt.promptText; ">{{
-                                            passage.prompt.promptText }}</div>                   
+                                            passage.prompt.promptText }}</div>
                                         <div *ngIf="passage.prompt.referenceImageUrl">
                                             <img [src]="passage.prompt.referenceImageUrl"
                                                 class="my-2 max-w-[150px] rounded shadow" />
@@ -146,7 +146,7 @@
                                         </button>
                                         <div *ngIf="passage.showQuestions" style="max-height:300px;overflow:auto"
                                             class="mt-2 bg-gray-50 rounded p-2 shadow-inner">
-                                            <button (click)="openModalAdd()"
+                                            <button (click)="openModalAdd(passage.prompt)"
                                                 class="bg-green-300 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
                                                 <i class="fas fa-plus mr-2"></i>Thêm câu hỏi
                                             </button>
@@ -164,7 +164,8 @@
                                                     class="text-xs italic text-gray-500 mb-1">
                                                     Giải thích: {{ q.questionExplain }}
                                                 </div>
-                                              <button (click)="editQuestion(q, passage.prompt)" class="text-yellow-700 mr-2">Sửa</button>
+                                                <button (click)="editQuestion(q, passage.prompt)"
+                                                    class="text-yellow-700 mr-2">Sửa</button>
                                                 <button (click)="deleteQuestion(q)" class="text-red-700">Xóa</button>
                                             </div>
                                         </div>
@@ -236,57 +237,84 @@
                         <input type="file" (change)="uploadMedia($event, 'referenceAudioUrl')" accept="audio/*" />
                     </div>
 
+                    <!-- Select Skill -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Skill</label>
-                        <select formControlName="skill" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        <select formControlName="skill" (change)="onSkillChange($event)"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg">
                             <option value="">Chọn skill</option>
                             <option *ngFor="let skill of skills" [value]="skill">{{ skill }}</option>
                         </select>
                     </div>
-                    <div>
+
+                    <!-- Select Part (chỉ hiện khi có skill chọn) -->
+                    <div *ngIf="selectedSkill">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Part</label>
                         <select formControlName="partId" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
                             <option value="">Chọn Part</option>
-                            <option *ngFor="let part of parts" [value]="part.partId">{{ part.partCode }}</option>
+                            <option *ngFor="let part of filteredParts" [value]="part.partId">{{ part.partCode }}
+                            </option>
                         </select>
                     </div>
 
+
                     <!-- Multiple Questions (FormArray) -->
-                    <div formArrayName="questions">
-                        <div *ngFor="let qGroup of questions.controls; let i = index" [formGroupName]="i"
-                            class="border rounded-lg p-4 my-2 bg-gray-50">
+                    <!-- Chọn skill, rồi mới cho nhập question/option -->
+                    <div *ngIf="selectedSkill">
+                        <!-- Multiple Questions (FormArray) -->
+                        <div formArrayName="questions">
+                            <div *ngFor="let qGroup of questions.controls; let i = index" [formGroupName]="i"
+                                class="border rounded-lg p-4 my-2 bg-gray-50">
 
-                            <div>
-                                <label class="block mb-1">Nội dung câu hỏi</label>
-                                <input type="text" formControlName="stemText"
-                                    class="w-full px-2 py-1 border border-gray-300 rounded">
-                            </div>
-
-                            <div>
-                                <label class="block mb-1">Giải thích (nếu có)</label>
-                                <input type="text" formControlName="questionExplain"
-                                    class="w-full px-2 py-1 border border-gray-300 rounded">
-                            </div>
-
-                            <!-- Options  -->
-                            <div formArrayName="options">
-                                <label class="block mb-1 mt-2">Đáp án</label>
-                                <div *ngFor="let opt of getOptions(i).controls; let oi=index" [formGroupName]="oi"
-                                    class="flex items-center space-x-2 mb-1">
-                                    <input type="text" formControlName="content"
-                                        class="px-2 py-1 border border-gray-300 rounded flex-1"
-                                        [placeholder]="'Đáp án ' + 'ABCD'[oi]" />
-                                    <input type="checkbox" formControlName="isCorrect" />
-                                    <span>Đúng</span>
+                                <div>
+                                    <label class="block mb-1">Nội dung câu hỏi</label>
+                                    <input type="text" formControlName="stemText"
+                                        class="w-full px-2 py-1 border border-gray-300 rounded" />
                                 </div>
+
+                                <div>
+                                    <label class="block mb-1">Giải thích (nếu có)</label>
+                                    <input type="text" formControlName="questionExplain"
+                                        class="w-full px-2 py-1 border border-gray-300 rounded" />
+                                </div>
+                                <div class="flex space-x-2 mb-2">
+                                    <div class="flex-1">
+                                        <label class="block text-sm">Điểm</label>
+                                        <input type="number" formControlName="scoreWeight"
+                                            class="w-full px-2 py-1 border border-gray-300 rounded">
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="block text-sm">Thời gian (giây)</label>
+                                        <input type="number" formControlName="time"
+                                            class="w-full px-2 py-1 border border-gray-300 rounded">
+                                    </div>
+                                </div>
+
+
+                                <!-- Đáp án: chỉ hiện nếu không phải Speaking/Writing -->
+                                <div *ngIf="selectedSkill !== 'Speaking' && selectedSkill !== 'Writing'"
+                                    formArrayName="options">
+                                    <label class="block mb-1 mt-2">Đáp án</label>
+                                    <div *ngFor="let opt of getOptions(i).controls; let oi=index" [formGroupName]="oi"
+                                        class="flex items-center space-x-2 mb-1">
+                                        <input type="text" formControlName="content"
+                                            class="px-2 py-1 border border-gray-300 rounded flex-1"
+                                            [placeholder]="'Đáp án ' + 'ABCD'[oi]" />
+                                        <input type="checkbox" formControlName="isCorrect" />
+                                        <span>Đúng</span>
+                                    </div>
+                                </div>
+
+                                <button type="button" *ngIf="questions.length > 1" (click)="removeQuestion(i)"
+                                    class="text-red-600 mt-2">Xóa câu hỏi này</button>
                             </div>
-                            <!-- Thêm nút xóa câu hỏi nếu nhiều hơn 1 -->
-                            <button type="button" class="text-red-600 mt-2" (click)="removeQuestion(i)"
-                                *ngIf="questions.length > 1">Xóa câu hỏi này</button>
+
+                            <button type="button" class="bg-blue-600 text-white px-4 py-1 rounded mt-2"
+                                (click)="addQuestion()">Thêm câu hỏi</button>
                         </div>
-                        <button type="button" class="bg-blue-600 text-white px-4 py-1 rounded mt-2"
-                            (click)="addQuestion()">Thêm câu hỏi</button>
                     </div>
+
+
 
                     <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
                         <button type="button" (click)="closeModal()"
@@ -419,7 +447,7 @@
                         <input formControlName="questionExplain"
                             class="w-full px-2 py-1 border border-gray-300 rounded" />
                     </div>
-                      <!-- Điểm và Thời gian nằm trên 1 dòng -->
+                    <!-- Điểm và Thời gian nằm trên 1 dòng -->
                     <div class="flex gap-4 mt-2">
                         <div class="flex-1">
                             <label class="block mb-1">Điểm</label>
@@ -432,7 +460,8 @@
                                 class="w-full px-2 py-1 border border-gray-300 rounded" />
                         </div>
                     </div>
-                    <div formArrayName="options" class="mt-2">
+                    <div *ngIf="currentSkill !== 'Speaking' && currentSkill !== 'Writing'" formArrayName="options"
+                        class="mt-2">
                         <label class="block mb-1">Các đáp án</label>
                         <div *ngFor="let opt of options.controls; let oi = index" [formGroupName]="oi"
                             class="flex items-center space-x-2 mb-1">
@@ -442,6 +471,7 @@
                             <span>Đúng</span>
                         </div>
                     </div>
+
                     <div class="flex justify-end gap-2 mt-6">
                         <button type="button" (click)="closeQuestionModal()"
                             class="px-4 py-2 rounded border">Hủy</button>

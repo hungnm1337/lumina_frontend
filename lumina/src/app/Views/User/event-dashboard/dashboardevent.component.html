@@ -8,15 +8,11 @@
           <i class="fas fa-calendar-alt"></i>
           <span>Sự kiện</span>
         </div>
-        <h2 class="section-title">Sự kiện nổi bật</h2>
+        <h2 class="section-title">Tất cả sự kiện</h2>
         <p class="section-subtitle">
-          Tham gia ngay những sự kiện học TOEIC miễn phí và nhận quà hấp dẫn
+          Khám phá tất cả các sự kiện học TOEIC và tham gia để nâng cao kỹ năng của bạn
         </p>
       </div>
-      <a href="/events" class="btn-view-all">
-        <span>Xem tất cả</span>
-        <i class="fas fa-arrow-right"></i>
-      </a>
     </div>
 
     <!-- Loading State -->
@@ -52,7 +48,7 @@
 
     <!-- Events Grid -->
     <div *ngIf="!isLoading && !errorMessage && events.length > 0" class="events-grid">
-      <div *ngFor="let event of events | slice:0:3; let i = index" 
+      <div *ngFor="let event of events; let i = index" 
            class="event-card"
            [class.featured]="i === 0"
            [attr.data-aos]="'fade-up'"
@@ -65,7 +61,7 @@
             [alt]="event.eventName"
             loading="lazy">
           <div class="event-overlay">
-            <div class="event-status" [class.active]="isEventActive(event)">
+            <div class="event-status" [class.active]="isEventActive(event)" [class.upcoming]="isEventUpcoming(event)" [class.past]="!isEventActive(event) && !isEventUpcoming(event)">
               <i class="fas fa-circle"></i>
               <span>{{ getEventStatus(event) }}</span>
             </div>
@@ -100,10 +96,7 @@
               <i class="fas fa-calendar-day"></i>
               <span>{{ event.startDate | date:'dd Tháng MM, yyyy' }}</span>
             </div>
-            <a [href]="'/events/' + event.eventId" class="btn-join">
-              <span>Tham gia</span>
-              <i class="fas fa-arrow-right"></i>
-            </a>
+ 
           </div>
 
           <!-- Featured Badge (cho card đầu tiên) -->

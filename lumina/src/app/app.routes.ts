@@ -27,21 +27,21 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./Views/Admin/admin.module').then((m) => m.AdminModule),
     canActivate: [RoleGuard],
-    data: { roles: [1] }
+    data: { roles: [1] },
   },
   {
     path: 'staff',
     loadChildren: () =>
       import('./Views/Staff/staff.module').then((m) => m.StaffModule),
     canActivate: [RoleGuard],
-    data: { roles: [3] }
+    data: { roles: [3] },
   },
   {
     path: 'manager',
     loadChildren: () =>
       import('./Views/Manage/manager.module').then((m) => m.ManagerModule),
     canActivate: [RoleGuard],
-    data: { roles: [2] }
+    data: { roles: [2] },
   },
   {
     path: 'homepage',
@@ -49,7 +49,7 @@ export const routes: Routes = [
     children: [
       { path: '', component: ContentHomepageComponent },
       { path: 'events', component: UserEventsDashboardComponent },
-      { path: 'slides', component: DashboardSlideComponent},
+      { path: 'slides', component: DashboardSlideComponent },
       {
         path: 'user-dashboard',
         component: UserDashboardComponent,
@@ -63,11 +63,14 @@ export const routes: Routes = [
       // ĐÃ XÓA 2 ROUTE FLASHCARDS KHỎI ĐÂY
     ],
   },
-  
-  { 
-    path: 'profile', 
-    loadComponent: () => import('./Views/User/profile/profile.component').then(m => m.ProfileComponent),
-    canActivate: [AuthGuard]
+
+  {
+    path: 'profile',
+    loadComponent: () =>
+      import('./Views/User/profile/profile.component').then(
+        (m) => m.ProfileComponent
+      ),
+    canActivate: [AuthGuard], // Bảo vệ route profile
   },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
