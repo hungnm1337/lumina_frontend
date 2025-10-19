@@ -24,4 +24,10 @@ export class ExamPartService {
       headers: this.getAuthHeaders()
     });
   }
+  getExamsParts(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/exam-parts`, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
 }

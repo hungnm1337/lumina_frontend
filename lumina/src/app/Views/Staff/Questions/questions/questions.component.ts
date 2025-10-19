@@ -47,7 +47,7 @@ export class QuestionsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.examPartService.getExamParts().subscribe(res => {
+    this.examPartService.getExamsParts().subscribe(res => {
       this.parts = res || [];
     });
     this.loadPrompts();
