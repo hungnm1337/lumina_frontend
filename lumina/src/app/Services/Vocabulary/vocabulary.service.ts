@@ -250,4 +250,21 @@ export class VocabularyService {
 
     return this.http.post(`${this.vocabularyListsUrl}/${listId}/send-back`, {}, { headers });
   }
+
+  // === PUBLIC API FOR FLASHCARDS ===
+  
+  // Lấy danh sách vocabulary lists đã được duyệt cho trang Flashcards
+  getPublicVocabularyLists(searchTerm?: string): Observable<VocabularyListResponse[]> {
+    let params: any = {};
+    if (searchTerm) {
+      params.searchTerm = searchTerm;
+    }
+    
+    return this.http.get<VocabularyListResponse[]>(`${this.vocabularyListsUrl}/public`, { params });
+  }
+
+  // Lấy vocabulary words từ một published list cho Flashcards
+  getPublicVocabularyByList(listId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/public/${listId}`);
+  }
 }

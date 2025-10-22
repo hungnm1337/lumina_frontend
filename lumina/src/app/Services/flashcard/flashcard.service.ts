@@ -1,4 +1,8 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map, of } from 'rxjs';
+import { environment } from '../../../environments/environment.development';
+import { VocabularyService } from '../Vocabulary/vocabulary.service';
 
 // Định nghĩa cấu trúc cho một thuật ngữ (Term)
 export interface Term {
@@ -22,68 +26,75 @@ export interface Deck {
   providedIn: 'root'
 })
 export class FlashcardService {
+  private apiUrl = `${environment.apiUrl}`;
 
-  // Dữ liệu mẫu
-  private decks: Deck[] = [
-    {
-      id: 'kanji-jpd123',
-      title: 'Kanji-JPD123',
-      author: 'quizlette75144039',
-      termCount: 78,
-      terms: [
-        { id: 1, question: '水', answer: 'Nước' },
-        { id: 2, question: '火', answer: 'Lửa' },
-        // ... thêm 76 thuật ngữ khác
-      ]
-    },
-    {
-      id: 'mas291-full',
-      title: 'MAS291 Full',
-      author: 'GCMaui',
-      termCount: 243,
-      terms: [
-        { 
-          id: 1, 
-          question: 'Problem scoping is a fundamental part of the design process.', 
-          answer: 'A',
-          options: ['A. True', 'B. False']
-        },
-        { 
-          id: 2, 
-          question: 'True or false: One of your goals in designing products with a good user experience should be to fail as early and often as possible.', 
-          answer: 'A',
-          options: ['a. True', 'b. False']
-        },
-        {
-          id: 3,
-          question: 'True or false: In this course, you will "get your hands dirty" and gain hands-on experience with UX Research and Design methods.',
-          answer: 'A',
-          options: ['a. True', 'b. False']
-        }
-        // ... thêm 240 thuật ngữ khác
-      ]
-    },
-    {
-      id: 'jpd123-grammar',
-      title: 'Ngữ pháp JPD123',
-      author: 'invandahunter',
-      termCount: 17,
-      terms: [
-        { id: 1, question: '「〜うちに」の意味は何ですか？', answer: 'Trong lúc, trong khi' },
-        // ... thêm 16 thuật ngữ khác
-      ]
-    }
-  ];
+  constructor(
+    private http: HttpClient,
+    private vocabularyService: VocabularyService
+  ) { }
 
-  constructor() { }
-
-  // Lấy tất cả các học phần (để hiển thị ở trang danh sách)
-  getDecks(): Deck[] {
-    return this.decks;
+  // Lấy tất cả các học phần từ API (vocabulary lists đã được duyệt)
+  getDecks(): Observable<Deck[]> {
+    return this.vocabularyService.getPublicVocabularyLists().pipe(
+      map(vocabularyLists => 
+        vocabularyLists.map(list => ({
+          id: list.vocabularyListId.toString(),
+          title: list.name,
+          author: list.makeByName,
+          termCount: list.vocabularyCount,
+          terms: [] // Sẽ được load khi cần thiết
+        }))
+      )
+    );
   }
 
   // Lấy một học phần cụ thể bằng ID (để hiển thị ở trang chi tiết)
-  getDeckById(id: string): Deck | undefined {
-    return this.decks.find(deck => deck.id === id);
+  getDeckById(id: string): Observable<Deck | undefined> {
+    const listId = parseInt(id);
+    if (isNaN(listId)) {
+      return of(undefined);
+    }
+
+    // Load cả vocabulary words và list info cùng lúc
+    return this.vocabularyService.getPublicVocabularyByList(listId).pipe(
+      map(vocabularies => {
+        if (!vocabularies || vocabularies.length === 0) {
+          return undefined;
+        }
+
+        // Tạo deck với thông tin cơ bản
+        return {
+          id: id,
+          title: 'Loading...', // Sẽ được cập nhật sau
+          author: 'Loading...', // Sẽ được cập nhật sau
+          termCount: vocabularies.length,
+          terms: vocabularies.map(vocab => ({
+            id: vocab.id,
+            question: vocab.word,
+            answer: vocab.definition,
+            options: vocab.example ? [vocab.example] : undefined
+          }))
+        };
+      })
+    );
+  }
+
+  // Lấy terms cho một deck cụ thể
+  getDeckTerms(deckId: string): Observable<Term[]> {
+    const listId = parseInt(deckId);
+    if (isNaN(listId)) {
+      return of([]);
+    }
+
+    return this.vocabularyService.getPublicVocabularyByList(listId).pipe(
+      map(vocabularies => 
+        vocabularies.map(vocab => ({
+          id: vocab.id,
+          question: vocab.word,
+          answer: vocab.definition,
+          options: vocab.example ? [vocab.example] : undefined
+        }))
+      )
+    );
   }
 }

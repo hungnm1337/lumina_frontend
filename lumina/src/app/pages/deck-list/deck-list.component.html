@@ -6,7 +6,28 @@
     <p class="page-subtitle">Học và luyện tập từ vựng TOEIC hiệu quả với hệ thống flashcard thông minh</p>
   </div>
 
-  <div class="decks-grid">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Đang tải danh sách từ vựng...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !isLoading" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <p>{{ error }}</p>
+    <button class="retry-button" (click)="loadDecks()">Thử lại</button>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && !error && decks.length === 0" class="empty-state">
+    <div class="empty-icon">📚</div>
+    <h3>Chưa có bộ từ vựng nào</h3>
+    <p>Hiện tại chưa có bộ từ vựng nào được duyệt và công khai.</p>
+  </div>
+
+  <!-- Decks Grid -->
+  <div *ngIf="!isLoading && !error && decks.length > 0" class="decks-grid">
     <a 
       *ngFor="let deck of decks; let i = index" 
       [routerLink]="['/flashcards', deck.id]" 
