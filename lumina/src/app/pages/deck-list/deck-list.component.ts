@@ -13,10 +13,29 @@ import { HeaderComponent } from '../../Views/Common/header/header.component';
 })
 export class DeckListComponent implements OnInit {
   decks: Deck[] = [];
+  isLoading = true;
+  error: string | null = null;
 
   constructor(private flashcardService: FlashcardService) { }
 
   ngOnInit(): void {
-    this.decks = this.flashcardService.getDecks();
+    this.loadDecks();
+  }
+
+  loadDecks(): void {
+    this.isLoading = true;
+    this.error = null;
+    
+    this.flashcardService.getDecks().subscribe({
+      next: (decks) => {
+        this.decks = decks;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading decks:', error);
+        this.error = 'Không thể tải danh sách từ vựng. Vui lòng thử lại sau.';
+        this.isLoading = false;
+      }
+    });
   }
 }
