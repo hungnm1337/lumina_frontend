@@ -1,175 +1,153 @@
-<!-- Main question view -->
-@if (questions && questions.length > 0 && !finished) {
-<div
-  class="bg-white rounded-lg border border-gray-200 shadow-sm p-5 flex flex-col gap-3"
->
+
+@if (questions && questions.length > 0 && !isFinished) {
+<div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5 flex flex-col gap-3">
+  <!-- Header with Timer and Question Info -->
   <div class="flex items-start justify-between gap-3">
     <div class="space-y-2">
       <app-time
-        [time]="questions[currentIndex].time"
+        [time]="savedTimeRemaining > 0 ? savedTimeRemaining : (getCurrentQuestion()?.time || 0)"
         [resetAt]="currentIndex"
         [paused]="showExplain"
+        [savedTime]="savedTimeRemaining"
         (timeout)="onTimeout()"
+        (timeUpdate)="onTimeUpdate($event)"
       ></app-time>
     </div>
 
-    <!-- ✅ Hiển thị câu hỏi -->
-    <h3 class="text-lg font-semibold text-gray-800 flex-1">
-      {{ questions[currentIndex].stemText || "Không có nội dung câu hỏi" }}
-    </h3>
-
-    <span class="text-xs text-gray-500 inline-flex items-center gap-2">
-      <span class="bg-gray-100 px-2 py-1 rounded">
-        Type: {{ questions[currentIndex].questionType }}
-      </span>
-      <span class="bg-gray-100 px-2 py-1 rounded">
-        Score: {{ questions[currentIndex].scoreWeight }}
-      </span>
-      <span class="bg-orange-100 text-orange-700 px-2 py-1 rounded font-medium">
-        Điểm của bạn: {{ totalScore }}
-      </span>
-    </span>
   </div>
 
-  <!-- ✅ Debug: Hiển thị thông tin prompt -->
-  <div
-    class="text-xs text-gray-500 p-2 bg-yellow-50 border border-yellow-200 rounded"
-  >
-    <strong>Debug Info:</strong><br />
-    Current Index: {{ currentIndex }}<br />
-    Has Prompt: {{ questions[currentIndex].prompt ? "Yes" : "No" }}<br />
-    Prompt ContentText: {{ questions[currentIndex].prompt.contentText || "N/A"
-    }}<br />
-    Prompt Title: {{ questions[currentIndex].prompt.title || "N/A" }}
-  </div>
-
-  <div class="grid gap-4 mt-3">
-    <div class="space-y-2">
-      <!-- ✅ Kiểm tra prompt trước khi render -->
-      @if (questions[currentIndex].prompt) {
-      <app-prompt
-        [prompt]="questions[currentIndex].prompt"
-        [resetAt]="currentIndex"
-        [questionType]="questions[currentIndex].questionType"
-        (pictureCaptionChange)="onPictureCaption($event)"
-      ></app-prompt>
-      } @else {
-      <div class="p-4 bg-red-50 border border-red-200 rounded text-red-700">
-        ⚠️ Không có prompt cho câu hỏi này
-      </div>
-      }
-    </div>
-  </div>
-
-  <div class="mt-2">
-    <!-- Writing Answer Box -->
-    @if (questions[currentIndex].questionType === 'WRITTING') {
-    <div class="border border-gray-200 rounded-lg p-4">
+  <!-- Question Content -->
+  @if (getCurrentQuestion()) {
+    <div class="border border-gray-200 rounded-lg p-4 mb-4">
       <div class="mb-3">
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Câu trả lời của bạn:
-        </label>
-        <textarea
-          [(ngModel)]="userAnswer"
-          (ngModelChange)="onAnswerChange()"
-          [disabled]="showExplain"
-          class="w-full h-32 p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-          placeholder="Nhập câu trả lời của bạn..."
-        ></textarea>
+        <h4 class="font-medium text-gray-900 mb-2">
+          Câu {{ currentIndex + 1 }}: {{ getCurrentQuestion()?.stemText }}
+        </h4>
+        @if (getCurrentQuestion()?.prompt?.contentText) {
+          <div class="text-sm text-gray-600 mb-2">
+            <strong>{{ getCurrentQuestion()?.prompt?.title }}</strong>
+            {{ getCurrentQuestion()?.prompt?.contentText }}
+          </div>
+        }
       </div>
 
+      @if (getCurrentQuestion()?.prompt?.referenceImageUrl) {
+        <div class="mb-4">
+          <img
+            [src]="getCurrentQuestion()?.prompt?.referenceImageUrl"
+            [alt]="'Question ' + (currentIndex + 1) + ' image'"
+            class="max-w-full w-8/12 h-auto rounded-lg border border-gray-200"
+          >
+        </div>
+      }
+
+      <div class="mb-4">
+        <button
+          class="btn border-s-blue-400 inline-flex items-center gap-2 px-4 py-2 rounded-md border border-blue-500 text-blue-600 hover:bg-blue-50 active:bg-blue-100 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
+          (click)="generateCaption(currentIndex)"
+          [disabled]="isLoading"
+        >
+          Generate Caption
+        </button>
+        @if (isLoading) {
+          <svg
+            class="animate-spin h-4 w-4 text-blue-600 inline-block ml-2"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+            <path d="M4 12h16" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
+          </svg>
+        }
+      </div>
+
+      <!-- Writing Answer Box -->
+      <app-writing-answer-box
+        [questionId]="getCurrentQuestion()?.questionId || 0"
+        [disabled]="showExplain"
+        [resetAt]="currentIndex"
+        [contentText]="getCurrentQuestion()?.prompt?.contentText"
+        [pictureCaption]="pictureCaption"
+        (answered)="onAnswerSubmitted(getCurrentQuestion()?.questionId || 0, $event)"
+        (answerChange)="onAnswerChange($event.questionId, $event.answer)"
+      ></app-writing-answer-box>
+    </div>
+  }
+
+  <!-- Navigation Controls -->
+  <div class="mt-4">
+    <!-- Question Status List -->
+    <div class="mb-4 p-3 bg-gray-50 rounded-lg">
+      <h4 class="text-sm font-semibold text-gray-700 mb-2">
+        Danh sách câu hỏi:
+      </h4>
+      <div class="flex flex-wrap gap-2">
+        @for (question of questions; track question.questionId; let i = $index) {
+          <button
+            (click)="navigateToQuestion(i)"
+            [class]="
+              'px-3 py-1 text-xs rounded-full border transition-colors ' +
+              (isCurrentQuestion(i)
+                ? 'bg-blue-100 border-blue-300 text-blue-700'
+                : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100')
+            "
+          >
+            📝 Câu {{ i + 1 }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Navigation Controls -->
+    <div class="flex items-center justify-between">
       <div class="flex gap-2">
         <button
-          (click)="onSave()"
-          class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+          (click)="previousQuestion()"
+          [disabled]="currentIndex === 0"
+          class="px-4 py-2 rounded bg-gray-600 text-white hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Lưu
+          ← Previous
         </button>
         <button
-          (click)="onSubmit()"
-          [disabled]="!userAnswer.trim() || isLoadingFeedback"
-          class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
+          (click)="nextQuestion()"
+          [disabled]="currentIndex >= questions.length - 1"
+          class="px-4 py-2 rounded bg-gray-600 text-white hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          @if (isLoadingFeedback) { Đang xử lý... } @else { Gửi bài }
+          Next →
         </button>
       </div>
 
-      <!-- Feedback Display -->
-      @if (feedbackResponse) {
-      <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-        <h4 class="font-medium text-blue-900 mb-2">Phản hồi:</h4>
-        <div class="text-sm text-blue-800 space-y-2">
-          <p>
-            <strong>Điểm tổng:</strong> {{ feedbackResponse.totalScore }}/10
-          </p>
-          <p>
-            <strong>Ngữ pháp:</strong> {{ feedbackResponse.grammarFeedback }}
-          </p>
-          <p>
-            <strong>Từ vựng:</strong> {{ feedbackResponse.vocabularyFeedback }}
-          </p>
-          <p>
-            <strong>Kiểm tra từ bắt buộc:</strong>
-            {{ feedbackResponse.requiredWordsCheck }}
-          </p>
-          <p>
-            <strong>Độ chính xác nội dung:</strong>
-            {{ feedbackResponse.contentAccuracyFeedback }}
-          </p>
-          @if (feedbackResponse.correededAnswerProposal) {
-          <p>
-            <strong>Đáp án gợi ý:</strong>
-            {{ feedbackResponse.correededAnswerProposal }}
-          </p>
-          }
+      <div class="flex items-center gap-3">
+        <div class="text-sm text-gray-500">
+          Câu {{ currentIndex + 1 }} / {{ questions.length }}
         </div>
+        <button
+          (click)="finishExam()"
+          class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
+        >
+          Nộp bài thi
+        </button>
       </div>
-      }
-    </div>
-    }
-
-    <!-- Navigation -->
-    <div class="mt-4 flex items-center justify-between">
-      <div class="text-sm text-gray-500">
-        Câu {{ currentIndex + 1 }} / {{ questions.length }}
-      </div>
-      @if (showExplain && !finished) {
-      <button
-        class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-        (click)="next()"
-      >
-        Tiếp
-      </button>
-      } @else if (showExplain && finished) {
-      <button
-        class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
-        (click)="goToExams()"
-      >
-        Xem kết quả
-      </button>
-      }
     </div>
   </div>
 
   @if (showExplain) {
-  <div
-    class="mt-3 p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-800 text-sm"
-  >
-    {{ questions[currentIndex].questionExplain }}
-  </div>
+    <div class="mt-3 p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-800 text-sm">
+      {{ getCurrentQuestion()?.questionExplain }}
+    </div>
   }
 </div>
-}
-
-<!-- Summary view -->
-@if (finished) {
+} @if (isFinished) {
 <div class="mt-4 bg-white rounded-lg border border-gray-200 shadow-sm p-5">
   <div class="flex items-center justify-between">
     <div class="text-gray-800 font-semibold">Hoàn thành</div>
     <div class="text-sm text-gray-600">Điểm: {{ totalScore }}</div>
   </div>
   <div class="mt-3 text-gray-700">
-    Bạn đã hoàn thành {{ questions.length }} câu hỏi.
+    Bạn trả lời đúng {{ correctCount }}/{{ questions?.length || 0 }} ({{
+      percentCorrect
+    }}%).
   </div>
   <div
     class="mt-2 p-3 rounded-md"
@@ -182,96 +160,39 @@
   >
     {{ feedbackText }}
   </div>
+  <div class="mt-4">
+    <div class="text-sm font-medium text-gray-700 mb-2">
+      Câu trả lời đã lưu (localStorage)
+    </div>
+    @if (savedAnswers && savedAnswers.length > 0) {
+      <ul class="pl-0 text-sm text-gray-700 space-y-1">
+        @for (ans of savedAnswers; track ans.questionId) {
+          <li class="flex items-center gap-2">
+            <span class="inline-block min-w-24">Câu {{ ans.questionId }}</span>
+            <span class="inline-block">→ Đã lưu: {{ ans.answer.length }} ký tự</span>
+          </li>
+        }
+      </ul>
+    } @else {
+      <div class="text-sm text-gray-500">Không có dữ liệu lưu.</div>
+    }
+    <button
+      class="mt-3 px-3 py-1.5 rounded bg-red-600 text-white hover:bg-red-700"
+      (click)="clearSavedData()"
+    >
+      Xóa lưu trữ
+    </button>
+  </div>
   <div class="flex gap-4">
     <div class="mt-4">
       <button
         class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-        (click)="resetQuiz()"
+        (click)="resetExam()"
       >
         Làm lại
       </button>
     </div>
-
-    <div class="mt-4">
-      <button
-        class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-        (click)="goToExams()"
-      >
-        Các đề khác
-      </button>
-    </div>
   </div>
 </div>
 }
 
-<!-- Legacy support: Simple writing view when used in question.component -->
-@if (!questions || questions.length === 0) {
-<div class="border border-gray-200 rounded-lg p-4">
-  <div class="mb-3">
-    <label class="block text-sm font-medium text-gray-700 mb-2">
-      Câu trả lời của bạn:
-    </label>
-    <textarea
-      [(ngModel)]="userAnswer"
-      (ngModelChange)="onAnswerChange()"
-      [disabled]="disabled"
-      class="w-full h-32 p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-      placeholder="Nhập câu trả lời của bạn..."
-    ></textarea>
-  </div>
-
-  <div class="flex gap-2">
-    <button
-      (click)="onSave()"
-      class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-    >
-      Lưu
-    </button>
-    <button
-      (click)="onSubmit()"
-      [disabled]="!userAnswer.trim() || isLoadingFeedback"
-      class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
-    >
-      @if (isLoadingFeedback) { Đang xử lý... } @else { Gửi bài }
-    </button>
-  </div>
-
-  <!-- Feedback Display -->
-  @if (feedbackResponse) {
-  <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-    <h4 class="font-medium text-blue-900 mb-2">Phản hồi:</h4>
-    <div class="text-sm text-blue-800 space-y-2">
-      <p><strong>Điểm tổng:</strong> {{ feedbackResponse.totalScore }}/10</p>
-      <p><strong>Ngữ pháp:</strong> {{ feedbackResponse.grammarFeedback }}</p>
-      <p><strong>Từ vựng:</strong> {{ feedbackResponse.vocabularyFeedback }}</p>
-      <p>
-        <strong>Kiểm tra từ bắt buộc:</strong>
-        {{ feedbackResponse.requiredWordsCheck }}
-      </p>
-      <p>
-        <strong>Độ chính xác nội dung:</strong>
-        {{ feedbackResponse.contentAccuracyFeedback }}
-      </p>
-      @if (feedbackResponse.correededAnswerProposal) {
-      <p>
-        <strong>Đáp án gợi ý:</strong>
-        {{ feedbackResponse.correededAnswerProposal }}
-      </p>
-      }
-    </div>
-  </div>
-  }
-</div>
-}
-
-<!-- ✅ Thêm message khi không có questions -->
-@else if (!questions || questions.length === 0) {
-<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-5 text-center">
-  <p class="text-yellow-800 font-medium">
-    ⚠️ Không có câu hỏi Writing nào được tải
-  </p>
-  <p class="text-sm text-yellow-600 mt-2">
-    Vui lòng kiểm tra dữ liệu trong database hoặc API
-  </p>
-</div>
-}
