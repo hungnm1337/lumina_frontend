@@ -1,16 +1,32 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OptionsComponent } from '../../options/options.component';
-import { OptionDTO } from '../../../../Interfaces/exam.interfaces';
+import {
+  OptionDTO,
+  ExamPartDTO,
+  QuestionDTO,
+} from '../../../../Interfaces/exam.interfaces';
 
 @Component({
   selector: 'app-listening',
   standalone: true,
   imports: [CommonModule, OptionsComponent],
   templateUrl: './listening.component.html',
-  styleUrl: './listening.component.scss'
+  styleUrl: './listening.component.scss',
 })
 export class ListeningComponent implements OnChanges {
+  @Input() questions: QuestionDTO[] = [];
+  @Input() partInfo: ExamPartDTO | null = null;
+  @Output() listeningAnswered = new EventEmitter<boolean>();
+
+  // Legacy inputs for backward compatibility
   @Input() options: OptionDTO[] = [];
   @Input() disabled: boolean = false;
   @Input() resetAt: number = 0;
@@ -21,6 +37,7 @@ export class ListeningComponent implements OnChanges {
   }
 
   onAnswered(isCorrect: boolean): void {
-    this.answered.emit(isCorrect);
+    this.listeningAnswered.emit(isCorrect);
+    this.answered.emit(isCorrect); // Legacy support
   }
 }

@@ -50,10 +50,11 @@ export class ExamPartComponent {
   }
 
   getSkillColor(examType: string): string {
-    if (examType?.toUpperCase().includes('LISTENING')) return 'blue';
-    if (examType?.toUpperCase().includes('READING')) return 'green';
-    if (examType?.toUpperCase().includes('SPEAKING')) return 'purple';
-    if (examType?.toUpperCase().includes('WRITING')) return 'orange';
+    const type = examType?.toUpperCase() || '';
+    if (type.includes('LISTENING')) return 'blue';
+    if (type.includes('READING')) return 'green';
+    if (type.includes('SPEAKING')) return 'purple';
+    if (type.includes('WRIT')) return 'orange'; // ✅ Match cả WRITTING và WRITING
     return 'gray';
   }
 

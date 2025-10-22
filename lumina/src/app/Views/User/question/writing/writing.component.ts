@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnDes
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../Services/Auth/auth.service';
+import { BaseQuestionService } from '../../../../Services/Question/base-question.service';
 import { WritingRequestDTO } from '../../../../Interfaces/WrittingExam/WritingRequestDTO.interface';
 import { FeedbackComponent } from '../../writing-answer-box/Feedback/feedback/feedback.component';
 import { WritingResponseDTO } from '../../../../Interfaces/WrittingExam/WritingResponseDTO.interface';
@@ -18,7 +19,7 @@ import { TimeComponent } from '../../time/time.component';
   standalone: true,
   imports: [CommonModule, FormsModule, WritingAnswerBoxComponent, TimeComponent],
   templateUrl: './writing.component.html',
-  styleUrl: './writing.component.scss'
+  styleUrl: './writing.component.scss',
 })
 export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   @Input() questions: QuestionDTO[] | null = null;
@@ -37,6 +38,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   private readonly AUTO_SAVE_INTERVAL = 10000; // 10 seconds
 
   constructor(
+    private router: Router,
     private authService: AuthService,
     private writingExamPartOneService: WritingExamPartOneService
   ) {

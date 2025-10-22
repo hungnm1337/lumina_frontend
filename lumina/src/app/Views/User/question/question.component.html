@@ -1,4 +1,3 @@
-
 @if (questions && questions.length > 0 && !finished) {
 <div
   class="bg-white rounded-lg border border-gray-200 shadow-sm p-5 flex flex-col gap-3"
@@ -40,93 +39,25 @@
   </div>
 
   <div class="mt-2">
-    @if (questions[currentIndex].questionType === 'SINGLE_CHOICE') {
-      @if (isListeningQuestion(questions[currentIndex].questionType)) {
-        <app-listening
-          [options]="questions[currentIndex].options"
-          [disabled]="showExplain"
-          [resetAt]="currentIndex"
-          (answered)="markAnswered($event)"
-        ></app-listening>
-      } @else {
-        <app-reading
-          [options]="questions[currentIndex].options"
-          [disabled]="showExplain"
-          [resetAt]="currentIndex"
-          (answered)="markAnswered($event)"
-        ></app-reading>
-      }
-    }  @else if (isSpeakingQuestion(questions[currentIndex].questionType)) {
-      <app-speaking
-        [questionId]="questions[currentIndex].questionId"
-        [disabled]="showExplain"
-        [resetAt]="resetCounter"
-        [questionTime]="questions[currentIndex].time"
-        (answered)="markAnswered($event)"
-        (scoringResult)="onSpeakingResult($event)"
-        (submitting)="onSpeakingSubmitting($event)"
-      ></app-speaking>
+    @if (questions[currentIndex].questionType === 'SINGLE_CHOICE') { @if
+    (isListeningQuestion(questions[currentIndex].questionType)) {
+    <app-listening
+      [options]="questions[currentIndex].options"
+      [disabled]="showExplain"
+      [resetAt]="currentIndex"
+      (answered)="markAnswered($event)"
+    ></app-listening>
+    } @else {
+    <app-reading
+      [options]="questions[currentIndex].options"
+      [disabled]="showExplain"
+      [resetAt]="currentIndex"
+      (answered)="markAnswered($event)"
+    ></app-reading>
+    } } @else if (questions[currentIndex].questionType === 'WRITTING') {
+   
     }
 
-    <!-- Navigation for Speaking Questions -->
-    @if (isSpeakingQuestion(questions[currentIndex].questionType)) {
-    <div class="mt-4">
-      <!-- Question Status List -->
-      <div class="mb-4 p-3 bg-gray-50 rounded-lg">
-        <h4 class="text-sm font-semibold text-gray-700 mb-2">
-          Danh sách câu hỏi:
-        </h4>
-        <div class="flex flex-wrap gap-2">
-          @for (question of questions; track question.questionId; let i =
-          $index) {
-          <button
-            (click)="navigateToQuestion(i)"
-            [class]="
-              'px-3 py-1 text-xs rounded-full border transition-colors ' +
-              (isCurrentQuestion(i)
-                ? 'bg-blue-100 border-blue-300 text-blue-700'
-                : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100')
-            "
-          >
-            {{ getQuestionStateIcon(question.questionId) }} Câu {{ i + 1 }}
-          </button>
-          }
-        </div>
-      </div>
-
-      <!-- Navigation Controls -->
-      <div class="flex items-center justify-between">
-        <div class="flex gap-2">
-          <button
-            (click)="previousQuestion()"
-            [disabled]="currentIndex === 0"
-            class="px-4 py-2 rounded bg-gray-600 text-white hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            ← Previous
-          </button>
-          <button
-            (click)="nextQuestionManual()"
-            [disabled]="currentIndex >= questions.length - 1"
-            class="px-4 py-2 rounded bg-gray-600 text-white hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Next →
-          </button>
-        </div>
-
-        <div class="flex items-center gap-3">
-          <div class="text-sm text-gray-500">
-            Câu {{ currentIndex + 1 }} / {{ questions.length }}
-          </div>
-          <button
-            (click)="finishSpeakingExam()"
-            class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
-          >
-            Nộp bài thi
-          </button>
-        </div>
-      </div>
-    </div>
-    } @else {
     <!-- Navigation for Non-Speaking Questions (Original) -->
     <div class="mt-4 flex items-center justify-between">
       <div class="text-sm text-gray-500">
@@ -148,7 +79,6 @@
       </button>
       }
     </div>
-    }
   </div>
 
   @if (showExplain) {
@@ -241,44 +171,6 @@
       >
         Các đề khác
       </button>
-    </div>
-  </div>
-</div>
-}
-
-<!-- Speaking Summary Modal (Full Screen Overlay) -->
-@if (showSpeakingSummary) {
-<div
-  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
->
-  <div
-    class="bg-white rounded-lg shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto"
-  >
-    <!-- Modal Header -->
-    <div
-      class="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center z-10"
-    >
-      <h2 class="text-2xl font-bold text-gray-800">
-        📊 Kết quả TOEIC Speaking Test
-      </h2>
-      <button
-        (click)="closeSpeakingSummary()"
-        class="text-gray-500 hover:text-gray-700 text-2xl font-bold w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-        aria-label="Đóng"
-      >
-        ×
-      </button>
-    </div>
-
-    <!-- Modal Body -->
-    <div class="p-6">
-      <app-speaking-summary
-        [results]="speakingQuestionResults"
-        (retryTest)="onRetrySpeakingTest()"
-        (tryOtherTest)="onTryOtherSpeakingTest()"
-      ></app-speaking-summary>
-
-      <!-- Action buttons are now inside SpeakingSummaryComponent -->
     </div>
   </div>
 </div>

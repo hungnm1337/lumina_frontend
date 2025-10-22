@@ -41,7 +41,12 @@ export class ArticleService {
 
   // Lấy danh sách tất cả articles
   getAllArticles(): Observable<ArticleResponse[]> {
-    return this.http.get<ArticleResponse[]>(this.apiUrl);
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+    return this.http.get<ArticleResponse[]>(this.apiUrl, { headers });
   }
 
   // Query articles with pagination/sorting/search
@@ -55,6 +60,12 @@ export class ArticleService {
     isPublished?: boolean;
     status?: 'draft' | 'pending' | 'published'; 
     }): Observable<{ items: ArticleResponse[]; total: number; page: number; pageSize: number; }> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+    
     const httpParams: any = {};
     if (params.page) httpParams.page = params.page;
     if (params.pageSize) httpParams.pageSize = params.pageSize;
@@ -64,7 +75,7 @@ export class ArticleService {
     if (params.categoryId) httpParams.categoryId = params.categoryId;
     if (typeof params.isPublished === 'boolean') httpParams.isPublished = params.isPublished;
     if (params.status) httpParams.status = params.status;
-    return this.http.get<{ items: ArticleResponse[]; total: number; page: number; pageSize: number; }>(`${this.apiUrl}/query`, { params: httpParams });
+    return this.http.get<{ items: ArticleResponse[]; total: number; page: number; pageSize: number; }>(`${this.apiUrl}/query`, { params: httpParams, headers });
   }
 
   // Update article

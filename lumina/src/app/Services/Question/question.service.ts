@@ -69,6 +69,11 @@ deleteQuestion(questionId: number): Observable<any> {
     headers: this.getAuthHeaders()
   });
 }
+getStatistics(): Observable<any> {
+  return this.http.get(`${this.baseUrl}/statistics`, {
+    headers: this.getAuthHeaders()
+  });
+}
 
 
 }

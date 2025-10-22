@@ -1,11 +1,7 @@
-<!-- src/app/components/staff/vocabulary/vocabulary.component.html -->
-<div class="vocabulary-container">
 
-  <!-- =============================================================== -->
-  <!-- VIEW 1: HIỂN THỊ DANH SÁCH THƯ MỤC (VOCABULARY LISTS)          -->
-  <!-- =============================================================== -->
+<div class="vocabulary-container">
   <div *ngIf="currentView === 'lists'">
-    <!-- Header Section -->
+
     <div class="page-header">
       <div class="header-content">
         <div class="title-section">
@@ -22,7 +18,7 @@
       </div>
       <button class="btn-primary" (click)="openCreateListModal()"><i class="fas fa-folder-plus"></i> Add New List</button>
     </div>
-    <!-- Search Panel for Lists -->
+
     <div class="search-filter-panel">
       <div class="search-section">
         <div class="search-input-wrapper">
@@ -32,7 +28,8 @@
         </div>
       </div>
     </div>
-    <!-- Loading/Content Grid -->
+
+
     <div *ngIf="isLoading" class="loading-state">
       <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></div><p>Loading lists...</p>
     </div>
@@ -42,23 +39,44 @@
         <div class="folder-details">
           <h3 class="folder-name">{{ list.name }}</h3>
           <p class="folder-meta">{{ list.vocabularyCount }} words · Created by {{ list.makeByName }}</p>
+          <div class="status-section">
+            <span class="status-badge" [ngClass]="getStatusClass(list.status)">
+              {{ getStatusText(list.status) }}
+            </span>
+            <span *ngIf="list.rejectionReason" class="rejection-reason">
+              <i class="fas fa-exclamation-triangle"></i> {{ list.rejectionReason }}
+            </span>
+          </div>
         </div>
-        <div class="folder-arrow"><i class="fas fa-chevron-right"></i></div>
+        <div class="folder-actions">
+          <div *ngIf="list.status?.toLowerCase() === 'draft' || list.status?.toLowerCase() === 'rejected'" class="action-buttons">
+            <button class="btn-request-approval" (click)="requestApproval(list, $event)" 
+                    [disabled]="isSubmitting">
+              <i class="fas fa-paper-plane"></i> 
+              <span *ngIf="!isSubmitting">Send for Review</span>
+              <span *ngIf="isSubmitting">Sending...</span>
+            </button>
+          </div>
+          <div *ngIf="list.status?.toLowerCase() === 'pending'" class="status-info status-pending">
+            <i class="fas fa-clock"></i>
+            <span>Waiting for approval</span>
+          </div>
+          <div *ngIf="list.status?.toLowerCase() === 'published'" class="status-info status-published">
+            <i class="fas fa-check-circle"></i>
+            <span>Approved & Published</span>
+          </div>
+          <div class="folder-arrow"><i class="fas fa-chevron-right"></i></div>
+        </div>
       </div>
     </div>
     <div *ngIf="!isLoading && vocabularyLists.length === 0" class="empty-state">
       <div class="empty-icon"><i class="fas fa-folder-open"></i></div>
       <h3>No vocabulary lists found</h3>
-      <p>Create your first list to start adding words.</p>
+      <p>Create your first list to start adding words. Remember to send for review when ready!</p>
       <button class="btn-add-first" (click)="openCreateListModal()"><i class="fas fa-plus"></i> Create First List</button>
     </div>
   </div>
-
-  <!-- =============================================================== -->
-  <!-- VIEW 2: HIỂN THỊ DANH SÁCH TỪ VỰNG (BÊN TRONG THƯ MỤC)         -->
-  <!-- =============================================================== -->
   <div *ngIf="currentView === 'words' && selectedList">
-    <!-- Header Section for Words View -->
     <div class="page-header">
       <div class="header-content">
         <button class="btn-back" (click)="showListView()"><i class="fas fa-arrow-left"></i> Back to Lists</button>
@@ -76,7 +94,7 @@
       </div>
       <button class="btn-primary" (click)="openModal()"><i class="fas fa-plus"></i> Add New Word</button>
     </div>
-    <!-- Search Panel for Words -->
+
     <div class="search-filter-panel">
       <div class="search-section">
         <div class="search-input-wrapper">
@@ -87,7 +105,7 @@
       </div>
     </div>
     
-    <!-- Vocabulary Grid View -->
+
     <div class="main-content">
       <div class="vocabulary-list-section">
         <div *ngIf="isLoading" class="loading-state">
@@ -159,8 +177,6 @@
     </div>
   </div>
 </div>
-
-<!-- MODAL ĐỂ TẠO DANH SÁCH MỚI -->
 <div *ngIf="isListModalOpen" class="modal-overlay" (click)="closeCreateListModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -197,9 +213,6 @@
     </form>
   </div>
 </div>
-
-<!-- MODAL ĐỂ THÊM/CHỈNH SỬA TỪ VỰNG -->
-<!-- MODAL THÊM/CHỈNH SỬA TỪ VỰNG -->
 <div *ngIf="isModalOpen" class="modal-overlay" (click)="closeModal()">
   <div class="modal-content vocabulary-modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -218,7 +231,7 @@
     </div>
 
     <form [formGroup]="vocabularyForm" (ngSubmit)="saveVocabulary()" class="modal-form">
-      <!-- English Word -->
+  
       <div class="form-group full-width">
         <label for="word">ENGLISH WORD <span class="required">*</span></label>
         <input
@@ -232,8 +245,6 @@
           English word is required.
         </div>
       </div>
-
-      <!-- Row: Part of Speech, Category, Difficulty -->
       <div class="form-row">
         <div class="form-group">
           <label for="partOfSpeech">PART OF SPEECH <span class="required">*</span></label>
