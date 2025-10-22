@@ -8,6 +8,7 @@ import { SpeakingComponent } from '../question/speaking/speaking.component';
 import { ReadingComponent } from '../question/reading/reading.component';
 import { ListeningComponent } from '../question/listening/listening.component';
 import { ExamPartDTO, QuestionDTO } from '../../../Interfaces/exam.interfaces';
+import { flush } from '@angular/core/testing';
 
 @Component({
   selector: 'app-part-question',
@@ -61,7 +62,26 @@ export class PartQuestionComponent {
           });
 
           this.partDetail = data;
-          this.partInfo = {
+          console.log('Part detail loaded:', this.partDetail);
+          console.log('Questions count:', this.partDetail.questions?.length || 0);
+          this.questions = this.partDetail.questions;
+          console.log('Questions data:', this.questions);
+
+          // tùy vào part code có chứa "writing , reading, listening"
+
+          if(this.partDetail.partCode.search('WRI')){
+            this.isWritingExam = true;
+            console.log('isWritingExam set to true');
+          }else if(this.partDetail.partCode.search('REA')){
+            this.isReadingExam = true;
+            console.log('isReadingExam set to true');
+          }
+          else if(this.partDetail.partCode.search('LIS')){
+            this.isListeningExam = true;
+            console.log('isListeningExam set to true');
+          }
+
+          this.partInfo ={
             partId: this.partDetail.partId,
             partCode: this.partDetail.partCode,
             title: this.partDetail.title,

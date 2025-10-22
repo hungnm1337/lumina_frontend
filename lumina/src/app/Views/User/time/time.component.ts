@@ -10,7 +10,9 @@ export class TimeComponent implements OnInit, OnChanges, OnDestroy {
   @Input() time: number = 0; // total seconds
   @Input() resetAt: number = 0; // change this to force a reset
   @Input() paused: boolean = false; // pause/resume without resetting
+  @Input() savedTime: number = 0; // saved remaining time from localStorage
   @Output() timeout = new EventEmitter<void>();
+  @Output() timeUpdate = new EventEmitter<number>(); // emit remaining time updates
 
   remainingSeconds: number = 0;
   private intervalId: any = null;
@@ -32,6 +34,13 @@ export class TimeComponent implements OnInit, OnChanges, OnDestroy {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['time'] || changes['resetAt']) {
       this.startCountdown();
+      return;
+    }
+    if (changes['savedTime'] && this.savedTime > 0) {
+      this.remainingSeconds = this.savedTime;
+      if (!this.paused) {
+        this.startInterval();
+      }
       return;
     }
     if (changes['paused']) {
@@ -72,6 +81,7 @@ export class TimeComponent implements OnInit, OnChanges, OnDestroy {
     this.clearTimer();
     this.intervalId = setInterval(() => {
       this.remainingSeconds = Math.max(0, this.remainingSeconds - 1);
+      this.timeUpdate.emit(this.remainingSeconds); // Emit time updates
       if (this.remainingSeconds === 0) {
         this.clearTimer();
         this.timeout.emit();

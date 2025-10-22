@@ -35,7 +35,6 @@ interface QuestionResult {
     TimeComponent,
     ListeningComponent,
     ReadingComponent,
-    WritingComponent,
   ],
   templateUrl: './question.component.html',
 })

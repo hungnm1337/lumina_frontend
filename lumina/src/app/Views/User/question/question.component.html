@@ -55,14 +55,7 @@
       (answered)="markAnswered($event)"
     ></app-reading>
     } } @else if (questions[currentIndex].questionType === 'WRITTING') {
-    <app-writing
-      [questionId]="questions[currentIndex].questionId"
-      [disabled]="showExplain"
-      [resetAt]="currentIndex"
-      [contentText]="questions[currentIndex].prompt.contentText"
-      [pictureCaption]="latestPictureCaption"
-      (answered)="markAnswered($event)"
-    ></app-writing>
+   
     }
 
     <!-- Navigation for Non-Speaking Questions (Original) -->

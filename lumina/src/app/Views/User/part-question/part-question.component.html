@@ -9,9 +9,8 @@
 </app-speaking>
 } @else if (isWritingExam) {
 <app-writing
-  [partInfo]="partInfo"
+
   [questions]="questions"
-  (writingAnswered)="onWritingAnswered($event)"
 >
 </app-writing>
 } @else if (isReadingExam) {
