@@ -100,12 +100,14 @@ export class VocabularyManagementComponent implements OnInit {
     this.isLoading = true;
     this.vocabularyService.getVocabularyLists(this.searchTerm).subscribe({
       next: (lists) => { 
+        console.log('Manager received vocabulary lists:', lists);
         this.vocabularyLists = lists; 
         this.filterVocabularyLists();
         this.isLoading = false; 
       },
       error: (error) => { 
-        this.toastService.error('Không thể tải danh sách từ điển'); 
+        console.error('Error loading vocabulary lists:', error);
+        this.toastService.error('Không thể tải danh sách từ điển: ' + (error.error?.message || error.message)); 
         this.isLoading = false; 
       }
     });
@@ -313,3 +315,5 @@ export class VocabularyManagementComponent implements OnInit {
     }
   }
 }
+
+

@@ -161,8 +161,8 @@
         
         <div class="word-header">
           <h4 class="word-text">{{ vocab.word }}</h4>
-          <span class="part-of-speech" [ngClass]="getPartOfSpeechClass(vocab.typeOfWord)">
-            {{ vocab.typeOfWord }}
+          <span class="part-of-speech" [ngClass]="getPartOfSpeechClass(vocab.partOfSpeech)">
+            {{ vocab.partOfSpeech }}
           </span>
         </div>
 
@@ -293,3 +293,5 @@
     </div>
   </div>
 </div>
+
+
