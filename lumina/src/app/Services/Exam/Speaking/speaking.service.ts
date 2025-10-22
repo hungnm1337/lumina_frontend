@@ -1,9 +1,9 @@
+import { SpeakingScoringResult } from './../../../Interfaces/exam.interfaces';
+import { environment } from './../../../../environments/environment.development';
 // File: src/app/Services/Speaking/speaking.service.ts
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment.development'; // Chỉnh lại path nếu cần
-import { SpeakingScoringResult } from '../../Interfaces/exam.interfaces';
 
 // Export type để các component khác có thể import (sử dụng export type cho isolatedModules)
 export type { SpeakingScoringResult };

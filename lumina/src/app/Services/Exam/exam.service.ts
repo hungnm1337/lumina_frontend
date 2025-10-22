@@ -29,6 +29,23 @@ export class ExamService {
     return this.httpClient.get<ExamDTO[]>(`${this.apiUrl}/exam`, { params });
   }
 
+  public getAllExamsWithParts(): Observable<any[]> {
+    return this.httpClient.get<any[]>(`${this.apiUrl}/exam/all-with-parts`);
+  }
+
+  public cloneExamFormat(fromExamSetKey: string, toExamSetKey: string): Observable<any> {
+    return this.httpClient.post<any>(
+      `${this.apiUrl}/exam/CreateExam`, 
+      {}, 
+      { params: { fromExamSetKey, toExamSetKey } }
+    );
+  }
+  public toggleExamStatus(examId: number): Observable<any> {
+    const params = new HttpParams().set('examId', examId.toString());
+    return this.httpClient.post<any>(`${this.apiUrl}/exam/toggle-status`, {}, { params });
+  }
+
+
 }
 
 
