@@ -214,4 +214,40 @@ export class VocabularyService {
       example: vocabulary.example || undefined
     };
   }
+
+  // Gửi yêu cầu phê duyệt vocabulary list
+  requestApproval(listId: number): Observable<any> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post(`${this.vocabularyListsUrl}/${listId}/request-approval`, {}, { headers });
+  }
+
+  // Duyệt/từ chối vocabulary list (Manager only)
+  reviewVocabularyList(listId: number, reviewData: {
+    isApproved: boolean;
+    comment?: string;
+  }): Observable<any> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post(`${this.vocabularyListsUrl}/${listId}/review`, reviewData, { headers });
+  }
+
+  // Gửi lại vocabulary list về staff để chỉnh sửa (Manager only)
+  sendBackToStaff(listId: number): Observable<any> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post(`${this.vocabularyListsUrl}/${listId}/send-back`, {}, { headers });
+  }
 }

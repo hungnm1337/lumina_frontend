@@ -17,6 +17,9 @@ import { UserEventsDashboardComponent } from './Views/User/event-dashboard/dashb
 import { DashboardSlideComponent } from './Views/Manage/Slide/dashboardslide.component';
 import { BlogComponent } from './Views/Common/blog/blog.component';
 import { BlogDetailComponent } from './Views/Common/blog-detail/blog-detail.component';
+import { UserVocabularyComponent } from './Views/User/vocabulary/vocabulary.component';
+import { DeckListComponent } from './pages/deck-list/deck-list.component';
+import { DeckDetailComponent } from './pages/deck-detail/deck-detail.component';
 
 export const routes: Routes = [
   {
@@ -55,12 +58,9 @@ export const routes: Routes = [
           { path: 'exam/:id', component: ExamPartComponent },
           { path: 'part/:id', component: PartQuestionComponent },
           { path: '', redirectTo: 'exams', pathMatch: 'full' },
-          // {path: 'vocabulary', component: VocabularyComponent},
-          // {path: 'notes', component: NotesComponent},
-          // {path: 'study', component: StudyComponent},
-          // {path: 'notifications', component: NotificationsComponent}
         ],
       },
+      // ĐÃ XÓA 2 ROUTE FLASHCARDS KHỎI ĐÂY
     ],
   },
 
@@ -77,6 +77,11 @@ export const routes: Routes = [
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'blog', component: BlogComponent },
   { path: 'blog/:id', component: BlogDetailComponent },
+  { path: 'tu-vung', component: UserVocabularyComponent },
+
+  // <-- DI CHUYỂN 2 ROUTE FLASHCARDS RA ĐÂY, ĐẶT Ở CẤP CAO NHẤT
+  { path: 'flashcards', component: DeckListComponent },
+  { path: 'flashcards/:id', component: DeckDetailComponent },
 
   { path: '', redirectTo: '/homepage', pathMatch: 'full' },
   { path: '**', component: ErrorComponent },
