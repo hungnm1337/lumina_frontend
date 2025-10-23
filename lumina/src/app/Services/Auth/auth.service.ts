@@ -10,7 +10,11 @@ import {
   LoginRequest,
   LoginResponse,
   RegisterRequest,
-  RegisterResponse,
+  SendOtpResponse,
+  VerifyRegistrationRequest,
+  VerifyRegistrationResponse,
+  ResendRegistrationOtpRequest,
+  ResendOtpResponse,
   ResetPasswordRequest,
 } from '../../Interfaces/auth.interfaces';
 import { Router } from '@angular/router';
@@ -54,8 +58,44 @@ export class AuthService {
         })
       );
   }
-  register(request: RegisterRequest): Observable<RegisterResponse> {
-    return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, request);
+  // Step 1: send OTP to email (also validate username availability)
+  register(request: {
+    email: string;
+    username: string;
+  }): Observable<SendOtpResponse> {
+    return this.http.post<SendOtpResponse>(
+      `${this.apiUrl}/register/send-otp`,
+      request
+    );
+  }
+
+  verifyRegistration(
+    request: VerifyRegistrationRequest
+  ): Observable<VerifyRegistrationResponse> {
+    return this.http
+      .post<VerifyRegistrationResponse>(
+        `${this.apiUrl}/register/verify`,
+        request
+      )
+      .pipe(
+        tap((response) => {
+          // Auto login after successful verification
+          this.setSession({
+            token: response.token,
+            expiresIn: response.expiresIn,
+            user: response.user,
+          });
+        })
+      );
+  }
+
+  resendRegistrationOtp(
+    request: ResendRegistrationOtpRequest
+  ): Observable<ResendOtpResponse> {
+    return this.http.post<ResendOtpResponse>(
+      `${this.apiUrl}/register/resend-otp`,
+      request
+    );
   }
 
   forgotPassword(

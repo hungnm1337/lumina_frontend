@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { SpeakingScoringResult } from '../../Interfaces/exam.interfaces';
+import { SpeakingScoringResult } from '../../../Interfaces/exam.interfaces';
 import { SpeakingService } from './speaking.service';
-
 export type QuestionState =
   | 'not_started'
   | 'in_progress'

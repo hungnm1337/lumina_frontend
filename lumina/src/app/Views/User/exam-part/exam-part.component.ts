@@ -75,7 +75,6 @@ export class ExamPartComponent {
 
   startPart(partId: number): void {
     console.log('Starting part ID:', partId);
-    // Navigate to part-question component for all exam types
     this.router.navigate(['/homepage/user-dashboard/part', partId]);
   }
 

@@ -1,0 +1,64 @@
+<app-header></app-header>
+
+<div class="deck-list-container">
+  <div class="header-section">
+    <h1 class="page-title">Bộ Từ Vựng TOEIC</h1>
+    <p class="page-subtitle">Học và luyện tập từ vựng TOEIC hiệu quả với hệ thống flashcard thông minh</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Đang tải danh sách từ vựng...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !isLoading" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <p>{{ error }}</p>
+    <button class="retry-button" (click)="loadDecks()">Thử lại</button>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && !error && decks.length === 0" class="empty-state">
+    <div class="empty-icon">📚</div>
+    <h3>Chưa có bộ từ vựng nào</h3>
+    <p>Hiện tại chưa có bộ từ vựng nào được duyệt và công khai.</p>
+  </div>
+
+  <!-- Decks Grid -->
+  <div *ngIf="!isLoading && !error && decks.length > 0" class="decks-grid">
+    <a 
+      *ngFor="let deck of decks; let i = index" 
+      [routerLink]="['/flashcards', deck.id]" 
+      class="deck-card"
+      [attr.data-index]="i">
+      
+      <div class="card-badge">BỘ {{ i + 1 }}</div>
+      
+      <div class="card-icon-wrapper" [attr.data-color]="i % 3">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <div class="card-content">
+        <h3 class="card-title">{{ deck.title }}</h3>
+        <p class="card-author">{{ deck.author }}</p>
+      </div>
+
+      <div class="card-footer">
+        <div class="term-count">
+          <span class="count-number">{{ deck.termCount }}</span>
+          <span class="count-label">thuật ngữ</span>
+        </div>
+        <div class="arrow-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12h14m-7-7l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>

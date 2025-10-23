@@ -1,276 +1,195 @@
-import {
-  Component,
-  Input,
-  Output,
-  EventEmitter,
-  OnChanges,
-  SimpleChanges,
-  OnInit,
-  OnDestroy,
-} from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { AuthService } from '../../../../Services/Auth/auth.service';
 import { BaseQuestionService } from '../../../../Services/Question/base-question.service';
 import { WritingRequestDTO } from '../../../../Interfaces/WrittingExam/WritingRequestDTO.interface';
 import { FeedbackComponent } from '../../writing-answer-box/Feedback/feedback/feedback.component';
 import { WritingResponseDTO } from '../../../../Interfaces/WrittingExam/WritingResponseDTO.interface';
 import { WritingExamPartOneService } from '../../../../Services/Exam/Writing/writing-exam-part-one.service';
-import {
-  ExamPartDTO,
-  QuestionDTO,
-} from '../../../../Interfaces/exam.interfaces';
+import { ExamPartDTO, QuestionDTO } from '../../../../Interfaces/exam.interfaces';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ExamService } from '../../../../Services/Exam/exam.service';
+import { PartDetailComponent } from '../../part-detail/part-detail.component';
+import { WritingAnswerBoxComponent } from "../../writing-answer-box/writing-answer-box.component";
 import { TimeComponent } from '../../time/time.component';
-import { PromptComponent } from '../../prompt/prompt.component';
 
 @Component({
   selector: 'app-writing',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    TimeComponent,
-    PromptComponent,
-  ],
+  imports: [CommonModule, FormsModule, WritingAnswerBoxComponent, TimeComponent],
   templateUrl: './writing.component.html',
   styleUrl: './writing.component.scss',
 })
-export class WritingComponent implements OnChanges, OnInit, OnDestroy {
-  @Input() questions: QuestionDTO[] = [];
-  @Input() partInfo: ExamPartDTO | null = null;
-  @Output() writingAnswered = new EventEmitter<boolean>();
+export class WritingComponent implements OnChanges, OnDestroy, OnInit {
+  @Input() questions: QuestionDTO[] | null = null;
+  @Output() finished = new EventEmitter<void>();
 
-  // Legacy inputs for backward compatibility
-  @Input() questionId: number = 0;
-  @Input() disabled: boolean = false;
-  @Input() resetAt: number = 0;
-  @Input() contentText: string | undefined;
-  @Input() pictureCaption: string | undefined;
-  @Output() answered = new EventEmitter<boolean>();
-
-  // State management
   currentIndex = 0;
+  pictureCaption: string = '';
+  isLoading: boolean = false;
   showExplain = false;
+  isFinished = false;
   totalScore = 0;
   correctCount = 0;
-  finished = false;
-  latestPictureCaption: string = '';
-  private advanceTimer: any = null;
-
-  // Writing-specific properties
-  feedbackResponse: WritingResponseDTO | null = null;
-  writingRequest: WritingRequestDTO | undefined;
-  userAnswer: string = '';
-  isLoadingFeedback: boolean = false;
+  savedAnswers: { questionId: number; answer: string }[] = [];
+  savedTimeRemaining: number = 0;
   private autoSaveInterval: any = null;
   private readonly AUTO_SAVE_INTERVAL = 10000; // 10 seconds
 
   constructor(
     private router: Router,
     private authService: AuthService,
-    private baseQuestionService: BaseQuestionService,
     private writingExamPartOneService: WritingExamPartOneService
   ) {
     this.startAutoSave();
   }
+
   ngOnInit(): void {
-    this.loadSavedAnswer();
+    this.loadSavedData();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['questions'] && this.questions) {
+      console.log('WritingComponent - Questions changed:', this.questions);
+      this.loadSavedData();
+    }
   }
 
   ngOnDestroy(): void {
     this.stopAutoSave();
-    if (this.advanceTimer) {
-      clearTimeout(this.advanceTimer);
-    }
+    this.saveCurrentState();
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['questions'] && this.questions && this.questions.length > 0) {
-      console.log('✅ WritingComponent - Questions changed:', this.questions);
-      console.log(
-        '✅ WritingComponent - Questions length:',
-        this.questions.length
-      );
-
-      // ✅ Debug từng câu hỏi
-      this.questions.forEach((q, index) => {
-        console.log(`Question ${index}:`, {
-          questionId: q.questionId,
-          stemText: q.stemText,
-          questionType: q.questionType,
-          hasPrompt: !!q.prompt,
-          promptContentText: q.prompt?.contentText,
-          promptTitle: q.prompt?.title,
-        });
-      });
-
-      this.resetQuiz();
-    }
-
-    if (changes['resetAt'] || changes['questionId']) {
-      this.loadSavedAnswer();
-      this.feedbackResponse = null;
-      this.isLoadingFeedback = false;
-    }
-  }
-
-  // Navigation methods
-  markAnswered(isCorrect: boolean): void {
-    if (isCorrect) {
-      const q = this.questions[this.currentIndex];
-      this.totalScore += q?.scoreWeight ?? 0;
-      this.correctCount += 1;
-    }
-    this.revealExplainAndQueueNext();
-  }
-
-  onTimeout(): void {
-    this.showExplain = true;
-    if (this.advanceTimer) {
-      clearTimeout(this.advanceTimer);
-    }
-  }
-
-  next(): void {
-    if (this.finished) return;
-    if (this.currentIndex >= this.questions.length - 1) {
-      this.finished = true;
-      this.showExplain = true;
-      return;
-    }
-    this.nextQuestion();
-  }
-
-  private nextQuestion(): void {
-    if (this.currentIndex < this.questions.length - 1) {
-      this.currentIndex += 1;
-      this.showExplain = false;
-      this.latestPictureCaption = '';
-      this.feedbackResponse = null;
-      this.isLoadingFeedback = false;
-      this.loadSavedAnswer();
-    } else {
-      this.showExplain = true;
-      this.finished = true;
-    }
-  }
-
-  private revealExplainAndQueueNext(): void {
-    if (this.showExplain) return;
-    this.showExplain = true;
-    if (this.advanceTimer) {
-      clearTimeout(this.advanceTimer);
-    }
-    this.advanceTimer = setTimeout(() => {
-      this.nextQuestion();
-    }, 300000); // 5 minutes auto-advance
-  }
-
-  // Legacy support
-  onWritingAnswered(isCorrect: boolean): void {
-    this.markAnswered(isCorrect);
-    this.writingAnswered.emit(isCorrect);
-    this.answered.emit(isCorrect);
-  }
-
-  // LocalStorage methods
   private getStorageKey(): string | null {
     const userId = this.authService.getCurrentUser()?.id;
     if (userId === undefined || userId === null) return null;
-    return `Answer_Writting_${userId}`;
+    return `Writing_Exam_${userId}`;
   }
 
-  private loadSavedAnswer(): void {
-    try {
-      const key = this.getStorageKey();
-      if (!key) return;
+  private getTimeStorageKey(): string | null {
+    const userId = this.authService.getCurrentUser()?.id;
+    if (userId === undefined || userId === null) return null;
+    return `Writing_Time_${userId}`;
+  }
 
-      const raw = localStorage.getItem(key);
-      if (!raw) return;
+  private getTimeStorageKeyForQuestion(questionId: number): string | null {
+    const userId = this.authService.getCurrentUser()?.id;
+    if (userId === undefined || userId === null) return null;
+    return `Writing_Time_${userId}_Q${questionId}`;
+  }
 
-      const savedAnswers = JSON.parse(raw);
-      if (savedAnswers && typeof savedAnswers === 'object') {
-        const currentQuestionId =
-          this.questions[this.currentIndex]?.questionId || this.questionId;
-        this.userAnswer = savedAnswers[currentQuestionId] || '';
-      }
-    } catch {
-      this.userAnswer = '';
+  private loadSavedData(): void {
+    this.loadSavedAnswers();
+    this.loadSavedTime();
+    this.initializeTimeForFirstQuestion();
+  }
+
+  private initializeTimeForFirstQuestion(): void {
+    // Initialize time for first question if no saved time exists
+    if (this.questions && this.questions.length > 0) {
+      this.loadTimeForCurrentQuestion();
     }
   }
 
-  private saveAnswer(): void {
+  private loadSavedAnswers(): void {
     try {
       const key = this.getStorageKey();
-      if (!key) return;
-
+      if (!key) {
+        this.savedAnswers = [];
+        return;
+      }
       const raw = localStorage.getItem(key);
-      let savedAnswers: Record<string, string> = {};
+      if (!raw) {
+        this.savedAnswers = [];
+        return;
+      }
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        this.savedAnswers = parsed
+          .map((x: any) => ({
+            questionId: Number(x?.questionId),
+            answer: String(x?.answer || ''),
+          }))
+          .filter((x: any) => Number.isFinite(x.questionId));
+      } else {
+        this.savedAnswers = [];
+      }
+    } catch {
+      this.savedAnswers = [];
+    }
+  }
 
-      if (raw) {
-        try {
-          savedAnswers = JSON.parse(raw);
-        } catch {
-          savedAnswers = {};
+  private loadSavedTime(): void {
+    try {
+      // First try to load time for current question
+      const currentQuestion = this.getCurrentQuestion();
+      if (currentQuestion) {
+        const questionKey = this.getTimeStorageKeyForQuestion(currentQuestion.questionId);
+        if (questionKey) {
+          const raw = localStorage.getItem(questionKey);
+          if (raw) {
+            this.savedTimeRemaining = Number(raw) || 0;
+            console.log('[WritingComponent] Loaded saved time for question:', currentQuestion.questionId, this.savedTimeRemaining);
+            return;
+          }
         }
       }
 
-      const currentQuestionId =
-        this.questions[this.currentIndex]?.questionId || this.questionId;
-      savedAnswers[currentQuestionId] = this.userAnswer;
-      localStorage.setItem(key, JSON.stringify(savedAnswers));
+      // Fallback to general time storage
+      const key = this.getTimeStorageKey();
+      if (!key) return;
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        this.savedTimeRemaining = Number(raw) || 0;
+        console.log('[WritingComponent] Loaded saved time:', this.savedTimeRemaining);
+      }
+    } catch {
+      this.savedTimeRemaining = 0;
+    }
+  }
+
+  private saveCurrentState(): void {
+    this.saveAnswers();
+    this.saveTime();
+  }
+
+  private saveAnswers(): void {
+    try {
+      const key = this.getStorageKey();
+      if (!key) return;
+      localStorage.setItem(key, JSON.stringify(this.savedAnswers));
     } catch {
       // Best-effort only; ignore storage errors
     }
   }
 
-  onAnswerChange(): void {
-    // No auto-save on typing - only manual save and 10s interval
-  }
+  private saveTime(): void {
+    try {
+      // Save time for current question
+      const currentQuestion = this.getCurrentQuestion();
+      if (currentQuestion) {
+        const questionKey = this.getTimeStorageKeyForQuestion(currentQuestion.questionId);
+        if (questionKey) {
+          localStorage.setItem(questionKey, this.savedTimeRemaining.toString());
+          console.log('[WritingComponent] Saved time for question:', currentQuestion.questionId, this.savedTimeRemaining);
+        }
+      }
 
-  onSubmit(): void {
-    if (this.disabled || !this.userAnswer.trim()) return;
-    const currentQuestion = this.questions[this.currentIndex];
-    const vocabularyRequest =
-      currentQuestion?.prompt?.contentText || this.contentText || '';
-    const pictureCaption =
-      this.latestPictureCaption || this.pictureCaption || '';
-
-    this.writingRequest = {
-      pictureCaption: pictureCaption,
-      vocabularyRequest: vocabularyRequest,
-      userAnswer: this.userAnswer,
-    };
-
-    console.log('WritingRequestDTO:', this.writingRequest);
-
-    this.isLoadingFeedback = true;
-    this.writingExamPartOneService
-      .GetFeedbackOfWritingPartOne(this.writingRequest)
-      .subscribe({
-        next: (response: WritingResponseDTO) => {
-          this.feedbackResponse = response;
-          console.log('WritingFeedbackResponseDTO:', response);
-          this.isLoadingFeedback = false;
-          this.markAnswered(true); // Assume correct for now
-        },
-        error: (error: any) => {
-          console.error('Error fetching writing feedback:', error);
-          this.isLoadingFeedback = false;
-          this.markAnswered(false);
-        },
-      });
-  }
-
-  onSave(): void {
-    this.saveAnswer();
+      // Also save general time
+      const key = this.getTimeStorageKey();
+      if (!key) return;
+      localStorage.setItem(key, this.savedTimeRemaining.toString());
+      console.log('[WritingComponent] Saved time:', this.savedTimeRemaining);
+    } catch {
+      // Best-effort only; ignore storage errors
+    }
   }
 
   private startAutoSave(): void {
     this.stopAutoSave();
     this.autoSaveInterval = setInterval(() => {
-      this.saveAnswer();
+      this.saveCurrentState();
     }, this.AUTO_SAVE_INTERVAL);
   }
 
@@ -281,7 +200,111 @@ export class WritingComponent implements OnChanges, OnInit, OnDestroy {
     }
   }
 
-  // Summary helpers
+  onTimeout(): void {
+    console.log('[WritingComponent] Timer timeout');
+    this.showExplain = true;
+    this.finishExam();
+  }
+
+  onTimeUpdate(remainingTime: number): void {
+    this.savedTimeRemaining = remainingTime;
+  }
+
+  onAnswerChange(questionId: number, answer: string): void {
+    const existingIndex = this.savedAnswers.findIndex(x => x.questionId === questionId);
+    if (existingIndex >= 0) {
+      this.savedAnswers[existingIndex].answer = answer;
+    } else {
+      this.savedAnswers.push({ questionId, answer });
+    }
+  }
+
+  onAnswerSubmitted(questionId: number, isCorrect: boolean): void {
+    if (isCorrect) {
+      const question = this.questions?.find(q => q.questionId === questionId);
+      if (question) {
+        this.totalScore += question.scoreWeight ?? 0;
+        this.correctCount += 1;
+      }
+    }
+  }
+
+  generateCaption(questionIndex: number): void {
+    if (!this.questions || questionIndex >= this.questions.length) return;
+
+    this.isLoading = true;
+    // Simulate caption generation - replace with actual API call
+    setTimeout(() => {
+      this.pictureCaption = `Generated caption for question ${questionIndex + 1}`;
+      this.isLoading = false;
+    }, 2000);
+  }
+
+  nextQuestion(): void {
+    if (this.questions && this.currentIndex < this.questions.length - 1) {
+      this.currentIndex += 1;
+      this.showExplain = false;
+      this.pictureCaption = '';
+      this.loadTimeForCurrentQuestion();
+    } else {
+      this.finishExam();
+    }
+  }
+
+  previousQuestion(): void {
+    if (this.currentIndex > 0) {
+      this.currentIndex -= 1;
+      this.showExplain = false;
+      this.pictureCaption = '';
+      this.loadTimeForCurrentQuestion();
+    }
+  }
+
+  navigateToQuestion(index: number): void {
+    if (this.questions && index >= 0 && index < this.questions.length) {
+      this.currentIndex = index;
+      this.showExplain = false;
+      this.pictureCaption = '';
+      this.loadTimeForCurrentQuestion();
+    }
+  }
+
+  private loadTimeForCurrentQuestion(): void {
+    const currentQuestion = this.getCurrentQuestion();
+    if (currentQuestion) {
+      const questionKey = this.getTimeStorageKeyForQuestion(currentQuestion.questionId);
+      if (questionKey) {
+        const raw = localStorage.getItem(questionKey);
+        if (raw) {
+          this.savedTimeRemaining = Number(raw) || 0;
+          console.log('[WritingComponent] Loaded time for question:', currentQuestion.questionId, this.savedTimeRemaining);
+        } else {
+          // No saved time for this question, use the question's default time
+          this.savedTimeRemaining = currentQuestion.time || 0;
+          this.saveTime();
+        }
+      }
+    }
+  }
+
+
+  finishExam(): void {
+    this.isFinished = true;
+    this.showExplain = true;
+    this.saveCurrentState();
+    this.finished.emit();
+  }
+
+  getCurrentQuestion(): QuestionDTO | null {
+    if (!this.questions || this.currentIndex >= this.questions.length) return null;
+    return this.questions[this.currentIndex];
+  }
+
+  getSavedAnswer(questionId: number): string {
+    const saved = this.savedAnswers.find(x => x.questionId === questionId);
+    return saved?.answer || '';
+  }
+
   get percentCorrect(): number {
     const total = this.questions?.length ?? 0;
     if (total === 0) return 0;
@@ -295,23 +318,34 @@ export class WritingComponent implements OnChanges, OnInit, OnDestroy {
     return 'Bạn hãy tiếp tục phát huy nhé';
   }
 
-  // Actions
-  resetQuiz(): void {
+  resetExam(): void {
     this.currentIndex = 0;
     this.showExplain = false;
+    this.isFinished = false;
     this.totalScore = 0;
     this.correctCount = 0;
-    this.finished = false;
-    this.latestPictureCaption = '';
-    this.feedbackResponse = null;
-    this.isLoadingFeedback = false;
+    this.savedAnswers = [];
+    this.savedTimeRemaining = 0;
+    this.pictureCaption = '';
+    this.clearSavedData();
   }
 
-  goToExams(): void {
-    this.router.navigate(['homepage/user-dashboard/exams']);
+  clearSavedData(): void {
+    try {
+      const answersKey = this.getStorageKey();
+      const timeKey = this.getTimeStorageKey();
+      if (answersKey) localStorage.removeItem(answersKey);
+      if (timeKey) localStorage.removeItem(timeKey);
+    } catch {
+      // ignore
+    }
   }
 
-  onPictureCaption(caption: string): void {
-    this.latestPictureCaption = caption || '';
+  canNavigateToQuestion(index: number): boolean {
+    return this.questions ? index >= 0 && index < this.questions.length : false;
+  }
+
+  isCurrentQuestion(index: number): boolean {
+    return index === this.currentIndex;
   }
 }

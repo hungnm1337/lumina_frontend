@@ -19,12 +19,9 @@ import {
   ExamPartDTO,
   SpeakingScoringResult,
 } from '../../../../Interfaces/exam.interfaces';
-import {
-  SpeakingQuestionStateService,
-  QuestionState,
-} from '../../../../Services/Speaking/speaking-question-state.service';
+import { QuestionState } from '../../../../Services/Exam/Speaking/speaking-question-state.service';
 import { BaseQuestionService } from '../../../../Services/Question/base-question.service';
-
+import { SpeakingQuestionStateService } from '../../../../Services/Exam/Speaking/speaking-question-state.service';
 interface QuestionResult {
   questionNumber: number;
   questionText: string;

@@ -27,7 +27,7 @@ export class ExamService {
     return this.httpClient.get<ExamDTO>(`${this.apiUrl}/exam/${examId}`);
   }
   public GetExamPartDetailAndQuestion(partId: number): Observable<ExamPartDTO> {
-    return this.httpClient.get<ExamPartDTO>(`${this.apiUrl}/exam/part/${partId}`);
+    return this.httpClient.get<ExamPartDTO>(`${this.apiUrl}/Exam/part/${partId}`);
   }
 
   public getExamsByTypeAndPart(examType?: string, partCode?: string): Observable<ExamDTO[]> {

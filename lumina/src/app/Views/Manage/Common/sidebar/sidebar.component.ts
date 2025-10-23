@@ -21,6 +21,7 @@ export class SidebarComponent {
         { path: 'events', name: 'Sự kiện', icon: 'fas fa-calendar-alt' },
         { path: 'slides', name: 'Slide', icon: 'fas fa-images' },
         { path: 'manage-posts', name: 'Quản lý bài viết', icon: 'fas fa-edit' },
+        { path: 'vocabulary', name: 'Quản lý từ vựng', icon: 'fas fa-book-open' },
       ],
     },
   ];

@@ -6,7 +6,10 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "compodoc:build": "compodoc -p tsconfig.doc.json",
+    "compodoc:build-and-serve": "compodoc -p tsconfig.doc.json -s",
+    "compodoc:serve": "compodoc -s"
   },
   "private": true,
   "dependencies": {
@@ -30,6 +33,7 @@
     "@angular-devkit/build-angular": "^18.2.7",
     "@angular/cli": "^18.2.7",
     "@angular/compiler-cli": "^18.2.0",
+    "@compodoc/compodoc": "^1.1.31",
     "@types/jasmine": "~5.1.0",
     "@types/jwt-decode": "^2.2.1",
     "autoprefixer": "^10.4.21",
