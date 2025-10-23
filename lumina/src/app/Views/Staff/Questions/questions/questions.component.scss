@@ -259,3 +259,78 @@
   }
 }
 
+/* === NÂNG CẤP BẢNG DANH SÁCH CÂU HỎI === */
+
+/* Bọc toàn bộ bảng để đảm bảo bo góc hoạt động tốt */
+.bg-white.rounded-xl.shadow-sm {
+    overflow: hidden; /* Cực kỳ quan trọng để bo góc áp dụng cho table bên trong */
+}
+
+/* Tùy chỉnh Header của bảng (th) */
+thead.bg-gray-50 th {
+    background-color: #f9fafb;
+    color: #4b5563;
+    font-size: 0.75rem; /* 12px */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+/* Thiết kế lại các dòng của bảng (tr) */
+tbody tr {
+    transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+tbody tr:last-child {
+    border-bottom: none; /* Bỏ border cho dòng cuối cùng */
+}
+
+tbody tr:hover {
+    background-color: #fefce8; /* Màu vàng nhạt khi hover */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transform: scale(1.01); /* Hiệu ứng phóng to nhẹ */
+    z-index: 10;
+    position: relative;
+}
+
+/* Căn chỉnh các ô trong bảng (td) */
+tbody td {
+    vertical-align: top;
+    padding: 16px 12px; /* Tăng padding cho thoáng hơn */
+    color: #374151;
+}
+
+/* === GIẢI PHÁP CHO CỘT "NỘI DUNG" === */
+.content-cell-wrapper {
+    max-width: 400px;       /* Giới hạn chiều rộng tối đa */
+    max-height: 150px;      /* Giới hạn chiều cao tối đa */
+    overflow-y: auto;       /* Tự động hiển thị thanh cuộn dọc khi cần */
+    white-space: pre-line;  /* Giữ nguyên các xuống dòng từ dữ liệu */
+    padding-right: 8px;     /* Thêm khoảng trống để thanh cuộn không che chữ */
+    font-size: 0.9rem;      /* 14.4px */
+    line-height: 1.5;
+    color: #4b5563;
+}
+
+/* Tùy chỉnh thanh cuộn cho đẹp hơn */
+.content-cell-wrapper::-webkit-scrollbar {
+    width: 6px;
+}
+
+.content-cell-wrapper::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.content-cell-wrapper::-webkit-scrollbar-thumb {
+    background-color: #94a3b8;
+    border-radius: 10px;
+    border: 2px solid #f1f5f9;
+}
+
+.content-cell-wrapper::-webkit-scrollbar-thumb:hover {
+    background-color: #64748b;
+}
+

@@ -93,26 +93,48 @@ export class AuthService {
     return this.currentUserSource.value;
   }
 
-  getDecodedToken(): any | null {
-    const token = localStorage.getItem('lumina_token');
-    if (!token) return null;
-    try {
-      return JSON.parse(atob(token.split('.')[1] || ''));
-    } catch {
-      return null;
-    }
+  // getDecodedToken(): any | null {
+  //   const token = localStorage.getItem('lumina_token');
+  //   if (!token) return null;
+  //   try {
+  //     return JSON.parse(atob(token.split('.')[1] || ''));
+  //   } catch {
+  //     return null;
+  //   }
+  // }
+
+  // getRoleClaim(): string | null {
+  //   const payload = this.getDecodedToken();
+  //   if (!payload) return null;
+  //   return (
+  //     payload['role'] ||
+  //     payload['roles'] ||
+  //     payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
+  //     null
+  //   );
+  // }
+getDecodedToken(): any | null {
+  const token = localStorage.getItem('lumina_token');
+  if (!token) return null;
+  try {
+    return jwtDecode(token);
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return null;
   }
+}
 
   getRoleClaim(): string | null {
-    const payload = this.getDecodedToken();
-    if (!payload) return null;
-    return (
-      payload['role'] ||
-      payload['roles'] ||
-      payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
-      null
-    );
-  }
+  const payload = this.getDecodedToken();
+  if (!payload) return null;
+  return (
+    payload['role'] ||
+    payload['roles'] ||
+    payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
+    null
+  );
+}
+
 
   getRoleId(): number | null {
     const payload = this.getDecodedToken();
@@ -130,22 +152,26 @@ export class AuthService {
     return null;
   }
 
-  navigateByRole(): void {
-    const roleId = this.getRoleId();
-    switch (roleId) {
-      case 1:
-        this.router.navigate(['/admin']);
-        break;
-      case 2:
-        this.router.navigate(['/manager']);
-        break;
-      case 3:
-        this.router.navigate(['/staff/dashboard']);
-        break;
-      case 4:
-      default:
-        this.router.navigate(['/homepage/user-dashboard']);
-        break;
-    }
+navigateByRole(): void {
+  console.log('Role claim:', this.getRoleClaim());
+  console.log('Role ID:', this.getRoleId());
+
+  const roleId = this.getRoleId();
+  switch (roleId) {
+    case 1:
+      this.router.navigate(['/admin']);
+      break;
+    case 2:
+      this.router.navigate(['/manager']);
+      break;
+    case 3:
+      this.router.navigate(['/staff/dashboard']);
+      break;
+    case 4:
+    default:
+      this.router.navigate(['/homepage']);
+      break;
   }
+}
+
 }
