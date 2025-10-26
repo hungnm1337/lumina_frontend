@@ -57,7 +57,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['questions'] && this.questions) {
-      console.log('WritingComponent - Questions changed:', this.questions);
       this.loadSavedData();
       // Load caption for the current question when questions change
       this.generateCaption(this.currentIndex);
@@ -138,7 +137,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
           const raw = localStorage.getItem(questionKey);
           if (raw) {
             this.savedTimeRemaining = Number(raw) || 0;
-            console.log('[WritingComponent] Loaded saved time for question:', currentQuestion.questionId, this.savedTimeRemaining);
             return;
           }
         }
@@ -150,7 +148,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       const raw = localStorage.getItem(key);
       if (raw) {
         this.savedTimeRemaining = Number(raw) || 0;
-        console.log('[WritingComponent] Loaded saved time:', this.savedTimeRemaining);
       }
     } catch {
       this.savedTimeRemaining = 0;
@@ -180,7 +177,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
         const questionKey = this.getTimeStorageKeyForQuestion(currentQuestion.questionId);
         if (questionKey) {
           localStorage.setItem(questionKey, this.savedTimeRemaining.toString());
-          console.log('[WritingComponent] Saved time for question:', currentQuestion.questionId, this.savedTimeRemaining);
         }
       }
 
@@ -188,7 +184,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       const key = this.getTimeStorageKey();
       if (!key) return;
       localStorage.setItem(key, this.savedTimeRemaining.toString());
-      console.log('[WritingComponent] Saved time:', this.savedTimeRemaining);
     } catch {
       // Best-effort only; ignore storage errors
     }
@@ -209,7 +204,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   onTimeout(): void {
-    console.log('[WritingComponent] Timer timeout');
     this.showExplain = true;
     this.finishExam();
   }
@@ -256,7 +250,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
           this.isLoading = false;
         },
         error: (error) => {
-          console.error('Error generating caption:', error);
           this.pictureCaption = '';
           this.isLoading = false;
         }
