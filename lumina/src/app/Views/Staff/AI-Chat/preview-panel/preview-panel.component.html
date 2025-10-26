@@ -1,0 +1,142 @@
+<div class="preview-panel" *ngIf="previewData && previewData.length > 0">
+  <!-- ✅ Toast Notification -->
+  <div class="toast" [class.show]="showToast">
+    {{ toastMessage }}
+  </div>
+
+  <!-- ✅ Loading Overlay -->
+  <div class="loading-overlay" *ngIf="isSaving">
+    <div class="spinner"></div>
+    <p>Đang lưu đề thi...</p>
+  </div>
+
+  <div class="panel-header">
+    <h2>👁️ Preview</h2>
+    
+    <div class="selector-group">
+      <!-- ✅ Hiển thị loading state -->
+      <div *ngIf="isLoadingParts" class="loading-indicator">
+        Đang tải...
+      </div>
+      
+      <!-- ✅ Chỉ hiển thị khi có dữ liệu -->
+      <div *ngIf="!isLoadingParts && examSetKeys.length > 0" class="selector-controls">
+        <!-- Chọn ExamSetKey -->
+        <select [(ngModel)]="selectedExamSetKey" (change)="onExamSetKeyChange()" class="select-examset">
+          <option [value]="null">Chọn kỳ đề</option>
+          <option *ngFor="let key of examSetKeys" [ngValue]="key">{{ key }}</option>
+        </select>
+        
+        <!-- Chọn PartCode (theo lọc) -->
+        <select *ngIf="filteredParts.length > 0" [(ngModel)]="selectedPartId" (change)="onPartChange()" class="select-part">
+          <option [value]="null">Chọn Part</option>
+          <option *ngFor="let part of filteredParts" [value]="part.partId">
+            {{ part.partCode }} - {{ part.title }}
+          </option>
+        </select>
+
+        <!-- ✅ Nút Lưu (chỉ hiển thị khi đã chọn cả 2) -->
+        <button 
+          *ngIf="selectedExamSetKey && selectedPartId" 
+          (click)="onSaveExam()"
+          class="btn-save"
+          [disabled]="isSaving">
+          <span *ngIf="!isSaving">💾 Lưu đề thi</span>
+          <span *ngIf="isSaving">⏳ Đang lưu...</span>
+        </button>
+      </div>
+
+      <!-- ✅ Hiển thị message nếu không có dữ liệu -->
+      <div *ngIf="!isLoadingParts && examSetKeys.length === 0" class="no-data-message">
+        Không có dữ liệu kỳ đề
+      </div>
+    </div>
+  </div>
+
+
+  <div class="preview-content">
+    <!-- Loop qua từng Prompt -->
+    <div class="prompt-section" *ngFor="let prompt of previewData; let pIdx = index">
+      <!-- Prompt Info -->
+      <div class="prompt-info">
+        <h3>
+          <span class="prompt-badge">Prompt {{ pIdx + 1 }}</span>
+          {{ prompt.title }}
+        </h3>
+        <div class="prompt-meta">
+          <span class="meta-item">🎯 {{ prompt.skill }}</span>
+          <span class="meta-item" *ngIf="prompt.questions && prompt.questions.length > 0">
+            📊 {{ prompt.questions.length }} câu hỏi
+          </span>
+        </div>
+        <p class="prompt-description">{{ prompt.contentText }}</p>
+      </div>
+
+      <!-- ✅ Image Description -->
+      <!-- <div class="media-description" *ngIf="prompt.referenceImageUrl">
+        <div class="media-label">
+          <span class="icon">🖼️</span>
+          <strong>Mô tả ảnh tham khảo</strong>
+        </div>
+        <div class="media-content">{{ prompt.referenceImageUrl }}</div>
+        <div class="media-note">💡 Ảnh sẽ được tạo khi lưu đề thi</div>
+      </div> -->
+      <div class="media-image" *ngIf="prompt.referenceImageUrl && prompt.referenceImageUrl.startsWith('http')">
+        <img [src]="prompt.referenceImageUrl" alt="AI Generated Image" />
+      </div>
+
+      <!-- ✅ Audio Text Description -->
+      <div class="media-description" *ngIf="prompt.referenceAudioUrl">
+        <div class="media-label">
+          <span class="icon">🔊</span>
+          <strong>Nội dung Audio</strong>
+        </div>
+        <div class="media-content">{{ prompt.referenceAudioUrl }}</div>
+        <div class="media-note">💡 Audio sẽ được tạo khi lưu đề thi</div>
+      </div>
+
+      <!-- ✅ Questions List -->
+      <div class="questions-container" *ngIf="prompt.questions && prompt.questions.length > 0">
+        <div class="question-card" *ngFor="let q of prompt.questions; let qIdx = index">
+          <!-- Question Header -->
+          <div class="question-header">
+            <span class="question-number">Câu {{ qIdx + 1 }}</span>
+            <div class="question-meta">
+              <span class="meta-tag" *ngIf="q.question?.time">⏱️ {{ q.question.time }}s</span>
+              <span class="meta-tag" *ngIf="q.question?.scoreWeight">💯 {{ q.question.scoreWeight }} điểm</span>
+            </div>
+          </div>
+
+          <!-- Question Text -->
+          <div class="question-text" *ngIf="q.question?.stemText">
+            {{ q.question.stemText }}
+          </div>
+
+          <!-- ✅ Options (Chỉ hiển thị nếu tồn tại và có nội dung) -->
+          <div class="options-grid" *ngIf="q.options && q.options.length > 0">
+            <div class="option-item" *ngFor="let opt of q.options; let oIdx = index" [class.correct]="opt.isCorrect">
+              <div class="option-header">
+                <span class="option-letter">{{ getOptionLabel(oIdx) }}</span>
+                <span class="correct-icon" *ngIf="opt.isCorrect">✓</span>
+              </div>
+              <div class="option-content" *ngIf="opt.content">
+                {{ opt.content }}
+              </div>
+            </div>
+          </div>
+
+          <!-- ✅ Explanation -->
+          <div class="explanation-box" *ngIf="q.question?.questionExplain">
+            <div class="explanation-header">
+              <span class="icon">💡</span>
+              <strong>Giải thích</strong>
+            </div>
+            <div class="explanation-content">
+              {{ q.question.questionExplain }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

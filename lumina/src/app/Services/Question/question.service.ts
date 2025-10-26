@@ -75,5 +75,11 @@ getStatistics(): Observable<any> {
   });
 }
 
+  savePromptsWithQuestions(dto: { prompts: any[], partId: number }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/save-prompts`, dto, {
+      headers: this.getAuthHeaders(),
+    });
+  }
+
 
 }

@@ -1,0 +1,12 @@
+<div class="ai-chat-container">
+  <app-chat-panel
+    [messages]="messages"
+    [loading]="loading"
+    (sendMessage)="handleSendMessage($event)">
+  </app-chat-panel>
+
+  <app-preview-panel
+    *ngIf="previewData"
+    [previewData]="previewData">
+  </app-preview-panel>
+</div>

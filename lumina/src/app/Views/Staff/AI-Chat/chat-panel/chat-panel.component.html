@@ -1,0 +1,33 @@
+<div class="chat-panel">
+  <div class="panel-header">
+    <h2>💬 AI Exam Generator</h2>
+  </div>
+
+  <div class="chat-messages">
+    <app-message-item 
+      *ngFor="let msg of messages" 
+      [message]="msg">
+    </app-message-item>
+    
+    <div class="loading-indicator" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Đang xử lý...</span>
+    </div>
+  </div>
+
+  <div class="chat-input">
+    <input 
+      type="text" 
+      [(ngModel)]="userInput"
+      (keypress)="onKeyPress($event)"
+      placeholder="Ví dụ: Tạo 5 câu Reading Part 5 về giới từ"
+      [disabled]="loading"
+    />
+    <button 
+      class="btn-send" 
+      (click)="onSend()"
+      [disabled]="loading || !userInput.trim()">
+      ➤
+    </button>
+  </div>
+</div>
