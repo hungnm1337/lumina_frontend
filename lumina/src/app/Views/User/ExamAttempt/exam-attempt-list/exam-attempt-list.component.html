@@ -1,0 +1,180 @@
+<div class="max-w-7xl mx-auto p-6 space-y-6">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-blue-600 to-blue-400 rounded-xl shadow-lg p-6 text-white">
+    <h1 class="text-3xl font-bold mb-2"> Lịch sử làm bài</h1>
+    <p class="text-blue-100">Quản lý và xem lại các lần làm bài của bạn</p>
+  </div>
+
+  <!-- Statistics Cards -->
+  @if (!isLoading) {
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-sm text-gray-500">Tổng số bài</div>
+          <div class="text-2xl font-bold text-gray-800">{{ getTotalAttempts() }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-sm text-gray-500">Đang hiển thị</div>
+          <div class="text-2xl font-bold text-gray-800">{{ getFilteredCount() }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-sm text-gray-500">Điểm trung bình</div>
+          <div class="text-2xl font-bold text-gray-800">{{ getAverageScore() }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Filter and Sort Panel -->
+  <div class="bg-white rounded-xl shadow-lg p-6">
+    <div class="flex flex-wrap items-center gap-4 mb-4">
+      <!-- Search -->
+      <div class="flex-1 min-w-[250px]">
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearchChange()"
+          placeholder="Tìm kiếm theo tên đề, phần, người dùng..."
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+
+      <!-- Status Filter -->
+      <div class="min-w-[150px]">
+        <select
+          [(ngModel)]="filterStatus"
+          (ngModelChange)="onFilterChange()"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+          <option value="all">Tất cả trạng thái</option>
+          <option value="completed">Hoàn thành</option>
+          <option value="in_progress">Đang làm</option>
+          <option value="pending">Chờ</option>
+        </select>
+      </div>
+
+      <!-- Sort -->
+      <div class="min-w-[150px]">
+        <select
+          [(ngModel)]="sortBy"
+          (ngModelChange)="onSortChange()"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+          <option value="dateDesc">Mới nhất</option>
+          <option value="dateAsc">Cũ nhất</option>
+          <option value="scoreDesc">Điểm cao nhất</option>
+          <option value="scoreAsc">Điểm thấp nhất</option>
+          <option value="examName">Tên đề (A-Z)</option>
+        </select>
+      </div>
+
+      <!-- Reset Button -->
+      <button
+        (click)="resetFilters()"
+        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+        🔄 Đặt lại
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (isLoading) {
+  <div class="bg-white rounded-xl shadow-lg p-12 text-center">
+    <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+    <p class="text-gray-600">Đang tải dữ liệu...</p>
+  </div>
+  }
+
+  <!-- Empty State -->
+  @if (!isLoading && filteredAttempts.length === 0) {
+  <div class="bg-white rounded-xl shadow-lg p-12 text-center">
+    <div class="text-6xl mb-4">📋</div>
+    <h3 class="text-xl font-semibold text-gray-800 mb-2">Không tìm thấy bài làm nào</h3>
+    <p class="text-gray-500">Thử thay đổi bộ lọc hoặc tìm kiếm</p>
+  </div>
+  }
+
+  <!-- Exam Attempts List -->
+  @if (!isLoading && filteredAttempts.length > 0) {
+  <div class="space-y-4">
+    @for (attempt of filteredAttempts; track attempt.attemptID) {
+    <div
+      (click)="viewDetail(attempt.attemptID)"
+      class="bg-white rounded-xl shadow-md p-6 cursor-pointer hover:shadow-xl transition-all hover:border-blue-500 border-2 border-transparent group">
+
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <!-- Left Section -->
+        <div class="flex-1 space-y-3">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+              {{ attempt.attemptID }}
+            </div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
+                {{ attempt.examName }}
+              </h3>
+              <p class="text-sm text-gray-600">{{ attempt.examPartName }}</p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+            <div class="flex items-center gap-2">
+              <span class="text-gray-400">📅</span>
+              <span>{{ formatDate(attempt.startTime) }}</span>
+            </div>
+            @if (attempt.endTime) {
+            <div class="flex items-center gap-2">
+              <span class="text-gray-400">⏱️</span>
+              <span>{{ formatDuration(attempt.startTime, attempt.endTime) }}</span>
+            </div>
+            }
+            <div class="flex items-center gap-2">
+              <span class="text-gray-400">👤</span>
+              <span>{{ attempt.userName }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Section -->
+        <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
+          <!-- Status Badge -->
+          <div class="px-4 py-2 rounded-full text-sm font-semibold" [ngClass]="getStatusClass(attempt.status)">
+            {{ attempt.status }}
+          </div>
+
+          <!-- Score -->
+          @if (attempt.score !== null) {
+          <div class="text-right">
+            <div class="text-sm text-gray-500 mb-1">Điểm số</div>
+            <div class="text-3xl font-bold" [ngClass]="{
+              'text-green-600': attempt.score >= 70,
+              'text-yellow-600': attempt.score >= 50 && attempt.score < 70,
+              'text-red-600': attempt.score < 50
+            }">
+              {{ attempt.score }}
+            </div>
+          </div>
+          } @else {
+          <div class="text-sm text-gray-400 italic">Chưa có điểm</div>
+          }
+
+          <!-- View Detail Arrow -->
+          <div class="text-blue-600 group-hover:translate-x-1 transition-transform">
+            →
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+  }
+</div>

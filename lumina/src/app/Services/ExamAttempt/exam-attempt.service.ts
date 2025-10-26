@@ -5,6 +5,8 @@ import { environment } from '../../../environments/environment.development';
 import { ExamAttemptRequestDTO } from '../../Interfaces/ExamAttempt/ExamAttemptRequestDTO.interface';
 import { ExamAttemptResponseDTO } from '../../Interfaces/ExamAttempt/ExamAttemptResponseDTO.interface';
 import { ExamAttemptDetailResponseDTO } from '../../Interfaces/ExamAttempt/ExamAttemptDetailResponseDTO.interface';
+import { ReadingAnswerRequestDTO } from '../../Interfaces/ReadingAnswer/ReadingAnswerRequestDTO.interface';
+import { WritingAnswerRequestDTO } from '../../Interfaces/WritingAnswer/WritingAnswerRequestDTO.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -48,5 +50,13 @@ export class ExamAttemptService {
    */
   getAttemptDetails(attemptId: number): Observable<ExamAttemptDetailResponseDTO> {
     return this.http.get<ExamAttemptDetailResponseDTO>(`${this.baseUrl}/attempt-details/${attemptId}`);
+  }
+
+  submitReadingAnswer(model: ReadingAnswerRequestDTO): Observable<boolean> {
+    return this.http.post<boolean>(`${this.baseUrl}/save-reading-answer`, model);
+  }
+
+  submitWritingAnswer(model: WritingAnswerRequestDTO): Observable<boolean> {
+    return this.http.post<boolean>(`${this.baseUrl}/save-writing-answer`, model);
   }
 }
