@@ -85,7 +85,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy {
       // Initialize speaking question states
       if (this.hasSpeakingQuestions()) {
         this.questions.forEach((q) => {
-          if (this.isSpeakingQuestion(q.questionType)) {
+          if (q.questionType && this.isSpeakingQuestion(q.questionType)) {
             this.speakingStateService.initializeQuestion(q.questionId);
           }
         });
@@ -189,6 +189,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy {
     // For speaking questions: only show warning, don't trigger any action
     if (
       currentQuestion &&
+      currentQuestion.questionType &&
       this.isSpeakingQuestion(currentQuestion.questionType)
     ) {
       console.log(
@@ -204,7 +205,9 @@ export class SpeakingComponent implements OnChanges, OnDestroy {
 
   // Speaking question type detection
   private hasSpeakingQuestions(): boolean {
-    return this.questions.some((q) => this.isSpeakingQuestion(q.questionType));
+    return this.questions.some(
+      (q) => q.questionType && this.isSpeakingQuestion(q.questionType)
+    );
   }
 
   isSpeakingQuestion(questionType: string): boolean {
@@ -242,6 +245,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy {
     // For speaking questions: handle state preservation
     if (
       currentQuestion &&
+      currentQuestion.questionType &&
       this.isSpeakingQuestion(currentQuestion.questionType)
     ) {
       this.handleSpeakingNavigation(currentQuestion.questionId);
@@ -415,7 +419,8 @@ export class SpeakingComponent implements OnChanges, OnDestroy {
     } else {
       // Show warning about incomplete questions
       const incompleteQuestions = this.questions.filter((q) => {
-        if (!this.isSpeakingQuestion(q.questionType)) return false;
+        if (!q.questionType || !this.isSpeakingQuestion(q.questionType))
+          return false;
         const state = this.speakingStateService.getQuestionState(q.questionId);
         return state?.state !== 'scored' && state?.state !== 'submitted';
       });

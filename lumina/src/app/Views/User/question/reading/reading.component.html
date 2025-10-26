@@ -33,7 +33,7 @@
       <app-prompt
         [prompt]="questions[currentIndex].prompt"
         [resetAt]="currentIndex"
-        [questionType]="questions[currentIndex].questionType"
+        [questionType]="questions[currentIndex].questionType ?? ''"
         (pictureCaptionChange)="onPictureCaption($event)"
       ></app-prompt>
     </div>
