@@ -93,6 +93,11 @@ export class AuthService {
     return this.currentUserSource.value;
   }
 
+  getCurrentUserId(): number {
+    const user = this.getCurrentUser();
+    return user?.id ? parseInt(user.id.toString()) : 0;
+  }
+
   getDecodedToken(): any | null {
     const token = localStorage.getItem('lumina_token');
     if (!token) return null;

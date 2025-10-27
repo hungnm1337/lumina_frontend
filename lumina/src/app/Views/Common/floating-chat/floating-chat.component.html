@@ -1,0 +1,27 @@
+<!-- Floating Chat Button -->
+<div class="floating-chat-button" (click)="toggleChatbox()">
+  <i class="fas fa-robot"></i>
+</div>
+
+<!-- Chatbox Overlay -->
+@if (isOpen) {
+<div class="chatbox-overlay" (click)="closeChatbox()">
+  <div class="chatbox-container" (click)="$event.stopPropagation()">
+    <div class="chatbox-header">
+      <div class="header-content">
+        <i class="fas fa-robot"></i>
+        <div>
+          <h3>AI Assistant</h3>
+          <p>Trợ lý tạo đề TOEIC</p>
+        </div>
+      </div>
+      <button (click)="closeChatbox()" class="close-btn">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <app-chat></app-chat>
+  </div>
+</div>
+}
+
+
