@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ExamPartService } from '../../../../Services/ExamPart/exam-part.service';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +12,7 @@ import { UploadService } from '../../../../Services/Upload/upload.service';
   templateUrl: './preview-panel.component.html',
   styleUrl: './preview-panel.component.scss'
 })
-export class PreviewPanelComponent implements OnInit {
+export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
   @Input() previewData: any = null;
   examParts: any[] = [];
   examSetKeys: string[] = [];
@@ -21,13 +21,29 @@ export class PreviewPanelComponent implements OnInit {
   selectedPartId: number | null = null;
   isLoadingParts = true;
   isSaving = false;
-  showToast = false; // ✅ Flag hiển thị toast
-  toastMessage = ''; // ✅ Nội dung toast
+  showToast = false;
+  toastMessage = '';
 
-  constructor(private examPartService: ExamPartService, private questionService: QuestionService, private uploadService: UploadService) {}
+  constructor(
+    private examPartService: ExamPartService, 
+    private questionService: QuestionService, 
+    private uploadService: UploadService
+  ) {}
 
   ngOnInit() {
     this.loadExamParts();
+  }
+
+  // ✅ Khi previewData thay đổi (xem preview khác), reset selectors
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['previewData'] && !changes['previewData'].firstChange) {
+      console.log('🔄 Preview data changed, resetting selectors...');
+      this.resetSelectors();
+    }
+  }
+
+  ngOnDestroy() {
+    this.resetSelectors();
   }
 
   loadExamParts() {
@@ -82,8 +98,56 @@ export class PreviewPanelComponent implements OnInit {
     this.isSaving = true;
 
     try {
+      // BƯỚC 1: Đếm tổng số câu hỏi
+      let totalQuestions = 0;
+      
+      console.log('🔍 Preview Data:', this.previewData);
+      
       for (const prompt of this.previewData) {
-        // ✅ Kiểm tra referenceImageUrl có giá trị không trước khi upload
+        console.log('🔍 Prompt:', prompt);
+        
+        if (prompt.Questions && Array.isArray(prompt.Questions)) {
+          totalQuestions += prompt.Questions.length;
+          console.log(`  ✅ Tìm thấy ${prompt.Questions.length} câu hỏi trong Questions`);
+        } 
+        else if (prompt.questions && Array.isArray(prompt.questions)) {
+          totalQuestions += prompt.questions.length;
+          console.log(`  ✅ Tìm thấy ${prompt.questions.length} câu hỏi trong questions`);
+        }
+        else if (prompt.Question && Array.isArray(prompt.Question)) {
+          totalQuestions += prompt.Question.length;
+          console.log(`  ✅ Tìm thấy ${prompt.Question.length} câu hỏi trong Question`);
+        }
+        else if (prompt.questionCount) {
+          totalQuestions += prompt.questionCount;
+          console.log(`  ✅ Tìm thấy ${prompt.questionCount} câu hỏi từ questionCount`);
+        }
+        else {
+          console.warn('  ⚠️ Không tìm thấy câu hỏi trong prompt này');
+        }
+      }
+
+      console.log('📊 Tổng số câu hỏi cần thêm:', totalQuestions);
+
+      if (totalQuestions === 0) {
+        this.isSaving = false;
+        this.showToastMessage('⚠️ Không tìm thấy câu hỏi nào để lưu!');
+        return;
+      }
+
+      // BƯỚC 2: Kiểm tra slot khả dụng
+      const checkResponse = await this.questionService
+        .checkAvailableSlots(this.selectedPartId, totalQuestions)
+        .toPromise();
+
+      if (!checkResponse?.canAdd) {
+        this.isSaving = false;
+        this.showToastMessage('❌ ' + (checkResponse?.error || 'Không đủ slot để thêm câu hỏi!'));
+        return;
+      }
+
+      // BƯỚC 3: Upload file sau khi đã kiểm tra
+      for (const prompt of this.previewData) {
         if (prompt.referenceImageUrl && prompt.referenceImageUrl.trim() !== '') {
           const imageUploadRes = await this.uploadService.uploadFromUrl(prompt.referenceImageUrl).toPromise();
           if (imageUploadRes && imageUploadRes.url) {
@@ -91,7 +155,6 @@ export class PreviewPanelComponent implements OnInit {
           }
         }
 
-        // ✅ Kiểm tra referenceAudioUrl có giá trị không trước khi upload
         if (prompt.referenceAudioUrl && prompt.referenceAudioUrl.trim() !== '') {
           const audioUploadRes = await this.uploadService.generateAudioFromText(prompt.referenceAudioUrl).toPromise();
           if (audioUploadRes && audioUploadRes.url) {
@@ -100,6 +163,7 @@ export class PreviewPanelComponent implements OnInit {
         }
       }
 
+      // BƯỚC 4: Lưu dữ liệu
       const payload = {
         prompts: this.previewData,
         partId: this.selectedPartId
@@ -110,6 +174,11 @@ export class PreviewPanelComponent implements OnInit {
           console.log('✅ Lưu đề thi thành công', res);
           this.isSaving = false;
           this.showToastMessage('✅ Lưu đề thi thành công!');
+          
+          // ✅ Reset selectors sau khi save thành công
+          setTimeout(() => {
+            this.resetSelectors();
+          }, 1500);
         },
         error: (err) => {
           console.error('❌ Lưu đề thi thất bại', err);
@@ -117,20 +186,27 @@ export class PreviewPanelComponent implements OnInit {
           this.showToastMessage('❌ Lưu đề thi thất bại!');
         }
       });
-    } catch (error) {
-      console.error('❌ Lỗi khi upload hoặc lưu:', error);
+    } catch (error: any) {
+      console.error('❌ Lỗi khi xử lý:', error);
       this.isSaving = false;
-      this.showToastMessage('❌ Có lỗi xảy ra khi xử lý!');
+      this.showToastMessage('❌ ' + (error?.error?.error || 'Có lỗi xảy ra!'));
     }
   }
 
-  // ✅ Hàm hiển thị toast notification
+  // ✅ Hàm reset tất cả selectors
+  resetSelectors() {
+    console.log('🔄 Resetting selectors...');
+    this.selectedExamSetKey = null;
+    this.selectedPartId = null;
+    this.filteredParts = [];
+  }
+
   showToastMessage(message: string) {
     this.toastMessage = message;
     this.showToast = true;
     setTimeout(() => {
       this.showToast = false;
-    }, 3000); // Ẩn sau 3 giây
+    }, 3000);
   }
 
   getOptionLabel(index: number): string {

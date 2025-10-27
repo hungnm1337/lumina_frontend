@@ -1,6 +1,423 @@
 .ai-chat-container {
-  display: flex;
-  gap: 20px;
-  height: calc(100vh - 100px);
-  padding: 20px;
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  z-index: 9999;
+
+  .chat-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 24px rgba(102, 126, 234, 0.6);
+    }
+
+    i {
+      font-size: 26px;
+      color: white;
+    }
+
+    // Pulse animation
+    &::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      animation: pulse 2s ease-out infinite;
+      opacity: 0.6;
+    }
+  }
+
+  // Tooltip giới thiệu
+  .intro-tooltip {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 300px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    padding: 16px;
+    animation: slideInRight 0.3s ease;
+    z-index: 10000;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      right: 24px;
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid white;
+    }
+
+    .tooltip-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+
+      .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        i {
+          font-size: 20px;
+          color: white;
+        }
+      }
+
+      .info {
+        flex: 1;
+
+        h4 {
+          margin: 0;
+          font-size: 14px;
+          font-weight: 600;
+          color: #1e293b;
+        }
+
+        p {
+          margin: 0;
+          font-size: 11px;
+          color: #64748b;
+        }
+      }
+
+      .close-btn {
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        transition: all 0.2s;
+
+        &:hover {
+          background: #f1f5f9;
+          color: #64748b;
+        }
+
+        i {
+          font-size: 14px;
+        }
+      }
+    }
+
+    .tooltip-content {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #475569;
+
+      strong {
+        color: #667eea;
+        font-weight: 600;
+      }
+    }
+
+    .tooltip-action {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e2e8f0;
+
+      button {
+        width: 100%;
+        padding: 8px 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        i {
+          margin-right: 6px;
+        }
+      }
+    }
+  }
+
+  .chat-window {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 0;
+    background: white;
+    border-radius: 16px 0 0 0;
+    box-shadow: -4px -4px 24px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+    height: calc(100vh / 1.2); // Tăng từ 1.5 lên 1.2 (cao hơn khoảng 25%)
+    max-height: 700px; // Tăng từ 530px lên 700px
+
+    &.minimized {
+      display: none;
+    }
+
+    // Chat Section (bên phải)
+    .chat-section {
+      width: 400px; // Giảm từ 450px xuống 400px
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid #e2e8f0;
+
+      .chat-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+        h3 {
+          margin: 0;
+          font-size: 18px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+
+          i {
+            font-size: 20px;
+          }
+        }
+
+        .header-actions {
+          display: flex;
+          gap: 8px;
+
+          button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+
+            &:hover {
+              background: rgba(255, 255, 255, 0.3);
+              transform: translateY(-2px);
+            }
+
+            &.active {
+              background: rgba(255, 255, 255, 0.4);
+              box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+            }
+
+            i {
+              font-size: 16px;
+            }
+          }
+        }
+      }
+
+      .chat-body {
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        background: #f8fafc;
+
+        app-chat-panel {
+          flex: 1;
+          display: block;
+          height: 100%;
+        }
+      }
+    }
+
+    // Preview Section (bên trái) - Giữ nguyên bản cũ
+    .preview-section {
+      width: 0;
+      transition: width 0.3s ease;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #e2e8f0;
+
+      &.show {
+        width: 600px;
+      }
+
+      .preview-header {
+        background: #f8fafc;
+        padding: 16px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        h4 {
+          margin: 0;
+          font-size: 16px;
+          font-weight: 600;
+          color: #1e293b;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        button {
+          background: transparent;
+          border: none;
+          color: #64748b;
+          cursor: pointer;
+          padding: 4px 8px;
+          border-radius: 4px;
+          transition: background 0.2s;
+
+          &:hover {
+            background: #e2e8f0;
+          }
+
+          i {
+            font-size: 16px;
+          }
+        }
+      }
+
+      .preview-body {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        app-preview-panel {
+          display: block;
+          height: 100%;
+        }
+      }
+    }
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive
+@media (max-width: 1400px) {
+  .ai-chat-container {
+    .chat-window {
+      .preview-section.show {
+        width: 500px;
+      }
+    }
+  }
+}
+
+@media (max-width: 1200px) {
+  .ai-chat-container {
+    .chat-window {
+      height: calc(100vh / 1.5);
+      max-height: 600px;
+
+      .chat-section {
+        width: 350px;
+      }
+      .preview-section.show {
+        width: 450px;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .ai-chat-container {
+    .chat-button {
+      bottom: 15px;
+      right: 15px;
+      width: 56px;
+      height: 56px;
+    }
+
+    .chat-window {
+      right: 0;
+      bottom: 0;
+      left: 0;
+      flex-direction: column;
+      border-radius: 16px 16px 0 0;
+      max-height: calc(100vh - 60px);
+      
+      .chat-section {
+        width: 100%;
+        border-left: none;
+        height: 100%;
+      }
+
+      .preview-section {
+        display: none !important;
+      }
+    }
+  }
 }
