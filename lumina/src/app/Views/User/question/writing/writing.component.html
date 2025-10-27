@@ -18,7 +18,7 @@
     <div class="border border-gray-200 rounded-lg p-4 mb-4">
       <div class="mb-3">
         <h4 class="font-medium text-gray-900 mb-2">
-          Câu {{ currentIndex + 1 }}: {{ getCurrentQuestion()?.stemText }}
+          Question {{ currentIndex + 1 }}: {{ getCurrentQuestion()?.stemText }}
         </h4>
         @if (getCurrentQuestion()?.prompt?.contentText) {
           <div class="font-medium text-gray-600 mb-2">
@@ -85,11 +85,11 @@
 } @if (isFinished) {
 <div class="mt-4 bg-white rounded-lg border border-gray-200 shadow-sm p-5">
   <div class="flex items-center justify-between">
-    <div class="text-gray-800 font-semibold">Hoàn thành</div>
-    <div class="text-sm text-gray-600">Điểm: {{ totalScore }}</div>
+    <div class="text-gray-800 font-semibold">Completed</div>
+    <div class="text-sm text-gray-600">Score: {{ totalScore }}</div>
   </div>
   <div class="mt-3 text-gray-700">
-    Bạn trả lời đúng {{ correctCount }}/{{ questions?.length || 0 }} ({{
+    You answered correctly {{ correctCount }}/{{ questions?.length || 0 }} ({{
       percentCorrect
     }}%).
   </div>
@@ -106,25 +106,25 @@
   </div>
   <div class="mt-4">
     <div class="text-sm font-medium text-gray-700 mb-2">
-      Câu trả lời đã lưu (localStorage)
+      Saved Answers (localStorage)
     </div>
     @if (savedAnswers && savedAnswers.length > 0) {
       <ul class="pl-0 text-sm text-gray-700 space-y-1">
         @for (ans of savedAnswers; track ans.questionId) {
           <li class="flex items-center gap-2">
-            <span class="inline-block min-w-24">Câu {{ ans.questionId }}</span>
-            <span class="inline-block">→ Đã lưu: {{ ans.answer.length }} ký tự</span>
+            <span class="inline-block min-w-24">Question {{ ans.questionId }}</span>
+            <span class="inline-block">→ Saved: {{ ans.answer.length }} characters</span>
           </li>
         }
       </ul>
     } @else {
-      <div class="text-sm text-gray-500">Không có dữ liệu lưu.</div>
+      <div class="text-sm text-gray-500">No saved data.</div>
     }
     <button
       class="mt-3 px-3 py-1.5 rounded bg-red-600 text-white hover:bg-red-700"
       (click)="clearSavedData()"
     >
-      Xóa lưu trữ
+      Clear Storage
     </button>
   </div>
   <div class="flex gap-4">
@@ -133,7 +133,7 @@
         class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
         (click)="resetExam()"
       >
-        Làm lại
+        Retry
       </button>
     </div>
   </div>

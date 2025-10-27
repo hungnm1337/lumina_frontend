@@ -28,8 +28,10 @@ export class OptionsComponent implements OnChanges {
 
   onSelect(option: OptionDTO): void {
     if (this.disabled || this.selectedOption) {
+      console.log('onSelect blocked: disabled or already selected');
       return;
     }
+    console.log('onSelect called for option:', option.optionId);
     this.selectedOption = option;
     this.saveAnswer(option);
     const isCorrect = option.isCorrect === true;

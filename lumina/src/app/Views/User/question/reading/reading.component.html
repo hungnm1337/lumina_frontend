@@ -12,7 +12,7 @@
     <span class="text-xs text-gray-500 inline-flex items-center gap-2">
       <span class="bg-gray-100 px-2 py-1 rounded">Type: {{ questions[currentIndex].questionType }}</span>
       <span class="bg-gray-100 px-2 py-1 rounded">Score: {{ questions[currentIndex].scoreWeight }}</span>
-      <span class="bg-green-100 text-green-700 px-2 py-1 rounded font-medium">Điểm của bạn: {{ totalScore }}</span>
+      <span class="bg-green-100 text-green-700 px-2 py-1 rounded font-medium">Your Score: {{ totalScore }}</span>
     </span>
   </div>
 
@@ -34,15 +34,15 @@
     <!-- Navigation -->
     <div class="mt-4 flex items-center justify-between">
       <div class="text-sm text-gray-500">
-        Câu {{ currentIndex + 1 }} / {{ questions.length }}
+        Question {{ currentIndex + 1 }} / {{ questions.length }}
       </div>
       @if (showExplain && !finished) {
       <button class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700" (click)="next()">
-        Tiếp
+        Next
       </button>
       } @else if (showExplain && finished) {
       <button class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700" (click)="goToExams()">
-        Xem kết quả
+        View Results
       </button>
       }
     </div>
@@ -60,11 +60,11 @@
 @if (finished) {
 <div class="mt-4 bg-white rounded-lg border border-gray-200 shadow-sm p-5">
   <div class="flex items-center justify-between">
-    <div class="text-gray-800 font-semibold">Hoàn thành</div>
-    <div class="text-sm text-gray-600">Điểm: {{ totalScore }}</div>
+    <div class="text-gray-800 font-semibold">Completed</div>
+    <div class="text-sm text-gray-600">Score: {{ totalScore }}</div>
   </div>
   <div class="mt-3 text-gray-700">
-    Bạn trả lời đúng {{ correctCount }}/{{ questions.length }} ({{
+    You answered correctly {{ correctCount }}/{{ questions.length }} ({{
     percentCorrect
     }}%).
   </div>
@@ -80,18 +80,18 @@
   <div class="flex gap-4">
     <div class="mt-4">
       <button class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700" (click)="showExamAttemptDetails()">
-        Xem lại đáp án
+        Review Answers
       </button>
     </div>
     <div class="mt-4">
       <button class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700" (click)="resetQuiz()">
-        Làm lại
+        Retry
       </button>
     </div>
 
     <div class="mt-4">
       <button class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700" (click)="goToExams()">
-        Các đề khác
+        Other Exams
       </button>
     </div>
   </div>
@@ -101,8 +101,4 @@
 <app-exam-attempt-detail [details]="examAttemptDetails"></app-exam-attempt-detail>
 }
 }
-<!-- Legacy support: Simple options view when used in question.component -->
-@if (!questions || questions.length === 0) {
-<app-options [options]="options" [disabled]="disabled" [resetAt]="resetAt"
-  (answered)="onAnswered($event)"></app-options>
-}
+
