@@ -54,12 +54,7 @@ export class PromptComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['prompt']) {
-      console.log('✅ PromptComponent - Prompt changed:', this.prompt);
-      console.log(
-        '✅ PromptComponent - ContentText:',
-        this.prompt?.contentText
-      );
-      console.log('✅ PromptComponent - Title:', this.prompt?.title);
+      // Prompt changed event handler
     }
 
     if (changes['resetAt'] || changes['prompt']) {

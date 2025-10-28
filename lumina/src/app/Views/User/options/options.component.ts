@@ -5,6 +5,9 @@ import { Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OptionDTO } from '../../../Interfaces/exam.interfaces';
 import { AuthService } from '../../../Services/Auth/auth.service';
+import { ExamAttemptService } from '../../../Services/ExamAttempt/exam-attempt.service';
+import { ReadingAnswerRequestDTO } from '../../../Interfaces/ReadingAnswer/ReadingAnswerRequestDTO.interface';
+import { ToastService } from '../../../Services/Toast/toast.service';
 @Component({
   selector: 'app-options',
   standalone: true,
@@ -19,15 +22,17 @@ export class OptionsComponent implements OnChanges {
   selectedOption: OptionDTO | null = null;
   @Output() answered = new EventEmitter<boolean>();
 
-  constructor(public authService: AuthService) {}
+  constructor( private toastService: ToastService, public authService: AuthService, private examAttemptService: ExamAttemptService) { }
 
   private correctAudio = new Audio('/correct.mp3');
   private wrongAudio = new Audio('/wrong.mp3');
 
   onSelect(option: OptionDTO): void {
     if (this.disabled || this.selectedOption) {
+      console.log('onSelect blocked: disabled or already selected');
       return;
     }
+    console.log('onSelect called for option:', option.optionId);
     this.selectedOption = option;
     this.saveAnswer(option);
     const isCorrect = option.isCorrect === true;
@@ -37,42 +42,41 @@ export class OptionsComponent implements OnChanges {
 
   private saveAnswer(option: OptionDTO): void {
     try {
-      const storageKey =
-        'Answer_Reading_' + this.authService.getCurrentUser()?.id;
-      const raw = localStorage.getItem(storageKey);
-      type AnswerItem = { questionId: number; optionId: number };
-      let store: AnswerItem[] = [];
-      if (raw) {
-        try {
-          const parsed = JSON.parse(raw) as unknown;
-          if (Array.isArray(parsed)) {
-            store = parsed
-              .map((x) => ({
-                questionId: Number((x as any).questionId),
-                optionId: Number((x as any).optionId),
-              }))
-              .filter(
-                (x) =>
-                  Number.isFinite(x.questionId) && Number.isFinite(x.optionId)
-              );
-          }
-        } catch {
-          store = [];
+      const stored = localStorage.getItem('currentExamAttempt');
+      if (!stored) {
+        return;
+      }
+
+      let attemptID: number;
+      try {
+        const parsed = JSON.parse(stored) as { attemptID?: number | string } | null;
+        if (parsed == null || parsed.attemptID == null) {
+          return;
         }
+        attemptID = Number(parsed.attemptID);
+        if (Number.isNaN(attemptID)) {
+          return;
+        }
+      } catch {
+        // If JSON.parse fails, abort silently
+        return;
       }
-      const idx = store.findIndex((x) => x.questionId === option.questionId);
-      if (idx >= 0) {
-        store[idx] = {
-          questionId: option.questionId,
-          optionId: option.optionId,
-        };
-      } else {
-        store.push({
-          questionId: option.questionId,
-          optionId: option.optionId,
-        });
-      }
-      localStorage.setItem(storageKey, JSON.stringify(store));
+
+      const answerDTO: ReadingAnswerRequestDTO = {
+        attemptID: attemptID,
+        questionId: option.questionId,
+        selectedOptionId: option.optionId
+      };
+      console.log('Submitting reading answer:', answerDTO);
+      this.examAttemptService.submitReadingAnswer(answerDTO).subscribe({
+        next: (success) => {
+          this.toastService.success('Answer saved successfully.');
+        },
+        error: (error) => {
+          this.toastService.error('Error submitting reading answer.');
+        }
+      });
+
     } catch {
       // Best-effort only; ignore storage errors (e.g., private mode, quota)
     }

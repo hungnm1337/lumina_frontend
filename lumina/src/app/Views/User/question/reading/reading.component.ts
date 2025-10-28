@@ -20,15 +20,19 @@ import {
   ExamPartDTO,
   QuestionDTO,
 } from '../../../../Interfaces/exam.interfaces';
-
+import { ExamAttemptDetailResponseDTO } from '../../../../Interfaces/ExamAttempt/ExamAttemptDetailResponseDTO.interface';
+import { ExamAttemptRequestDTO } from '../../../../Interfaces/ExamAttempt/ExamAttemptRequestDTO.interface';
+import { ExamAttemptService } from '../../../../Services/ExamAttempt/exam-attempt.service';
+import { ExamAttemptDetailComponent } from '../../ExamAttempt/exam-attempt-detail/exam-attempt-detail.component';
 @Component({
   selector: 'app-reading',
   standalone: true,
-  imports: [CommonModule, OptionsComponent, TimeComponent, PromptComponent],
+  imports: [CommonModule, OptionsComponent, TimeComponent, PromptComponent, ExamAttemptDetailComponent],
   templateUrl: './reading.component.html',
   styleUrl: './reading.component.scss',
 })
 export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
+
   @Input() questions: QuestionDTO[] = [];
   @Input() partInfo: ExamPartDTO | null = null;
   @Output() readingAnswered = new EventEmitter<boolean>();
@@ -40,8 +44,10 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
   @Output() answered = new EventEmitter<boolean>();
 
   // State management
+  examAttemptDetails: ExamAttemptDetailResponseDTO | null = null;
   currentIndex = 0;
   showExplain = false;
+  showExamAttemptDetailsFlag = false;
   totalScore = 0;
   correctCount = 0;
   finished = false;
@@ -52,8 +58,9 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private baseQuestionService: BaseQuestionService
-  ) {}
+    private baseQuestionService: BaseQuestionService,
+    private examAttemptService: ExamAttemptService
+  ) { }
 
   ngOnInit(): void {
     this.loadSavedAnswers();
@@ -78,6 +85,7 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
 
   // Navigation methods
   markAnswered(isCorrect: boolean): void {
+    console.log('markAnswered called, isCorrect:', isCorrect);
     if (isCorrect) {
       const q = this.questions[this.currentIndex];
       this.totalScore += q?.scoreWeight ?? 0;
@@ -99,6 +107,7 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
       this.finished = true;
       this.showExplain = true;
       this.loadSavedAnswers();
+      this.updateExamAttemptOnCompletion();
       return;
     }
     this.nextQuestion();
@@ -129,6 +138,7 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
 
   // Legacy support
   onAnswered(isCorrect: boolean): void {
+    console.log('onAnswered (legacy) called, isCorrect:', isCorrect);
     this.markAnswered(isCorrect);
     this.readingAnswered.emit(isCorrect);
     this.answered.emit(isCorrect);
@@ -204,6 +214,70 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
     if (!opt || typeof opt.isCorrect !== 'boolean') return null;
     return opt.isCorrect === true;
   }
+
+  showExamAttemptDetails() {
+      const stored = localStorage.getItem('currentExamAttempt');
+      if (!stored) {
+        return;
+      }
+
+    let attemptID: number;
+      try {
+        const parsed = JSON.parse(stored) as { attemptID?: number | string } | null;
+        if (parsed == null || parsed.attemptID == null) {
+          return;
+        }
+        attemptID = Number(parsed.attemptID);
+        if (Number.isNaN(attemptID)) {
+          return;
+        }
+      } catch {
+        // If JSON.parse fails, abort silently
+        return;
+      }
+    this.examAttemptService.getAttemptDetails(attemptID).subscribe({
+      next: (details) => {
+        this.examAttemptDetails = details;
+        this.showExamAttemptDetailsFlag = true;
+        console.log('Fetched exam attempt details:', details);
+      },
+      error: (error) => {
+        console.error('Error fetching exam attempt details:', error);
+      },
+    });
+  }
+
+  updateExamAttemptOnCompletion(): void {
+    try {
+      const stored = localStorage.getItem('currentExamAttempt');
+      if (!stored) {
+        console.warn('No currentExamAttempt found in localStorage');
+        return;
+      }
+
+      const examAttempt: ExamAttemptRequestDTO = JSON.parse(stored);
+
+      // Cập nhật endTime với thời gian hiện tại
+      examAttempt.endTime = new Date().toISOString();
+
+      // Cập nhật score với điểm của người dùng
+      examAttempt.score = this.totalScore;
+      examAttempt.status = 'Completed';
+      localStorage.setItem('currentExamAttempt', JSON.stringify(examAttempt));
+
+      this.examAttemptService.endExam(examAttempt).subscribe({
+        next: (updatedAttempt) => {
+          console.log('Exam attempt updated successfully:', updatedAttempt);
+        },
+        error: (error) => {
+          console.error('Error updating exam attempt:', error);
+        },
+      });
+    } catch (error) {
+      console.error('Error updating exam attempt on completion:', error);
+    }
+  }
+
 
   // Actions
   resetQuiz(): void {
