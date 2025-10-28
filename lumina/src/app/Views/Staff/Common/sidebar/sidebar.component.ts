@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { AuthService } from './../../../../Services/Auth/auth.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -12,7 +13,7 @@ import { RouterModule } from '@angular/router';
 export class SidebarComponent {
   @Input() isOpen = true;
   @Output() sidebarToggle = new EventEmitter<void>();
-
+  constructor(private authService: AuthService) {}
   // Dữ liệu menu cho sidebar, giữ nguyên logic cũ
   navGroups = [
     {
@@ -43,5 +44,9 @@ export class SidebarComponent {
     if (this.isOpen) {
       this.sidebarToggle.emit();
     }
+  }
+
+     logout(): void {
+    this.authService.logout();
   }
 }

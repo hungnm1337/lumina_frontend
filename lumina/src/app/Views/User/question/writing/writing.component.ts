@@ -2,17 +2,12 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnDes
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../Services/Auth/auth.service';
-import { BaseQuestionService } from '../../../../Services/Question/base-question.service';
-import { WritingRequestDTO } from '../../../../Interfaces/WrittingExam/WritingRequestDTO.interface';
-import { FeedbackComponent } from '../../writing-answer-box/Feedback/feedback/feedback.component';
-import { WritingResponseDTO } from '../../../../Interfaces/WrittingExam/WritingResponseDTO.interface';
 import { WritingExamPartOneService } from '../../../../Services/Exam/Writing/writing-exam-part-one.service';
-import { ExamPartDTO, QuestionDTO } from '../../../../Interfaces/exam.interfaces';
-import { ActivatedRoute, Router } from '@angular/router';
-import { ExamService } from '../../../../Services/Exam/exam.service';
-import { PartDetailComponent } from '../../part-detail/part-detail.component';
+import { QuestionDTO } from '../../../../Interfaces/exam.interfaces';
+import { Router } from '@angular/router';
 import { WritingAnswerBoxComponent } from "../../writing-answer-box/writing-answer-box.component";
 import { TimeComponent } from '../../time/time.component';
+import { PictureCaptioningService } from '../../../../Services/PictureCaptioning/picture-captioning.service';
 
 @Component({
   selector: 'app-writing',
@@ -22,9 +17,11 @@ import { TimeComponent } from '../../time/time.component';
   styleUrl: './writing.component.scss',
 })
 export class WritingComponent implements OnChanges, OnDestroy, OnInit {
+
   @Input() questions: QuestionDTO[] | null = null;
   @Output() finished = new EventEmitter<void>();
 
+  isShowHint: boolean = false;
   currentIndex = 0;
   pictureCaption: string = '';
   isLoading: boolean = false;
@@ -40,19 +37,29 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private writingExamPartOneService: WritingExamPartOneService
+    private writingExamPartOneService: WritingExamPartOneService,
+    private pictureCaptioningService: PictureCaptioningService
+
   ) {
     this.startAutoSave();
   }
 
+   showHint() {
+    this.isShowHint = !this.isShowHint;
+  }
   ngOnInit(): void {
     this.loadSavedData();
+    // Load caption for the first question
+    if (this.questions && this.questions.length > 0) {
+      this.generateCaption(this.currentIndex);
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['questions'] && this.questions) {
-      console.log('WritingComponent - Questions changed:', this.questions);
       this.loadSavedData();
+      // Load caption for the current question when questions change
+      this.generateCaption(this.currentIndex);
     }
   }
 
@@ -130,7 +137,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
           const raw = localStorage.getItem(questionKey);
           if (raw) {
             this.savedTimeRemaining = Number(raw) || 0;
-            console.log('[WritingComponent] Loaded saved time for question:', currentQuestion.questionId, this.savedTimeRemaining);
             return;
           }
         }
@@ -142,7 +148,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       const raw = localStorage.getItem(key);
       if (raw) {
         this.savedTimeRemaining = Number(raw) || 0;
-        console.log('[WritingComponent] Loaded saved time:', this.savedTimeRemaining);
       }
     } catch {
       this.savedTimeRemaining = 0;
@@ -172,7 +177,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
         const questionKey = this.getTimeStorageKeyForQuestion(currentQuestion.questionId);
         if (questionKey) {
           localStorage.setItem(questionKey, this.savedTimeRemaining.toString());
-          console.log('[WritingComponent] Saved time for question:', currentQuestion.questionId, this.savedTimeRemaining);
         }
       }
 
@@ -180,7 +184,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       const key = this.getTimeStorageKey();
       if (!key) return;
       localStorage.setItem(key, this.savedTimeRemaining.toString());
-      console.log('[WritingComponent] Saved time:', this.savedTimeRemaining);
     } catch {
       // Best-effort only; ignore storage errors
     }
@@ -201,7 +204,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   onTimeout(): void {
-    console.log('[WritingComponent] Timer timeout');
     this.showExplain = true;
     this.finishExam();
   }
@@ -232,12 +234,26 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   generateCaption(questionIndex: number): void {
     if (!this.questions || questionIndex >= this.questions.length) return;
 
-    this.isLoading = true;
-    // Simulate caption generation - replace with actual API call
-    setTimeout(() => {
-      this.pictureCaption = `Generated caption for question ${questionIndex + 1}`;
+    const question = this.questions[questionIndex];
+    if (!question.prompt?.referenceImageUrl) {
+      this.pictureCaption = '';
       this.isLoading = false;
-    }, 2000);
+      return;
+    }
+
+    this.isLoading = true;
+
+    this.pictureCaptioningService.GetCaptionOfPicture(question.prompt.referenceImageUrl)
+      .subscribe({
+        next: (response) => {
+          this.pictureCaption = response.caption || '';
+          this.isLoading = false;
+        },
+        error: (error) => {
+          this.pictureCaption = '';
+          this.isLoading = false;
+        }
+      });
   }
 
   nextQuestion(): void {
@@ -246,6 +262,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       this.showExplain = false;
       this.pictureCaption = '';
       this.loadTimeForCurrentQuestion();
+      this.generateCaption(this.currentIndex);
     } else {
       this.finishExam();
     }
@@ -257,6 +274,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       this.showExplain = false;
       this.pictureCaption = '';
       this.loadTimeForCurrentQuestion();
+      this.generateCaption(this.currentIndex);
     }
   }
 
@@ -266,6 +284,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       this.showExplain = false;
       this.pictureCaption = '';
       this.loadTimeForCurrentQuestion();
+      this.generateCaption(this.currentIndex);
     }
   }
 

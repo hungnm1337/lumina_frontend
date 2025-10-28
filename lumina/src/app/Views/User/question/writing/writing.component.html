@@ -5,15 +5,12 @@
   <div class="flex items-start justify-between gap-3">
     <div class="space-y-2">
       <app-time
-        [time]="savedTimeRemaining > 0 ? savedTimeRemaining : (getCurrentQuestion()?.time || 0)"
+        [time]="questions[currentIndex].time"
         [resetAt]="currentIndex"
         [paused]="showExplain"
-        [savedTime]="savedTimeRemaining"
         (timeout)="onTimeout()"
-        (timeUpdate)="onTimeUpdate($event)"
       ></app-time>
     </div>
-
   </div>
 
   <!-- Question Content -->
@@ -21,10 +18,10 @@
     <div class="border border-gray-200 rounded-lg p-4 mb-4">
       <div class="mb-3">
         <h4 class="font-medium text-gray-900 mb-2">
-          Câu {{ currentIndex + 1 }}: {{ getCurrentQuestion()?.stemText }}
+          Question {{ currentIndex + 1 }}: {{ getCurrentQuestion()?.stemText }}
         </h4>
         @if (getCurrentQuestion()?.prompt?.contentText) {
-          <div class="text-sm text-gray-600 mb-2">
+          <div class="font-medium text-gray-600 mb-2">
             <strong>{{ getCurrentQuestion()?.prompt?.title }}</strong>
             {{ getCurrentQuestion()?.prompt?.contentText }}
           </div>
@@ -32,22 +29,22 @@
       </div>
 
       @if (getCurrentQuestion()?.prompt?.referenceImageUrl) {
-        <div class="mb-4">
+        <div class="mb-4 mx-auto">
           <img
             [src]="getCurrentQuestion()?.prompt?.referenceImageUrl"
             [alt]="'Question ' + (currentIndex + 1) + ' image'"
-            class="max-w-full w-8/12 h-auto rounded-lg border border-gray-200"
+            class="max-w-full w-8/12 mx-auto h-auto rounded-lg border border-gray-200"
           >
         </div>
-      }
+
 
       <div class="mb-4">
         <button
           class="btn border-s-blue-400 inline-flex items-center gap-2 px-4 py-2 rounded-md border border-blue-500 text-blue-600 hover:bg-blue-50 active:bg-blue-100 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
-          (click)="generateCaption(currentIndex)"
+          (click)="showHint()"
           [disabled]="isLoading"
         >
-          Generate Caption
+          Show Hint
         </button>
         @if (isLoading) {
           <svg
@@ -59,8 +56,12 @@
             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
             <path d="M4 12h16" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
           </svg>
+        }@if (isShowHint && !isLoading) {
+          <span class="ml-2 text-sm text-gray-600"
+            *ngIf="pictureCaption">Caption: {{ pictureCaption }}</span>
         }
       </div>
+    }
 
       <!-- Writing Answer Box -->
       <app-writing-answer-box
@@ -75,63 +76,6 @@
     </div>
   }
 
-  <!-- Navigation Controls -->
-  <div class="mt-4">
-    <!-- Question Status List -->
-    <div class="mb-4 p-3 bg-gray-50 rounded-lg">
-      <h4 class="text-sm font-semibold text-gray-700 mb-2">
-        Danh sách câu hỏi:
-      </h4>
-      <div class="flex flex-wrap gap-2">
-        @for (question of questions; track question.questionId; let i = $index) {
-          <button
-            (click)="navigateToQuestion(i)"
-            [class]="
-              'px-3 py-1 text-xs rounded-full border transition-colors ' +
-              (isCurrentQuestion(i)
-                ? 'bg-blue-100 border-blue-300 text-blue-700'
-                : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100')
-            "
-          >
-            📝 Câu {{ i + 1 }}
-          </button>
-        }
-      </div>
-    </div>
-
-    <!-- Navigation Controls -->
-    <div class="flex items-center justify-between">
-      <div class="flex gap-2">
-        <button
-          (click)="previousQuestion()"
-          [disabled]="currentIndex === 0"
-          class="px-4 py-2 rounded bg-gray-600 text-white hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          ← Previous
-        </button>
-        <button
-          (click)="nextQuestion()"
-          [disabled]="currentIndex >= questions.length - 1"
-          class="px-4 py-2 rounded bg-gray-600 text-white hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Next →
-        </button>
-      </div>
-
-      <div class="flex items-center gap-3">
-        <div class="text-sm text-gray-500">
-          Câu {{ currentIndex + 1 }} / {{ questions.length }}
-        </div>
-        <button
-          (click)="finishExam()"
-          class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
-        >
-          Nộp bài thi
-        </button>
-      </div>
-    </div>
-  </div>
-
   @if (showExplain) {
     <div class="mt-3 p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-800 text-sm">
       {{ getCurrentQuestion()?.questionExplain }}
@@ -141,11 +85,11 @@
 } @if (isFinished) {
 <div class="mt-4 bg-white rounded-lg border border-gray-200 shadow-sm p-5">
   <div class="flex items-center justify-between">
-    <div class="text-gray-800 font-semibold">Hoàn thành</div>
-    <div class="text-sm text-gray-600">Điểm: {{ totalScore }}</div>
+    <div class="text-gray-800 font-semibold">Completed</div>
+    <div class="text-sm text-gray-600">Score: {{ totalScore }}</div>
   </div>
   <div class="mt-3 text-gray-700">
-    Bạn trả lời đúng {{ correctCount }}/{{ questions?.length || 0 }} ({{
+    You answered correctly {{ correctCount }}/{{ questions?.length || 0 }} ({{
       percentCorrect
     }}%).
   </div>
@@ -162,25 +106,25 @@
   </div>
   <div class="mt-4">
     <div class="text-sm font-medium text-gray-700 mb-2">
-      Câu trả lời đã lưu (localStorage)
+      Saved Answers (localStorage)
     </div>
     @if (savedAnswers && savedAnswers.length > 0) {
       <ul class="pl-0 text-sm text-gray-700 space-y-1">
         @for (ans of savedAnswers; track ans.questionId) {
           <li class="flex items-center gap-2">
-            <span class="inline-block min-w-24">Câu {{ ans.questionId }}</span>
-            <span class="inline-block">→ Đã lưu: {{ ans.answer.length }} ký tự</span>
+            <span class="inline-block min-w-24">Question {{ ans.questionId }}</span>
+            <span class="inline-block">→ Saved: {{ ans.answer.length }} characters</span>
           </li>
         }
       </ul>
     } @else {
-      <div class="text-sm text-gray-500">Không có dữ liệu lưu.</div>
+      <div class="text-sm text-gray-500">No saved data.</div>
     }
     <button
       class="mt-3 px-3 py-1.5 rounded bg-red-600 text-white hover:bg-red-700"
       (click)="clearSavedData()"
     >
-      Xóa lưu trữ
+      Clear Storage
     </button>
   </div>
   <div class="flex gap-4">
@@ -189,7 +133,7 @@
         class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
         (click)="resetExam()"
       >
-        Làm lại
+        Retry
       </button>
     </div>
   </div>

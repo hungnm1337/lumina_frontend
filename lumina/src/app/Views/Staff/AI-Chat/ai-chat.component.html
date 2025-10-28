@@ -1,0 +1,101 @@
+<div class="ai-chat-container">
+  <!-- Nút mở chat (floating) -->
+  <button class="chat-button" (click)="toggleChat()" *ngIf="!isOpen">
+    <i class="fas fa-robot"></i>
+  </button>
+
+  <!-- Tooltip giới thiệu -->
+  <div class="intro-tooltip" *ngIf="showIntroTooltip && !isOpen">
+    <div class="tooltip-header">
+      <div class="avatar">
+        <i class="fas fa-robot"></i>
+      </div>
+      <div class="info">
+        <h4>AI Assistant</h4>
+        <p>Trợ lý tạo đề TOEIC</p>
+      </div>
+      <button class="close-btn" (click)="showIntroTooltip = false">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="tooltip-content">
+      <p>👋 <strong>Xin chào!</strong></p>
+      <p>Tôi có thể giúp bạn:</p>
+      <ul>
+        <li>📝 <strong>Tạo đề thi TOEIC</strong> tự động</li>
+        <li>💡 <strong>Tư vấn</strong> kỹ năng học TOEIC</li>
+        <li>❓ <strong>Giải đáp</strong> thắc mắc về ngữ pháp</li>
+      </ul>
+      <p style="font-size: 12px; margin-top: 8px; color: #64748b;">
+        💬 Ví dụ: "Tạo 5 câu Reading Part 5 về giới từ"
+      </p>
+    </div>
+    <div class="tooltip-action">
+      <button (click)="toggleChat()">
+        <i class="fas fa-comments"></i>
+        Bắt đầu trò chuyện
+      </button>
+    </div>
+  </div>
+
+  <!-- Cửa sổ chat -->
+  <div class="chat-window" *ngIf="isOpen" [class.minimized]="isMinimized">
+    
+    <!-- Preview Section (bên trái) -->
+    <div class="preview-section" [class.show]="showPreview">
+      <div class="preview-header">
+        <h4>
+          <i class="fas fa-file-alt"></i> Preview
+        </h4>
+        <button (click)="togglePreview()" title="Close Preview">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="preview-body">
+        <app-preview-panel 
+          *ngIf="previewData"
+          [previewData]="previewData">
+        </app-preview-panel>
+        
+        <div *ngIf="!previewData" style="text-align: center; color: #94a3b8; padding: 40px 20px;">
+          <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px;"></i>
+          <p>Chưa có dữ liệu preview</p>
+          <p style="font-size: 12px;">Yêu cầu AI tạo đề thi để xem preview</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Section (bên phải) -->
+    <div class="chat-section">
+      <div class="chat-header">
+        <h3>
+          <i class="fas fa-robot"></i>
+          AI Assistant
+        </h3>
+        <div class="header-actions">
+          <button 
+            (click)="togglePreview()" 
+            title="Toggle Preview" 
+            [class.active]="showPreview"
+            *ngIf="previewData">
+            <i class="fas fa-eye"></i>
+          </button>
+          <button (click)="closeChat()" title="Đóng">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="chat-body">
+        <app-chat-panel 
+          [messages]="messages"
+          [isLoading]="isLoading"
+          (messageSent)="sendMessage($event)"
+          (previewClicked)="viewPreview($event)">
+        </app-chat-panel>
+      </div>
+    </div>
+
+  </div>
+</div>

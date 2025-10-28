@@ -20,6 +20,8 @@ import { BlogDetailComponent } from './Views/Common/blog-detail/blog-detail.comp
 import { UserVocabularyComponent } from './Views/User/vocabulary/vocabulary.component';
 import { DeckListComponent } from './pages/deck-list/deck-list.component';
 import { DeckDetailComponent } from './pages/deck-detail/deck-detail.component';
+import { ExamAttemptListComponent } from './Views/User/ExamAttempt/exam-attempt-list/exam-attempt-list.component';
+import { ExamAttemptDetailComponent } from './Views/User/ExamAttempt/exam-attempt-detail/exam-attempt-detail.component';
 
 export const routes: Routes = [
   {
@@ -55,12 +57,13 @@ export const routes: Routes = [
         component: UserDashboardComponent,
         children: [
           { path: 'exams', component: ExamsComponent },
+          { path: 'exam-attempts', component: ExamAttemptListComponent },
+          { path: 'exam-attempts/:id', component: ExamAttemptDetailComponent },
           { path: 'exam/:id', component: ExamPartComponent },
           { path: 'part/:id', component: PartQuestionComponent },
           { path: '', redirectTo: 'exams', pathMatch: 'full' },
         ],
       },
-      // ĐÃ XÓA 2 ROUTE FLASHCARDS KHỎI ĐÂY
     ],
   },
 
