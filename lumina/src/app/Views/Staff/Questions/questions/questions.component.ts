@@ -58,8 +58,11 @@ export class QuestionsComponent implements OnInit {
   }
 
   initData(){
-     this.examPartService.getExamsParts().subscribe(res => {
+    this.examPartService.getExamsParts().subscribe(res => {
       this.parts = res || [];
+      // ✅ Lấy danh sách ExamSetKey unique
+      this.examSetKeys = Array.from(new Set(this.parts.map(p => p.examSetKey)));
+      console.log('📋 ExamSetKeys:', this.examSetKeys);
     });
     this.loadPrompts();
     this.loadStatistics();
@@ -72,6 +75,11 @@ export class QuestionsComponent implements OnInit {
   selectedPartId: number | '' = '';
   loading = false;
   uploading = false;
+  
+  // ✅ Thêm biến cho ExamSetKey filter
+  examSetKeys: string[] = [];
+  selectedExamSetKey: string | null = null;
+  filteredPartsForView: any[] = [];
 
   // Lấy danh sách câu hỏi từ API, hỗ trợ filter, search, paging
   loadPrompts() {
@@ -95,7 +103,26 @@ export class QuestionsComponent implements OnInit {
     });
   }
 
+  // ✅ Hàm xử lý khi chọn ExamSetKey
+  onExamSetKeyFilterChange() {
+    console.log('🔍 ExamSetKey filter changed:', this.selectedExamSetKey);
+    if (this.selectedExamSetKey) {
+      this.filteredPartsForView = this.parts.filter(
+        p => p.examSetKey === this.selectedExamSetKey
+      );
+      console.log('📋 Filtered parts for view:', this.filteredPartsForView);
+    } else {
+      this.filteredPartsForView = [];
+    }
+    // Reset selectedPartId khi đổi ExamSetKey
+    this.selectedPartId = '';
+    // Reset về trang 1 và load lại
+    this.page = 1;
+    this.loadPrompts();
+  }
+
   onPartFilterChange() {
+    console.log('🔍 Part filter changed:', this.selectedPartId);
     this.page = 1;
     this.loadPrompts();
   }
@@ -218,36 +245,42 @@ export class QuestionsComponent implements OnInit {
   }
   selectedSkill: string = '';
   filteredParts: any[] = [];
+  selectedPartQuestionCount: number = 0;
 
-  // Xử lý khi đổi skill, reset câu hỏi
-  onSkillChange(event: any) {
-    this.selectedSkill = event.target.value;
+  // Hard code số lượng câu hỏi theo Part
+  private readonly partQuestionCounts: { [key: string]: number } = {
+    'LISTENING_PART1': 1,
+    'LISTENING_PART2': 1,
+    'LISTENING_PART3': 3,
+    'LISTENING_PART4': 3,
+    'READING_PART6': 4,
+    'READING_PART7': 3,
+    'SPEAKING_PART1': 1,
+    'SPEAKING_PART2': 1,
+    'SPEAKING_PART3': 3,
+    'SPEAKING_PART4': 4,
+    'SPEAKING_PART5': 1,
+    'WRITING_PART1': 1,
+    'WRITING_PART2': 1,
+    'WRITING_PART3': 1
+  };
 
-    // Xoá câu hỏi cũ
-    while (this.questions.length !== 0) {
-      this.questions.removeAt(0);
-    }
+  // XÓA hàm onSkillChange cũ này (từ dòng ~220)
+// onSkillChange(event: any) {
+//   this.selectedSkill = event.target.value;
+//   // Xoá câu hỏi cũ
+//   while (this.questions.length !== 0) {
+//     this.questions.removeAt(0);
+//   }
+//   // Thêm câu hỏi mới phù hợp skill
+//   this.addQuestion();
+//   // Reset partId
+//   this.promptForm.patchValue({ partId: '' });
+//   // Cập nhật filtered parts
+//   this.filterPartsBySkill();
+// }
 
-    // Thêm câu hỏi mới phù hợp skill
-    this.addQuestion();
-
-    // Reset partId
-    this.promptForm.patchValue({ partId: '' });
-
-    // Cập nhật filtered parts
-    this.filterPartsBySkill();
-  }
-
-  filterPartsBySkill() {
-    if (!this.selectedSkill) {
-      this.filteredParts = [];
-    } else {
-      const skillUpper = this.selectedSkill.toUpperCase();
-      this.filteredParts = this.parts.filter(p => p.partCode.toUpperCase().includes(skillUpper));
-    }
-  }
-
-  //   filterPartsBySkill() {
+  // filterPartsBySkill() {
   //   if (!this.selectedSkill) {
   //     this.filteredParts = [];
   //   } else {
@@ -268,6 +301,104 @@ export class QuestionsComponent implements OnInit {
   //     );
   //   }
   // }
+
+onSkillChange(event: any): void {
+  this.selectedSkill = event.target.value;
+  
+  console.log('=== onSkillChange ===');
+  console.log('selectedSkill:', this.selectedSkill);
+  
+  // Xóa tất cả câu hỏi cũ
+  while (this.questions.length !== 0) {
+    this.questions.removeAt(0);
+  }
+  
+  // Lọc parts theo skill
+  this.filterPartsBySkill();
+  
+  // Reset partId và selectedPartQuestionCount
+  this.promptForm.patchValue({ partId: '' });
+  this.selectedPartQuestionCount = 0;
+  
+  // KHÔNG thêm câu hỏi mẫu nữa - chỉ thêm khi chọn Part
+  // this.addQuestion();
+  
+  console.log('filteredParts:', this.filteredParts);
+}
+
+  filterPartsBySkill() {
+    if (!this.selectedSkill) {
+      this.filteredParts = [];
+    } else {
+      const skillUpper = this.selectedSkill.toUpperCase();
+      this.filteredParts = this.parts.filter(p => {
+        const partCodeUpper = p.partCode?.toUpperCase() || '';
+        return partCodeUpper.includes(skillUpper);
+      });
+    }
+  }
+
+  onPartSelected(): void {
+  const selectedPartId = this.promptForm.get('partId')?.value;
+  
+  console.log('=== DEBUG onPartSelected ===');
+  console.log('selectedPartId:', selectedPartId);
+  console.log('selectedPartId type:', typeof selectedPartId);
+  console.log('this.parts:', this.parts);
+  console.log('this.filteredParts:', this.filteredParts);
+  
+  // Tìm trong filteredParts thay vì this.parts
+  const selectedPart = this.filteredParts.find(p => {
+    console.log('Comparing:', p.partId, 'with', selectedPartId, 'equal?', p.partId == selectedPartId);
+    return p.partId == selectedPartId; // Dùng == để so sánh cả string và number
+  });
+  
+  console.log('selectedPart:', selectedPart);
+  
+  if (selectedPart && selectedPart.partCode) {
+    const partCode = selectedPart.partCode.toUpperCase().trim();
+    console.log('partCode (normalized):', partCode);
+    console.log('partQuestionCounts:', this.partQuestionCounts);
+    console.log('Looking for key:', partCode);
+    
+    this.selectedPartQuestionCount = this.partQuestionCounts[partCode] || 0;
+    console.log('selectedPartQuestionCount:', this.selectedPartQuestionCount);
+    
+    if (this.selectedPartQuestionCount > 0) {
+      this.adjustQuestionsToMatch(this.selectedPartQuestionCount);
+    } else {
+      console.warn('Không tìm thấy số lượng câu hỏi cho partCode:', partCode);
+      console.warn('Các key có sẵn:', Object.keys(this.partQuestionCounts));
+      this.adjustQuestionsToMatch(1);
+    }
+  } else {
+    console.log('Không tìm thấy part hoặc partCode');
+    console.log('selectedPart:', selectedPart);
+    this.selectedPartQuestionCount = 0;
+    this.adjustQuestionsToMatch(1);
+  }
+  console.log('=== END DEBUG ===');
+}
+
+  private adjustQuestionsToMatch(count: number): void {
+    console.log('=== adjustQuestionsToMatch ===');
+    console.log('Target count:', count);
+    console.log('Current questions length:', this.questions.length);
+    
+    while (this.questions.length !== 0) {
+      this.questions.removeAt(0);
+    }
+    
+    if (count > 0) {
+      for (let i = 0; i < count; i++) {
+        this.addQuestion();
+      }
+      console.log('Đã thêm', count, 'câu hỏi');
+      console.log('New questions length:', this.questions.length);
+    } else {
+      console.log('Count = 0, không thêm câu hỏi');
+    }
+  }
 
   savePrompt() {
     if (this.promptForm.invalid) {
@@ -299,7 +430,6 @@ export class QuestionsComponent implements OnInit {
             scoreWeight: q.scoreWeight,
             questionExplain: q.questionExplain,
             time: q.time,
-            // các trường khác nếu cần...
           },
           options: (f.skill === 'Speaking' || f.skill === 'Writing')
             ? []
@@ -386,7 +516,7 @@ export class QuestionsComponent implements OnInit {
   //       promptText: [passage.prompt?.promptText || ''],
   //       referenceImageUrl: [passage.prompt?.referenceImageUrl || ''],
   //       referenceAudioUrl: [passage.prompt?.referenceAudioUrl || '']
-  //     })
+  //     });
   //   });
   // }
 
@@ -589,7 +719,6 @@ export class QuestionsComponent implements OnInit {
   }
 
 
-  // Xóa question (với xác nhận)
  deleteQuestion(q: any) {
   if (confirm('Bạn có chắc chắn muốn xóa câu hỏi này?')) {
     this.questionService.deleteQuestion(q.questionId).subscribe({
@@ -626,5 +755,4 @@ export class QuestionsComponent implements OnInit {
       }
     });
   }
-
 }

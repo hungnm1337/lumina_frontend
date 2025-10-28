@@ -2,6 +2,7 @@ import { Component, EventEmitter, Output, OnInit, Input } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter, map, mergeMap } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
+import { AuthService } from './../../../../Services/Auth/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -15,7 +16,7 @@ export class HeaderComponent implements OnInit {
 
   pageTitle = 'Bài viết'; // Default title
 
-  constructor(private router: Router, private activatedRoute: ActivatedRoute) {}
+  constructor(private router: Router, private activatedRoute: ActivatedRoute, private authService: AuthService) {}
 
   ngOnInit() {
     this.router.events.pipe(
@@ -47,5 +48,9 @@ export class HeaderComponent implements OnInit {
     if (url.includes('vocabulary')) return 'Từ vựng';
     if (url.includes('seasons')) return 'Mùa thi đấu';
     return 'Staff Panel';
+  }
+
+   logout(): void {
+    this.authService.logout();
   }
 }

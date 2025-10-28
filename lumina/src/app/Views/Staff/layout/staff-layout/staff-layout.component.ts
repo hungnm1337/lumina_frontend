@@ -2,7 +2,8 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SidebarComponent } from '../../Common/sidebar/sidebar.component'; 
 import { HeaderComponent } from '../../Common/header/header.component'; 
-import { RouterOutlet } from '@angular/router'; 
+import { RouterOutlet } from '@angular/router';
+import { AiChatComponent } from '../../AI-Chat/ai-chat.component';
 
 @Component({
   selector: 'app-staff-layout',
@@ -11,7 +12,8 @@ import { RouterOutlet } from '@angular/router';
     CommonModule, 
     SidebarComponent, 
     HeaderComponent, 
-    RouterOutlet 
+    RouterOutlet,
+    AiChatComponent // Thêm AI Chat
   ],
   templateUrl: './staff-layout.component.html',
 })
