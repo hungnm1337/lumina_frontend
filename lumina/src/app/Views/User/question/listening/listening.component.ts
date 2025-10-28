@@ -164,7 +164,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     if (currentQuestion?.options && index < currentQuestion.options.length) {
       const selectedOption = currentQuestion.options[index];
       // Trigger the answered event
-      this.onAnswered(selectedOption.isCorrect);
+      this.onAnswered(selectedOption.isCorrect ?? false);
     }
   }
 
@@ -320,51 +320,57 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   previousQuestion(): void {
     if (this.currentIndex > 0) {
       this.currentIndex--;
-      this.restoreQuestionState(); // ✅ FIX: Restore state
+      this.restoreQuestionState();
       this.resetAudioState();
+      console.log('⬅️ Previous question:', {
+        currentIndex: this.currentIndex,
+        questionId: this.questions[this.currentIndex]?.questionId,
+        savedAnswer: this.getCurrentSavedAnswer(),
+        preSelectedOptionId: this.getCurrentPreSelectedOptionId(),
+      });
     }
   }
 
   nextQuestion(): void {
     if (this.currentIndex < this.questions.length - 1) {
       this.currentIndex++;
-      this.restoreQuestionState(); // ✅ FIX: Restore state
+      this.restoreQuestionState();
       this.resetAudioState();
+      console.log('➡️ Next question:', {
+        currentIndex: this.currentIndex,
+        questionId: this.questions[this.currentIndex]?.questionId,
+        savedAnswer: this.getCurrentSavedAnswer(),
+        preSelectedOptionId: this.getCurrentPreSelectedOptionId(),
+      });
     } else if (this.showExplain) {
-      // Finished all questions
       this.finished = true;
       this.saveSummaryToLocalStorage();
     }
   }
 
-  // ✅ NEW: Restore question state when navigating back
-  private restoreQuestionState(): void {
-    const savedAnswer = this.getCurrentSavedAnswer();
-    if (savedAnswer) {
-      // Câu này đã làm rồi -> hiển thị explanation
-      this.showExplain = true;
-    } else {
-      // Câu mới -> reset
-      this.showExplain = false;
-    }
+  // ✅ NEW: Tự động phát audio khi chuyển câu
+  private autoPlayAudioOnQuestionChange(): void {
+    // Đợi một chút để audio element được cập nhật
+    setTimeout(() => {
+      if (this.getCurrentAudioUrl() && this.audioPlayCount < this.maxPlays) {
+        this.playAudio();
+      }
+    }, 300);
   }
 
-  // ============= ANSWER HANDLING =============
-
   onTimeout(): void {
+    // ✅ FIX: Hết giờ KHÔNG đánh sai, chỉ log để người dùng biết
     console.log('⏰ Time is up for question', this.currentIndex + 1);
-
-    // Auto submit nếu chưa trả lời
-    if (!this.showExplain) {
-      alert('Hết giờ! Câu hỏi này sẽ được tính là sai.');
-      this.onAnswered(false);
-    }
+    // Người dùng vẫn có thể chọn đáp án sau khi hết giờ
   }
 
   onAnswered(isCorrect: boolean): void {
     const currentQuestion = this.questions[this.currentIndex];
 
-    if (!currentQuestion) return;
+    if (!currentQuestion) {
+      console.error('❌ onAnswered: No current question');
+      return;
+    }
 
     // Tính điểm
     if (isCorrect) {
@@ -373,11 +379,24 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       this.correctCount++;
     }
 
-    // ✅ FIX: Get selectedOptionId from OptionsComponent's localStorage
+    // ✅ Get selectedOptionId from localStorage
     const selectedOptionId = this.getSelectedOptionIdFromStorage(
       currentQuestion.questionId
     );
+
+    console.log('📝 onAnswered:', {
+      questionId: currentQuestion.questionId,
+      isCorrect,
+      selectedOptionId,
+      beforeSave_savedAnswers: [...this.savedAnswers],
+    });
+
     this.saveCurrentAnswer(isCorrect, selectedOptionId);
+
+    console.log('📝 After save:', {
+      savedAnswers: [...this.savedAnswers],
+      preSelectedOptionId: this.getCurrentPreSelectedOptionId(),
+    });
 
     // Hiển thị giải thích
     this.showExplain = true;
@@ -385,14 +404,6 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     // Emit event
     this.listeningAnswered.emit(isCorrect);
     this.answered.emit(isCorrect); // Legacy support
-
-    console.log('📝 Answer recorded:', {
-      questionId: currentQuestion.questionId,
-      selectedOptionId,
-      isCorrect,
-      totalScore: this.totalScore,
-      correctCount: this.correctCount,
-    });
   }
 
   private getSelectedOptionIdFromStorage(questionId: number): number | null {
@@ -436,29 +447,38 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     selectedOptionId: number | null
   ): void {
     const currentQuestion = this.questions[this.currentIndex];
-    const storageKey = this.getStorageKey();
+    if (!currentQuestion || !selectedOptionId) {
+      console.error('❌ Cannot save answer: missing question or optionId', {
+        hasQuestion: !!currentQuestion,
+        selectedOptionId,
+      });
+      return;
+    }
 
-    const savedAnswers: ListeningSavedAnswer[] = JSON.parse(
-      localStorage.getItem(storageKey) || '[]'
+    // Remove existing answer for this question from in-memory array
+    this.savedAnswers = this.savedAnswers.filter(
+      (a) => a.questionId !== currentQuestion.questionId
     );
 
+    // Add new answer to in-memory array
     const answerRecord: ListeningSavedAnswer = {
       questionId: currentQuestion.questionId,
-      selectedOptionId, // ✅ FIX: Lưu optionId
-      isCorrect,
+      selectedOptionId: selectedOptionId,
+      isCorrect: isCorrect,
       timestamp: Date.now(),
     };
 
-    // Remove existing answer for this question
-    const filtered = savedAnswers.filter(
-      (a) => a.questionId !== currentQuestion.questionId
-    );
-    filtered.push(answerRecord);
+    this.savedAnswers.push(answerRecord);
 
-    localStorage.setItem(storageKey, JSON.stringify(filtered));
-
-    // ✅ FIX: Update savedAnswers array
-    this.savedAnswers = filtered;
+    console.log('✅ Saved answer to in-memory state:', {
+      answerRecord,
+      totalSavedAnswers: this.savedAnswers.length,
+      allAnswers: this.savedAnswers.map((a) => ({
+        qId: a.questionId,
+        optId: a.selectedOptionId,
+        correct: a.isCorrect,
+      })),
+    });
   }
 
   private loadSavedAnswers(): void {
@@ -492,14 +512,13 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       }
     });
 
-    console.log('✅ Restored progress:', {
+    console.log(' Restored progress:', {
       totalScore: this.totalScore,
       correctCount: this.correctCount,
       savedCount: this.savedAnswers.length,
     });
   }
 
-  // ✅ NEW: Get saved answer for current question
   getCurrentSavedAnswer(): ListeningSavedAnswer | null {
     const currentQuestion = this.questions[this.currentIndex];
     if (!currentQuestion) return null;
@@ -510,6 +529,52 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       ) || null
     );
   }
+
+  // ✅ FIX: Get pre-selected option ID for current question
+  getCurrentPreSelectedOptionId(): number | null {
+    const currentQuestion = this.questions[this.currentIndex];
+    if (!currentQuestion) {
+      console.log('getCurrentPreSelectedOptionId: No current question');
+      return null;
+    }
+
+    const savedAnswer = this.savedAnswers.find(
+      (a) => a.questionId === currentQuestion.questionId
+    );
+
+    const result = savedAnswer?.selectedOptionId || null;
+
+    console.log('getCurrentPreSelectedOptionId:', {
+      currentIndex: this.currentIndex,
+      questionId: currentQuestion.questionId,
+      savedAnswers: this.savedAnswers,
+      foundSavedAnswer: savedAnswer,
+      result,
+    });
+
+    return result;
+  }
+
+  private restoreQuestionState(): void {
+    const savedAnswer = this.getCurrentSavedAnswer();
+
+    console.log('restoreQuestionState:', {
+      currentIndex: this.currentIndex,
+      currentQuestionId: this.questions[this.currentIndex]?.questionId,
+      savedAnswer,
+      allSavedAnswers: this.savedAnswers,
+    });
+
+    if (savedAnswer) {
+      // ✅ Hiển thị explanation khi có câu trả lời đã lưu
+      this.showExplain = true;
+    } else {
+      // Câu mới -> reset
+      this.showExplain = false;
+    }
+  }
+
+  // ✅ REMOVE: Old method - replaced above
 
   private saveSummaryToLocalStorage(): void {
     const storageKey = `listening_summary_part_${
@@ -529,19 +594,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     localStorage.setItem(storageKey, JSON.stringify(summary));
   }
 
-  clearSavedData(): void {
-    const storageKey = this.getStorageKey();
-    const summaryKey = `listening_summary_part_${
-      this.partInfo?.partId || 'unknown'
-    }`;
-
-    localStorage.removeItem(storageKey);
-    localStorage.removeItem(summaryKey);
-
-    alert('Đã xóa dữ liệu lưu trữ');
-  }
-
-  // ============= COMPUTED PROPERTIES (từ ReadingComponent) =============
+  // ============= COMPUTED PROPERTIES =============
 
   get percentCorrect(): number {
     const total = this.questions.length;
@@ -556,7 +609,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     return 'Bạn hãy tiếp tục phát huy nhé';
   }
 
-  get savedAnswers(): ListeningSavedAnswer[] {
+  get allSavedAnswers(): ListeningSavedAnswer[] {
     const storageKey = this.getStorageKey();
     return JSON.parse(localStorage.getItem(storageKey) || '[]');
   }
@@ -569,8 +622,16 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     this.totalScore = 0;
     this.correctCount = 0;
     this.finished = false;
-    this.clearSavedData();
     this.resetAudioState();
+
+    // Clear saved data
+    const storageKey = this.getStorageKey();
+    const summaryKey = `listening_summary_part_${
+      this.partInfo?.partId || 'unknown'
+    }`;
+    localStorage.removeItem(storageKey);
+    localStorage.removeItem(summaryKey);
+    this.savedAnswers = [];
   }
 
   goToExams(): void {

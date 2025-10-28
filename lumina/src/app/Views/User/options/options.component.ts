@@ -15,7 +15,7 @@ export class OptionsComponent implements OnChanges {
   @Input() options: OptionDTO[] = [];
   @Input() disabled: boolean = false;
   @Input() resetAt: number = 0;
-  @Input() preSelectedOptionId: number | null = null; // ✅ NEW: Pre-select option
+  @Input() preSelectedOptionId: number | null = null;
   selectedOption: OptionDTO | null = null;
   @Output() answered = new EventEmitter<boolean>();
 
@@ -24,10 +24,60 @@ export class OptionsComponent implements OnChanges {
   private correctAudio = new Audio('/correct.mp3');
   private wrongAudio = new Audio('/wrong.mp3');
 
+  ngOnChanges(changes: SimpleChanges): void {
+    console.log('🔄 ngOnChanges triggered:', {
+      hasResetAtChange: !!changes['resetAt'],
+      hasOptionsChange: !!changes['options'],
+      hasPreSelectedChange: !!changes['preSelectedOptionId'],
+      currentSelectedOption: this.selectedOption?.optionId,
+      newPreSelectedOptionId: this.preSelectedOptionId,
+    });
+
+    // ✅ FIX: Đơn giản hóa - chỉ sync theo preSelectedOptionId
+    // Bỏ logic reset, chỉ cần check preSelectedOptionId
+
+    if (this.preSelectedOptionId && this.options && this.options.length > 0) {
+      // Có preSelectedOptionId → tìm và set
+      const preSelected = this.options.find(
+        (opt) => opt.optionId === this.preSelectedOptionId
+      );
+      if (preSelected) {
+        this.selectedOption = preSelected;
+        console.log('✅ Set selectedOption from preSelectedOptionId:', {
+          optionId: preSelected.optionId,
+          content: preSelected.content,
+        });
+      } else {
+        console.warn('⚠️ preSelectedOptionId not found in options:', {
+          preSelectedOptionId: this.preSelectedOptionId,
+          availableOptionIds: this.options.map((o) => o.optionId),
+        });
+        this.selectedOption = null;
+      }
+    } else {
+      // Không có preSelectedOptionId → clear selection
+      if (this.selectedOption !== null) {
+        console.log('🔄 Clear selectedOption - no preSelectedOptionId');
+        this.selectedOption = null;
+      }
+    }
+  }
+
+  // ✅ Cho phép re-select option
   onSelect(option: OptionDTO): void {
-    if (this.disabled || this.selectedOption) {
+    // Chỉ block khi disabled
+    if (this.disabled) {
+      console.log('❌ Selection blocked - component is disabled');
       return;
     }
+
+    console.log('✅ Option selected:', {
+      optionId: option.optionId,
+      content: option.content,
+      isCorrect: option.isCorrect,
+    });
+
+    // Cho phép chọn lại option khác
     this.selectedOption = option;
     this.saveAnswer(option);
     const isCorrect = option.isCorrect === true;
@@ -36,6 +86,8 @@ export class OptionsComponent implements OnChanges {
   }
 
   private saveAnswer(option: OptionDTO): void {
+    // ✅ KHÔNG CẦN localStorage - parent component sẽ quản lý state
+    // Chỉ giữ logic này để backward compatibility với Reading component
     try {
       const storageKey =
         'Answer_Reading_' + this.authService.getCurrentUser()?.id;
@@ -73,34 +125,22 @@ export class OptionsComponent implements OnChanges {
         });
       }
       localStorage.setItem(storageKey, JSON.stringify(store));
-    } catch {
-      // Best-effort only; ignore storage errors (e.g., private mode, quota)
+      console.log('💾 Saved to localStorage (backward compatibility):', {
+        questionId: option.questionId,
+        optionId: option.optionId,
+      });
+    } catch (error) {
+      console.error('❌ Error saving to localStorage:', error);
     }
   }
+
   private playFeedback(isCorrect: boolean): void {
     const audio = isCorrect ? this.correctAudio : this.wrongAudio;
     try {
-      // Restart from beginning in case of rapid selections
       audio.currentTime = 0;
       void audio.play();
     } catch (e) {
       // best-effort only; ignore audio errors
-    }
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['resetAt'] || changes['options']) {
-      this.selectedOption = null;
-
-      // ✅ FIX: Restore pre-selected option
-      if (this.preSelectedOptionId && this.options) {
-        const preSelected = this.options.find(
-          (opt) => opt.optionId === this.preSelectedOptionId
-        );
-        if (preSelected) {
-          this.selectedOption = preSelected;
-        }
-      }
     }
   }
 }
