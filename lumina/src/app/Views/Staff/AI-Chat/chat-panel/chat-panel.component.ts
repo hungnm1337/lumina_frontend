@@ -14,7 +14,7 @@ export class ChatPanelComponent implements AfterViewChecked {
   @Input() messages: any[] = [];
   @Input() isLoading = false;
   @Output() messageSent = new EventEmitter<string>();
-  @Output() previewClicked = new EventEmitter<string>(); // Event mới để xem preview
+  @Output() previewClicked = new EventEmitter<string>(); 
 
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef<HTMLDivElement>;
 

@@ -72,21 +72,24 @@
         <p class="prompt-description">{{ prompt.contentText }}</p>
       </div>
 
-      <!-- ✅ Image Description -->
-      <!-- <div class="media-description" *ngIf="prompt.referenceImageUrl">
-        <div class="media-label">
-          <span class="icon">🖼️</span>
-          <strong>Mô tả ảnh tham khảo</strong>
-        </div>
-        <div class="media-content">{{ prompt.referenceImageUrl }}</div>
-        <div class="media-note">💡 Ảnh sẽ được tạo khi lưu đề thi</div>
-      </div> -->
       <div class="media-image" *ngIf="prompt.referenceImageUrl && prompt.referenceImageUrl.startsWith('http')">
         <img [src]="prompt.referenceImageUrl" alt="AI Generated Image" />
       </div>
 
-      <!-- ✅ Audio Text Description -->
-      <div class="media-description" *ngIf="prompt.referenceAudioUrl">
+      <!-- ✅ Audio Player - Nếu là URL
+      <div class="media-audio" *ngIf="prompt.referenceAudioUrl && prompt.referenceAudioUrl.startsWith('http')">
+        <div class="media-label">
+          <span class="icon">🔊</span>
+          <strong>Audio Reference</strong>
+        </div>
+        <audio controls class="audio-player">
+          <source [src]="prompt.referenceAudioUrl" type="audio/mpeg">
+          Trình duyệt không hỗ trợ audio.
+        </audio>
+      </div> -->
+
+      <!-- ✅ Audio Text Description - Nếu là text -->
+      <div class="media-description" *ngIf="prompt.referenceAudioUrl && !prompt.referenceAudioUrl.startsWith('http')">
         <div class="media-label">
           <span class="icon">🔊</span>
           <strong>Nội dung Audio</strong>

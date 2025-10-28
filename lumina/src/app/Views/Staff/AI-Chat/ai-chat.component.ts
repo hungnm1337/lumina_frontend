@@ -10,7 +10,7 @@ export interface Message {
   role: 'user' | 'assistant';
   timestamp: Date;
   type?: 'text' | 'code' | 'question';
-  previewId?: string; // ID để liên kết với preview data
+  previewId?: string;
 }
 
 export interface PreviewDataItem {
@@ -41,25 +41,43 @@ export class AiChatComponent implements OnInit, OnDestroy {
   messages: Message[] = [];
   isLoading = false;
 
-  // Lưu trữ tất cả preview data
   previewDataList: PreviewDataItem[] = [];
   currentPreviewId: string | null = null;
 
-  // Tooltip giới thiệu
   showIntroTooltip = false;
   private introInterval: any;
   private hideTooltipTimeout: any;
 
+  private currentUserId: string = '';
+  
+  // ✅ Key để lưu userId hiện tại
+  private readonly LAST_USER_KEY = 'ai_chat_last_user';
+
+  private get STORAGE_KEY_MESSAGES(): string {
+    return `ai_chat_messages_${this.currentUserId}`;
+  }
+
+  private get STORAGE_KEY_PREVIEW(): string {
+    return `ai_chat_preview_list_${this.currentUserId}`;
+  }
+
   constructor(private aiExamService: ExamGeneratorService) {}
 
   ngOnInit(): void {
-    // Hiển thị tooltip giới thiệu lần đầu sau 3 giây
+    // ✅ Lấy userId từ token
+    this.currentUserId = this.getUserIdFromToken();
+    
+    // ✅ Kiểm tra xem có phải user mới không
+    this.checkAndClearOldUserData();
+    
+    // Load data từ sessionStorage theo userId
+    this.loadFromStorage();
+
     setTimeout(() => {
       this.showIntroTooltip = true;
       this.scheduleTooltipHide();
     }, 3000);
 
-    // Lặp lại tooltip mỗi 2-3 phút (120-180 giây)
     this.introInterval = setInterval(() => {
       if (!this.isOpen) {
         this.showIntroTooltip = true;
@@ -68,12 +86,85 @@ export class AiChatComponent implements OnInit, OnDestroy {
     }, this.getRandomInterval(120000, 180000)); // 2-3 phút
   }
 
+  // ✅ Kiểm tra và xóa data của user cũ nếu login user mới
+  private checkAndClearOldUserData(): void {
+    try {
+      const lastUserId = sessionStorage.getItem(this.LAST_USER_KEY);
+      
+      if (lastUserId && lastUserId !== this.currentUserId) {
+        console.log(`🔄 User changed from ${lastUserId} to ${this.currentUserId} - Clearing old chat`);
+        
+        // Xóa chat của user cũ
+        sessionStorage.removeItem(`ai_chat_messages_${lastUserId}`);
+        sessionStorage.removeItem(`ai_chat_preview_list_${lastUserId}`);
+      }
+      
+      // Lưu userId hiện tại
+      sessionStorage.setItem(this.LAST_USER_KEY, this.currentUserId);
+      
+    } catch (error) {
+      console.error('❌ Error checking user data:', error);
+    }
+  }
+
+  private getUserIdFromToken(): string {
+    try {
+      const token = localStorage.getItem('lumina_token');
+      if (token) {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.sub || payload.userId || payload.id || 'guest';
+      }
+    } catch (error) {
+      console.error('Error parsing token:', error);
+    }
+    return 'guest';
+  }
+
   ngOnDestroy(): void {
     if (this.introInterval) {
       clearInterval(this.introInterval);
     }
     if (this.hideTooltipTimeout) {
       clearTimeout(this.hideTooltipTimeout);
+    }
+  }
+
+  // ✅ Load dữ liệu từ sessionStorage
+  private loadFromStorage(): void {
+    try {
+      const savedMessages = sessionStorage.getItem(this.STORAGE_KEY_MESSAGES);
+      const savedPreview = sessionStorage.getItem(this.STORAGE_KEY_PREVIEW);
+
+      if (savedMessages) {
+        this.messages = JSON.parse(savedMessages);
+        console.log(`✅ Loaded messages for user ${this.currentUserId}:`, this.messages.length);
+      }
+
+      if (savedPreview) {
+        this.previewDataList = JSON.parse(savedPreview);
+        console.log(`✅ Loaded preview data for user ${this.currentUserId}:`, this.previewDataList.length);
+      }
+
+      // Nếu chưa có message nào, thêm welcome message
+      if (this.messages.length === 0) {
+        this.addWelcomeMessage();
+      }
+    } catch (error) {
+      console.error('❌ Error loading from storage:', error);
+      this.messages = [];
+      this.previewDataList = [];
+      this.addWelcomeMessage();
+    }
+  }
+
+  // ✅ Lưu dữ liệu vào sessionStorage
+  private saveToStorage(): void {
+    try {
+      sessionStorage.setItem(this.STORAGE_KEY_MESSAGES, JSON.stringify(this.messages));
+      sessionStorage.setItem(this.STORAGE_KEY_PREVIEW, JSON.stringify(this.previewDataList));
+      console.log(`💾 Saved to storage for user ${this.currentUserId} - Messages:`, this.messages.length, 'Previews:', this.previewDataList.length);
+    } catch (error) {
+      console.error('❌ Error saving to storage:', error);
     }
   }
 
@@ -124,8 +215,6 @@ export class AiChatComponent implements OnInit, OnDestroy {
     this.isOpen = false;
     this.isMinimized = false;
     this.showPreview = false;
-    
-    // ✅ Reset preview selectors khi đóng chat
     this.resetPreviewSelectors();
   }
 
@@ -168,10 +257,8 @@ export class AiChatComponent implements OnInit, OnDestroy {
         this.removeLoadingMessage();
         
         if (response.type === 'exam') {
-          // Tạo ID unique cho preview data
           const previewId = `preview_${Date.now()}`;
           
-          // Lưu preview data vào list
           const previewItem: PreviewDataItem = {
             id: previewId,
             data: response.data,
@@ -180,12 +267,10 @@ export class AiChatComponent implements OnInit, OnDestroy {
           };
           this.previewDataList.push(previewItem);
           
-          // Set preview hiện tại
           this.previewData = response.data;
           this.currentPreviewId = previewId;
           this.showPreview = true;
           
-          // Thêm message với previewId
           this.addAssistantMessage(
             `✅ **Đã tạo xong!**\n\n` +
             `📋 ${response.examInfo.examTitle}\n` +
@@ -194,6 +279,8 @@ export class AiChatComponent implements OnInit, OnDestroy {
             `👉 Xem chi tiết bên phải →`,
             previewId
           );
+          
+          this.saveToStorage();
         } else {
           this.addAssistantMessage(response.message);
         }
@@ -203,11 +290,25 @@ export class AiChatComponent implements OnInit, OnDestroy {
       error: (error: any) => {
         console.error('Error:', error);
         this.removeLoadingMessage();
+        
+        // ✅ Chỉ lấy message từ error response
+        let errorMessage = 'Có lỗi xảy ra, vui lòng thử lại sau!';
+        
+        if (error.error?.error?.message) {
+          // Trường hợp Gemini API error format
+          errorMessage = error.error.error.message;
+        } else if (error.error?.message) {
+          // Trường hợp error format khác
+          errorMessage = error.error.message;
+        } else if (error.message) {
+          // Trường hợp error từ HTTP client
+          errorMessage = error.message;
+        }
+        
         this.addAssistantMessage(
-          `❌ **Có lỗi xảy ra!**\n\n` +
-          `${error.error?.message || error.message}\n\n` +
-          `Vui lòng thử lại sau! 🙏`
+          `❌ **Lỗi!**\n\n${errorMessage}\n\nVui lòng thử lại sau! 🙏`
         );
+        
         this.isLoading = false;
       }
     });
@@ -220,8 +321,6 @@ export class AiChatComponent implements OnInit, OnDestroy {
       this.previewData = previewItem.data;
       this.currentPreviewId = previewId;
       this.showPreview = true;
-      
-      // ✅ Reset selectors khi xem preview mới
       this.resetPreviewSelectors();
     }
   }
@@ -237,6 +336,9 @@ export class AiChatComponent implements OnInit, OnDestroy {
       type: 'text'
     };
     this.messages.push(message);
+    
+    // ✅ Lưu vào storage sau mỗi message
+    this.saveToStorage();
   }
 
   private addAssistantMessage(content: string, previewId?: string): void {
@@ -249,6 +351,9 @@ export class AiChatComponent implements OnInit, OnDestroy {
       previewId: previewId
     };
     this.messages.push(message);
+    
+    // ✅ Lưu vào storage sau mỗi message
+    this.saveToStorage();
   }
 
   private removeLoadingMessage(): void {
@@ -256,6 +361,8 @@ export class AiChatComponent implements OnInit, OnDestroy {
       const lastMessage = this.messages[this.messages.length - 1];
       if (lastMessage.content.startsWith('⏳')) {
         this.messages.pop();
+        // ✅ Lưu lại sau khi remove
+        this.saveToStorage();
       }
     }
   }
@@ -277,6 +384,10 @@ export class AiChatComponent implements OnInit, OnDestroy {
     this.previewDataList = [];
     this.previewData = null;
     this.currentPreviewId = null;
+    
+    sessionStorage.removeItem(this.STORAGE_KEY_MESSAGES);
+    sessionStorage.removeItem(this.STORAGE_KEY_PREVIEW);
+    
     this.addWelcomeMessage();
   }
 }

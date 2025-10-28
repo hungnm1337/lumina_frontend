@@ -156,7 +156,7 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
         }
 
         if (prompt.referenceAudioUrl && prompt.referenceAudioUrl.trim() !== '') {
-          const audioUploadRes = await this.uploadService.generateAudioFromText(prompt.referenceAudioUrl).toPromise();
+          const audioUploadRes = await this.uploadService.generateAudio(prompt.referenceAudioUrl).toPromise();
           if (audioUploadRes && audioUploadRes.url) {
             prompt.referenceAudioUrl = audioUploadRes.url;
           }

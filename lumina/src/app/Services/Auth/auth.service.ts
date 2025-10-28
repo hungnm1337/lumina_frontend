@@ -119,6 +119,7 @@ export class AuthService {
   logout() {
     localStorage.removeItem('lumina_token');
     localStorage.removeItem('lumina_user');
+    // sessionStorage.clear();
     this.currentUserSource.next(null);
     this.router.navigate(['/login']);
   }

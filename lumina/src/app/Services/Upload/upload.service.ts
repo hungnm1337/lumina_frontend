@@ -44,13 +44,10 @@ export class UploadService {
   /**
    * Tạo audio từ text nhờ Azure TTS
    * @param text Chuỗi text cần tạo audio
-   * @returns Observable trả về object { url, publicId }
+   * @returns Observable trả về object { url, publicId, fileName }
    */
-  generateAudioFromText(text: string): Observable<{ url: string, publicId: string }> {
-    return this.http.post<{ url: string, publicId: string }>(
-      `${this.baseUrl}/upload`,
-      { text },
-      { headers: this.getAuthHeaders() }
-    );
+  generateAudio(text: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/upload`, { text });
+    // Không cần set timeout ở đây, để Promise.race xử lý
   }
 }
