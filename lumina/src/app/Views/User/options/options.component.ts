@@ -12,12 +12,13 @@ import { ToastService } from '../../../Services/Toast/toast.service';
   selector: 'app-options',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './options.component.html'
+  templateUrl: './options.component.html',
 })
 export class OptionsComponent implements OnChanges {
   @Input() options: OptionDTO[] = [];
   @Input() disabled: boolean = false;
   @Input() resetAt: number = 0;
+  @Input() preSelectedOptionId: number | null = null; // ✅ NEW: Pre-select option
   selectedOption: OptionDTO | null = null;
   @Output() answered = new EventEmitter<boolean>();
 
@@ -94,8 +95,16 @@ export class OptionsComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['resetAt'] || changes['options']) {
       this.selectedOption = null;
+
+      // ✅ FIX: Restore pre-selected option
+      if (this.preSelectedOptionId && this.options) {
+        const preSelected = this.options.find(
+          (opt) => opt.optionId === this.preSelectedOptionId
+        );
+        if (preSelected) {
+          this.selectedOption = preSelected;
+        }
+      }
     }
   }
-
 }
-

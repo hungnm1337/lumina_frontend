@@ -19,7 +19,7 @@
   <div class="grid gap-4 mt-3">
     <div class="space-y-2">
       <app-prompt [prompt]="questions[currentIndex].prompt" [resetAt]="currentIndex"
-        [questionType]="questions[currentIndex].questionType"
+        [questionType]="questions[currentIndex].questionType?? ''"
         (pictureCaptionChange)="onPictureCaption($event)"></app-prompt>
     </div>
   </div>

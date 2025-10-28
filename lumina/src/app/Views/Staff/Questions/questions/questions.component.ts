@@ -11,6 +11,7 @@ import {
 import { QuestionService } from '../../../../Services/Question/question.service';
 import { CommonModule } from '@angular/common';
 import { UploadService } from '../../../../Services/Upload/upload.service';
+import { noWhitespaceValidator } from '../../../../../environments/custom-validators'; 
 
 @Component({
   selector: 'app-questions',
@@ -40,20 +41,24 @@ export class QuestionsComponent implements OnInit {
     private mediaService: UploadService
   ) {
     this.promptForm = this.fb.group({
-      contentText: [''],
-      title: [''],
+      contentText: ['',[Validators.required, noWhitespaceValidator()]],
+      title: ['', [Validators.required, noWhitespaceValidator()]],
       skill: ['', Validators.required],
       partId: ['', Validators.required],
       promptId: [null],
-      referenceImageUrl: [''], // có thể null hoặc ''
-      referenceAudioUrl: [''], // có thể null hoặc ''
+      referenceImageUrl: [''],
+      referenceAudioUrl: [''],
       questions: this.fb.array([]),
     });
     this.addQuestion(); // khởi tạo 1 question mẫu
   }
 
   ngOnInit(): void {
-    this.examPartService.getExamsParts().subscribe(res => {
+    this.initData();  
+  }
+
+  initData(){
+     this.examPartService.getExamsParts().subscribe(res => {
       this.parts = res || [];
     });
     this.loadPrompts();
@@ -350,6 +355,7 @@ export class QuestionsComponent implements OnInit {
         next: () => {
           alert('Import thành công!');
           this.closeImportModal();
+          this.initData();
         },
         error: (err) => {
           let errorMsg = 'Lỗi import file excel!';
@@ -388,8 +394,8 @@ export class QuestionsComponent implements OnInit {
     this.isEditModalOpen = true;
     this.editPromptForm = this.fb.group({
       promptId: [prompt.promptId],
-      title: [prompt.title, Validators.required],
-      contentText: [prompt.contentText, Validators.required],
+      title: [prompt.title, [Validators.required, noWhitespaceValidator()]],
+      contentText: [prompt.contentText, [Validators.required, noWhitespaceValidator()]],
       skill: [prompt.skill || '', Validators.required],
       promptText: [prompt.promptText || ''],
       referenceImageUrl: [prompt.referenceImageUrl || ''],
@@ -443,7 +449,7 @@ export class QuestionsComponent implements OnInit {
     this.currentPromptId = prompt.promptId || null;
     console.log('openModalAdd - currentPartId:', this.currentPartId);
     const formObj: any = {
-      stemText: ['', Validators.required],
+      stemText: ['', [Validators.required, noWhitespaceValidator()]],
       questionExplain: [''],
       scoreWeight: [1, Validators.required],
       time: [30, Validators.required]
@@ -514,92 +520,98 @@ export class QuestionsComponent implements OnInit {
 
   // Xử lý submit
   // Thêm mới câu hỏi
- saveQuestion() {
-  if (this.questionForm.invalid) {
-    this.showMessage('Vui lòng nhập đủ thông tin!', 'error');
-    return;
-  }
-  const value = this.questionForm.value;
-
-  if (!this.currentPartId) {
-    this.showMessage('Vui lòng chọn PartId hợp lệ!', 'error');
-    return;
-  }
-
-  let questionType = 'SINGLE_CHOICE';
-  if (this.currentSkill === 'Speaking') {
-    questionType = 'SPEAKING';
-  } else if (this.currentSkill === 'Writing') {
-    questionType = 'WRITING';
-  } else if (Array.isArray(value.options)) {
-    const correctOptionCount = value.options.filter((opt: any) => opt.isCorrect).length;
-    questionType = correctOptionCount === 1 ? 'SINGLE_CHOICE' : 'MULTIPLE_CHOICE';
-  }
-
-  const dto: any = {
-    questionId: this.isEditQuestion ? this.editQuestionIdx : null,
-    partId: this.currentPartId,
-    promptId: this.currentPromptId,
-    stemText: value.stemText,
-    questionExplain: value.questionExplain,
-    scoreWeight: +value.scoreWeight,
-    time: +value.time,
-    questionType: questionType,
-  };
-
-  if (
-    this.currentSkill !== 'Speaking' &&
-    this.currentSkill !== 'Writing' &&
-    Array.isArray(value.options)
-  ) {
-    dto.options = value.options.map((opt: any) => ({
-      content: opt.content,
-      isCorrect: !!opt.isCorrect,
-    }));
-  } else {
-    dto.options = [];
-  }
-
-  console.log('Sending DTO:', dto);
-
-  const apiCall = this.isEditQuestion && this.editQuestionIdx !== null
-    ? this.questionService.editQuestion(dto)
-    : this.questionService.addQuestion(dto);
-
-  apiCall.subscribe({
-    next: (res) => {
-      this.showMessage(
-        res?.message || (this.isEditQuestion ? 'Sửa câu hỏi thành công!' : 'Thêm câu hỏi thành công!'),
-        'success'
-      );
-      this.isQuestionModalOpen = false;
-      this.loadPrompts();
-    },
-    error: (err) => {
-      const errorMsg = err.error?.message || err.error?.error || 'Part đã đủ số lượng câu hỏi!';
-      this.showMessage(errorMsg, 'error');
+  saveQuestion() {
+    if (this.questionForm.invalid) {
+      this.showMessage('Vui lòng nhập đủ thông tin!', 'error');
+      return;
     }
-  });
-}
+    const value = this.questionForm.value;
+
+    if (!this.currentPartId) {
+      this.showMessage('Vui lòng chọn PartId hợp lệ!', 'error');
+      return;
+    }
+
+    let questionType = 'SINGLE_CHOICE';
+    if (this.currentSkill === 'Speaking') {
+      questionType = 'SPEAKING';
+    } else if (this.currentSkill === 'Writing') {
+      questionType = 'WRITING';
+    } else if (Array.isArray(value.options)) {
+      const correctOptionCount = value.options.filter((opt: any) => opt.isCorrect).length;
+      questionType = correctOptionCount === 1 ? 'SINGLE_CHOICE' : 'MULTIPLE_CHOICE';
+    }
+
+    const dto: any = {
+      questionId: this.isEditQuestion ? this.editQuestionIdx : null,
+      partId: this.currentPartId,
+      promptId: this.currentPromptId,
+      stemText: value.stemText,
+      questionExplain: value.questionExplain,
+      scoreWeight: +value.scoreWeight,
+      time: +value.time,
+      questionType: questionType,
+    };
+
+    if (
+      this.currentSkill !== 'Speaking' &&
+      this.currentSkill !== 'Writing' &&
+      Array.isArray(value.options)
+    ) {
+      dto.options = value.options.map((opt: any) => ({
+        content: opt.content,
+        isCorrect: !!opt.isCorrect,
+      }));
+    } else {
+      dto.options = [];
+    }
+
+    console.log('Sending DTO:', dto);
+
+    const apiCall = this.isEditQuestion && this.editQuestionIdx !== null
+      ? this.questionService.editQuestion(dto)
+      : this.questionService.addQuestion(dto);
+
+    apiCall.subscribe({
+      next: (res) => {
+        this.showMessage(
+          res?.message || (this.isEditQuestion ? 'Sửa câu hỏi thành công!' : 'Thêm câu hỏi thành công!'),
+          'success'
+        );
+        this.isQuestionModalOpen = false;
+        this.loadPrompts();
+      },
+      error: (err) => {
+        const errorMsg = err.error?.message || err.error?.error || 'Part đã đủ số lượng câu hỏi!';
+        this.showMessage(errorMsg, 'error');
+      }
+    });
+  }
 
 
   // Xóa question (với xác nhận)
-  deleteQuestion(q: any) {
-    if (confirm('Bạn có chắc chắn muốn xóa câu hỏi này?')) {
-      this.questionService.deleteQuestion(q.questionId).subscribe({
-        next: (res) => {
-          this.showMessage(res?.message || 'Xóa câu hỏi thành công!', 'success');
-          this.loadPrompts();
-        },
-        error: (err) => {
-          this.showMessage(
-            err.error?.message || 'Xóa câu hỏi thất bại!',
-            'error'
-          );
-        },
-      });
-    }
+ deleteQuestion(q: any) {
+  if (confirm('Bạn có chắc chắn muốn xóa câu hỏi này?')) {
+    this.questionService.deleteQuestion(q.questionId).subscribe({
+      next: (res) => {
+        // Ưu tiên show message từ backend (dạng object hoặc string)
+        const msg = res?.message
+          ? res.message
+          : (typeof res === 'string' ? res : 'Xóa câu hỏi thành công!');
+        this.showMessage(msg, 'success');
+        this.loadPrompts();
+      },
+      error: (err) => {
+        let msg = 'Xóa câu hỏi thất bại!';
+        // Ưu tiên err.error.message nếu có, tiếp đến err.error dạng string
+        if (err?.error?.message) msg = err.error.message;
+        else if (typeof err?.error === 'string') msg = err.error;
+        this.showMessage(msg, 'error');
+      },
+    });
   }
+}
+
 
 
   //statistics
