@@ -1,7 +1,4 @@
 <div class="chat-panel">
-  <!-- <div class="panel-header">
-    <h2>💬 AI Exam Generator</h2>
-  </div> -->
 
   <div #messagesContainer class="messages-container">
     <ng-container *ngIf="messages?.length; else empty">
@@ -39,7 +36,9 @@
       (keydown.enter)="onEnter($event)"
       rows="1"></textarea>
 
-    <button (click)="sendMessage()" [disabled]="!newMessage?.trim() || isLoading">
+    <button 
+      (click)="sendMessage()" 
+      [disabled]="!newMessage.trim() || isLoading">
       <i class="fas fa-paper-plane"></i>
     </button>
   </div>

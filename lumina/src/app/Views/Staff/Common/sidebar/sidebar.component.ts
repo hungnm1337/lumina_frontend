@@ -46,7 +46,7 @@ export class SidebarComponent {
     }
   }
 
-     logout(): void {
+  logout(): void {
     this.authService.logout();
   }
 }
