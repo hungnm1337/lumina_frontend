@@ -606,7 +606,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
 
       const submittedQuestions = JSON.parse(raw);
       if (submittedQuestions && typeof submittedQuestions === 'object') {
-        return submittedQuestions[questionId] === true;
+        return submittedQuestions[String(questionId)] === true;
       }
       return false;
     } catch {
