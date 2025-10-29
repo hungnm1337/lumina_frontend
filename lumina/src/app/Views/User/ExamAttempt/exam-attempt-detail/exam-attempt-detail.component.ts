@@ -82,4 +82,12 @@ export class ExamAttemptDetailComponent implements OnInit {
   getOptionLetter(index: number): string {
     return String.fromCharCode(65 + index); // Converts 0->A, 1->B, etc.
   }
+
+  parseFeedback(feedbackJson: string): any {
+    try {
+      return JSON.parse(feedbackJson);
+    } catch {
+      return null;
+    }
+  }
 }

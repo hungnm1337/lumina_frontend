@@ -18,11 +18,14 @@
 
   <!-- Question Content -->
   <div class="mb-6">
-    <app-prompt
-      [prompt]="questions[currentIndex].prompt"
-      [resetAt]="currentIndex"
-      [questionType]="questions[currentIndex].questionType ?? ''"
-    ></app-prompt>
+    <h3 class="m-3 font-medium">{{ questions[currentIndex].stemText }}</h3>
+    @if( questions[currentIndex].prompt != null ) {
+      <app-prompt
+        [prompt]="questions[currentIndex].prompt"
+        [resetAt]="currentIndex"
+        [questionType]="questions[currentIndex].questionType ?? ''"
+      ></app-prompt>
+    }
   </div>
 
   <!-- Options -->
@@ -83,8 +86,8 @@
             ? 'w-10 h-10 rounded-lg bg-blue-600 text-white font-semibold'
             : isQuestionAnswered(question.questionId)
             ? answeredQuestions.get(question.questionId)?.isCorrect
-              ? 'w-10 h-10 rounded-lg bg-green-500 text-white'
-              : 'w-10 h-10 rounded-lg bg-red-500 text-white'
+              ? 'w-10 h-10 rounded-lg bg-green-600 text-white'
+              : 'w-10 h-10 rounded-lg bg-green-600 text-white'
             : 'w-10 h-10 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300'
         "
       >
@@ -100,13 +103,10 @@
         <span>Chưa làm</span>
       </div>
       <div class="flex items-center gap-1">
-        <div class="w-4 h-4 bg-green-500 rounded"></div>
-        <span>Đúng</span>
+        <div class="w-4 h-4 bg-green-600 rounded"></div>
+        <span>Đã làm</span>
       </div>
-      <div class="flex items-center gap-1">
-        <div class="w-4 h-4 bg-red-500 rounded"></div>
-        <span>Sai</span>
-      </div>
+
       <div class="flex items-center gap-1">
         <div class="w-4 h-4 bg-blue-600 rounded"></div>
         <span>Đang làm</span>
