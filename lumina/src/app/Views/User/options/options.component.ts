@@ -26,8 +26,6 @@ export class OptionsComponent implements OnChanges {
   // ✅ FIX: Emit optionId thay vì boolean
   @Output() answered = new EventEmitter<number>();
 
-  private correctAudio = new Audio('/correct.mp3');
-  private wrongAudio = new Audio('/wrong.mp3');
 
   ngOnChanges(changes: SimpleChanges): void {
     // Reset khi câu hỏi thay đổi
@@ -51,18 +49,8 @@ export class OptionsComponent implements OnChanges {
     }
 
     this.selectedOption = option;
-    const isCorrect = option.isCorrect === true;
-    this.playFeedback(isCorrect);
 
     // ✅ FIX: Emit optionId thay vì boolean
     this.answered.emit(option.optionId);
-  }
-
-  private playFeedback(isCorrect: boolean): void {
-    try {
-      const audio = isCorrect ? this.correctAudio : this.wrongAudio;
-      audio.currentTime = 0;
-      audio.play().catch(() => {});
-    } catch {}
   }
 }

@@ -6,22 +6,12 @@
     [disabled]="disabled"
     [class]="
       selectedOption?.optionId === option.optionId
-        ? option.isCorrect
-          ? 'w-full p-4 text-left rounded-lg border-2 transition-all duration-200 bg-green-50 border-green-500 text-green-900 font-semibold'
-          : 'w-full p-4 text-left rounded-lg border-2 transition-all duration-200 bg-red-50 border-red-500 text-red-900 font-semibold'
+        ? 'w-full p-4 text-left rounded-lg border-2 transition-all duration-200 bg-blue-50 border-blue-500 text-blue-900 font-semibold'
         : 'w-full p-4 text-left rounded-lg border-2 border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
     "
   >
     <div class="flex items-center justify-between">
       <span>{{ option.content }}</span>
-
-      <!-- ✅ Hiển thị icon khi đã chọn -->
-      @if (selectedOption?.optionId === option.optionId) { @if
-      (option.isCorrect) {
-      <i class="fas fa-check-circle text-green-600 text-xl"></i>
-      } @else {
-      <i class="fas fa-times-circle text-red-600 text-xl"></i>
-      } }
     </div>
   </button>
   }
