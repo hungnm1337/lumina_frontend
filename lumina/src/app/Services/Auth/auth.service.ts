@@ -164,6 +164,10 @@ getDecodedToken(): any | null {
     return null;
   }
 }
+getCurrentUserId(): number {
+    const user = this.getCurrentUser();
+    return user?.id ? parseInt(user.id.toString()) : 0;
+  }
 
   getRoleClaim(): string | null {
   const payload = this.getDecodedToken();
