@@ -10,6 +10,18 @@ export interface RegisterRequest {
   password: string;
 }
 
+export interface VerifyRegistrationRequest {
+  email: string;
+  otpCode: string;
+  name: string;
+  username: string;
+  password: string;
+}
+
+export interface ResendRegistrationOtpRequest {
+  email: string;
+}
+
 export interface ForgotPasswordRequest {
   email: string;
 }
@@ -36,9 +48,19 @@ export interface LoginResponse {
   user: AuthUserResponse;
 }
 
-export interface RegisterResponse {
+export interface SendOtpResponse {
   message: string;
-  userId: string;
+}
+
+export interface VerifyRegistrationResponse {
+  message: string;
+  token: string;
+  expiresIn: number;
+  user: AuthUserResponse;
+}
+
+export interface ResendOtpResponse {
+  message: string;
 }
 
 export interface GenericAuthResponse {

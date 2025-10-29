@@ -10,7 +10,11 @@ import {
   LoginRequest,
   LoginResponse,
   RegisterRequest,
-  RegisterResponse,
+  SendOtpResponse,
+  VerifyRegistrationRequest,
+  VerifyRegistrationResponse,
+  ResendRegistrationOtpRequest,
+  ResendOtpResponse,
   ResetPasswordRequest,
 } from '../../Interfaces/auth.interfaces';
 import { Router } from '@angular/router';
@@ -54,8 +58,44 @@ export class AuthService {
         })
       );
   }
-  register(request: RegisterRequest): Observable<RegisterResponse> {
-    return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, request);
+  // Step 1: send OTP to email (also validate username availability)
+  register(request: {
+    email: string;
+    username: string;
+  }): Observable<SendOtpResponse> {
+    return this.http.post<SendOtpResponse>(
+      `${this.apiUrl}/register/send-otp`,
+      request
+    );
+  }
+
+  verifyRegistration(
+    request: VerifyRegistrationRequest
+  ): Observable<VerifyRegistrationResponse> {
+    return this.http
+      .post<VerifyRegistrationResponse>(
+        `${this.apiUrl}/register/verify`,
+        request
+      )
+      .pipe(
+        tap((response) => {
+          // Auto login after successful verification
+          this.setSession({
+            token: response.token,
+            expiresIn: response.expiresIn,
+            user: response.user,
+          });
+        })
+      );
+  }
+
+  resendRegistrationOtp(
+    request: ResendRegistrationOtpRequest
+  ): Observable<ResendOtpResponse> {
+    return this.http.post<ResendOtpResponse>(
+      `${this.apiUrl}/register/resend-otp`,
+      request
+    );
   }
 
   forgotPassword(
@@ -79,6 +119,7 @@ export class AuthService {
   logout() {
     localStorage.removeItem('lumina_token');
     localStorage.removeItem('lumina_user');
+    // sessionStorage.clear();
     this.currentUserSource.next(null);
     this.router.navigate(['/login']);
   }
@@ -93,31 +134,48 @@ export class AuthService {
     return this.currentUserSource.value;
   }
 
-  getCurrentUserId(): number {
-    const user = this.getCurrentUser();
-    return user?.id ? parseInt(user.id.toString()) : 0;
-  }
+  // getDecodedToken(): any | null {
+  //   const token = localStorage.getItem('lumina_token');
+  //   if (!token) return null;
+  //   try {
+  //     return JSON.parse(atob(token.split('.')[1] || ''));
+  //   } catch {
+  //     return null;
+  //   }
+  // }
 
-  getDecodedToken(): any | null {
-    const token = localStorage.getItem('lumina_token');
-    if (!token) return null;
-    try {
-      return JSON.parse(atob(token.split('.')[1] || ''));
-    } catch {
-      return null;
-    }
+  // getRoleClaim(): string | null {
+  //   const payload = this.getDecodedToken();
+  //   if (!payload) return null;
+  //   return (
+  //     payload['role'] ||
+  //     payload['roles'] ||
+  //     payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
+  //     null
+  //   );
+  // }
+getDecodedToken(): any | null {
+  const token = localStorage.getItem('lumina_token');
+  if (!token) return null;
+  try {
+    return jwtDecode(token);
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return null;
   }
+}
 
   getRoleClaim(): string | null {
-    const payload = this.getDecodedToken();
-    if (!payload) return null;
-    return (
-      payload['role'] ||
-      payload['roles'] ||
-      payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
-      null
-    );
-  }
+  const payload = this.getDecodedToken();
+  if (!payload) return null;
+  return (
+    payload['role'] ||
+    payload['roles'] ||
+    payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
+    null
+  );
+}
+
 
   getRoleId(): number | null {
     const payload = this.getDecodedToken();
@@ -135,22 +193,26 @@ export class AuthService {
     return null;
   }
 
-  navigateByRole(): void {
-    const roleId = this.getRoleId();
-    switch (roleId) {
-      case 1:
-        this.router.navigate(['/admin']);
-        break;
-      case 2:
-        this.router.navigate(['/manager']);
-        break;
-      case 3:
-        this.router.navigate(['/staff/dashboard']);
-        break;
-      case 4:
-      default:
-        this.router.navigate(['/homepage/user-dashboard']);
-        break;
-    }
+navigateByRole(): void {
+  console.log('Role claim:', this.getRoleClaim());
+  console.log('Role ID:', this.getRoleId());
+
+  const roleId = this.getRoleId();
+  switch (roleId) {
+    case 1:
+      this.router.navigate(['/admin']);
+      break;
+    case 2:
+      this.router.navigate(['/manager']);
+      break;
+    case 3:
+      this.router.navigate(['/staff/dashboard']);
+      break;
+    case 4:
+    default:
+      this.router.navigate(['/homepage']);
+      break;
   }
+}
+
 }

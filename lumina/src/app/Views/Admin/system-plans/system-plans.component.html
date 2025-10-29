@@ -131,7 +131,7 @@
                 </div>
 
                 <!-- System Status -->
-                <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <!-- <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                     <h5 class="font-semibold text-gray-800 mb-3 flex items-center">
                         <i class="fas fa-server text-orange-500 mr-2"></i>
                         Trạng thái hệ thống
@@ -150,7 +150,7 @@
                             <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Chậm</span>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
 
         </div>
@@ -191,7 +191,7 @@
                         <tr *ngFor="let pkg of packageList" class="hover:bg-gray-50"
                             [ngClass]="{'bg-blue-50': pkg.packageId === 1}">
                             <td class="px-6 py-4 whitespace-nowrap flex items-center">
-                                <div [ngClass]="{
+                                <!-- <div [ngClass]="{
                       'bg-blue-100': pkg.packageId === 1,
                       'bg-green-100': pkg.packageId === 2,
                       'bg-purple-100': pkg.packageId === 3
@@ -201,7 +201,7 @@
                       'fas fa-crown text-green-600': pkg.packageId === 2,
                       'fas fa-crown text-purple-600': pkg.packageId === 3
                     }"></i>
-                                </div>
+                                </div> -->
                                 <div>
                                     <div class="flex items-center">
                                         <span class="text-sm font-medium text-gray-900">{{pkg.packageName}}</span>

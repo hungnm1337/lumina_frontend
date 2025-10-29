@@ -25,7 +25,7 @@ export interface ExamPartDTO {
 export interface QuestionDTO {
   questionId: number;
   partId: number;
-  questionType: string;
+  questionType?: string;
   stemText: string;
   promptId?: number;
   scoreWeight: number;
@@ -40,11 +40,21 @@ export interface QuestionDTO {
 export interface PromptDTO {
   promptId: number;
   skill: string;
-   title: string;
+  partCode?: string;
+  title: string;
   contentText: string;
   referenceImageUrl?: string;
   referenceAudioUrl?: string;
 }
+
+// ✨ NEW: Interface cho saved answers trong localStorage
+export interface ListeningSavedAnswer {
+  questionId: number;
+  selectedOptionId: number | null;
+  isCorrect: boolean;
+  timestamp: number;
+}
+
 export interface PartDetailResponse {
   part: ExamPartDTO;
 

@@ -5,6 +5,7 @@ import { CommonModule, NgIf, DatePipe, NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StatisticService } from '../../../../Services/Statistic/statistic.service';
 import { PackagesService } from '../../../../Services/Packages/packages.service';
+import { RoleService } from '../../../../Services/Role/role.service';
 
 @Component({
   selector: 'app-user-detail',
@@ -25,16 +26,21 @@ export class UserDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private userService: UserService,
     private statisticService: StatisticService,
-    private packagesService: PackagesService
+    private packagesService: PackagesService,
+    private roleService: RoleService
   ) { }
 
-  ngOnInit() {
-    this.route.params.subscribe(params => {
-      this.userId = +params['id'];
-      this.loadUserDetail();
-      this.loadUserProSummary();
-    });
-  }
+ngOnInit() {
+  this.initData();
+}
+
+  initData() {
+  this.route.params.subscribe(params => {
+    this.userId = +params['id'];
+    this.loadUserDetail();
+    this.loadUserProSummary();
+  });
+}
 
   loadUserDetail() {
     this.isLoading = true;
@@ -90,4 +96,51 @@ export class UserDetailComponent implements OnInit {
       });
     }
   }
+
+  roles: any[] = [];
+selectedRoleId!: number;
+showRoleModal = false;
+
+openRoleModal() {
+  this.showRoleModal = true;
+  this.roleService.getAllRoles().subscribe({
+    next: (data) => {
+      this.roles = data;
+      this.selectedRoleId = this.user.roleId; 
+    }
+  });
+}
+
+saveRole() {
+  if (this.selectedRoleId === this.user.roleId) {
+    this.showRoleModal = false;
+    return; 
+  }
+
+  this.userService.updateUserRole(this.user.userId, this.selectedRoleId).subscribe({
+    next: () => {
+      this.user.roleId = this.selectedRoleId;
+      const role = this.roles.find(r => r.roleId === this.selectedRoleId);
+      if (role) this.user.roleName = role.roleName;
+      this.showRoleModal = false;
+      this.showMessage('Cập nhật quyền thành công!', 'success');
+      this.initData();
+    },
+    error: () => {
+      this.showMessage('Có lỗi khi cập nhật quyền!', 'error');
+      this.showRoleModal = false;
+    }
+  });
+}
+
+message: string = '';
+messageType: 'success' | 'error' = 'success';
+
+showMessage(msg: string, type: 'success' | 'error' = 'success') {
+  this.message = msg;
+  this.messageType = type;
+  setTimeout(() => this.message = '', 3000);
+}
+
+
 }

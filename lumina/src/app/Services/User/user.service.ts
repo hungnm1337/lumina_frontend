@@ -86,6 +86,13 @@ getUserById(userId: number): Observable<any> {
 }
 
 
+updateUserRole(userId: number, roleId: number): Observable<any> {
+  return this.http.put(
+    `${this.baseUrl}/update-role?userId=${userId}&roleId=${roleId}`,
+    {},
+    { headers: this.getAuthHeaders() }
+  );
+}
 
 
 }

@@ -48,37 +48,18 @@ export class PartQuestionComponent {
     if (this.partId) {
       this.examService.GetExamPartDetailAndQuestion(this.partId).subscribe({
         next: (data) => {
-          console.log('✅ Part detail loaded:', data);
-          console.log('✅ Questions loaded:', data.questions);
-
-          // ✅ Log chi tiết từng question
-          data.questions?.forEach((q, i) => {
-            console.log(`Question ${i}:`, {
-              id: q.questionId,
-              type: q.questionType,
-              hasPrompt: !!q.prompt,
-              promptContent: q.prompt?.contentText,
-            });
-          });
-
           this.partDetail = data;
-          console.log('Part detail loaded:', this.partDetail);
-          console.log('Questions count:', this.partDetail.questions?.length || 0);
           this.questions = this.partDetail.questions;
-          console.log('Questions data:', this.questions);
 
           // tùy vào part code có chứa "writing , reading, listening"
 
           if(this.partDetail.partCode.search('WRI')){
             this.isWritingExam = true;
-            console.log('isWritingExam set to true');
           }else if(this.partDetail.partCode.search('REA')){
             this.isReadingExam = true;
-            console.log('isReadingExam set to true');
           }
           else if(this.partDetail.partCode.search('LIS')){
             this.isListeningExam = true;
-            console.log('isListeningExam set to true');
           }
 
           this.partInfo ={
@@ -92,23 +73,13 @@ export class PartQuestionComponent {
           this.questions = this.partDetail.questions || [];
           this.isLoading = false;
 
-          console.log('✅ Final questions array:', this.questions);
-
-          // ✅ Xác định exam type ngay từ partCode
+          // Xác định exam type ngay từ partCode
           this.determineExamTypeFromPartCode();
-          console.log('✅ Exam type flags:', {
-            partCode: this.partDetail?.partCode,
-            isWriting: this.isWritingExam,
-            isSpeaking: this.isSpeakingExam,
-            isReading: this.isReadingExam,
-            isListening: this.isListeningExam,
-          });
 
           // Load exam type để có thêm thông tin (optional)
           this.loadExamType();
         },
         error: (error) => {
-          console.error('❌ Error loading part detail:', error);
           this.isLoading = false;
         },
       });
@@ -122,17 +93,9 @@ export class PartQuestionComponent {
           this.examType = examData.examType || '';
           // Determine exam type based on partCode instead of examType
           this.determineExamTypeFromPartCode();
-          console.log('Exam type:', this.examType);
-          console.log('Part code:', this.partDetail?.partCode);
-          console.log('Exam type flags:', {
-            isWriting: this.isWritingExam,
-            isSpeaking: this.isSpeakingExam,
-            isReading: this.isReadingExam,
-            isListening: this.isListeningExam,
-          });
         },
         error: (error) => {
-          console.error('Error loading exam type:', error);
+          // Handle error silently
         },
       });
     }
@@ -140,8 +103,6 @@ export class PartQuestionComponent {
 
   private determineExamTypeFromPartCode(): void {
     const partCode = this.partDetail?.partCode?.toUpperCase() || '';
-
-    console.log('🔍 Determining exam type from partCode:', partCode);
 
     // Check partCode to determine exam type
     if (partCode.includes('SPEAKING')) {
@@ -165,10 +126,8 @@ export class PartQuestionComponent {
       this.isReadingExam = false;
       this.isListeningExam = false;
       this.isWritingExam = true;
-      console.log('✅ Detected as Writing exam');
     } else {
       // Fallback to exam type if partCode doesn't match
-      console.log('⚠️ PartCode not matched, using examType fallback');
       const type = this.examType.toUpperCase();
       this.isSpeakingExam = type.includes('SPEAKING');
       this.isReadingExam = type.includes('READING');
@@ -178,22 +137,18 @@ export class PartQuestionComponent {
   }
 
   onWritingAnswered(isCorrect: boolean): void {
-    console.log('Writing answer submitted:', isCorrect);
     // Handle writing answer submission if needed
   }
 
   onSpeakingAnswered(isCorrect: boolean): void {
-    console.log('Speaking answer submitted:', isCorrect);
     // Handle speaking answer submission if needed
   }
 
   onReadingAnswered(isCorrect: boolean): void {
-    console.log('Reading answer submitted:', isCorrect);
     // Handle reading answer submission if needed
   }
 
   onListeningAnswered(isCorrect: boolean): void {
-    console.log('Listening answer submitted:', isCorrect);
     // Handle listening answer submission if needed
   }
 }

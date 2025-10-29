@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ExamService } from '../../../Services/Exam/exam.service';
 import { ExamDTO } from '../../../Interfaces/exam.interfaces';
-
+import { ExamAttemptRequestDTO } from '../../../Interfaces/ExamAttempt/ExamAttemptRequestDTO.interface';
+import { AuthService } from '../../../Services/Auth/auth.service';
+import { ExamAttemptService } from '../../../Services/ExamAttempt/exam-attempt.service';
 @Component({
   selector: 'app-exam-part',
   standalone: true,
@@ -12,6 +14,7 @@ import { ExamDTO } from '../../../Interfaces/exam.interfaces';
   styleUrl: './exam-part.component.scss',
 })
 export class ExamPartComponent {
+  examattemptRequestDTO: ExamAttemptRequestDTO | null = null;
   examDetail: ExamDTO | null = null;
   examId: number | null = null;
   isLoading = true;
@@ -19,7 +22,9 @@ export class ExamPartComponent {
   constructor(
     private route: ActivatedRoute,
     private examService: ExamService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService,
+    private examAttemptService: ExamAttemptService
   ) {
     this.examId = Number(this.route.snapshot.paramMap.get('id'));
     this.loadExamDetail();
@@ -74,7 +79,41 @@ export class ExamPartComponent {
   }
 
   startPart(partId: number): void {
-    console.log('Starting part ID:', partId);
+    //kiểm tra currentExamAttempt trong localstorage nếu có thì xóa đi để bắt đầu attempt mới
+    localStorage.removeItem('currentExamAttempt');
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser?.id) {
+      console.error('No user ID found');
+      return;
+    }
+
+    if (!this.examId) {
+      console.error('No exam ID found');
+      return;
+    }
+
+    this.examattemptRequestDTO = {
+      attemptID: 0,
+      userID: Number(currentUser.id),
+      examID: this.examId,
+      examPartId: partId,
+      startTime: new Date().toISOString(),
+      endTime: null,
+      score: null,
+      status: 'Doing'
+    };
+
+    this.examAttemptService.startExam(this.examattemptRequestDTO).subscribe({
+      next: (response) => {
+        // Lưu thông tin attempt vào localStorage
+        localStorage.setItem('currentExamAttempt', JSON.stringify(response));
+        console.log('Exam attempt started successfully:', response);
+      },
+      error: (error) => {
+        console.error('Error starting exam attempt:', error);
+      }
+    });
+
     this.router.navigate(['/homepage/user-dashboard/part', partId]);
   }
 
