@@ -1,8 +1,17 @@
-
 @if (questions && questions.length > 0 && !isFinished) {
-<div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5 flex flex-col gap-3">
+<div class="w-full bg-white rounded-lg shadow-md p-6">
+  <!-- Progress Header -->
+  <div class="mb-4 flex items-center justify-between">
+    <div class="text-sm text-gray-600">
+      Câu {{ currentIndex + 1 }} / {{ questions.length }}
+    </div>
+    <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded font-medium">
+      Điểm: {{ totalScore }}
+    </span>
+  </div>
+
   <!-- Header with Timer and Question Info -->
-  <div class="flex items-start justify-between gap-3">
+  <div class="flex items-start justify-between gap-3 mb-4">
     <div class="space-y-2">
       <app-time
         [time]="questions[currentIndex].time"
@@ -15,128 +24,195 @@
 
   <!-- Question Content -->
   @if (getCurrentQuestion()) {
-    <div class="border border-gray-200 rounded-lg p-4 mb-4">
-      <div class="mb-3">
-        <h4 class="font-medium text-gray-900 mb-2">
-          Question {{ currentIndex + 1 }}: {{ getCurrentQuestion()?.stemText }}
-        </h4>
-        @if (getCurrentQuestion()?.prompt?.contentText) {
-          <div class="font-medium text-gray-600 mb-2">
-            <strong>{{ getCurrentQuestion()?.prompt?.title }}</strong>
-            {{ getCurrentQuestion()?.prompt?.contentText }}
-          </div>
-        }
+  <div class="border border-gray-200 rounded-lg p-4 mb-4">
+    <div class="mb-3">
+      <h4 class="font-medium text-gray-900 mb-2">
+        Question {{ currentIndex + 1 }}: {{ getCurrentQuestion()?.stemText }}
+      </h4>
+      @if (getCurrentQuestion()?.prompt?.contentText) {
+      <div class="font-medium text-gray-600 mb-2">
+        <strong>{{ getCurrentQuestion()?.prompt?.title }}</strong>
+        {{ getCurrentQuestion()?.prompt?.contentText }}
       </div>
+      }
+    </div>
 
-      @if (getCurrentQuestion()?.prompt?.referenceImageUrl) {
-        <div class="mb-4 mx-auto">
-          <img
-            [src]="getCurrentQuestion()?.prompt?.referenceImageUrl"
-            [alt]="'Question ' + (currentIndex + 1) + ' image'"
-            class="max-w-full w-8/12 mx-auto h-auto rounded-lg border border-gray-200"
-          >
-        </div>
+    @if (getCurrentQuestion()?.prompt?.referenceImageUrl) {
+    <div class="mb-4 mx-auto">
+      <img
+        [src]="getCurrentQuestion()?.prompt?.referenceImageUrl"
+        [alt]="'Question ' + (currentIndex + 1) + ' image'"
+        class="max-w-full w-8/12 mx-auto h-auto rounded-lg border border-gray-200"
+      />
+    </div>
 
-
-      <div class="mb-4">
-        <button
-          class="btn border-s-blue-400 inline-flex items-center gap-2 px-4 py-2 rounded-md border border-blue-500 text-blue-600 hover:bg-blue-50 active:bg-blue-100 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
-          (click)="showHint()"
-          [disabled]="isLoading"
-        >
-          Show Hint
-        </button>
-        @if (isLoading) {
-          <svg
-            class="animate-spin h-4 w-4 text-blue-600 inline-block ml-2"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-            <path d="M4 12h16" stroke="currentColor" stroke-width="4" stroke-linecap="round" />
-          </svg>
-        }@if (isShowHint && !isLoading) {
-          <span class="ml-2 text-sm text-gray-600"
-            *ngIf="pictureCaption">Caption: {{ pictureCaption }}</span>
-        }
-      </div>
+    <div class="mb-4">
+      <button
+        class="btn border-s-blue-400 inline-flex items-center gap-2 px-4 py-2 rounded-md border border-blue-500 text-blue-600 hover:bg-blue-50 active:bg-blue-100 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
+        (click)="showHint()"
+        [disabled]="isLoading"
+      >
+        Show Hint
+      </button>
+      @if (isLoading) {
+      <svg
+        class="animate-spin h-4 w-4 text-blue-600 inline-block ml-2"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+        <path
+          d="M4 12h16"
+          stroke="currentColor"
+          stroke-width="4"
+          stroke-linecap="round"
+        />
+      </svg>
+      }@if (isShowHint && !isLoading) {
+      <span class="ml-2 text-sm text-gray-600" *ngIf="pictureCaption"
+        >Caption: {{ pictureCaption }}</span
+      >
+      }
+    </div>
     }
 
-      <!-- Writing Answer Box -->
-      <app-writing-answer-box
-        [questionId]="getCurrentQuestion()?.questionId || 0"
-        [disabled]="showExplain"
-        [resetAt]="currentIndex"
-        [contentText]="getCurrentQuestion()?.prompt?.contentText"
-        [pictureCaption]="pictureCaption"
-        (answered)="onAnswerSubmitted(getCurrentQuestion()?.questionId || 0, $event)"
-        (answerChange)="onAnswerChange($event.questionId, $event.answer)"
-      ></app-writing-answer-box>
-    </div>
-  }
+    <!-- Writing Answer Box -->
+    <app-writing-answer-box
+      [questionId]="getCurrentQuestion()?.questionId || 0"
+      [disabled]="showExplain"
+      [resetAt]="currentIndex"
+      [contentText]="getCurrentQuestion()?.prompt?.contentText"
+      [pictureCaption]="pictureCaption"
+      (answered)="
+        onAnswerSubmitted(getCurrentQuestion()?.questionId || 0, $event)
+      "
+      (answerChange)="onAnswerChange($event.questionId, $event.answer)"
+    ></app-writing-answer-box>
 
-  @if (showExplain) {
-    <div class="mt-3 p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-800 text-sm">
-      {{ getCurrentQuestion()?.questionExplain }}
+    <!-- Navigation Controls -->
+    <div class="mt-6 flex items-center justify-between">
+      <button
+        (click)="previousQuestion()"
+        [disabled]="currentIndex === 0"
+        class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <i class="fas fa-arrow-left mr-2"></i>Câu trước
+      </button>
+
+      <div class="flex gap-2">
+        <button
+          (click)="confirmExit()"
+          class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600"
+        >
+          Lưu & Thoát
+        </button>
+        <button
+          (click)="finishWritingExam()"
+          class="px-4 py-2 rounded bg-orange-600 text-white hover:bg-orange-700"
+        >
+          Nộp bài
+        </button>
+      </div>
+
+      <button
+        (click)="nextQuestion()"
+        [disabled]="currentIndex === questions.length - 1"
+        class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Câu sau<i class="fas fa-arrow-right ml-2"></i>
+      </button>
     </div>
+
+    <!-- Question Navigator -->
+    <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+      <h4 class="text-sm font-semibold text-gray-600 mb-3">Navigator</h4>
+      <div class="grid grid-cols-10 gap-2">
+        @for (question of questions; track question.questionId; let i = $index)
+        {
+        <button
+          (click)="navigateToQuestion(i)"
+          [class]="
+            i === currentIndex
+              ? 'w-10 h-10 rounded-lg bg-blue-600 text-white font-semibold'
+              : hasAnswer(question.questionId)
+              ? 'w-10 h-10 rounded-lg bg-green-500 text-white'
+              : 'w-10 h-10 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300'
+          "
+        >
+          {{ i + 1 }}
+        </button>
+        }
+      </div>
+
+      <!-- ✅ Legend - Chú thích màu sắc -->
+      <div class="mt-4 flex items-center gap-4 text-xs text-gray-600">
+        <div class="flex items-center gap-1">
+          <div class="w-4 h-4 bg-gray-200 rounded"></div>
+          <span>Chưa làm</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <div class="w-4 h-4 bg-green-500 rounded"></div>
+          <span>Đã làm</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <div class="w-4 h-4 bg-blue-600 rounded"></div>
+          <span>Đang làm</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  } @if (showExplain) {
+  <div
+    class="mt-3 p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-800 text-sm"
+  >
+    {{ getCurrentQuestion()?.questionExplain }}
+  </div>
   }
 </div>
 } @if (isFinished) {
-<div class="mt-4 bg-white rounded-lg border border-gray-200 shadow-sm p-5">
-  <div class="flex items-center justify-between">
-    <div class="text-gray-800 font-semibold">Completed</div>
-    <div class="text-sm text-gray-600">Score: {{ totalScore }}</div>
-  </div>
-  <div class="mt-3 text-gray-700">
-    You answered correctly {{ correctCount }}/{{ questions?.length || 0 }} ({{
-      percentCorrect
-    }}%).
-  </div>
+<!-- Summary Screen -->
+<div class="text-center py-8 bg-white rounded-lg shadow-md p-6">
   <div
-    class="mt-2 p-3 rounded-md"
-    [ngClass]="{
-      'bg-red-50 text-red-700 border border-red-200': percentCorrect < 30,
-      'bg-yellow-50 text-yellow-700 border border-yellow-200':
-        percentCorrect >= 30 && percentCorrect < 60,
-      'bg-green-50 text-green-700 border border-green-200': percentCorrect >= 60
-    }"
+    class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full mb-4"
   >
-    {{ feedbackText }}
+    <i class="fas fa-trophy text-white text-4xl"></i>
   </div>
-  <div class="mt-4">
-    <div class="text-sm font-medium text-gray-700 mb-2">
-      Saved Answers (localStorage)
+  <h2 class="text-3xl font-bold text-gray-800 mb-2">Hoàn thành bài Writing!</h2>
+  <p class="text-gray-600 mb-6">Writing Practice</p>
+
+  <!-- Score Statistics -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-6">
+      <div class="text-4xl font-bold text-purple-600 mb-2">
+        {{ totalScore }}
+      </div>
+      <div class="text-sm text-purple-700">Tổng điểm</div>
     </div>
-    @if (savedAnswers && savedAnswers.length > 0) {
-      <ul class="pl-0 text-sm text-gray-700 space-y-1">
-        @for (ans of savedAnswers; track ans.questionId) {
-          <li class="flex items-center gap-2">
-            <span class="inline-block min-w-24">Question {{ ans.questionId }}</span>
-            <span class="inline-block">→ Saved: {{ ans.answer.length }} characters</span>
-          </li>
-        }
-      </ul>
-    } @else {
-      <div class="text-sm text-gray-500">No saved data.</div>
-    }
+    <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6">
+      <div class="text-4xl font-bold text-green-600 mb-2">
+        {{ correctCount }}/{{ questions?.length || 0 }}
+      </div>
+      <div class="text-sm text-green-700">Số câu</div>
+    </div>
+    <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6">
+      <div class="text-4xl font-bold text-blue-600 mb-2">
+        {{ percentCorrect }}%
+      </div>
+      <div class="text-sm text-blue-700">Tỷ lệ hoàn thành</div>
+    </div>
+  </div>
+
+  <p class="text-lg text-gray-700 mb-6">{{ feedbackText }}</p>
+
+  <!-- Action Buttons -->
+  <div class="flex gap-4 justify-center">
     <button
-      class="mt-3 px-3 py-1.5 rounded bg-red-600 text-white hover:bg-red-700"
-      (click)="clearSavedData()"
+      (click)="resetExam()"
+      class="px-6 py-4 rounded-xl bg-gradient-to-r from-green-600 to-teal-600 text-white hover:from-green-700 hover:to-teal-700 font-semibold shadow-lg"
     >
-      Clear Storage
+      <i class="fas fa-redo-alt mr-2"></i>Làm lại
     </button>
-  </div>
-  <div class="flex gap-4">
-    <div class="mt-4">
-      <button
-        class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-        (click)="resetExam()"
-      >
-        Retry
-      </button>
-    </div>
   </div>
 </div>
 }
-
