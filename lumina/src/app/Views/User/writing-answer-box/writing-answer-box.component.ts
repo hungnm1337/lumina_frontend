@@ -2,7 +2,14 @@ import { Component, Input, Output, EventEmitter, OnChanges, OnDestroy, SimpleCha
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../Services/Auth/auth.service';
-
+import { WritingRequestDTO } from '../../../Interfaces/WrittingExam/WritingRequestDTO.interface';
+import { WritingResponseDTO } from '../../../Interfaces/WrittingExam/WritingResponseDTO.interface';
+import { WritingAnswerRequestDTO } from '../../../Interfaces/WritingAnswer/WritingAnswerRequestDTO.interface';
+import { ToastService } from '../../../Services/Toast/toast.service';
+import { FeedbackComponent } from "./Feedback/feedback/feedback.component";
+import { WritingExamPartOneService } from '../../../Services/Exam/Writing/writing-exam-part-one.service';
+import { ExamAttemptService } from '../../../Services/ExamAttempt/exam-attempt.service';
+import { forkJoin } from 'rxjs';
 @Component({
   selector: 'app-writing-answer-box',
   standalone: true,
@@ -14,30 +21,97 @@ export class WritingAnswerBoxComponent implements OnChanges, OnDestroy {
   @Input() questionId: number = 0;
   @Input() disabled: boolean = false;
   @Input() resetAt: number = 0;
+  @Input() contentText: string | undefined;
+  @Input() pictureCaption: string | undefined;
   @Output() answered = new EventEmitter<boolean>();
+  @Output() answerChange = new EventEmitter<{questionId: number, answer: string}>();
+  @Output() submitStart = new EventEmitter<number>(); // ✅ Emit when submission starts
+  @Output() submitEnd = new EventEmitter<number>();   // ✅ Emit when submission ends
 
+  writingRequest: WritingRequestDTO | undefined;;
   userAnswer: string = '';
-  private autoSaveInterval: any = null;
-  private readonly AUTO_SAVE_INTERVAL = 10000; // 10 seconds
+  isLoadingFeedback: boolean = false;
 
-  constructor(private authService: AuthService) {
-    this.startAutoSave();
+  constructor(
+    private authService: AuthService,
+    private writingExamPartOneService: WritingExamPartOneService,
+    private toast: ToastService,
+    private examAttemptService: ExamAttemptService
+  ) {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['resetAt'] || changes['questionId']) {
       this.loadSavedAnswer();
+      // Reset loading state when question changes
+      this.isLoadingFeedback = false;
     }
   }
 
   ngOnDestroy(): void {
-    this.stopAutoSave();
+    // Component cleanup - auto-save is handled by parent WritingComponent
   }
 
   private getStorageKey(): string | null {
-    const userId = this.authService.getCurrentUser()?.id;
-    if (userId === undefined || userId === null) return null;
-    return `Answer_Writting_${userId}`;
+    localStorage.getItem('currentExamAttempt');
+    const attemptId = this.getAttemptIdFromLocalStorage();
+    if (attemptId === undefined || attemptId === null) return null;
+    return `Answer_Writting_${attemptId}`;
+  }
+
+  private getSubmittedStorageKey(): string | null {
+    const attemptId = this.getAttemptIdFromLocalStorage();
+    if (attemptId === undefined || attemptId === null) return null;
+    return `Submitted_Writting_${attemptId}`;
+  }
+
+  isQuestionSubmitted(): boolean {
+    try {
+      const key = this.getSubmittedStorageKey();
+      if (!key) return false;
+
+      const raw = localStorage.getItem(key);
+      if (!raw) return false;
+
+      const submittedQuestions = JSON.parse(raw);
+      if (submittedQuestions && typeof submittedQuestions === 'object') {
+        const isSubmitted = submittedQuestions[String(this.questionId)] === true;
+        console.log(`🔍 Checking if question ${this.questionId} is submitted:`, isSubmitted);
+        console.log('📦 Submitted questions:', submittedQuestions);
+        return isSubmitted;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  }
+
+  private markQuestionAsSubmitted(): void {
+    try {
+      const key = this.getSubmittedStorageKey();
+      if (!key) return;
+
+      const raw = localStorage.getItem(key);
+      let submittedQuestions: Record<string, boolean> = {};
+
+      if (raw) {
+        try {
+          submittedQuestions = JSON.parse(raw);
+        } catch {
+          submittedQuestions = {};
+        }
+      }
+
+      console.log('🔒 Marking question as submitted:', this.questionId);
+      console.log('📦 Before:', submittedQuestions);
+
+      submittedQuestions[String(this.questionId)] = true;
+      localStorage.setItem(key, JSON.stringify(submittedQuestions));
+
+      console.log('📦 After:', submittedQuestions);
+    } catch {
+      // Best-effort only; ignore storage errors
+    }
   }
 
   private loadSavedAnswer(): void {
@@ -50,7 +124,16 @@ export class WritingAnswerBoxComponent implements OnChanges, OnDestroy {
 
       const savedAnswers = JSON.parse(raw);
       if (savedAnswers && typeof savedAnswers === 'object') {
-        this.userAnswer = savedAnswers[this.questionId] || '';
+        const answerData = savedAnswers[String(this.questionId)];
+        if (answerData && typeof answerData === 'object') {
+          // New format: {questionId, answer}
+          this.userAnswer = answerData.answer || '';
+        } else if (typeof answerData === 'string') {
+          // Old format: just string
+          this.userAnswer = answerData;
+        } else {
+          this.userAnswer = '';
+        }
       }
     } catch {
       this.userAnswer = '';
@@ -63,7 +146,7 @@ export class WritingAnswerBoxComponent implements OnChanges, OnDestroy {
       if (!key) return;
 
       const raw = localStorage.getItem(key);
-      let savedAnswers: Record<string, string> = {};
+      let savedAnswers: Record<string, any> = {};
 
       if (raw) {
         try {
@@ -73,40 +156,153 @@ export class WritingAnswerBoxComponent implements OnChanges, OnDestroy {
         }
       }
 
-      savedAnswers[this.questionId] = this.userAnswer;
+      // Save with questionId included
+      savedAnswers[String(this.questionId)] = {
+        questionId: this.questionId,
+        answer: this.userAnswer,
+        savedAt: new Date().toISOString()
+      };
       localStorage.setItem(key, JSON.stringify(savedAnswers));
+
+      console.log('💾 Saved answer for question:', this.questionId);
     } catch {
       // Best-effort only; ignore storage errors
     }
   }
 
   onAnswerChange(): void {
-    // No auto-save on typing - only manual save and 10s interval
+    // Emit answer change event for parent component
+    this.answerChange.emit({
+      questionId: this.questionId,
+      answer: this.userAnswer
+    });
   }
 
   onSubmit(): void {
-    if (this.disabled || !this.userAnswer.trim()) return;
+    this.onSave();
+    if (this.disabled || !this.userAnswer.trim() || this.isQuestionSubmitted()) return;
 
-    // For writing questions, we'll emit true if there's content
-    // The actual correctness will be determined by the backend or manual grading
-    this.answered.emit(true);
+    const attemptId = this.getAttemptIdFromLocalStorage();
+    if (!attemptId) {
+      this.toast.error('Không tìm thấy thông tin bài thi');
+      return;
+    }
+
+    const vocabularyRequest = this.contentText || '';
+    const pictureCaption = this.pictureCaption || '';
+    this.writingRequest = {
+      pictureCaption: pictureCaption,
+      vocabularyRequest: vocabularyRequest,
+      userAnswer: this.userAnswer
+    };
+
+    this.isLoadingFeedback = true;
+    this.submitStart.emit(this.questionId); // ✅ Emit start event
+
+    // Bước 1: Lấy feedback từ AI
+    this.writingExamPartOneService.GetFeedbackOfWritingPartOne(this.writingRequest).subscribe({
+      next: (feedback) => {
+        // Lưu feedback vào localStorage
+        this.saveFeedbackToLocalStorage(this.questionId, feedback);
+
+        // Bước 2: Tạo DTO để lưu vào database
+        const dto: WritingAnswerRequestDTO = {
+          userAnswerWritingId: 0,
+          attemptID: attemptId,
+          questionId: this.questionId,
+          userAnswerContent: this.userAnswer,
+          feedbackFromAI: JSON.stringify(feedback),
+        };
+
+        // Bước 3: Lưu vào database
+        this.writingExamPartOneService.SaveWritingAnswer(dto).subscribe({
+          next: (success) => {
+            if (success) {
+              // Đánh dấu câu đã nộp
+              this.markQuestionAsSubmitted();
+
+              // Tắt loading
+              this.isLoadingFeedback = false;
+              this.submitEnd.emit(this.questionId); // ✅ Emit end event
+
+              // Hiển thị thông báo thành công
+              const displayIndex = (this.resetAt || 0) + 1;
+              this.toast.success(`Nộp câu thành công (Câu ${displayIndex})`);
+
+              // Emit event
+              this.answered.emit(true);
+            } else {
+              this.isLoadingFeedback = false;
+              this.submitEnd.emit(this.questionId); // ✅ Emit end event on failure
+              this.toast.error('Không thể lưu câu trả lời. Vui lòng thử lại!');
+            }
+          },
+          error: (error) => {
+            console.error('Error saving writing answer to database:', error);
+            this.isLoadingFeedback = false;
+            this.submitEnd.emit(this.questionId); // ✅ Emit end event on error
+            this.toast.error('Lỗi khi lưu câu trả lời. Vui lòng thử lại!');
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Error fetching writing feedback:', error);
+        this.isLoadingFeedback = false;
+        this.submitEnd.emit(this.questionId); // ✅ Emit end event on error
+        this.toast.error('Lỗi khi lấy phản hồi từ AI. Vui lòng thử lại!');
+      }
+    });
   }
 
   onSave(): void {
+    if (this.isQuestionSubmitted()) return;
     this.saveAnswer();
   }
 
-  private startAutoSave(): void {
-    this.stopAutoSave();
-    this.autoSaveInterval = setInterval(() => {
-      this.saveAnswer();
-    }, this.AUTO_SAVE_INTERVAL);
+  private getAttemptIdFromLocalStorage(): number | null {
+    try {
+      const raw = localStorage.getItem('currentExamAttempt');
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      const id = parsed?.attemptID ?? parsed?.attemptId;
+      return typeof id === 'number' ? id : Number(id) || null;
+    } catch {
+      return null;
+    }
   }
 
-  private stopAutoSave(): void {
-    if (this.autoSaveInterval) {
-      clearInterval(this.autoSaveInterval);
-      this.autoSaveInterval = null;
+  private getFeedbackStorageKey(): string | null {
+    //lấy attempt id
+    localStorage.getItem('currentExamAttempt');
+    const attemptId = this.getAttemptIdFromLocalStorage();
+    return `Writing_Feedback_${attemptId}`;
+  }
+
+  private saveFeedbackToLocalStorage(questionId: number, feedback: WritingResponseDTO): void {
+    try {
+      const key = this.getFeedbackStorageKey();
+      if (!key) return;
+      const raw = localStorage.getItem(key);
+      let map: Record<string, any> = {};
+      if (raw) {
+        try {
+          map = JSON.parse(raw);
+        } catch {
+          map = {};
+        }
+      }
+
+      // Save with questionId included
+      map[String(questionId)] = {
+        questionId: questionId,
+        feedback: feedback,
+        savedAt: new Date().toISOString()
+      };
+      localStorage.setItem(key, JSON.stringify(map));
+
+      console.log('💾 Saved feedback for question:', questionId);
+    } catch {
+      // ignore storage error
     }
   }
 

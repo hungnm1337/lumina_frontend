@@ -23,6 +23,8 @@ export interface VocabularyListResponse {
   makeByName: string;
   createAt: string;
   vocabularyCount: number;
+  status?: string;
+  rejectionReason?: string;
 }
 
 export interface VocabularyStats {

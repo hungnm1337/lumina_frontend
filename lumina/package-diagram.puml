@@ -1,0 +1,32 @@
+@startuml Lumina Frontend Package Diagram
+
+skinparam packageStyle rectangle
+skinparam backgroundColor white
+skinparam arrowColor black
+skinparam packageBorderColor black
+
+package "Lumina Frontend" as LuminaFrontend {
+  package "App" as App {
+    package "Interfaces" as Interfaces
+    
+    package "Services" as Services
+    
+    package "Views" as Views {
+      package "Admin" as AdminViews
+      package "Auth" as AuthViews
+      package "Common" as CommonViews
+      package "Manage" as ManageViews
+      package "Staff" as StaffViews
+      package "User" as UserViews
+    }
+  }
+}
+
+' Mối quan hệ chính
+Interfaces <-- Services : uses
+Services <-- Views : uses
+
+' Mối quan hệ routing
+Views <-- App : routes
+
+@enduml

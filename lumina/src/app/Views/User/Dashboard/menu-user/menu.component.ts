@@ -8,9 +8,14 @@ import { Router } from '@angular/router';
   styleUrl: './menu.component.scss'
 })
 export class MenuComponent {
+
   constructor(private router: Router ) {}
   movetoExams() {
     this.router.navigate(['homepage/user-dashboard/exams']);
+  }
+
+  moveToExamAttempts() {
+    this.router.navigate(['homepage/user-dashboard/exam-attempts']);
   }
 
 }

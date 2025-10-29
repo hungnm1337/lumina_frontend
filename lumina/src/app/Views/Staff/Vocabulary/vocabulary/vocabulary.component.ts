@@ -299,5 +299,43 @@ export class VocabularyComponent implements OnInit {
   getCategoryName(categoryId: string): string { const category = this.categories.find(c => c.id === categoryId); return category?.name || categoryId; }
   getPartOfSpeechClass(partOfSpeech: string): string { const lower = partOfSpeech.toLowerCase(); if (lower.includes('verb')) return 'pos-verb'; if (lower.includes('noun')) return 'pos-noun'; return 'pos-other'; }
 
-  
+  // ===== APPROVAL METHODS =====
+  requestApproval(list: VocabularyListResponse, event: Event): void {
+    event.stopPropagation(); // Ngăn click vào card
+    if (confirm('Bạn có chắc muốn gửi danh sách từ vựng này để phê duyệt?')) {
+      this.isSubmitting = true;
+      this.vocabularyService.requestApproval(list.vocabularyListId).subscribe({
+        next: () => {
+          this.toastService.success('Đã gửi yêu cầu phê duyệt!');
+          this.loadVocabularyLists(); // Reload lists
+          this.isSubmitting = false;
+        },
+        error: (err) => {
+          console.error("Error requesting approval:", err);
+          this.toastService.error('Gửi yêu cầu thất bại.');
+          this.isSubmitting = false;
+        }
+      });
+    }
+  }
+
+  getStatusClass(status: string | undefined): string {
+    switch (status?.toLowerCase()) {
+      case 'published': return 'status-published';
+      case 'draft': return 'status-draft';
+      case 'pending': return 'status-pending';
+      case 'rejected': return 'status-rejected';
+      default: return 'status-draft';
+    }
+  }
+
+  getStatusText(status: string | undefined): string {
+    switch (status?.toLowerCase()) {
+      case 'published': return 'Đã xuất bản';
+      case 'draft': return 'Bản nháp';
+      case 'pending': return 'Chờ duyệt';
+      case 'rejected': return 'Bị từ chối';
+      default: return 'Bản nháp';
+    }
+  }
 }

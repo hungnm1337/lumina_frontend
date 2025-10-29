@@ -1,3 +1,33 @@
 <app-part-detail [partInfo]="partInfo"></app-part-detail>
-<app-question [questions]="questions"></app-question>
 
+@if (isSpeakingExam) {
+<app-speaking
+  [partInfo]="partInfo"
+  [questions]="questions"
+  (speakingAnswered)="onSpeakingAnswered($event)"
+>
+</app-speaking>
+} @else if (isWritingExam) {
+<app-writing
+
+  [questions]="questions"
+>
+</app-writing>
+} @else if (isReadingExam) {
+<app-reading
+  [partInfo]="partInfo"
+  [questions]="questions"
+  (readingAnswered)="onReadingAnswered($event)"
+>
+</app-reading>
+} @else if (isListeningExam) {
+<app-listening
+  [partInfo]="partInfo"
+  [questions]="questions"
+  (listeningAnswered)="onListeningAnswered($event)"
+>
+</app-listening>
+} @else {
+<!-- Default fallback to question component for backward compatibility -->
+<app-question [questions]="questions"></app-question>
+}
