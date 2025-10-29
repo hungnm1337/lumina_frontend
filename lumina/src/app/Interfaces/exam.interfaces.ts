@@ -40,6 +40,7 @@ export interface QuestionDTO {
 export interface PromptDTO {
   promptId: number;
   skill: string;
+  partCode?: string;
   title: string;
   contentText: string;
   referenceImageUrl?: string;

@@ -6,6 +6,8 @@ import {
   OnChanges,
   SimpleChanges,
   OnDestroy,
+  OnInit,
+  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -22,6 +24,8 @@ import {
 import { QuestionState } from '../../../../Services/Exam/Speaking/speaking-question-state.service';
 import { BaseQuestionService } from '../../../../Services/Question/base-question.service';
 import { SpeakingQuestionStateService } from '../../../../Services/Exam/Speaking/speaking-question-state.service';
+import { ExamAttemptService } from '../../../../Services/ExamAttempt/exam-attempt.service'; // ✅ THÊM
+
 interface QuestionResult {
   questionNumber: number;
   questionText: string;
@@ -41,7 +45,8 @@ interface QuestionResult {
   templateUrl: './speaking.component.html',
   styleUrl: './speaking.component.scss',
 })
-export class SpeakingComponent implements OnChanges, OnDestroy {
+export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
+  // ✅ THÊM OnInit
   @Input() questions: QuestionDTO[] = [];
   @Input() partInfo: ExamPartDTO | null = null;
   @Output() speakingAnswered = new EventEmitter<boolean>();
@@ -54,6 +59,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy {
   speakingQuestionResults: QuestionResult[] = [];
   isSpeakingSubmitting = false;
   private advanceTimer: any = null;
+  attemptId: number | null = null; // ✅ THÊM
 
   // Speaking navigation and state management
   private stateSubscription: Subscription = new Subscription();
@@ -64,7 +70,8 @@ export class SpeakingComponent implements OnChanges, OnDestroy {
   constructor(
     private router: Router,
     private baseQuestionService: BaseQuestionService,
-    private speakingStateService: SpeakingQuestionStateService
+    private speakingStateService: SpeakingQuestionStateService,
+    private examAttemptService: ExamAttemptService // ✅ THÊM
   ) {
     // Subscribe to state changes
     this.stateSubscription = this.speakingStateService
@@ -96,10 +103,33 @@ export class SpeakingComponent implements OnChanges, OnDestroy {
     }
   }
 
+  ngOnInit(): void {
+    this.loadAttemptId(); // ✅ THÊM
+  }
+
   ngOnDestroy(): void {
     this.stateSubscription.unsubscribe();
     if (this.advanceTimer) {
       clearTimeout(this.advanceTimer);
+    }
+    this.saveProgressOnExit(); // ✅ THÊM
+  }
+
+  // ============= ATTEMPT MANAGEMENT (NEW) =============
+
+  private loadAttemptId(): void {
+    try {
+      const stored = localStorage.getItem('currentExamAttempt');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        this.attemptId = parsed.attemptID || parsed.attemptId;
+      }
+
+      if (!this.attemptId) {
+        console.error('❌ No attemptId found for Speaking');
+      }
+    } catch (error) {
+      console.error('❌ Error loading attemptId:', error);
     }
   }
 
@@ -472,5 +502,65 @@ export class SpeakingComponent implements OnChanges, OnDestroy {
   onSpeakingAnswered(isCorrect: boolean): void {
     console.log('Speaking answer submitted:', isCorrect);
     this.speakingAnswered.emit(isCorrect);
+  }
+
+  // ============= EXIT HANDLING (NEW) =============
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: any): void {
+    if (!this.finished && this.attemptId) {
+      $event.returnValue = 'Bạn có muốn lưu tiến trình và thoát không?';
+    }
+  }
+
+  private saveProgressOnExit(): void {
+    if (!this.finished && this.attemptId) {
+      const model = {
+        examAttemptId: this.attemptId,
+        currentQuestionIndex: this.currentIndex,
+      };
+
+      this.examAttemptService.saveProgress(model).subscribe({
+        next: () => console.log('✅ Speaking progress saved'),
+        error: (error) =>
+          console.error('❌ Error saving speaking progress:', error),
+      });
+    }
+  }
+
+  confirmExit(): void {
+    const confirmResult = confirm(
+      'Bạn có muốn lưu tiến trình và thoát không?\n\n' +
+        '- Chọn "OK" để lưu và thoát\n' +
+        '- Chọn "Cancel" để tiếp tục làm bài'
+    );
+
+    if (confirmResult) {
+      this.saveProgressAndExit();
+    }
+  }
+
+  private saveProgressAndExit(): void {
+    if (!this.attemptId) {
+      this.router.navigate(['homepage/user-dashboard/exams']);
+      return;
+    }
+
+    const model = {
+      examAttemptId: this.attemptId,
+      currentQuestionIndex: this.currentIndex,
+    };
+
+    this.examAttemptService.saveProgress(model).subscribe({
+      next: () => {
+        console.log('✅ Speaking progress saved successfully');
+        localStorage.removeItem('currentExamAttempt');
+        this.router.navigate(['homepage/user-dashboard/exams']);
+      },
+      error: (error) => {
+        console.error('❌ Error saving speaking progress:', error);
+        this.router.navigate(['homepage/user-dashboard/exams']);
+      },
+    });
   }
 }
