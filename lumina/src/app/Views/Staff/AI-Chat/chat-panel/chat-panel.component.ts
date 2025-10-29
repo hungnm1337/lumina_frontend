@@ -14,16 +14,16 @@ export class ChatPanelComponent implements AfterViewChecked {
   @Input() messages: any[] = [];
   @Input() isLoading = false;
   @Output() messageSent = new EventEmitter<string>();
-  @Output() previewClicked = new EventEmitter<string>(); 
+  @Output() previewClicked = new EventEmitter<string>();
 
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef<HTMLDivElement>;
 
+  // ✅ Khai báo đúng kiểu - không có null/undefined
   newMessage = '';
 
   sendMessage() {
-    const text = this.newMessage?.trim();
-    if (text && !this.isLoading) {
-      this.messageSent.emit(text);
+    if (this.newMessage.trim()) {
+      this.messageSent.emit(this.newMessage);
       this.newMessage = '';
     }
   }

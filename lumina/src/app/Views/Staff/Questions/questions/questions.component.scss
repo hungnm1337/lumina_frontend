@@ -302,35 +302,304 @@ tbody td {
     color: #374151;
 }
 
-/* === GIẢI PHÁP CHO CỘT "NỘI DUNG" === */
+/* === GIẢI PHÁP CHO CỘT "NỘI DUNG" - TỐI ƯU THANH CUỘN === */
 .content-cell-wrapper {
-    max-width: 400px;       /* Giới hạn chiều rộng tối đa */
-    max-height: 150px;      /* Giới hạn chiều cao tối đa */
-    overflow-y: auto;       /* Tự động hiển thị thanh cuộn dọc khi cần */
-    white-space: pre-line;  /* Giữ nguyên các xuống dòng từ dữ liệu */
-    padding-right: 8px;     /* Thêm khoảng trống để thanh cuộn không che chữ */
-    font-size: 0.9rem;      /* 14.4px */
-    line-height: 1.5;
-    color: #4b5563;
+    max-width: 400px;
+    max-height: 150px;
+    overflow-y: auto;
+    white-space: pre-line;
+    padding: 8px 12px 8px 8px; /* Padding đều hơn */
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #374151;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    
+    /* ✅ Tối ưu hiển thị thanh cuộn */
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f8fafc;
 }
 
-/* Tùy chỉnh thanh cuộn cho đẹp hơn */
+/* ✅ Webkit scrollbar - Đẹp hơn và không chiếm diện tích */
 .content-cell-wrapper::-webkit-scrollbar {
-    width: 6px;
+    width: 5px; /* Giảm từ 6px xuống 5px */
 }
 
 .content-cell-wrapper::-webkit-scrollbar-track {
-    background: #f1f5f9;
+    background: transparent; /* ✅ Trong suốt để không tạo khoảng trắng */
     border-radius: 10px;
 }
 
 .content-cell-wrapper::-webkit-scrollbar-thumb {
-    background-color: #94a3b8;
+    background-color: #cbd5e1;
     border-radius: 10px;
-    border: 2px solid #f1f5f9;
+    border: none; /* ✅ Bỏ border để không chiếm diện tích */
 }
 
 .content-cell-wrapper::-webkit-scrollbar-thumb:hover {
-    background-color: #64748b;
+    background-color: #94a3b8;
+}
+
+/* === CẢI THIỆN CỘT "THÔNG TIN" (Image/Audio) === */
+tbody td:nth-child(2) {
+    min-width: 180px;
+    max-width: 200px;
+}
+
+tbody td:nth-child(2) img {
+    max-width: 150px;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+}
+
+tbody td:nth-child(2) img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+tbody td:nth-child(2) audio {
+    width: 100%;
+    max-width: 180px;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+/* === CẢI THIỆN CỘT "CÂU HỎI" === */
+tbody td:nth-child(3) {
+    min-width: 250px;
+}
+
+/* Button "Xem/Ẩn câu hỏi" */
+tbody td:nth-child(3) button {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+    transition: all 0.2s ease;
+}
+
+tbody td:nth-child(3) button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+/* Container danh sách câu hỏi */
+.mt-2.bg-gray-50.rounded.p-3.shadow-inner {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px !important;
+    padding: 16px !important;
+    max-height: 320px; /* Tăng chiều cao */
+    overflow-y: auto;
+    
+    /* ✅ Custom scrollbar cho danh sách câu hỏi */
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+.mt-2.bg-gray-50.rounded.p-3.shadow-inner::-webkit-scrollbar {
+    width: 6px;
+}
+
+.mt-2.bg-gray-50.rounded.p-3.shadow-inner::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 10px;
+}
+
+.mt-2.bg-gray-50.rounded.p-3.shadow-inner::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 10px;
+}
+
+.mt-2.bg-gray-50.rounded.p-3.shadow-inner::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+}
+
+/* Từng câu hỏi trong danh sách */
+.mb-3.border-b.pb-2 {
+    background: white;
+    padding: 12px !important;
+    border-radius: 8px !important;
+    margin-bottom: 12px !important;
+    border: 1px solid #e5e7eb !important;
+    transition: all 0.2s ease;
+}
+
+.mb-3.border-b.pb-2:hover {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+    transform: translateX(4px);
+}
+
+.mb-3.border-b.pb-2:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* Nội dung câu hỏi */
+.font-medium.text-gray-800 {
+    color: #1e293b !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+/* Danh sách đáp án */
+ul.pl-4.mb-1.list-disc.list-inside.text-gray-700 {
+    margin-left: 8px;
+    padding-left: 12px !important;
+}
+
+ul.pl-4.mb-1.list-disc.list-inside.text-gray-700 li {
+    padding: 3px 0;
+    font-size: 0.88rem;
+    color: #475569;
+}
+
+ul.pl-4.mb-1.list-disc.list-inside.text-gray-700 li.font-bold.text-green-700 {
+    color: #15803d !important;
+    font-weight: 600 !important;
+}
+
+/* Giải thích câu hỏi */
+.text-xs.italic.text-gray-500.mt-1 {
+    background: #fef3c7;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border-left: 3px solid #f59e0b;
+    margin-top: 8px !important;
+    font-size: 0.82rem;
+    color: #92400e !important;
+}
+
+/* Nút Sửa câu hỏi */
+.mt-2 button.text-yellow-600 {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: white !important;
+    padding: 4px 12px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+}
+
+.mt-2 button.text-yellow-600:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(245, 158, 11, 0.4);
+}
+
+/* === CẢI THIỆN CỘT "KHÁC" (Skill + Actions) === */
+tbody td:nth-child(4) {
+    min-width: 140px;
+}
+
+/* Skill badge */
+.px-2\.5.py-0\.5.inline-flex {
+    padding: 6px 12px !important;
+    border-radius: 20px !important;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    transition: all 0.2s ease;
+}
+
+.px-2\.5.py-0\.5.inline-flex:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+}
+
+/* Nút Sửa Prompt */
+button.text-indigo-600 {
+    background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+    color: white !important;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
+    width: 100%;
+    text-align: left;
+}
+
+button.text-indigo-600:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.4);
+}
+
+/* Nút Xóa Prompt */
+button.text-red-600 {
+    background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+    color: white !important;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+    width: 100%;
+    text-align: left;
+}
+
+button.text-red-600:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
+}
+
+/* === CẢI THIỆN PHÂN TRANG === */
+.flex.justify-end.items-center.gap-2.my-4 {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    margin-top: 20px !important;
+}
+
+.flex.justify-end.items-center.gap-2.my-4 button {
+    background: white;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.flex.justify-end.items-center.gap-2.my-4 button:not([disabled]):hover {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.flex.justify-end.items-center.gap-2.my-4 button[disabled] {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.flex.justify-end.items-center.gap-2.my-4 span {
+    color: #475569;
+    font-weight: 600;
+    padding: 0 8px;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1024px) {
+    .content-cell-wrapper {
+        max-width: 280px;
+    }
+    
+    tbody td:nth-child(3) {
+        min-width: 200px;
+    }
 }
 
