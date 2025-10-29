@@ -1,356 +1,214 @@
-<!-- ============= LISTENING QUIZ VIEW ============= -->
-@if (questions && questions.length > 0 && !finished) {
-<div class="max-w-5xl mx-auto p-8 bg-white rounded-2xl shadow-sm space-y-8">
-  <!-- ============= ENHANCED HEADER ============= -->
-  <div class="space-y-4">
-    <!-- Top Row: Part Info & Timer -->
-    <div class="flex items-center justify-between">
-      <!-- Part Badge -->
-      <div class="flex items-center gap-3">
-        <div
-          class="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg font-semibold text-sm shadow-sm"
-        >
-          {{ getPartLabel(currentIndex) }}
-        </div>
-        <span class="text-gray-500 text-sm font-medium">
-          Câu {{ currentIndex + 1 }}/{{ questions.length }}
-        </span>
-      </div>
-
-      <!-- Timer Component -->
-      @if (questions[currentIndex].time) {
-      <app-time
-        [time]="questions[currentIndex].time"
-        (timeout)="onTimeout()"
-        class="flex-shrink-0"
-      ></app-time>
-      }
+<div class="w-full bg-white rounded-lg shadow-md p-6">
+  <!-- Exam Attempt Details Modal -->
+  @if (showExamAttemptDetailsFlag && examAttemptDetails) {
+  <app-exam-attempt-detail
+    [examAttemptDetails]="examAttemptDetails"
+    (close)="closeExamAttemptDetails()"
+  ></app-exam-attempt-detail>
+  } @if (!finished) {
+  <!-- Progress Header -->
+  <div class="mb-4 flex items-center justify-between">
+    <div class="text-sm text-gray-600">
+      Câu {{ currentIndex + 1 }} / {{ questions.length }}
     </div>
-
-    <!-- Progress Bar -->
-    <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-      <div
-        class="bg-gradient-to-r from-orange-500 to-red-500 h-full transition-all duration-300"
-        [style.width.%]="((currentIndex + 1) / questions.length) * 100"
-      ></div>
-    </div>
+    <span class="bg-red-100 text-red-700 px-3 py-1 rounded font-medium">
+      Điểm: {{ totalScore }}
+    </span>
   </div>
 
-  <!-- ============= AUDIO PLAYER SECTION (SIMPLE) ============= -->
-  <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
-    <!-- Hidden Audio Element -->
+  <!-- Audio Player -->
+  <div class="mb-6 p-4 bg-red-50 rounded-lg">
     <audio
-      #audioElement
+      #audioPlayer
       [src]="getCurrentAudioUrl()"
       (play)="onAudioPlay()"
       (ended)="onAudioEnded()"
-      (timeupdate)="onTimeUpdate()"
-      class="hidden"
-    >
-      Trình duyệt của bạn không hỗ trợ phát audio.
-    </audio>
+    ></audio>
 
-    <!-- Simple Audio Controls -->
-    <div class="flex items-center gap-4">
-      <!-- Play/Pause Button (Simple) -->
+    <div class="flex items-center justify-between">
       <button
         (click)="playAudio()"
-        [disabled]="!getCurrentAudioUrl()"
-        class="flex items-center justify-center w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-full text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        [attr.aria-label]="isAudioPlaying ? 'Pause' : 'Play'"
+        [disabled]="audioPlayCount >= maxPlays"
+        class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        <i [class]="isAudioPlaying ? 'fas fa-pause' : 'fas fa-play ml-0.5'"></i>
+        <i class="fas fa-play mr-2"></i>
+        Nghe ({{ audioPlayCount }}/{{ maxPlays }})
       </button>
 
-      <!-- Progress Bar -->
-      <div class="flex-1 flex items-center gap-3">
-        <span class="text-sm text-gray-600 font-mono min-w-[60px]">
-          {{ formatTime(currentTime) }}
-        </span>
-
-        <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-          <div
-            class="h-full bg-orange-500 rounded-full transition-all duration-300"
-            [style.width.%]="audioProgress"
-          ></div>
-        </div>
-
-        <span class="text-sm text-gray-600 font-mono min-w-[60px]">
-          {{ formatTime(duration) }}
-        </span>
-      </div>
-
-      <!-- Speed Control -->
-      <div class="flex items-center gap-2">
+      <div class="flex gap-2">
         <button
           (click)="changePlaybackSpeed()"
-          class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-full text-xs font-medium text-gray-700 transition-colors"
+          class="px-3 py-2 rounded bg-gray-200 hover:bg-gray-300"
         >
           {{ playbackSpeed }}x
         </button>
-
         <button
           (click)="toggleVolume()"
-          class="w-8 h-8 flex items-center justify-center hover:bg-gray-200 rounded-full transition-colors"
+          class="px-3 py-2 rounded bg-gray-200 hover:bg-gray-300"
         >
-          <i
-            [class]="
-              isMuted
-                ? 'fas fa-volume-mute text-gray-500'
-                : 'fas fa-volume-up text-gray-700'
-            "
-          ></i>
+          <i [class]="isMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up'"></i>
         </button>
       </div>
     </div>
-
-    <!-- Play Limit Warning (IMPORTANT!) -->
-    <div class="mt-4 flex items-center justify-center gap-2">
-      @if (audioPlayCount === 0) {
-      <div
-        class="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium border border-blue-200"
-      >
-        <i class="fas fa-info-circle mr-2"></i>
-        Bạn có thể nghe <strong>{{ maxPlays }}</strong> lần
-      </div>
-      } @else if (audioPlayCount < maxPlays) {
-      <div
-        class="px-4 py-2 bg-orange-50 text-orange-700 rounded-lg text-sm font-medium border border-orange-200"
-      >
-        <i class="fas fa-volume-up mr-2"></i>
-        Còn lại:
-        <strong>{{ maxPlays - audioPlayCount }}/{{ maxPlays }}</strong> lần nghe
-      </div>
-      } @else {
-      <div
-        class="px-4 py-2 bg-red-50 text-red-700 rounded-lg text-sm font-medium border border-red-200"
-      >
-        <i class="fas fa-ban mr-2"></i>
-        Đã hết lượt nghe. Hãy chọn đáp án!
-      </div>
-      }
-    </div>
   </div>
 
-  <!-- ============= PART 1: IMAGE DISPLAY (Simple & Large) ============= -->
-  <!-- ✅ FIX: Chỉ hiển thị ảnh nếu KHÔNG phải Part 1, vì Part 1 đã có ảnh trong prompt component -->
-  @if (!isPhotographPart(currentIndex) &&
-  questions[currentIndex].prompt.referenceImageUrl) {
-  <div class="flex justify-center my-8">
-    <img
-      [src]="questions[currentIndex].prompt.referenceImageUrl"
-      [alt]="'Listening Part - Question ' + (currentIndex + 1)"
-      class="w-full max-w-2xl rounded-xl shadow-lg border border-gray-200"
-      loading="lazy"
-    />
-  </div>
-  }
-
-  <!-- ============= PROMPT (Additional Context - if needed) ============= -->
-  @if (questions[currentIndex].prompt) {
-  <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-    <app-prompt [prompt]="questions[currentIndex].prompt"></app-prompt>
-  </div>
-  }
-
-  <!-- ============= OPTIONS (Simple Radio Buttons) ============= -->
-  @if (questions[currentIndex].options && questions[currentIndex].options.length
-  > 0) {
-  <div class="my-8">
-    <!-- Keyboard Shortcuts Hint -->
-    <div class="mb-4 text-xs text-gray-500 text-center">
-      💡 Phím tắt: <kbd class="px-2 py-1 bg-gray-100 rounded border">A</kbd>
-      <kbd class="px-2 py-1 bg-gray-100 rounded border">B</kbd>
-      <kbd class="px-2 py-1 bg-gray-100 rounded border">C</kbd>
-      <kbd class="px-2 py-1 bg-gray-100 rounded border">D</kbd> để chọn đáp án |
-      <kbd class="px-2 py-1 bg-gray-100 rounded border">Space</kbd> phát/dừng
-    </div>
-
-    <app-options
-      [options]="questions[currentIndex].options"
-      [disabled]="showExplain"
+  <!-- Question Content -->
+  <div class="mb-6">
+    <app-prompt
+      [prompt]="questions[currentIndex].prompt"
       [resetAt]="currentIndex"
-      [preSelectedOptionId]="getCurrentPreSelectedOptionId()"
-      (answered)="onAnswered($event)"
-    ></app-options>
+      [questionType]="questions[currentIndex].questionType ?? ''"
+    ></app-prompt>
   </div>
-  }
 
-  <!-- ============= NAVIGATION BUTTONS (Simple) ============= -->
-  <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+  <!-- Options -->
+  <app-options
+    [options]="questions[currentIndex].options || []"
+    [disabled]="showExplain"
+    [resetAt]="currentIndex"
+    [preSelectedOptionId]="
+      getSelectedOptionId(questions[currentIndex].questionId)
+    "
+    (answered)="markAnswered($event)"
+  ></app-options>
+
+  <!-- Navigation -->
+  <div class="mt-6 flex items-center justify-between">
     <button
       (click)="previousQuestion()"
       [disabled]="currentIndex === 0"
-      class="px-6 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-medium flex items-center gap-2"
+      class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600 disabled:opacity-50"
     >
-      <i class="fas fa-chevron-left text-sm"></i>
-      Câu trước
+      <i class="fas fa-arrow-left mr-2"></i>Câu trước
     </button>
 
-    @if (showExplain && !finished) {
+    <div class="flex gap-2">
+      <button
+        (click)="confirmExit()"
+        class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600"
+      >
+        Lưu & Thoát
+      </button>
+      <button
+        (click)="finishExamManual()"
+        class="px-4 py-2 rounded bg-orange-600 text-white hover:bg-orange-700"
+      >
+        Nộp bài
+      </button>
+    </div>
+
     <button
       (click)="nextQuestion()"
-      class="px-6 py-2.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white transition-colors font-medium flex items-center gap-2"
+      [disabled]="currentIndex === questions.length - 1"
+      class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
     >
-      Tiếp theo
-      <i class="fas fa-chevron-right text-sm"></i>
+      Câu sau<i class="fas fa-arrow-right ml-2"></i>
     </button>
-    }
   </div>
 
-  <!-- ============= EXPLANATION (Clean Design) ============= -->
-  @if (showExplain && questions[currentIndex].questionExplain) {
-  <div class="mt-6 p-6 rounded-xl bg-blue-50 border border-blue-200">
-    <div class="flex items-start gap-3">
-      <i
-        class="fas fa-lightbulb text-yellow-500 text-xl flex-shrink-0 mt-0.5"
-      ></i>
-      <div>
-        <h5 class="font-semibold text-gray-800 mb-2">Giải thích:</h5>
-        <p class="text-gray-700 leading-relaxed">
-          {{ questions[currentIndex].questionExplain }}
-        </p>
+  <!-- Question Navigator -->
+  <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+    <h4 class="text-sm font-semibold text-gray-600 mb-3">Navigator</h4>
+    <div class="grid grid-cols-10 gap-2">
+      @for (question of questions; track question.questionId; let i = $index) {
+      <button
+        (click)="navigateToQuestion(i)"
+        [class]="
+          i === currentIndex
+            ? 'w-10 h-10 rounded-lg bg-blue-600 text-white font-semibold'
+            : isQuestionAnswered(question.questionId)
+            ? answeredQuestions.get(question.questionId)?.isCorrect
+              ? 'w-10 h-10 rounded-lg bg-green-500 text-white'
+              : 'w-10 h-10 rounded-lg bg-red-500 text-white'
+            : 'w-10 h-10 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300'
+        "
+      >
+        {{ i + 1 }}
+      </button>
+      }
+    </div>
+
+    <!-- ✅ Legend - Chú thích màu sắc -->
+    <div class="mt-4 flex items-center gap-4 text-xs text-gray-600">
+      <div class="flex items-center gap-1">
+        <div class="w-4 h-4 bg-gray-200 rounded"></div>
+        <span>Chưa làm</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <div class="w-4 h-4 bg-green-500 rounded"></div>
+        <span>Đúng</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <div class="w-4 h-4 bg-red-500 rounded"></div>
+        <span>Sai</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <div class="w-4 h-4 bg-blue-600 rounded"></div>
+        <span>Đang làm</span>
       </div>
     </div>
   </div>
-  }
-</div>
-}
 
-<!-- ============= SUMMARY VIEW (Khi hoàn thành) ============= -->
-@if (finished) {
-<div class="max-w-3xl mx-auto p-8 bg-white rounded-2xl shadow-2xl space-y-6">
-  <!-- Summary Header -->
-  <div class="text-center pb-6 border-b border-gray-200">
+  } @else {
+  <!-- Summary Screen -->
+  <div class="text-center py-8">
     <div
-      class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full mb-4 shadow-xl"
+      class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full mb-4"
     >
       <i class="fas fa-trophy text-white text-4xl"></i>
     </div>
     <h2 class="text-3xl font-bold text-gray-800 mb-2">
       Hoàn thành bài Listening!
     </h2>
-    <p class="text-gray-600">
+    <p class="text-gray-600 mb-6">
       {{ partInfo?.partCode || "Listening Practice" }}
     </p>
-  </div>
 
-  <!-- Score Statistics -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <!-- Total Score -->
-    <div
-      class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-6 text-center border border-purple-200 shadow-md"
-    >
-      <div class="text-4xl font-bold text-purple-600 mb-2">
-        {{ totalScore }}
+    <!-- Score Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-6">
+        <div class="text-4xl font-bold text-purple-600 mb-2">
+          {{ totalScore }}
+        </div>
+        <div class="text-sm text-purple-700">Tổng điểm</div>
       </div>
-      <div class="text-sm text-gray-600 font-medium">Tổng điểm</div>
-    </div>
-
-    <!-- Correct Answers -->
-    <div
-      class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 text-center border border-green-200 shadow-md"
-    >
-      <div class="text-4xl font-bold text-green-600 mb-2">
-        {{ correctCount }}/{{ questions.length }}
+      <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6">
+        <div class="text-4xl font-bold text-green-600 mb-2">
+          {{ correctCount }}/{{ questions.length }}
+        </div>
+        <div class="text-sm text-green-700">Câu đúng</div>
       </div>
-      <div class="text-sm text-gray-600 font-medium">Số câu đúng</div>
-    </div>
-
-    <!-- Percentage -->
-    <div
-      class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 text-center border border-blue-200 shadow-md"
-    >
-      <div class="text-4xl font-bold text-blue-600 mb-2">
-        {{ percentCorrect }}%
-      </div>
-      <div class="text-sm text-gray-600 font-medium">Độ chính xác</div>
-    </div>
-  </div>
-
-  <!-- Feedback Message -->
-  <div
-    class="p-6 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl border border-yellow-200 shadow-sm"
-  >
-    <div class="flex items-center gap-3">
-      <i class="fas fa-star text-yellow-500 text-3xl"></i>
-      <div>
-        <h4 class="font-bold text-gray-800 text-lg mb-1">Đánh giá:</h4>
-        <p class="text-gray-700">{{ feedbackText }}</p>
+      <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6">
+        <div class="text-4xl font-bold text-blue-600 mb-2">
+          {{ percentCorrect }}%
+        </div>
+        <div class="text-sm text-blue-700">Tỷ lệ chính xác</div>
       </div>
     </div>
-  </div>
 
-  <!-- Action Buttons -->
-  <div class="flex flex-col sm:flex-row gap-4 pt-6">
-    <button
-      (click)="resetQuiz()"
-      class="flex-1 px-6 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
-    >
-      <i class="fas fa-redo-alt"></i>
-      Làm lại bài này
-    </button>
+    <p class="text-lg text-gray-700 mb-6">{{ feedbackText }}</p>
 
-    <button
-      (click)="goToExams()"
-      class="flex-1 px-6 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
-    >
-      <i class="fas fa-list"></i>
-      Chọn bài khác
-    </button>
-  </div>
-
-  <!-- Saved Answers Debug (Optional - for development) -->
-  @if (savedAnswers.length > 0) {
-  <details class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-    <summary
-      class="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900"
-    >
-      <i class="fas fa-database mr-2"></i>
-      Dữ liệu đã lưu ({{ savedAnswers.length }} câu)
-    </summary>
-    <div class="mt-3 text-xs text-gray-600 space-y-1">
-      @for (answer of savedAnswers; track answer.questionId) {
-      <div
-        class="flex justify-between items-center py-1 border-b border-gray-200"
+    <!-- Action Buttons -->
+    <div class="flex gap-4 justify-center">
+      <button
+        (click)="showExamAttemptDetails()"
+        class="px-6 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 font-semibold shadow-lg"
       >
-        <span>Câu {{ answer.questionId }}</span>
-        <span
-          [class]="
-            answer.isCorrect ? 'text-green-600 font-semibold' : 'text-red-600'
-          "
-        >
-          {{ answer.isCorrect ? "✓ Đúng" : "✗ Sai" }}
-        </span>
-      </div>
-      }
+        <i class="fas fa-history mr-2"></i>Xem lịch sử làm bài
+      </button>
+      <button
+        (click)="resetQuiz()"
+        class="px-6 py-4 rounded-xl bg-gradient-to-r from-green-600 to-teal-600 text-white hover:from-green-700 hover:to-teal-700 font-semibold shadow-lg"
+      >
+        <i class="fas fa-redo-alt mr-2"></i>Làm lại
+      </button>
+      <button
+        (click)="goToExams()"
+        class="px-6 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 font-semibold shadow-lg"
+      >
+        <i class="fas fa-list mr-2"></i>Chọn bài khác
+      </button>
     </div>
-    <button
-      (click)="resetQuiz()"
-      class="mt-3 text-xs text-red-600 hover:text-red-800 font-medium"
-    >
-      <i class="fas fa-trash-alt mr-1"></i>
-      Xóa dữ liệu đã lưu
-    </button>
-  </details>
+  </div>
   }
 </div>
-}
-
-<!-- ============= EMPTY STATE (No questions) ============= -->
-@if (!questions || questions.length === 0) {
-<div class="max-w-2xl mx-auto p-12 bg-white rounded-2xl shadow-xl text-center">
-  <i class="fas fa-inbox text-gray-300 text-6xl mb-4"></i>
-  <h3 class="text-2xl font-bold text-gray-800 mb-2">
-    Không có câu hỏi Listening
-  </h3>
-  <p class="text-gray-600 mb-6">Vui lòng quay lại và chọn một bài thi khác.</p>
-  <button
-    (click)="goToExams()"
-    class="px-8 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all duration-200 font-semibold shadow-md hover:shadow-lg"
-  >
-    <i class="fas fa-arrow-left mr-2"></i>
-    Quay lại danh sách bài thi
-  </button>
-</div>
-}
