@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { RouterModule } from '@angular/router'// <-- QUAN TRỌNG
+import { RouterModule } from '@angular/router';
 import { FloatingChatComponent } from './Views/Common/floating-chat/floating-chat.component';
 
 @Component({

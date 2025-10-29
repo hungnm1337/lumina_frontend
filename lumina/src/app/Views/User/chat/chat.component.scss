@@ -215,48 +215,6 @@
           margin: 16px 0 8px 0;
           font-size: 15px;
         }
-
-        // Style cho các heading
-        strong {
-          display: block;
-          margin: 20px 0 12px 0;
-          font-size: 16px;
-          color: #1f2937;
-          border-bottom: 2px solid #e5e7eb;
-          padding-bottom: 4px;
-        }
-
-        // Style cho các list
-        ul {
-          margin: 12px 0;
-          padding-left: 20px;
-          
-          li {
-            margin-bottom: 8px;
-            line-height: 1.6;
-            position: relative;
-            
-            &::before {
-              content: "•";
-              color: #3b82f6;
-              font-weight: bold;
-              position: absolute;
-              left: -15px;
-            }
-          }
-        }
-
-        // Style cho các ví dụ
-        em {
-          display: block;
-          background: #f8fafc;
-          padding: 12px;
-          border-left: 4px solid #3b82f6;
-          margin: 8px 0;
-          font-style: italic;
-          color: #4b5563;
-          border-radius: 0 4px 4px 0;
-        }
       }
 
       .examples, .related-words, .suggestions, .vocabulary-list {

@@ -13,6 +13,9 @@ export interface ChatResponseDTO {
   hasSaveOption: boolean;
   saveAction?: string;
   vocabularies?: GeneratedVocabularyDTO[];
+  // Thêm properties cho out_of_scope
+  isOutOfScope?: boolean;
+  scopeMessage?: string;
 }
 
 export interface GeneratedVocabularyDTO {

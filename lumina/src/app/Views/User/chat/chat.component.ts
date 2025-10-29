@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChatService } from '../../../Services/Chat/chat.service';
@@ -20,7 +20,10 @@ import {
   styleUrls: ['./chat.component.scss']
 })
 export class ChatComponent implements OnInit, OnDestroy {
-  messages: ChatMessage[] = [];
+  @Input() messages: ChatMessage[] = [];
+  @Output() messageAdded = new EventEmitter<ChatMessage>();
+  
+  // messages: ChatMessage[] = []; // Removed, now using @Input
   currentMessage = '';
   isGenerating = false;
   conversationType = 'general';
@@ -63,19 +66,21 @@ export class ChatComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Thêm tin nhắn chào mừng
-    this.messages.push({
-      type: 'ai',
-      content: '**Xin chào! Tôi là AI Assistant**\n\nTôi có thể giúp bạn:\n\n**Tạo đề thi TOEIC:**\n• Tạo 5 câu Reading Part 5 về giới từ\n• Gen 10 câu Listening Part 1\n\n**Tư vấn & Hỗ trợ:**\n• Cách học TOEIC hiệu quả?\n• Giải thích cấu trúc câu này\n\n**Tips**: Mô tả càng chi tiết, kết quả càng tốt!\n\nBạn muốn tôi giúp gì nào? 😊',
-      timestamp: new Date(),
-      conversationType: 'general',
-      suggestions: [
-        'Tạo đề thi TOEIC',
-        'Tư vấn học TOEIC',
-        'Giải thích ngữ pháp',
-        'Chiến lược làm bài'
-      ]
-    });
+    // Chỉ thêm tin nhắn chào mừng nếu chưa có messages từ input
+    if (this.messages.length === 0) {
+      this.messages.push({
+        type: 'ai',
+        content: '**Xin chào! Tôi là AI Assistant**\n\nTôi có thể giúp bạn:\n\n**Tạo đề thi TOEIC:**\n• Tạo 5 câu Reading Part 5 về giới từ\n• Gen 10 câu Listening Part 1\n\n**Tư vấn & Hỗ trợ:**\n• Cách học TOEIC hiệu quả?\n• Giải thích cấu trúc câu này\n\n**Tips**: Mô tả càng chi tiết, kết quả càng tốt!\n\nBạn muốn tôi giúp gì nào? 😊',
+        timestamp: new Date(),
+        conversationType: 'general',
+        suggestions: [
+          'Tạo đề thi TOEIC',
+          'Tư vấn học TOEIC',
+          'Giải thích ngữ pháp',
+          'Chiến lược làm bài'
+        ]
+      });
+    }
   }
 
   ngOnDestroy(): void {
@@ -86,19 +91,22 @@ export class ChatComponent implements OnInit, OnDestroy {
     if (!this.currentMessage.trim() || this.isGenerating) return;
 
     // Thêm tin nhắn user
-    this.messages.push({
+    const userMessage: ChatMessage = {
       type: 'user',
       content: this.currentMessage,
       timestamp: new Date()
-    });
+    };
+    
+    this.messages.push(userMessage);
+    this.messageAdded.emit(userMessage); // Emit tin nhắn user
 
     this.isGenerating = true;
-    const userMessage = this.currentMessage;
+    const userMessageText = this.currentMessage;
     this.currentMessage = '';
 
     try {
       const request: ChatRequestDTO = {
-        message: userMessage,
+        message: userMessageText,
         userId: this.authService.getCurrentUserId(),
         conversationType: this.conversationType
       };
@@ -106,11 +114,16 @@ export class ChatComponent implements OnInit, OnDestroy {
       const response = await this.chatService.askQuestion(request).toPromise();
 
       if (response) {
+        // Xử lý câu trả lời ngoài phạm vi TOEIC
+        if (response.conversationType === 'out_of_scope') {
+          this.toastService.info('Tôi chỉ hỗ trợ về TOEIC và học tiếng Anh thôi nhé!');
+        }
+        
         // Format câu trả lời AI
         const formattedContent = this.formatAIResponse(response.answer);
         
         // Thêm tin nhắn AI
-        this.messages.push({
+        const aiMessage: ChatMessage = {
           type: 'ai',
           content: formattedContent,
           timestamp: new Date(),
@@ -120,7 +133,10 @@ export class ChatComponent implements OnInit, OnDestroy {
           relatedWords: response.relatedWords,
           vocabularies: response.vocabularies,
           hasSaveOption: response.hasSaveOption
-        });
+        };
+        
+        this.messages.push(aiMessage);
+        this.messageAdded.emit(aiMessage); // Emit tin nhắn AI
 
         // Cập nhật loại cuộc trò chuyện
         this.conversationType = response.conversationType;
@@ -134,18 +150,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     } catch (error) {
       console.error('Error sending message:', error);
-      
-      // Xử lý lỗi và hiển thị thông báo thân thiện
-      let errorMessage = 'Xin lỗi, tôi không thể xử lý câu hỏi này lúc này. Vui lòng thử lại sau.';
-      
-      // Thêm tin nhắn lỗi vào chat
-      this.messages.push({
-        type: 'ai',
-        content: errorMessage,
-        timestamp: new Date()
-      });
-      
-      this.toastService.error('Có lỗi xảy ra, vui lòng thử lại!');
+      this.toastService.error('Lỗi khi gửi tin nhắn!');
     } finally {
       this.isGenerating = false;
     }
@@ -252,37 +257,40 @@ export class ChatComponent implements OnInit, OnDestroy {
     formatted = formatted.replace(/\*\*Lưu ý:\*\*/g, '⚠️ **Lưu ý:**');
     formatted = formatted.replace(/\*\*Tips:\*\*/g, '🎯 **Tips:**');
 
-    // Thêm emoji cho các heading chính
-    formatted = formatted.replace(/### (\d+\.\s*[^#\n]+)/g, '🎯 **$1**');
-    formatted = formatted.replace(/## ([^#\n]+)/g, '📚 **$1**');
-    formatted = formatted.replace(/# ([^#\n]+)/g, '🌟 **$1**');
-
-    // Thêm emoji cho các subsection
-    formatted = formatted.replace(/\*\*(\d+\.\s*[^*]+):\*\*/g, '📌 **$1:**');
-    formatted = formatted.replace(/\*\*([^:]+):\*\*/g, '💡 **$1:**');
+    // Format các phương pháp học tập
+    formatted = formatted.replace(/(\d+\.\s*[^:]+:)/g, '🎯 **$1**');
+    formatted = formatted.replace(/^(\d+\.\s*[^:]+:)/gm, '🎯 **$1**');
 
     // Thêm emoji cho các bullet points
     formatted = formatted.replace(/^\* /gm, '• ');
     formatted = formatted.replace(/^- /gm, '• ');
 
-    // Thêm emoji cho các loại câu hỏi
-    formatted = formatted.replace(/Hỏi thăm chung chung:/g, '💬 **Hỏi thăm chung chung:**');
-    formatted = formatted.replace(/Hỏi thăm khi biết có chuyện cụ thể:/g, '🎯 **Hỏi thăm khi biết có chuyện cụ thể:**');
-    formatted = formatted.replace(/Bày tỏ sự cảm thông:/g, '🤗 **Bày tỏ sự cảm thông:**');
-    formatted = formatted.replace(/Đề nghị giúp đỡ và hỗ trợ:/g, '🤝 **Đề nghị giúp đỡ và hỗ trợ:**');
-    formatted = formatted.replace(/Khích lệ và động viên:/g, '💪 **Khích lệ và động viên:**');
-    formatted = formatted.replace(/Ứng dụng trong TOEIC:/g, '🎓 **Ứng dụng trong TOEIC:**');
+    // Format các từ khóa quan trọng trong ngoặc kép
+    formatted = formatted.replace(/'([^']+)'/g, '**"$1"**');
 
-    // Thêm emoji cho các ví dụ
-    formatted = formatted.replace(/Ví dụ:/g, '💡 **Ví dụ:**');
-
-    // Format các từ khóa quan trọng
-    formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '**$1**');
+    // Format các từ vựng tiếng Anh quan trọng
+    formatted = formatted.replace(/\b(acquire|merger|negotiate|revenue|expenditure|profitability|strategy|outsource|investment|cost-cutting)\b/g, '**$1**');
 
     // Thêm emoji cho các câu hỏi
     if (formatted.includes('Bạn có thể gặp') || formatted.includes('bạn có thể gặp')) {
       formatted = formatted.replace(/(Bạn có thể gặp[^:]*:)/g, '🔍 $1');
     }
+
+    // Thêm emoji cho các cụm từ quan trọng
+    formatted = formatted.replace(/(\*\*[^*]+\*\*):/g, '📌 $1:');
+
+    // Format các ví dụ câu
+    formatted = formatted.replace(/(Ví dụ[^:]*:)/g, '💡 **$1**');
+    formatted = formatted.replace(/(Tương tự[^:]*:)/g, '🔄 **$1**');
+
+    // Format các nguồn tài liệu
+    formatted = formatted.replace(/(Wall Street Journal|Financial Times|báo kinh tế)/g, '📰 **$1**');
+
+    // Thêm emoji cho các phương pháp cụ thể
+    formatted = formatted.replace(/(Contextual Learning|Related Word Groups|Spaced Repetition|flashcards)/g, '🎓 **$1**');
+
+    // Format các phần kết luận
+    formatted = formatted.replace(/(Tóm lại|Kết luận|Chúc bạn)/g, '🎉 **$1**');
 
     return formatted;
   }
@@ -291,30 +299,31 @@ export class ChatComponent implements OnInit, OnDestroy {
     // Convert markdown-style formatting to HTML
     let formatted = content;
 
-    // Convert **bold** to <strong>
-    formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    // Convert **bold** to <strong> with better styling
+    formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong style="color: #4F46E5; font-weight: 600;">$1</strong>');
 
     // Convert *italic* to <em>
-    formatted = formatted.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    formatted = formatted.replace(/\*([^*]+)\*/g, '<em style="color: #6B7280;">$1</em>');
 
-    // Convert bullet points to HTML list
-    formatted = formatted.replace(/^• (.+)$/gm, '<li>$1</li>');
-    
-    // Group consecutive list items into ul tags
-    formatted = formatted.replace(/(<li>.*<\/li>)(\s*<li>.*<\/li>)*/gs, (match) => {
-      return '<ul>' + match + '</ul>';
-    });
+    // Convert bullet points to HTML list with better styling
+    formatted = formatted.replace(/^• (.+)$/gm, '<li style="margin: 8px 0; padding-left: 8px;">$1</li>');
+    formatted = formatted.replace(/(<li style="margin: 8px 0; padding-left: 8px;">.*<\/li>)/s, '<ul style="margin: 12px 0; padding-left: 20px;">$1</ul>');
+
+    // Format numbered lists
+    formatted = formatted.replace(/^(\d+\.\s*[^:]+:)/gm, '<div style="background: #F3F4F6; padding: 12px; margin: 8px 0; border-radius: 8px; border-left: 4px solid #4F46E5;">$1</div>');
 
     // Convert line breaks
     formatted = formatted.replace(/\n/g, '<br>');
 
-    // Convert multiple line breaks to paragraphs
-    formatted = formatted.replace(/(<br>){2,}/g, '</p><p>');
-    formatted = '<p>' + formatted + '</p>';
+    // Convert multiple line breaks to paragraphs with better spacing
+    formatted = formatted.replace(/(<br>){2,}/g, '</p><p style="margin: 16px 0; line-height: 1.6;">');
+    formatted = '<p style="margin: 0; line-height: 1.6;">' + formatted + '</p>';
 
-    // Clean up empty paragraphs
-    formatted = formatted.replace(/<p><\/p>/g, '');
-    formatted = formatted.replace(/<p>\s*<\/p>/g, '');
+    // Add special styling for examples
+    formatted = formatted.replace(/(Ví dụ[^:]*:)/g, '<div style="background: #FEF3C7; padding: 12px; margin: 12px 0; border-radius: 8px; border-left: 4px solid #F59E0B;"><strong>$1</strong></div>');
+
+    // Add special styling for tips
+    formatted = formatted.replace(/(Tips[^:]*:)/g, '<div style="background: #ECFDF5; padding: 12px; margin: 12px 0; border-radius: 8px; border-left: 4px solid #10B981;"><strong>$1</strong></div>');
 
     return formatted;
   }

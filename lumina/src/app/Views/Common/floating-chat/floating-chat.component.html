@@ -15,13 +15,15 @@
           <p>Trợ lý tạo đề TOEIC</p>
         </div>
       </div>
-      <button (click)="closeChatbox()" class="close-btn">
-        <i class="fas fa-times"></i>
-      </button>
+      <div class="header-buttons">
+        <button (click)="closeChatbox()" class="close-btn" title="Đóng">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
     </div>
-    <app-chat></app-chat>
+    <div class="chat-content">
+      <app-chat [messages]="savedMessages" (messageAdded)="onMessageAdded($event)"></app-chat>
+    </div>
   </div>
 </div>
 }
-
-
