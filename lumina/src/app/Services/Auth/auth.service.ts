@@ -196,10 +196,7 @@ getCurrentUserId(): number {
     if (role.includes('user')) return 4;
     return null;
   }
- getCurrentUserId(): number {
-    const user = this.getCurrentUser();
-    return user?.id ? parseInt(user.id.toString()) : 0;
-  }
+ 
 navigateByRole(): void {
   console.log('Role claim:', this.getRoleClaim());
   console.log('Role ID:', this.getRoleId());

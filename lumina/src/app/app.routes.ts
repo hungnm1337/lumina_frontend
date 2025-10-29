@@ -22,6 +22,7 @@ import { DeckListComponent } from './pages/deck-list/deck-list.component';
 import { DeckDetailComponent } from './pages/deck-detail/deck-detail.component';
 import { ExamAttemptListComponent } from './Views/User/ExamAttempt/exam-attempt-list/exam-attempt-list.component';
 import { ExamAttemptDetailComponent } from './Views/User/ExamAttempt/exam-attempt-detail/exam-attempt-detail.component';
+import { UserLeaderboardComponent } from './Views/User/Leaderboard/user-leaderboard.component';
 
 export const routes: Routes = [
   {
@@ -52,6 +53,7 @@ export const routes: Routes = [
       { path: '', component: ContentHomepageComponent },
       { path: 'events', component: UserEventsDashboardComponent },
       { path: 'slides', component: DashboardSlideComponent },
+      { path: 'leaderboard', component: UserLeaderboardComponent },
       {
         path: 'user-dashboard',
         component: UserDashboardComponent,
