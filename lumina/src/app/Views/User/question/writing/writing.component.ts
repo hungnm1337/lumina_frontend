@@ -1,23 +1,38 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+  OnDestroy,
+  OnInit,
+  HostListener,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../Services/Auth/auth.service';
 import { WritingExamPartOneService } from '../../../../Services/Exam/Writing/writing-exam-part-one.service';
 import { QuestionDTO } from '../../../../Interfaces/exam.interfaces';
 import { Router } from '@angular/router';
-import { WritingAnswerBoxComponent } from "../../writing-answer-box/writing-answer-box.component";
+import { WritingAnswerBoxComponent } from '../../writing-answer-box/writing-answer-box.component';
 import { TimeComponent } from '../../time/time.component';
 import { PictureCaptioningService } from '../../../../Services/PictureCaptioning/picture-captioning.service';
+import { ExamAttemptService } from '../../../../Services/ExamAttempt/exam-attempt.service'; // ✅ THÊM
 
 @Component({
   selector: 'app-writing',
   standalone: true,
-  imports: [CommonModule, FormsModule, WritingAnswerBoxComponent, TimeComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    WritingAnswerBoxComponent,
+    TimeComponent,
+  ],
   templateUrl: './writing.component.html',
   styleUrl: './writing.component.scss',
 })
 export class WritingComponent implements OnChanges, OnDestroy, OnInit {
-
   @Input() questions: QuestionDTO[] | null = null;
   @Output() finished = new EventEmitter<void>();
 
@@ -33,22 +48,24 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   savedTimeRemaining: number = 0;
   private autoSaveInterval: any = null;
   private readonly AUTO_SAVE_INTERVAL = 10000; // 10 seconds
+  attemptId: number | null = null; // ✅ THÊM
 
   constructor(
     private router: Router,
     private authService: AuthService,
     private writingExamPartOneService: WritingExamPartOneService,
-    private pictureCaptioningService: PictureCaptioningService
-
+    private pictureCaptioningService: PictureCaptioningService,
+    private examAttemptService: ExamAttemptService // ✅ THÊM
   ) {
     this.startAutoSave();
   }
 
-   showHint() {
+  showHint() {
     this.isShowHint = !this.isShowHint;
   }
   ngOnInit(): void {
     this.loadSavedData();
+    this.loadAttemptId(); // ✅ THÊM
     // Load caption for the first question
     if (this.questions && this.questions.length > 0) {
       this.generateCaption(this.currentIndex);
@@ -66,6 +83,25 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   ngOnDestroy(): void {
     this.stopAutoSave();
     this.saveCurrentState();
+    this.saveProgressOnExit(); // ✅ THÊM
+  }
+
+  // ============= ATTEMPT MANAGEMENT (NEW) =============
+
+  private loadAttemptId(): void {
+    try {
+      const stored = localStorage.getItem('currentExamAttempt');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        this.attemptId = parsed.attemptID || parsed.attemptId;
+      }
+
+      if (!this.attemptId) {
+        console.error('❌ No attemptId found for Writing');
+      }
+    } catch (error) {
+      console.error('❌ Error loading attemptId:', error);
+    }
   }
 
   private getStorageKey(): string | null {
@@ -132,7 +168,9 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       // First try to load time for current question
       const currentQuestion = this.getCurrentQuestion();
       if (currentQuestion) {
-        const questionKey = this.getTimeStorageKeyForQuestion(currentQuestion.questionId);
+        const questionKey = this.getTimeStorageKeyForQuestion(
+          currentQuestion.questionId
+        );
         if (questionKey) {
           const raw = localStorage.getItem(questionKey);
           if (raw) {
@@ -174,7 +212,9 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       // Save time for current question
       const currentQuestion = this.getCurrentQuestion();
       if (currentQuestion) {
-        const questionKey = this.getTimeStorageKeyForQuestion(currentQuestion.questionId);
+        const questionKey = this.getTimeStorageKeyForQuestion(
+          currentQuestion.questionId
+        );
         if (questionKey) {
           localStorage.setItem(questionKey, this.savedTimeRemaining.toString());
         }
@@ -213,7 +253,9 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   onAnswerChange(questionId: number, answer: string): void {
-    const existingIndex = this.savedAnswers.findIndex(x => x.questionId === questionId);
+    const existingIndex = this.savedAnswers.findIndex(
+      (x) => x.questionId === questionId
+    );
     if (existingIndex >= 0) {
       this.savedAnswers[existingIndex].answer = answer;
     } else {
@@ -223,7 +265,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
 
   onAnswerSubmitted(questionId: number, isCorrect: boolean): void {
     if (isCorrect) {
-      const question = this.questions?.find(q => q.questionId === questionId);
+      const question = this.questions?.find((q) => q.questionId === questionId);
       if (question) {
         this.totalScore += question.scoreWeight ?? 0;
         this.correctCount += 1;
@@ -243,7 +285,8 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
 
     this.isLoading = true;
 
-    this.pictureCaptioningService.GetCaptionOfPicture(question.prompt.referenceImageUrl)
+    this.pictureCaptioningService
+      .GetCaptionOfPicture(question.prompt.referenceImageUrl)
       .subscribe({
         next: (response) => {
           this.pictureCaption = response.caption || '';
@@ -252,7 +295,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
         error: (error) => {
           this.pictureCaption = '';
           this.isLoading = false;
-        }
+        },
       });
   }
 
@@ -291,12 +334,18 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   private loadTimeForCurrentQuestion(): void {
     const currentQuestion = this.getCurrentQuestion();
     if (currentQuestion) {
-      const questionKey = this.getTimeStorageKeyForQuestion(currentQuestion.questionId);
+      const questionKey = this.getTimeStorageKeyForQuestion(
+        currentQuestion.questionId
+      );
       if (questionKey) {
         const raw = localStorage.getItem(questionKey);
         if (raw) {
           this.savedTimeRemaining = Number(raw) || 0;
-          console.log('[WritingComponent] Loaded time for question:', currentQuestion.questionId, this.savedTimeRemaining);
+          console.log(
+            '[WritingComponent] Loaded time for question:',
+            currentQuestion.questionId,
+            this.savedTimeRemaining
+          );
         } else {
           // No saved time for this question, use the question's default time
           this.savedTimeRemaining = currentQuestion.time || 0;
@@ -306,7 +355,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     }
   }
 
-
   finishExam(): void {
     this.isFinished = true;
     this.showExplain = true;
@@ -315,12 +363,13 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   getCurrentQuestion(): QuestionDTO | null {
-    if (!this.questions || this.currentIndex >= this.questions.length) return null;
+    if (!this.questions || this.currentIndex >= this.questions.length)
+      return null;
     return this.questions[this.currentIndex];
   }
 
   getSavedAnswer(questionId: number): string {
-    const saved = this.savedAnswers.find(x => x.questionId === questionId);
+    const saved = this.savedAnswers.find((x) => x.questionId === questionId);
     return saved?.answer || '';
   }
 
@@ -366,5 +415,87 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
 
   isCurrentQuestion(index: number): boolean {
     return index === this.currentIndex;
+  }
+
+  hasAnswer(questionId: number): boolean {
+    return this.savedAnswers.some(
+      (ans) => ans.questionId === questionId && ans.answer.trim().length > 0
+    );
+  }
+
+  finishWritingExam(): void {
+    const totalQuestions = this.questions?.length || 0;
+    const answeredCount = this.savedAnswers.filter(
+      (a) => a.answer.trim().length > 0
+    ).length;
+
+    const confirmFinish = confirm(
+      'Bạn có chắc chắn muốn nộp bài thi Writing không?\n\n' +
+        `Số câu đã trả lời: ${answeredCount}/${totalQuestions}`
+    );
+
+    if (confirmFinish) {
+      this.finishExam();
+    }
+  }
+
+  // ============= EXIT HANDLING (NEW) =============
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: any): void {
+    if (!this.isFinished && this.attemptId) {
+      $event.returnValue = 'Bạn có muốn lưu tiến trình và thoát không?';
+    }
+  }
+
+  private saveProgressOnExit(): void {
+    if (!this.isFinished && this.attemptId) {
+      const model = {
+        examAttemptId: this.attemptId,
+        currentQuestionIndex: this.currentIndex,
+      };
+
+      this.examAttemptService.saveProgress(model).subscribe({
+        next: () => console.log('✅ Writing progress saved'),
+        error: (error) =>
+          console.error('❌ Error saving writing progress:', error),
+      });
+    }
+  }
+
+  confirmExit(): void {
+    const confirmResult = confirm(
+      'Bạn có muốn lưu tiến trình và thoát không?\n\n' +
+        '- Chọn "OK" để lưu và thoát\n' +
+        '- Chọn "Cancel" để tiếp tục làm bài'
+    );
+
+    if (confirmResult) {
+      this.saveProgressAndExit();
+    }
+  }
+
+  private saveProgressAndExit(): void {
+    if (!this.attemptId) {
+      this.router.navigate(['homepage/user-dashboard/exams']);
+      return;
+    }
+
+    const model = {
+      examAttemptId: this.attemptId,
+      currentQuestionIndex: this.currentIndex,
+    };
+
+    this.examAttemptService.saveProgress(model).subscribe({
+      next: () => {
+        console.log('✅ Writing progress saved successfully');
+        localStorage.removeItem('currentExamAttempt');
+        this.router.navigate(['homepage/user-dashboard/exams']);
+      },
+      error: (error) => {
+        console.error('❌ Error saving writing progress:', error);
+        this.router.navigate(['homepage/user-dashboard/exams']);
+      },
+    });
   }
 }

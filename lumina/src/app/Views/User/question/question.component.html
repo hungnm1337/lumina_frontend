@@ -42,18 +42,19 @@
     @if (questions[currentIndex].questionType === 'SINGLE_CHOICE') { @if
     (isListeningQuestion(questions[currentIndex].questionType ?? '')) {
     <app-listening
-      [options]="questions[currentIndex].options"
-      [disabled]="showExplain"
-      (answered)="markAnswered($event)"
+      [questions]="questions"
+      [partInfo]="null"
+      (listeningAnswered)="markAnswered($event)"
     ></app-listening>
     } @else {
     <app-reading
-      [options]="questions[currentIndex].options"
-      [disabled]="showExplain"
-      [resetAt]="currentIndex"
-      (answered)="markAnswered($event)"
+      [questions]="questions"
+      [partInfo]="null"
+      (readingAnswered)="markAnswered($event)"
     ></app-reading>
-    } } @else if (questions[currentIndex].questionType === 'WRITTING') { }
+    } } @else if (questions[currentIndex].questionType === 'WRITTING') {
+    <!-- Writing component here -->
+    }
 
     <!-- Navigation for Non-Speaking Questions (Original) -->
     <div class="mt-4 flex items-center justify-between">
