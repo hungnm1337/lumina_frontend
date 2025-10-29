@@ -1,0 +1,29 @@
+<div class="bg-white rounded-xl shadow p-4">
+	<div class="flex items-center justify-between mb-3">
+		<h3 class="text-lg font-semibold">Mùa hiện tại</h3>
+		<a class="text-blue-600 hover:underline" [routerLink]="['/leaderboard']" (click)="goToAll()">Xem tất cả</a>
+	</div>
+	<div *ngIf="isLoading" class="text-gray-500">Đang tải...</div>
+	<div *ngIf="error" class="text-red-600">{{ error }}</div>
+	<div *ngIf="!isLoading && !error">
+		<div *ngIf="currentSeason; else noSeason">
+			<div class="mb-3 text-sm text-gray-700">
+				<span class="font-medium">{{ currentSeason?.seasonName || 'Mùa ' + currentSeason?.seasonNumber }}</span>
+				<span class="ml-2">({{ currentSeason?.startDate | date:'dd/MM/yyyy' }} - {{ currentSeason?.endDate | date:'dd/MM/yyyy' }})</span>
+			</div>
+			<div *ngIf="top1; else noTop" class="flex items-center gap-3">
+				<div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 font-bold">1</div>
+				<div class="flex-1">
+					<div class="font-medium">{{ top1?.fullName }}</div>
+					<div class="text-sm text-gray-600">{{ top1?.score | number }} điểm</div>
+				</div>
+			</div>
+		</div>
+		<ng-template #noSeason>
+			<div class="text-gray-500">Chưa có mùa đang diễn ra.</div>
+		</ng-template>
+		<ng-template #noTop>
+			<div class="text-gray-500">Chưa có xếp hạng.</div>
+		</ng-template>
+	</div>
+</div>

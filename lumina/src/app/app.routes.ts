@@ -66,7 +66,6 @@ export const routes: Routes = [
       },
     ],
   },
-  
   { 
     path: 'profile', 
     loadComponent: () => import('./Views/User/profile/profile.component').then(m => m.ProfileComponent),

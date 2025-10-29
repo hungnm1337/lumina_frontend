@@ -29,6 +29,7 @@ export class SidebarComponent {
       items: [
         { path: 'vocabulary', name: 'Từ vựng', icon: 'fas fa-spell-check' },
         { path: 'seasons', name: 'Mùa thi đấu', icon: 'fas fa-trophy' },
+        { path: 'leaderboard', name: 'Bảng xếp hạng', icon: 'fas fa-medal' },
       ],
     },
   ];

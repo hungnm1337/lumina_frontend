@@ -1,0 +1,35 @@
+<div class="space-y-4">
+  <header class="bg-white border border-gray-200 rounded-xl px-6 py-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-xl font-semibold">Bảng xếp hạng theo mùa</h2>
+      <div class="flex items-center space-x-2">
+        <select class="border rounded-lg px-3 py-2" [(ngModel)]="selectedSeasonId" (change)="loadRanking()">
+          <option [ngValue]="null">Chọn mùa</option>
+          <option *ngFor="let s of seasons" [ngValue]="s.leaderboardId">{{ s.seasonName || ('Season ' + s.seasonNumber) }}</option>
+        </select>
+        <button class="bg-emerald-600 text-white px-4 py-2 rounded-lg" (click)="recalc()" [disabled]="!selectedSeasonId">Tính lại điểm</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="bg-white border border-gray-200 rounded-xl p-4">
+    <div *ngIf="isLoading" class="text-gray-500">Đang tải...</div>
+    <div *ngIf="error" class="text-red-600">{{ error }}</div>
+    <table class="w-full text-sm" *ngIf="!isLoading">
+      <thead>
+        <tr class="text-left text-gray-500">
+          <th class="py-2">Hạng</th>
+          <th class="py-2">Người dùng</th>
+          <th class="py-2">Điểm</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of ranking" class="border-t">
+          <td class="py-2">{{ r.rank }}</td>
+          <td class="py-2">{{ r.fullName }}</td>
+          <td class="py-2">{{ r.score }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,97 @@
+<div class="space-y-4">
+  <header class="bg-white border border-gray-200 rounded-xl px-6 py-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-xl font-semibold">Quản lý mùa thi đấu</h2>
+        <p class="text-sm text-gray-500" *ngIf="current">Mùa hiện tại: <span class="font-medium">{{ current.seasonName || ('Season ' + current.seasonNumber) }}</span></p>
+      </div>
+      <div class="flex items-center space-x-2">
+        <input type="text" class="border rounded-lg px-3 py-2" placeholder="Tìm kiếm..." [(ngModel)]="keyword">
+        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg" (click)="loadData()">Tìm</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <h3 class="font-semibold mb-3">Danh sách mùa</h3>
+      <div *ngIf="isLoading" class="text-gray-500">Đang tải...</div>
+      <div *ngIf="error" class="text-red-600">{{ error }}</div>
+      <table class="w-full text-sm" *ngIf="!isLoading">
+        <thead>
+          <tr class="text-left text-gray-500">
+            <th class="py-2">#</th>
+            <th class="py-2">Tên mùa</th>
+            <th class="py-2">Số mùa</th>
+            <th class="py-2">Ngày</th>
+            <th class="py-2">Trạng thái</th>
+            <th class="py-2">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of items" class="border-t">
+            <td class="py-2">{{ s.leaderboardId }}</td>
+            <td class="py-2">{{ s.seasonName || '-' }}</td>
+            <td class="py-2">{{ s.seasonNumber }}</td>
+            <td class="py-2">{{ s.startDate?.substring(0,10) || '-' }} → {{ s.endDate?.substring(0,10) || '-' }}</td>
+            <td class="py-2">
+              <span class="px-2 py-1 text-xs rounded" [ngClass]="s.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'">
+                {{ s.isActive ? 'Đang kích hoạt' : 'Không hoạt động' }}
+              </span>
+            </td>
+            <td class="py-2 space-x-2">
+              <button class="px-3 py-1 rounded bg-blue-50 text-blue-700" (click)="onEdit(s)">Sửa</button>
+              <button class="px-3 py-1 rounded bg-red-50 text-red-700" (click)="onDelete(s.leaderboardId)">Xóa</button>
+              <button class="px-3 py-1 rounded bg-emerald-50 text-emerald-700" (click)="onSetCurrent(s.leaderboardId)" [disabled]="s.isActive">Chọn làm hiện tại</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <h3 class="font-semibold mb-3">{{ isEdit ? 'Cập nhật mùa' : 'Tạo mùa mới' }}</h3>
+      <form [formGroup]="form" class="space-y-3" (ngSubmit)="isEdit ? onUpdate() : onCreate()">
+        <div *ngIf="form.errors as fe" class="bg-red-50 border border-red-200 text-red-700 rounded px-3 py-2" role="alert">
+          <div *ngIf="fe['dateOrder']">{{ fe['dateOrder'] }}</div>
+          <div *ngIf="fe['dateOverlap']">{{ fe['dateOverlap'] }}</div>
+          <div *ngIf="fe['seasonNumberExists']">{{ fe['seasonNumberExists'] }}</div>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Tên mùa</label>
+          <input type="text" class="w-full border rounded-lg px-3 py-2" formControlName="seasonName" placeholder="Ví dụ: Mùa Hè 2025">
+        </div>
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Số mùa</label>
+          <input type="number" class="w-full border rounded-lg px-3 py-2" formControlName="seasonNumber" placeholder="VD: 1">
+          <div class="text-xs text-red-600 mt-1" *ngIf="form.get('seasonNumber')?.touched && form.get('seasonNumber')?.errors as e">
+            <span *ngIf="e['required']">Vui lòng nhập số mùa</span>
+            <span *ngIf="e['min']">Số mùa phải ≥ 1</span>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm text-gray-600 mb-1">Ngày bắt đầu</label>
+            <input type="date" class="w-full border rounded-lg px-3 py-2" formControlName="startDate">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600 mb-1">Ngày kết thúc</label>
+            <input type="date" class="w-full border rounded-lg px-3 py-2" formControlName="endDate">
+          </div>
+        </div>
+        <div class="text-xs text-red-600" *ngIf="form.errors?.['dateOrder']">{{ form.errors?.['dateOrder'] }}</div>
+        <div class="text-xs text-red-600" *ngIf="form.errors?.['dateOverlap']">{{ form.errors?.['dateOverlap'] }}</div>
+        <div class="flex items-center space-x-2">
+          <input id="isActive" type="checkbox" formControlName="isActive">
+          <label for="isActive" class="text-sm text-gray-700">Kích hoạt sau khi tạo</label>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg">{{ isEdit ? 'Cập nhật' : 'Tạo mới' }}</button>
+          <button type="button" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg" (click)="resetForm()" *ngIf="isEdit">Hủy</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+

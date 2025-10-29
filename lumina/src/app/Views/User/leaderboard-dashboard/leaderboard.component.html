@@ -1,0 +1,33 @@
+<div class="bg-white rounded-xl shadow p-4">
+	<div class="flex items-center justify-between mb-4">
+		<h2 class="text-xl font-semibold">Bảng xếp hạng</h2>
+		<div>
+			<label for="season" class="mr-2 text-sm text-gray-700">Mùa</label>
+			<select id="season" class="border rounded px-2 py-1" (change)="onSeasonChange($event)">
+				<option *ngFor="let s of seasons" [value]="s.leaderboardId" [selected]="s.leaderboardId===currentSeasonId">
+					{{ s.seasonName || ('Mùa ' + s.seasonNumber) }}
+				</option>
+			</select>
+		</div>
+	</div>
+
+	<div *ngIf="isLoading" class="text-gray-500">Đang tải...</div>
+	<div *ngIf="error" class="text-red-600">{{ error }}</div>
+
+	<table *ngIf="!isLoading && !error" class="w-full text-sm">
+		<thead>
+			<tr class="text-left text-gray-600">
+				<th class="py-2">Hạng</th>
+				<th class="py-2">Họ tên</th>
+				<th class="py-2 text-right">Điểm</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr *ngFor="let r of ranking" class="border-t">
+				<td class="py-2 font-semibold">{{ r.rank }}</td>
+				<td class="py-2">{{ r.fullName }}</td>
+				<td class="py-2 text-right">{{ r.score | number }}</td>
+			</tr>
+		</tbody>
+	</table>
+</div>

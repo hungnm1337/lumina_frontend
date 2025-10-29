@@ -5,6 +5,8 @@ import { DashboardComponent } from './Dashboard/dashboard/dashboard.component';
 import { ArticlesComponent } from './Articles/articles/articles.component';
 import { VocabularyComponent } from './Vocabulary/vocabulary/vocabulary.component';
 import { QuestionsComponent } from './Questions/questions/questions.component'; 
+import { SeasonsComponent } from './Leaderboard/seasons/seasons.component';
+import { StaffLeaderboardComponent } from './Leaderboard/leaderboard/leaderboard.component';
 
 
 
@@ -38,6 +40,16 @@ const routes: Routes = [
         path: 'vocabulary',
         component: VocabularyComponent, 
         data: { title: 'Từ Vựng' } 
+      },
+      {
+        path: 'leaderboard',
+        component: StaffLeaderboardComponent,
+        data: { title: 'Bảng xếp hạng' }
+      },
+      {
+        path: 'seasons',
+        component: SeasonsComponent,
+        data: { title: 'Mùa thi đấu' }
       }
     ]
   }
