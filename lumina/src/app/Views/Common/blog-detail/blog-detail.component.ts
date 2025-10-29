@@ -5,6 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { HeaderComponent } from '../header/header.component';
 import { ArticleService } from '../../../Services/Article/article.service';
 import { ArticleResponse } from '../../../Interfaces/article.interfaces';
+import { ChatBoxComponent } from "./chat-box/chat-box.component";
 
 interface BlogComment {
   id: number;
@@ -69,7 +70,7 @@ interface BlogArticle {
 @Component({
   selector: 'app-blog-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, HeaderComponent],
+  imports: [CommonModule, FormsModule, HeaderComponent, ChatBoxComponent],
   templateUrl: './blog-detail.component.html',
   styleUrls: ['./blog-detail.component.scss']
 })
@@ -77,11 +78,11 @@ export class BlogDetailComponent implements OnInit {
   article: ArticleResponse | null = null;
   isLoading: boolean = true;
   error: string = '';
-  
+  contentArticle : string = '';
   // Additional properties for UI
   articleLikes: number = 0;
   articleCommentsCount: number = 0;
-  
+
   // Mock data for demo (will be replaced with real data)
   mockArticle: BlogArticle = {
     id: 1,
@@ -236,7 +237,7 @@ export class BlogDetailComponent implements OnInit {
   loadArticle(): void {
     this.isLoading = true;
     this.error = '';
-    
+
     const articleId = this.route.snapshot.paramMap.get('id');
     if (!articleId) {
       this.error = 'Không tìm thấy bài viết';
@@ -249,6 +250,7 @@ export class BlogDetailComponent implements OnInit {
         this.article = article;
         this.articleLikes = 0; // Initialize with default values
         this.articleCommentsCount = 0;
+        this.contentArticle = article.sections.map(section => section.sectionContent).join('\n\n');
         this.isLoading = false;
       },
       error: (error) => {
@@ -293,7 +295,7 @@ export class BlogDetailComponent implements OnInit {
         replies: 0,
         isLiked: false
       };
-      
+
       this.comments.unshift(newComment);
       this.articleCommentsCount++;
       this.newComment = '';

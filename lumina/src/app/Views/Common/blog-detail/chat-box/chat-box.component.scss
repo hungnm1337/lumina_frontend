@@ -1,0 +1,352 @@
+// Force fixed positioning - override any parent styles
+app-chat-box {
+  display: block !important;
+  position: fixed !important;
+  bottom: 20px !important;
+  right: 20px !important;
+  z-index: 99999 !important;
+  pointer-events: auto !important;
+  width: auto !important;
+  height: auto !important;
+  transform: none !important;
+}
+
+:host {
+  display: block !important;
+  position: fixed !important;
+  bottom: 20px !important;
+  right: 20px !important;
+  z-index: 99999 !important;
+  pointer-events: auto !important;
+}
+
+.chat-container {
+  position: relative;
+  pointer-events: auto;
+}
+
+// Floating Chat Toggle Button (Circular)
+.chat-toggle-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.active {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  }
+
+  i {
+    transition: transform 0.3s ease;
+  }
+}
+
+// Chat Window
+.chat-window {
+  position: absolute;
+  bottom: 80px;
+  right: 0;
+  width: 380px;
+  max-width: calc(100vw - 40px);
+  max-height: 600px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px) scale(0.95);
+  transition: all 0.3s ease;
+
+  &.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.chat-box {
+  display: flex;
+  flex-direction: column;
+  height: 600px;
+  max-height: calc(100vh - 140px);
+  overflow: hidden;
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 16px 16px 0 0;
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    i {
+      font-size: 20px;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+  }
+
+  .minimize-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  }
+}
+
+.chat-body {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  background: #f9fafb;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+  }
+}
+
+.empty {
+  text-align: center;
+  color: #9ca3af;
+  padding: 40px 20px;
+
+  i {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.msg {
+  padding: 10px 14px;
+  border-radius: 12px;
+  max-width: 80%;
+  word-wrap: break-word;
+  animation: slideIn 0.3s ease;
+
+  &.user {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+
+  &.assistant {
+    background: white;
+    color: #1f2937;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .content {
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 4px;
+  }
+
+  .time {
+    font-size: 11px;
+    opacity: 0.7;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-controls {
+  padding: 16px;
+  border-top: 1px solid #e5e7eb;
+  background: white;
+  border-radius: 0 0 16px 16px;
+}
+
+.input-wrapper {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  margin-bottom: 10px;
+
+  textarea {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    resize: none;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    &::placeholder {
+      color: #9ca3af;
+    }
+  }
+
+  .send-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+
+    &:hover:not(:disabled) {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    i {
+      font-size: 16px;
+    }
+  }
+}
+
+.chat-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .mode-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #6b7280;
+    cursor: pointer;
+
+    input[type="checkbox"] {
+      cursor: pointer;
+    }
+  }
+
+  .clear-btn {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #fee2e2;
+    }
+
+    i {
+      margin-right: 4px;
+    }
+  }
+}
+
+.error {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 13px;
+}
+
+// Responsive
+@media (max-width: 480px) {
+  :host {
+    bottom: 10px;
+    right: 10px;
+  }
+
+  .chat-window {
+    width: calc(100vw - 20px);
+    right: -10px;
+  }
+
+  .chat-box {
+    height: 500px;
+  }
+}

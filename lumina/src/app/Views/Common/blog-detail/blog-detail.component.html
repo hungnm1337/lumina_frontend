@@ -103,7 +103,7 @@
             <span class="stat">0 likes</span>
           </div>
         </div>
-        <button 
+        <button
           [class]="isFollowing ? 'follow-btn following' : 'follow-btn'"
           (click)="onFollowAuthor()"
         >
@@ -118,7 +118,7 @@
 <div class="comments-section">
   <div class="comments-container">
     <h2 class="comments-title">Bình luận ({{ articleCommentsCount }})</h2>
-    
+
     <!-- Comment Input -->
     <div class="comment-input-section">
       <div class="comment-input-header">
@@ -126,9 +126,9 @@
           <i class="fas fa-user"></i>
         </div>
         <div class="comment-input-content">
-          <textarea 
+          <textarea
             [(ngModel)]="newComment"
-            placeholder="Viết bình luận của bạn..." 
+            placeholder="Viết bình luận của bạn..."
             class="comment-textarea"
             rows="3"
           ></textarea>
@@ -166,7 +166,7 @@
           </div>
           <p class="comment-text">{{ comment.content }}</p>
           <div class="comment-actions">
-            <button 
+            <button
               [class]="comment.isLiked ? 'action-btn liked' : 'action-btn'"
               (click)="onLikeComment(comment.id)"
             >
@@ -213,3 +213,6 @@
     <!-- Related articles content will be added here -->
   </div>
 </div>
+
+<!-- Floating Chat Box - Always visible at bottom right -->
+<app-chat-box [contentArticle]="contentArticle"></app-chat-box>
