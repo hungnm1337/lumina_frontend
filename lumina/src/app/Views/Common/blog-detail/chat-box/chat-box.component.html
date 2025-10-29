@@ -28,6 +28,15 @@
             <div class="content" [innerHTML]="formatMessage(m.Content)"></div>
             <div class="time">{{ m.Timestamp | date:'short' }}</div>
           </div>
+
+          <!-- Typing indicator when loading -->
+          <div *ngIf="loading" class="msg assistant typing-indicator">
+            <div class="typing-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
         </div>
       </section>
 

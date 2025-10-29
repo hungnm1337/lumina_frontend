@@ -242,22 +242,28 @@ export class ChatBoxComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   /**
-   * Format message content: convert **text** to bold and add line breaks
+   * Format message content: convert markdown-like syntax to HTML
+   * Handles: **bold**, numbered lists, line breaks, horizontal rules
    */
   formatMessage(content: string): SafeHtml {
     if (!content) return '';
 
-    // Replace ** with line breaks and bold tags
-    // Pattern: **text** -> <br/><strong>text</strong>
     let formatted = content
-      // Replace **text** with <strong>text</strong> preceded by line break
-      .replace(/\*\*(.+?)\*\*/g, '<br/><strong>$1</strong>')
-      // Replace numbered list items (1., 2., etc) with line breaks
-      .replace(/(\d+\.\s)/g, '<br/>$1')
-      // Replace newlines with <br/>
+      // Replace --- with horizontal rule
+      .replace(/^---$/gm, '<hr class="my-2"/>')
+      // Replace **text** at start of line with bold heading (no extra line break)
+      .replace(/^\*\*(.+?)\*\*$/gm, '<div class="font-semibold mt-2 mb-1">$1</div>')
+      // Replace **text** inline with bold
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      // Replace numbered list items (1., 2., etc) with styled list items
+      .replace(/^(\d+\.\s+)(.+)$/gm, '<div class="ml-4 my-1"><span class="font-semibold text-blue-600">$1</span>$2</div>')
+      // Replace bullet points (- or *) with styled bullets
+      .replace(/^[-*]\s+(.+)$/gm, '<div class="ml-4 my-1">• $1</div>')
+      // Replace double newlines with paragraph breaks
+      .replace(/\n\n/g, '<br/><br/>')
+      // Replace single newlines with line breaks
       .replace(/\n/g, '<br/>');
 
-    // Sanitize and return safe HTML
     return this.sanitizer.sanitize(1, formatted) || '';
   }
 }
