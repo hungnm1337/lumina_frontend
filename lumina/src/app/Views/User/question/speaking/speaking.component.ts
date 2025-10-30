@@ -46,7 +46,6 @@ interface QuestionResult {
   styleUrl: './speaking.component.scss',
 })
 export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
-  // ✅ THÊM OnInit
   @Input() questions: QuestionDTO[] = [];
   @Input() partInfo: ExamPartDTO | null = null;
   @Output() speakingAnswered = new EventEmitter<boolean>();
@@ -59,7 +58,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   speakingQuestionResults: QuestionResult[] = [];
   isSpeakingSubmitting = false;
   private advanceTimer: any = null;
-  attemptId: number | null = null; // ✅ THÊM
+  attemptId: number | null = null;
 
   // Speaking navigation and state management
   private stateSubscription: Subscription = new Subscription();
@@ -71,7 +70,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     private router: Router,
     private baseQuestionService: BaseQuestionService,
     private speakingStateService: SpeakingQuestionStateService,
-    private examAttemptService: ExamAttemptService // ✅ THÊM
+    private examAttemptService: ExamAttemptService
   ) {
     // Subscribe to state changes
     this.stateSubscription = this.speakingStateService
@@ -104,7 +103,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   ngOnInit(): void {
-    this.loadAttemptId(); // ✅ THÊM
+    this.loadAttemptId();
   }
 
   ngOnDestroy(): void {
@@ -112,7 +111,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     if (this.advanceTimer) {
       clearTimeout(this.advanceTimer);
     }
-    this.saveProgressOnExit(); // ✅ THÊM
+    this.saveProgressOnExit();
   }
 
   // ============= ATTEMPT MANAGEMENT (NEW) =============
@@ -126,10 +125,10 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       }
 
       if (!this.attemptId) {
-        console.error('❌ No attemptId found for Speaking');
+        console.error('No attemptId found for Speaking');
       }
     } catch (error) {
-      console.error('❌ Error loading attemptId:', error);
+      console.error('Error loading attemptId:', error);
     }
   }
 
@@ -247,7 +246,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       'RESPOND_QUESTIONS',
       'RESPOND_WITH_INFO',
       'EXPRESS_OPINION',
-      // Support generic type from DB for easier management
       'SPEAKING',
     ];
     return speakingTypes.includes(questionType);
@@ -521,9 +519,9 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       };
 
       this.examAttemptService.saveProgress(model).subscribe({
-        next: () => console.log('✅ Speaking progress saved'),
+        next: () => console.log('Speaking progress saved'),
         error: (error) =>
-          console.error('❌ Error saving speaking progress:', error),
+          console.error('Error saving speaking progress:', error),
       });
     }
   }
@@ -553,12 +551,12 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
     this.examAttemptService.saveProgress(model).subscribe({
       next: () => {
-        console.log('✅ Speaking progress saved successfully');
+        console.log('Speaking progress saved successfully');
         localStorage.removeItem('currentExamAttempt');
         this.router.navigate(['homepage/user-dashboard/exams']);
       },
       error: (error) => {
-        console.error('❌ Error saving speaking progress:', error);
+        console.error('Error saving speaking progress:', error);
         this.router.navigate(['homepage/user-dashboard/exams']);
       },
     });
