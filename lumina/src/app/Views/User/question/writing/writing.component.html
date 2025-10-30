@@ -1,14 +1,14 @@
 @if (questions && questions.length > 0 && !isFinished) {
 <div class="w-full bg-white rounded-lg shadow-md p-6">
   <!-- Progress Header -->
-  <div class="mb-4 flex items-center justify-between">
+  <!-- <div class="mb-4 flex items-center justify-between">
     <div class="text-sm text-gray-600">
       Câu {{ currentIndex + 1 }} / {{ questions.length }}
     </div>
     <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded font-medium">
       Điểm: {{ totalScore }}
     </span>
-  </div>
+  </div> -->
 
   @if (showExplain && isFetchingFeedback) {
   <!-- Global feedback fetching screen -->

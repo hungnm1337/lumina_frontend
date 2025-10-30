@@ -276,7 +276,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
 
   private finishQuiz(): void {
     if (!this.attemptId) {
-      console.error('❌ No attemptId, cannot finalize');
+      console.error('No attemptId, cannot finalize');
       this.finished = true;
       return;
     }
@@ -285,7 +285,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
 
     this.examAttemptService.finalizeAttempt(this.attemptId).subscribe({
       next: (summary) => {
-        console.log('✅ Listening exam finalized:', summary);
+        console.log('Listening exam finalized:', summary);
 
         // Use backend scores
         if (summary.success !== false) {
@@ -297,7 +297,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
         localStorage.removeItem('currentExamAttempt');
       },
       error: (error) => {
-        console.error('❌ Error finalizing listening exam:', error);
+        console.error('Error finalizing listening exam:', error);
         this.finished = true;
       },
     });
@@ -312,10 +312,10 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       next: (details) => {
         this.examAttemptDetails = details;
         this.showExamAttemptDetailsFlag = true;
-        console.log('✅ Fetched exam attempt details:', details);
+        console.log('Fetched exam attempt details:', details);
       },
       error: (error) => {
-        console.error('❌ Error fetching exam attempt details:', error);
+        console.error('Error fetching exam attempt details:', error);
       },
     });
   }
@@ -372,8 +372,8 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       };
 
       this.examAttemptService.saveProgress(model).subscribe({
-        next: () => console.log('✅ Listening progress saved'),
-        error: (error) => console.error('❌ Error saving progress:', error),
+        next: () => console.log('Listening progress saved'),
+        error: (error) => console.error('Error saving progress:', error),
       });
     }
   }
@@ -403,12 +403,12 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
 
     this.examAttemptService.saveProgress(model).subscribe({
       next: () => {
-        console.log('✅ Listening progress saved successfully');
+        console.log('Listening progress saved successfully');
         localStorage.removeItem('currentExamAttempt');
         this.router.navigate(['homepage/user-dashboard/exams']);
       },
       error: (error) => {
-        console.error('❌ Error saving listening progress:', error);
+        console.error('Error saving listening progress:', error);
         this.router.navigate(['homepage/user-dashboard/exams']);
       },
     });

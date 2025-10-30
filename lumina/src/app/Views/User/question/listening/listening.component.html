@@ -7,14 +7,14 @@
   ></app-exam-attempt-detail>
   } @if (!finished) {
   <!-- Progress Header -->
-  <div class="mb-4 flex items-center justify-between">
+  <!-- <div class="mb-4 flex items-center justify-between">
     <div class="text-sm text-gray-600">
       Câu {{ currentIndex + 1 }} / {{ questions.length }}
     </div>
     <span class="bg-red-100 text-red-700 px-3 py-1 rounded font-medium">
       Điểm: {{ totalScore }}
     </span>
-  </div>
+  </div> -->
 
   <!-- Audio Player -->
   <div class="mb-6 p-4 bg-red-50 rounded-lg">
@@ -117,9 +117,7 @@
           i === currentIndex
             ? 'w-10 h-10 rounded-lg bg-blue-600 text-white font-semibold'
             : isQuestionAnswered(question.questionId)
-            ? answeredQuestions.get(question.questionId)?.isCorrect
-              ? 'w-10 h-10 rounded-lg bg-green-500 text-white'
-              : 'w-10 h-10 rounded-lg bg-red-500 text-white'
+            ? 'w-10 h-10 rounded-lg bg-green-500 text-white'
             : 'w-10 h-10 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300'
         "
       >
@@ -128,7 +126,7 @@
       }
     </div>
 
-    <!-- ✅ Legend - Chú thích màu sắc -->
+    <!-- Legend - Chú thích màu sắc -->
     <div class="mt-4 flex items-center gap-4 text-xs text-gray-600">
       <div class="flex items-center gap-1">
         <div class="w-4 h-4 bg-gray-200 rounded"></div>
@@ -136,11 +134,7 @@
       </div>
       <div class="flex items-center gap-1">
         <div class="w-4 h-4 bg-green-500 rounded"></div>
-        <span>Đúng</span>
-      </div>
-      <div class="flex items-center gap-1">
-        <div class="w-4 h-4 bg-red-500 rounded"></div>
-        <span>Sai</span>
+        <span>Đã làm</span>
       </div>
       <div class="flex items-center gap-1">
         <div class="w-4 h-4 bg-blue-600 rounded"></div>
