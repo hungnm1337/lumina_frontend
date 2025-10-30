@@ -50,6 +50,10 @@ export class BaseQuestionService {
     return this.totalScoreSubject.asObservable();
   }
 
+  setTotalScore(score: number): void {
+    this.totalScoreSubject.next(score);
+  }
+
   get correctCount$(): Observable<number> {
     return this.correctCountSubject.asObservable();
   }

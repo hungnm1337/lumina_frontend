@@ -26,12 +26,21 @@ export class SpeakingService {
 
   submitSpeakingAnswer(
     audioBlob: Blob,
-    questionId: number
+    questionId: number,
+    attemptId?: number // ✅ THÊM: attemptId parameter
   ): Observable<SpeakingScoringResult> {
     const formData = new FormData();
     // Gửi đúng phần mở rộng webm theo định dạng MediaRecorder
     formData.append('audio', audioBlob, 'user-recording.webm');
     formData.append('questionId', questionId.toString());
+
+    // ✅ THÊM: Gửi attemptId nếu có
+    if (attemptId && attemptId > 0) {
+      formData.append('attemptId', attemptId.toString());
+      console.log(
+        `[SpeakingService] Submitting answer with attemptId: ${attemptId}`
+      );
+    }
 
     return this.http.post<SpeakingScoringResult>(
       `${this.apiUrl}/submit-answer`,
