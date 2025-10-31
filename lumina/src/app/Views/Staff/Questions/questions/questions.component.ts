@@ -742,6 +742,41 @@ onSkillChange(event: any): void {
 }
 
 
+  deletePrompt(prompt: any) {
+  // ✅ Kiểm tra xem prompt có câu hỏi không
+  const questionCount = prompt.questions?.length || 0;
+  
+  let confirmMsg = `Bạn có chắc chắn muốn xóa prompt này?`;
+  if (questionCount > 0) {
+    confirmMsg = `Prompt này có ${questionCount} câu hỏi. Xóa prompt sẽ xóa tất cả câu hỏi và đáp án bên trong.\n\nBạn có chắc chắn muốn xóa?`;
+  }
+
+  if (confirm(confirmMsg)) {
+    this.questionService.deletePrompt(prompt.promptId).subscribe({
+      next: (res) => {
+        const msg = res?.message || 'Xóa prompt thành công!';
+        this.showMessage(msg, 'success');
+        this.loadPrompts(); // Reload lại danh sách
+      },
+      error: (err) => {
+        let errorMsg = 'Xóa prompt thất bại!';
+        
+        // ✅ Hiển thị lỗi từ backend (ví dụ: bài thi đang hoạt động)
+        if (err?.error?.message) {
+          errorMsg = err.error.message;
+        } else if (typeof err?.error === 'string') {
+          errorMsg = err.error;
+        } else if (err?.message) {
+          errorMsg = err.message;
+        }
+        
+        this.showMessage(errorMsg, 'error');
+      }
+    });
+  }
+}
+
+
 
   //statistics
   questionStats: any = {};

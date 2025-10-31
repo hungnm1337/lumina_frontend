@@ -83,143 +83,6 @@ export class BlogDetailComponent implements OnInit {
   articleLikes: number = 0;
   articleCommentsCount: number = 0;
 
-  // Mock data for demo (will be replaced with real data)
-  mockArticle: BlogArticle = {
-    id: 1,
-    title: '10 Mẹo Vàng Để Đạt 900+ Điểm TOEIC Trong 3 Tháng',
-    category: 'MẸO HỌC TẬP',
-    categoryColor: 'bg-green-500',
-    publishDate: '15 tháng 12, 2024',
-    readTime: '8 phút đọc',
-    author: {
-      name: 'Thầy Anh TOEIC',
-      title: 'Chuyên gia TOEIC 15 năm kinh nghiệm',
-      avatar: 'TA',
-      avatarColor: 'bg-blue-500',
-      bio: 'Chuyên gia TOEIC với 15 năm kinh nghiệm giảng dạy. Đã giúp hơn 10,000 học viên đạt điểm cao TOEIC. Tác giả của nhiều cuốn sách luyện thi TOEIC bestseller.',
-      articlesCount: 127,
-      followers: '25K',
-      likes: '15K'
-    },
-    likes: 247,
-    shareText: 'Chia sẻ bài viết',
-    introduction: 'Đạt 900+ điểm TOEIC trong 3 tháng không phải là điều không thể nếu bạn có chiến lược học tập đúng đắn và sự kiên trì. Trong bài viết này, tôi sẽ chia sẻ 10 mẹo vàng đã được kiểm chứng từ những thí sinh đạt điểm cao TOEIC.',
-    content: {
-      sections: [
-        {
-          title: '1. Xây dựng nền tảng từ vựng vững chắc',
-          content: 'Từ vựng là nền tảng quan trọng nhất của TOEIC. Bạn cần học ít nhất 50-100 từ mới mỗi ngày và ôn tập thường xuyên.',
-          tips: {
-            title: 'Mẹo học từ vựng hiệu quả',
-            items: [
-              'Sử dụng flashcards để ghi nhớ từ vựng',
-              'Học từ vựng theo chủ đề (business, travel, office)',
-              'Tạo câu ví dụ với từ vựng mới',
-              'Ôn tập theo phương pháp spaced repetition'
-            ]
-          }
-        },
-        {
-          title: '2. Luyện nghe mỗi ngày ít nhất 2 tiếng',
-          content: 'Kỹ năng nghe cần được luyện tập thường xuyên. Hãy nghe các tài liệu TOEIC thật và các nguồn tiếng Anh khác.',
-          resources: {
-            title: 'Các nguồn tài liệu luyện nghe tốt',
-            items: [
-              'Đề thi TOEIC thật các năm trước',
-              'Podcast tiếng Anh thương mại',
-              'TED Talks về các chủ đề kinh doanh',
-              'Tin tức BBC, CNN'
-            ]
-          }
-        },
-        {
-          title: '3. Nắm vững ngữ pháp cơ bản',
-          content: 'Ngữ pháp là xương sống của ngôn ngữ. Hãy tập trung vào các điểm ngữ pháp thường xuất hiện trong TOEIC.',
-          quote: {
-            text: 'Ngữ pháp là xương sống của ngôn ngữ. Không có ngữ pháp vững chắc, bạn sẽ khó đạt điểm cao TOEIC.',
-            author: 'Thầy Anh TOEIC'
-          }
-        },
-        {
-          title: '4. Luyện đọc hiểu với tốc độ cao',
-          content: 'Phần Reading của TOEIC có 100 câu trong 75 phút. Bạn cần luyện đọc nhanh và chính xác.'
-        },
-        {
-          title: '5. Làm đề thi thử thường xuyên',
-          content: 'Làm đề thi thử giúp bạn làm quen với format và thời gian thi thật.'
-        },
-        {
-          title: '6. Phân tích lỗi sai chi tiết',
-          content: 'Sau mỗi lần làm đề, hãy phân tích kỹ những câu sai để hiểu rõ nguyên nhân.'
-        },
-        {
-          title: '7. Tạo môi trường học tập tích cực',
-          content: 'Học trong môi trường yên tĩnh, có đủ ánh sáng và không bị phân tâm.'
-        },
-        {
-          title: '8. Quản lý thời gian hiệu quả',
-          content: 'Lập kế hoạch học tập cụ thể và tuân thủ nghiêm ngặt.'
-        },
-        {
-          title: '9. Chăm sóc sức khỏe tinh thần',
-          content: 'Nghỉ ngơi đầy đủ, tập thể dục thường xuyên để giữ tinh thần minh mẫn.'
-        },
-        {
-          title: '10. Giữ động lực và kiên trì',
-          content: 'Đặt mục tiêu rõ ràng và theo dõi tiến độ học tập hàng ngày.'
-        }
-      ]
-    },
-    finalAdvice: {
-      title: 'Lời khuyên cuối cùng',
-      content: 'Việc đạt 900+ điểm TOEIC trong 3 tháng hoàn toàn có thể nếu bạn áp dụng đúng phương pháp và kiên trì. Hãy bắt đầu ngay hôm nay và đừng bỏ cuộc!'
-    },
-    tags: ['TOEIC', 'Mẹo học tập', '900 điểm', 'Luyện thi', 'Kinh nghiệm'],
-    commentsCount: 23
-  };
-
-  comments: BlogComment[] = [
-    {
-      id: 1,
-      author: {
-        name: 'Nguyễn Anh',
-        avatar: 'NA',
-        avatarColor: 'bg-blue-500'
-      },
-      content: 'Bài viết rất hữu ích! Mình đã áp dụng mẹo số 1 và thấy hiệu quả rõ rệt. Cảm ơn thầy!',
-      timestamp: '2 giờ trước',
-      likes: 12,
-      replies: 3,
-      isLiked: false
-    },
-    {
-      id: 2,
-      author: {
-        name: 'Trần Bình',
-        avatar: 'TB',
-        avatarColor: 'bg-pink-500'
-      },
-      content: 'Mình đang học theo lộ trình 3 tháng của thầy. Hy vọng sẽ đạt được mục tiêu 900+ điểm.',
-      timestamp: '4 giờ trước',
-      likes: 8,
-      replies: 1,
-      isLiked: true
-    },
-    {
-      id: 3,
-      author: {
-        name: 'Lê Cường',
-        avatar: 'LC',
-        avatarColor: 'bg-green-500'
-      },
-      content: 'Phần luyện nghe mình thấy khó nhất. Thầy có thể chia sẻ thêm tài liệu luyện nghe không?',
-      timestamp: '6 giờ trước',
-      likes: 15,
-      replies: 2,
-      isLiked: false
-    }
-  ];
-
   newComment: string = '';
   sortComments: string = 'newest';
   isFollowing: boolean = false;
@@ -248,7 +111,7 @@ export class BlogDetailComponent implements OnInit {
     this.articleService.getArticleById(+articleId).subscribe({
       next: (article) => {
         this.article = article;
-        this.articleLikes = 0; // Initialize with default values
+        this.articleLikes = 0;
         this.articleCommentsCount = 0;
         this.contentArticle = article.sections.map(section => section.sectionContent).join('\n\n');
         this.isLoading = false;
@@ -272,7 +135,6 @@ export class BlogDetailComponent implements OnInit {
   }
 
   onShareArticle(): void {
-    // Implement share functionality
     console.log('Sharing article...');
   }
 
@@ -281,37 +143,14 @@ export class BlogDetailComponent implements OnInit {
   }
 
   onSubmitComment(): void {
-    if (this.newComment.trim()) {
-      const newComment: BlogComment = {
-        id: this.comments.length + 1,
-        author: {
-          name: 'Bạn',
-          avatar: 'U',
-          avatarColor: 'bg-gray-500'
-        },
-        content: this.newComment,
-        timestamp: 'Vừa xong',
-        likes: 0,
-        replies: 0,
-        isLiked: false
-      };
 
-      this.comments.unshift(newComment);
-      this.articleCommentsCount++;
-      this.newComment = '';
-    }
   }
 
   onLikeComment(commentId: number): void {
-    const comment = this.comments.find(c => c.id === commentId);
-    if (comment) {
-      comment.isLiked = !comment.isLiked;
-      comment.likes += comment.isLiked ? 1 : -1;
-    }
+
   }
 
   onReplyComment(commentId: number): void {
-    // Implement reply functionality
     console.log('Replying to comment:', commentId);
   }
 

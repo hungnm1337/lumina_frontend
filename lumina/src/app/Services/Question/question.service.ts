@@ -12,10 +12,10 @@ export class QuestionService {
   constructor(private http: HttpClient) { }
 
   private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('lumina_token');
     return new HttpHeaders({
       'Authorization': `Bearer ${token}`,
-      'accept': 'application/json'
+      'Content-Type': 'application/json'
     });
   }
   createPromptWithQuestions(dto: any): Observable<any> {
@@ -51,47 +51,52 @@ export class QuestionService {
   }
 
   addQuestion(dto: any): Observable<any> {
-  return this.http.post(`${this.apiUrl}/add-question`, dto, {
-    headers: this.getAuthHeaders()
-  });
-}
+    return this.http.post(`${this.apiUrl}/add-question`, dto, {
+      headers: this.getAuthHeaders()
+    });
+  }
 
-editQuestion(dto: any): Observable<any> {
-  return this.http.put(`${this.apiUrl}/edit-question`, dto, {
-    headers: this.getAuthHeaders()
-  });
-}
+  editQuestion(dto: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/edit-question`, dto, {
+      headers: this.getAuthHeaders()
+    });
+  }
 
-deleteQuestion(questionId: number): Observable<any> {
-  return this.http.delete(`${this.apiUrl}/delete-question/${questionId}`, {
-    headers: this.getAuthHeaders()
-  });
-}
-getStatistics(): Observable<any> {
-  return this.http.get(`${this.apiUrl}/statistics`, {
-    headers: this.getAuthHeaders()
-  });
-}
+  deleteQuestion(questionId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/delete-question/${questionId}`, {
+      headers: this.getAuthHeaders()
+    });
+  }
+  getStatistics(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/statistics`, {
+      headers: this.getAuthHeaders()
+    });
+  }
 
-/**
- * ✅ Kiểm tra số lượng slot còn trống trước khi thêm câu hỏi
- * @param partId - ID của ExamPart
- * @param count - Số lượng câu hỏi muốn thêm
- * @returns Observable với { available: number, canAdd: boolean, error?: string }
- */
-checkAvailableSlots(partId: number, count: number): Observable<any> {
-  return this.http.get<any>(`${this.apiUrl}/check-available-slots`, {
-    params: {
-      partId: partId.toString(),
-      count: count.toString()
-    }
-  });
-}
+  /**
+   * ✅ Kiểm tra số lượng slot còn trống trước khi thêm câu hỏi
+   * @param partId - ID của ExamPart
+   * @param count - Số lượng câu hỏi muốn thêm
+   * @returns Observable với { available: number, canAdd: boolean, error?: string }
+   */
+  checkAvailableSlots(partId: number, count: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/check-available-slots`, {
+      params: {
+        partId: partId.toString(),
+        count: count.toString()
+      }
+    });
+  }
 
-/**
- * Lưu nhiều Prompt cùng lúc với Questions và Options
- */
-savePromptsWithQuestions(payload: any): Observable<any> {
-  return this.http.post<any>(`${this.apiUrl}/save-prompts`, payload);
-}
+  /**
+   * Lưu nhiều Prompt cùng lúc với Questions và Options
+   */
+  savePromptsWithQuestions(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/save-prompts`, payload);
+  }
+  deletePrompt(promptId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/prompt/${promptId}`, {
+      headers: this.getAuthHeaders()
+    });
+  }
 }

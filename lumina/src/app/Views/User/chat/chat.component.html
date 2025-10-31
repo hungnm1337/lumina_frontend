@@ -1,0 +1,157 @@
+<div class="chat-container">
+  <!-- Chat Header với các tab lĩnh vực -->
+  <div class="chat-header">
+    <div class="conversation-tabs">
+      <button 
+        (click)="setConversationType('vocabulary')" 
+        [class.active]="conversationType === 'vocabulary'"
+        class="tab-btn">
+        📚 Từ vựng
+      </button>
+      <button 
+        (click)="setConversationType('grammar')" 
+        [class.active]="conversationType === 'grammar'"
+        class="tab-btn">
+        📝 Ngữ pháp
+      </button>
+      <button 
+        (click)="setConversationType('toeic_strategy')" 
+        [class.active]="conversationType === 'toeic_strategy'"
+        class="tab-btn">
+        🎯 Chiến lược TOEIC
+      </button>
+      <button 
+        (click)="setConversationType('practice')" 
+        [class.active]="conversationType === 'practice'"
+        class="tab-btn">
+        🏃 Luyện tập
+      </button>
+    </div>
+  </div>
+
+  <!-- Suggested Questions -->
+  <div class="suggested-questions" *ngIf="suggestedQuestions[conversationType] && showSuggestedQuestions">
+    <div class="suggested-questions-header">
+      <h4>💡 Câu hỏi gợi ý:</h4>
+      <button 
+        (click)="toggleSuggestedQuestions()"
+        class="toggle-btn"
+        [class.collapsed]="!showSuggestedQuestions"
+        [title]="showSuggestedQuestions ? 'Thu gọn' : 'Mở rộng'">
+        <i class="fas" [ngClass]="showSuggestedQuestions ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+      </button>
+    </div>
+    <div class="suggestion-chips">
+      <button 
+        *ngFor="let question of suggestedQuestions[conversationType]"
+        (click)="selectSuggestedQuestion(question)"
+        class="suggestion-chip">
+        {{ question }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Show Suggested Questions Button (when hidden) -->
+  <div class="show-suggestions-btn" *ngIf="suggestedQuestions[conversationType] && !showSuggestedQuestions">
+    <button 
+      (click)="toggleSuggestedQuestions()"
+      class="show-suggestions-button"
+      title="Hiển thị câu hỏi gợi ý">
+      <i class="fas fa-lightbulb"></i>
+      <span>Hiển thị câu hỏi gợi ý</span>
+    </button>
+  </div>
+
+  <!-- Chat Messages -->
+  <div class="chat-messages">
+    <div *ngFor="let message of messages" class="message" [ngClass]="message.type">
+      <div class="message-content" [innerHTML]="formatMessageContent(message.content)">
+      </div>
+      
+      <!-- Hiển thị examples nếu có -->
+      <div *ngIf="message.examples && message.examples.length > 0" class="examples">
+        <h5>📝 Ví dụ:</h5>
+        <ul>
+          <li *ngFor="let example of message.examples">{{ example }}</li>
+        </ul>
+      </div>
+      
+      <!-- Hiển thị related words nếu có -->
+      <div *ngIf="message.relatedWords && message.relatedWords.length > 0" class="related-words">
+        <h5>🔗 Từ liên quan:</h5>
+        <div class="word-tags">
+          <span *ngFor="let word of message.relatedWords" class="word-tag">
+            {{ word }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Hiển thị từ vựng được tạo -->
+      <div *ngIf="message.vocabularies && message.vocabularies.length > 0" class="vocabulary-list">
+        <h4>📚 Từ vựng được tạo:</h4>
+        <div *ngFor="let vocab of message.vocabularies" class="vocabulary-item">
+          <div class="vocab-header">
+            <strong>{{ vocab.word }}</strong> 
+            <span class="word-type">({{ vocab.typeOfWord }})</span>
+            <span class="category">{{ vocab.category }}</span>
+          </div>
+          <p class="definition">{{ vocab.definition }}</p>
+          <em class="example">{{ vocab.example }}</em>
+        </div>
+      </div>
+      
+      <!-- Suggestions cho câu hỏi tiếp theo -->
+      <div *ngIf="message.suggestions && message.suggestions.length > 0" class="suggestions">
+        <h5>💭 Câu hỏi tiếp theo:</h5>
+        <div class="suggestion-buttons">
+          <button 
+            *ngFor="let suggestion of message.suggestions"
+            (click)="selectSuggestedQuestion(suggestion)"
+            class="suggestion-btn">
+            {{ suggestion }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Nút lưu từ vựng -->
+      <div *ngIf="message.hasSaveOption" class="save-actions">
+        <button (click)="saveVocabularies()" class="save-btn">
+          💾 Lưu vào folder
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading indicator -->
+    <div *ngIf="isGenerating" class="message ai">
+      <div class="typing-indicator">
+        <span></span>
+        <span></span>
+        <span></span>
+        AI đang suy nghĩ...
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Input -->
+  <div class="chat-input">
+    <textarea 
+      [(ngModel)]="currentMessage" 
+      [placeholder]="getPlaceholderText()"
+      (keypress)="onKeyPress($event)"
+      (input)="onInput($event)"
+      [disabled]="isGenerating"
+      class="message-input"
+      rows="1"
+      #messageInput></textarea>
+    <button 
+      (click)="sendMessage()" 
+      [disabled]="isGenerating || !currentMessage.trim()"
+      class="send-btn">
+      @if (isGenerating) {
+        <i class="fas fa-spinner fa-spin"></i>
+      } @else {
+        <i class="fas fa-paper-plane"></i>
+      }
+    </button>
+  </div>
+</div>

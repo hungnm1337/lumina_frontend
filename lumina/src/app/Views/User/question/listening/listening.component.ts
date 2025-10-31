@@ -101,11 +101,11 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       }
 
       if (!this.attemptId) {
-        console.error('❌ No attemptId found');
+        console.error('No attemptId found');
         this.router.navigate(['homepage/user-dashboard/exams']);
       }
     } catch (error) {
-      console.error('❌ Error loading attemptId:', error);
+      console.error('Error loading attemptId:', error);
       this.router.navigate(['homepage/user-dashboard/exams']);
     }
   }
@@ -124,11 +124,11 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       selectedOptionId: selectedOptionId,
     };
 
-    console.log('📤 Submitting listening answer:', model);
+    console.log('Submitting listening answer:', model);
 
     this.examAttemptService.submitListeningAnswer(model).subscribe({
       next: (response) => {
-        console.log('✅ Listening answer submitted:', response);
+        console.log('Listening answer submitted:', response);
 
         this.answeredQuestions.set(currentQuestion.questionId, {
           selectedOptionId: selectedOptionId,
@@ -147,7 +147,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
         this.listeningAnswered.emit(response.isCorrect);
       },
       error: (error) => {
-        console.error('❌ Error submitting listening answer:', error);
+        console.error('Error submitting listening answer:', error);
         this.isSubmitting = false;
       },
     });
@@ -164,7 +164,6 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   nextQuestion(): void {
-    // ✅ Cho phép next kể cả chưa trả lời
     if (this.currentIndex < this.questions.length - 1) {
       this.currentIndex++;
       this.updateExplainState();
@@ -247,7 +246,6 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       const audio = this.audioPlayer.nativeElement;
       audio.pause();
       audio.currentTime = 0;
-      // ✅ Load lại audio mới
       audio.load();
     }
   }
@@ -260,11 +258,11 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     const unansweredCount = totalQuestions - answeredCount;
 
     let message = 'Bạn có chắc chắn muốn nộp bài thi Listening không?\n\n';
-    message += `✅ Số câu đã trả lời: ${answeredCount}/${totalQuestions}\n`;
+    message += `Số câu đã trả lời: ${answeredCount}/${totalQuestions}\n`;
 
     if (unansweredCount > 0) {
-      message += `⚠️ Số câu chưa trả lời: ${unansweredCount}\n`;
-      message += `❗ Các câu chưa trả lời sẽ không được tính điểm!\n\n`;
+      message += `Số câu chưa trả lời: ${unansweredCount}\n`;
+      message += `Các câu chưa trả lời sẽ không được tính điểm!\n\n`;
     }
 
     message += 'Chọn "OK" để nộp bài hoặc "Cancel" để tiếp tục làm bài.';
@@ -278,7 +276,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
 
   private finishQuiz(): void {
     if (!this.attemptId) {
-      console.error('❌ No attemptId, cannot finalize');
+      console.error('No attemptId, cannot finalize');
       this.finished = true;
       return;
     }
@@ -287,7 +285,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
 
     this.examAttemptService.finalizeAttempt(this.attemptId).subscribe({
       next: (summary) => {
-        console.log('✅ Listening exam finalized:', summary);
+        console.log('Listening exam finalized:', summary);
 
         // Use backend scores
         if (summary.success !== false) {
@@ -299,7 +297,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
         localStorage.removeItem('currentExamAttempt');
       },
       error: (error) => {
-        console.error('❌ Error finalizing listening exam:', error);
+        console.error('Error finalizing listening exam:', error);
         this.finished = true;
       },
     });
@@ -314,10 +312,10 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       next: (details) => {
         this.examAttemptDetails = details;
         this.showExamAttemptDetailsFlag = true;
-        console.log('✅ Fetched exam attempt details:', details);
+        console.log('Fetched exam attempt details:', details);
       },
       error: (error) => {
-        console.error('❌ Error fetching exam attempt details:', error);
+        console.error('Error fetching exam attempt details:', error);
       },
     });
   }
@@ -374,8 +372,8 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       };
 
       this.examAttemptService.saveProgress(model).subscribe({
-        next: () => console.log('✅ Listening progress saved'),
-        error: (error) => console.error('❌ Error saving progress:', error),
+        next: () => console.log('Listening progress saved'),
+        error: (error) => console.error('Error saving progress:', error),
       });
     }
   }
@@ -405,12 +403,12 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
 
     this.examAttemptService.saveProgress(model).subscribe({
       next: () => {
-        console.log('✅ Listening progress saved successfully');
+        console.log('Listening progress saved successfully');
         localStorage.removeItem('currentExamAttempt');
         this.router.navigate(['homepage/user-dashboard/exams']);
       },
       error: (error) => {
-        console.error('❌ Error saving listening progress:', error);
+        console.error('Error saving listening progress:', error);
         this.router.navigate(['homepage/user-dashboard/exams']);
       },
     });
