@@ -9,11 +9,12 @@ import {
   ArticleCategory,
   ArticleCreate
 } from '../../../../Interfaces/article.interfaces';
+import { QuillModule } from 'ngx-quill';
 
 @Component({
   selector: 'app-articles',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule,QuillModule ],
   templateUrl: './articles.component.html',
   styleUrls: ['./articles.component.scss']
 })

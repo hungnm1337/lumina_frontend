@@ -498,18 +498,21 @@
             </div>
 
             <!-- Section Content -->
-            <div class="section-content">
-              <label>Content</label>
-              <textarea
-                formControlName="content"
-                rows="4"
-                placeholder="Enter section content..."
-                class="form-textarea"></textarea>
-              <div *ngIf="sectionGroup.get('content')?.invalid && sectionGroup.get('content')?.touched" 
-                   class="error-message">
-                Content is required
-              </div>
-            </div>
+<div class="section-content">
+  <label>Content</label>
+  
+  <!-- THAY THẾ BẰNG QUILL-EDITOR -->
+  <quill-editor 
+    formControlName="content"
+    placeholder="Enter section content..."
+    [styles]="{ 'min-height': '150px' }"> 
+  </quill-editor>
+
+  <div *ngIf="sectionGroup.get('content')?.invalid && sectionGroup.get('content')?.touched" 
+       class="error-message">
+    Content is required
+  </div>
+</div>
 
             <!-- Section Controls -->
             <div class="section-controls">

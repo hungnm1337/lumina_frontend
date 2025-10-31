@@ -34,22 +34,7 @@ export class PromptComponent implements OnChanges {
   ) {}
 
   ngOnInit() {
-    if (this.prompt?.referenceImageUrl) {
-      this.isLoading = true;
-      this.pictureCaptioningService
-        .GetCaptionOfPicture(this.prompt.referenceImageUrl)
-        .subscribe({
-          next: (response) => {
-            this.pictureCaption = response.caption;
-            this.pictureCaptionChange.emit(this.pictureCaption);
-            this.isLoading = false;
-          },
-          error: (error) => {
-            console.error('Error fetching picture caption:', error);
-            this.isLoading = false;
-          },
-        });
-    }
+    // Picture captioning is now handled in ngOnChanges to ensure questionType is set
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -63,8 +48,8 @@ export class PromptComponent implements OnChanges {
       // Reset caption visibility when switching question
       this.isShowCaption = false;
 
-      // Skip picture captioning for speaking questions
-      if (this.isSpeakingQuestion()) {
+      // Skip picture captioning for speaking and listening questions
+      if (this.isSpeakingQuestion() || this.isListeningQuestion()) {
         this.isShowCaption = false;
         this.cdr.detectChanges();
         return;
@@ -105,5 +90,15 @@ export class PromptComponent implements OnChanges {
       'EXPRESS_OPINION',
     ];
     return speakingTypes.includes(this.questionType);
+  }
+  isListeningQuestion(): boolean {
+    const listeningTypes = [
+      'LISTENING_PART_1',
+      'LISTENING_PART_2',
+      'LISTENING_PART_3',
+      'LISTENING_PART_4',
+      'LISTENING',
+    ];
+    return listeningTypes.includes(this.questionType);
   }
 }

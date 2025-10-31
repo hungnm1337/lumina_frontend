@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimize Feature Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+            min-height: 100vh;
+        }
+        
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #4F46E5;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .feature-list {
+            background: #F3F4F6;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .feature-list h3 {
+            color: #4F46E5;
+            margin-top: 0;
+        }
+        
+        .feature-list ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .feature-list li {
+            margin: 8px 0;
+            color: #374151;
+        }
+        
+        .demo-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        
+        .demo-btn {
+            background: #4F46E5;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        
+        .demo-btn:hover {
+            background: #3730A3;
+            transform: translateY(-2px);
+        }
+        
+        .demo-btn:active {
+            transform: translateY(0);
+        }
+        
+        .chatbox-demo {
+            position: relative;
+            height: 400px;
+            background: #f8fafc;
+            border: 2px dashed #D1D5DB;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6B7280;
+            transition: all 0.3s ease;
+        }
+        
+        .chatbox-demo.minimized {
+            height: 80px;
+        }
+        
+        .chatbox-header-demo {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .chatbox-header-demo:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+        }
+        
+        .header-content-demo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .header-buttons-demo {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-demo {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .btn-demo:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        
+        .chat-content-demo {
+            position: absolute;
+            top: 80px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 20px;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        
+        .chat-content-demo.hidden {
+            display: none;
+        }
+        
+        .message-demo {
+            background: #E5E7EB;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 5px 0;
+            text-align: left;
+        }
+        
+        .message-demo.ai {
+            background: #DBEAFE;
+        }
+        
+        .code-example {
+            background: #1F2937;
+            color: #F9FAFB;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        
+        .highlight {
+            color: #FBBF24;
+        }
+        
+        .comment {
+            color: #9CA3AF;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>🎯 Tính Năng Minimize Chatbox</h1>
+        
+        <div class="feature-list">
+            <h3>✨ Tính năng mới:</h3>
+            <ul>
+                <li><strong>Nút Minimize (-):</strong> Thu gọn chatbox chỉ hiển thị header màu xanh lá cây</li>
+                <li><strong>Nút Expand (+):</strong> Mở rộng lại chatbox khi đã minimize</li>
+                <li><strong>Click Header:</strong> Click vào header để expand khi đã minimize</li>
+                <li><strong>Giữ nguyên lịch sử:</strong> Lịch sử chat được giữ nguyên khi minimize/expand</li>
+                <li><strong>Animation:</strong> Smooth transition khi minimize/expand</li>
+                <li><strong>Responsive:</strong> Hoạt động tốt trên cả desktop và mobile</li>
+            </ul>
+        </div>
+        
+        <div class="chatbox-demo" id="chatboxDemo">
+            <div class="chatbox-header-demo" onclick="expandChatbox()">
+                <div class="header-content-demo">
+                    <i class="fas fa-robot">🤖</i>
+                    <div>
+                        <h3 style="margin: 0; font-size: 18px;">AI Assistant</h3>
+                        <p style="margin: 0; font-size: 13px; opacity: 0.9;">Trợ lý tạo đề TOEIC</p>
+                    </div>
+                </div>
+                <div class="header-buttons-demo" onclick="event.stopPropagation()">
+                    <button class="btn-demo" onclick="toggleMinimize()" title="Thu gọn/Mở rộng">
+                        <span id="minimizeIcon">−</span>
+                    </button>
+                    <button class="btn-demo" onclick="closeChatbox()" title="Đóng">
+                        ×
+                    </button>
+                </div>
+            </div>
+            <div class="chat-content-demo" id="chatContentDemo">
+                <div style="background: #F3F4F6; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                    <strong>Lịch sử chat được giữ nguyên:</strong>
+                </div>
+                <div class="message-demo">
+                    <strong>User:</strong> Từ 'acquire' nghĩa là gì?
+                </div>
+                <div class="message-demo ai">
+                    <strong>AI:</strong> 'Acquire' có nghĩa là đạt được, thu được...
+                </div>
+                <div class="message-demo">
+                    <strong>User:</strong> Cảm ơn bạn!
+                </div>
+                <div class="message-demo ai">
+                    <strong>AI:</strong> Không có gì! Bạn có câu hỏi nào khác không?
+                </div>
+                <p style="margin-top: 15px; font-size: 14px; text-align: center; color: #6B7280;">
+                    Click nút <strong>−</strong> để thu gọn (chỉ hiển thị header)
+                </p>
+            </div>
+        </div>
+        
+        <div class="demo-buttons">
+            <button class="demo-btn" onclick="toggleMinimize()">Toggle Minimize</button>
+            <button class="demo-btn" onclick="resetDemo()">Reset Demo</button>
+        </div>
+        
+        <div class="code-example">
+<span class="comment">// TypeScript Component</span>
+<span class="highlight">isMinimized</span> = <span class="highlight">false</span>;
+
+<span class="highlight">minimizeChatbox()</span> {
+  <span class="highlight">this.isMinimized</span> = !<span class="highlight">this.isMinimized</span>;
+}
+
+<span class="highlight">expandChatbox()</span> {
+  <span class="highlight">this.isMinimized</span> = <span class="highlight">false</span>;
+}
+        </div>
+        
+        <div class="code-example">
+<span class="comment">// HTML Template</span>
+&lt;div class="chatbox-header" (click)="expandChatbox()"&gt;
+  &lt;div class="header-content"&gt;
+    &lt;i class="fas fa-robot"&gt;&lt;/i&gt;
+    &lt;div&gt;
+      &lt;h3&gt;AI Assistant&lt;/h3&gt;
+      &lt;p&gt;Trợ lý tạo đề TOEIC&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="header-buttons" (click)="$event.stopPropagation()"&gt;
+    &lt;button (click)="minimizeChatbox()" class="minimize-btn"&gt;
+      &lt;i class="fas" [ngClass]="isMinimized ? 'fa-plus' : 'fa-minus'"&gt;&lt;/i&gt;
+    &lt;/button&gt;
+    &lt;button (click)="closeChatbox()" class="close-btn"&gt;
+      &lt;i class="fas fa-times"&gt;&lt;/i&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="chat-content" [class.hidden]="isMinimized"&gt;
+  &lt;app-chat&gt;&lt;/app-chat&gt;
+&lt;/div&gt;
+        </div>
+    </div>
+    
+    <script>
+        function toggleMinimize() {
+            const chatbox = document.getElementById('chatboxDemo');
+            const chatContent = document.getElementById('chatContentDemo');
+            const icon = document.getElementById('minimizeIcon');
+            
+            if (chatbox.classList.contains('minimized')) {
+                chatbox.classList.remove('minimized');
+                chatContent.classList.remove('hidden');
+                icon.textContent = '−';
+            } else {
+                chatbox.classList.add('minimized');
+                chatContent.classList.add('hidden');
+                icon.textContent = '+';
+            }
+        }
+        
+        function expandChatbox() {
+            const chatbox = document.getElementById('chatboxDemo');
+            const chatContent = document.getElementById('chatContentDemo');
+            const icon = document.getElementById('minimizeIcon');
+            
+            chatbox.classList.remove('minimized');
+            chatContent.classList.remove('hidden');
+            icon.textContent = '−';
+        }
+        
+        function closeChatbox() {
+            alert('Chatbox đã đóng!');
+        }
+        
+        function resetDemo() {
+            const chatbox = document.getElementById('chatboxDemo');
+            const chatContent = document.getElementById('chatContentDemo');
+            const icon = document.getElementById('minimizeIcon');
+            
+            chatbox.classList.remove('minimized');
+            chatContent.classList.remove('hidden');
+            icon.textContent = '−';
+        }
+    </script>
+</body>
+</html>
+

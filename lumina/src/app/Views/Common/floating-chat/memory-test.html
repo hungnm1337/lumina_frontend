@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Chatbox Memory</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #4F46E5;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .status {
+            background: #ECFDF5;
+            border: 1px solid #10B981;
+            color: #065F46;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .status.error {
+            background: #FEF2F2;
+            border-color: #EF4444;
+            color: #991B1B;
+        }
+        
+        .feature-list {
+            background: #F3F4F6;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .feature-list h3 {
+            color: #4F46E5;
+            margin-top: 0;
+        }
+        
+        .feature-list ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .feature-list li {
+            margin: 8px 0;
+            color: #374151;
+        }
+        
+        .feature-list li.completed {
+            color: #10B981;
+        }
+        
+        .code-block {
+            background: #1F2937;
+            color: #F9FAFB;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        
+        .highlight {
+            color: #FBBF24;
+        }
+        
+        .comment {
+            color: #9CA3AF;
+        }
+        
+        .test-steps {
+            background: #FEF3C7;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #F59E0B;
+        }
+        
+        .test-steps h3 {
+            color: #D97706;
+            margin-top: 0;
+        }
+        
+        .demo-chatbox {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .demo-chatbox:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        .demo-chatbox i {
+            font-size: 28px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧠 Test Chatbox Memory Feature</h1>
+        
+        <div class="status">
+            <strong>✅ Status:</strong> Chatbox đã được cập nhật với tính năng memory!
+        </div>
+        
+        <div class="feature-list">
+            <h3>🎯 Tính Năng Đã Cập Nhật:</h3>
+            <ul>
+                <li class="completed">✅ Xóa nút minimize (-)</li>
+                <li class="completed">✅ Chỉ giữ nút X để đóng</li>
+                <li class="completed">✅ Lưu trữ tin nhắn trong memory (savedMessages)</li>
+                <li class="completed">✅ Khi đóng bằng X, dữ liệu không bị mất</li>
+                <li class="completed">✅ Khi mở lại, lịch sử chat vẫn hiển thị</li>
+                <li class="completed">✅ Giới hạn 100 tin nhắn để tránh memory leak</li>
+            </ul>
+        </div>
+        
+        <div class="test-steps">
+            <h3>🧪 Cách Test Tính Năng Memory:</h3>
+            <ol>
+                <li><strong>Mở chatbox:</strong> Click nút robot ở góc dưới bên phải</li>
+                <li><strong>Gửi tin nhắn:</strong> Nhập "Xin chào" và gửi</li>
+                <li><strong>Đóng chatbox:</strong> Click nút X (không phải minimize)</li>
+                <li><strong>Mở lại:</strong> Click nút robot lần nữa</li>
+                <li><strong>Kiểm tra:</strong> Tin nhắn "Xin chào" vẫn còn trong lịch sử</li>
+                <li><strong>Gửi thêm:</strong> Gửi tin nhắn mới "Tạo đề thi TOEIC"</li>
+                <li><strong>Đóng và mở lại:</strong> Lịch sử đầy đủ vẫn được giữ</li>
+            </ol>
+        </div>
+        
+        <div class="code-block">
+<span class="comment">// floating-chat.component.ts</span>
+<span class="highlight">export class</span> <span class="highlight">FloatingChatComponent</span> {
+  <span class="highlight">isOpen</span> = <span class="highlight">false</span>;
+  
+  <span class="comment">// Lưu trữ tin nhắn trong memory</span>
+  <span class="highlight">savedMessages</span>: <span class="highlight">ChatMessage</span>[] = [];
+
+  <span class="highlight">closeChatbox</span>() {
+    <span class="highlight">this</span>.<span class="highlight">isOpen</span> = <span class="highlight">false</span>;
+    <span class="comment">// Không xóa savedMessages, giữ nguyên để hiển thị lại khi mở</span>
+  }
+
+  <span class="highlight">onMessageAdded</span>(<span class="highlight">newMessage</span>: <span class="highlight">ChatMessage</span>) {
+    <span class="highlight">this</span>.<span class="highlight">savedMessages</span>.<span class="highlight">push</span>(<span class="highlight">newMessage</span>);
+    
+    <span class="comment">// Giới hạn số lượng tin nhắn để tránh memory leak</span>
+    <span class="highlight">if</span> (<span class="highlight">this</span>.<span class="highlight">savedMessages</span>.<span class="highlight">length</span> > <span class="highlight">100</span>) {
+      <span class="highlight">this</span>.<span class="highlight">savedMessages</span> = <span class="highlight">this</span>.<span class="highlight">savedMessages</span>.<span class="highlight">slice</span>(-<span class="highlight">100</span>);
+    }
+  }
+}
+        </div>
+        
+        <div class="code-block">
+<span class="comment">// floating-chat.component.html</span>
+&lt;<span class="highlight">app-chat</span> 
+  [<span class="highlight">messages</span>]=<span class="highlight">"savedMessages"</span> 
+  (<span class="highlight">messageAdded</span>)=<span class="highlight">"onMessageAdded($event)"</span>&gt;
+&lt;/<span class="highlight">app-chat</span>&gt;
+        </div>
+        
+        <div style="background: #EFF6FF; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3B82F6;">
+            <strong>💡 Lưu ý:</strong> 
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Memory chỉ hoạt động trong phiên làm việc hiện tại</li>
+                <li>Khi refresh trang, memory sẽ reset</li>
+                <li>Để lưu vĩnh viễn, cần thêm localStorage hoặc database</li>
+                <li>Giới hạn 100 tin nhắn để tránh lag</li>
+            </ul>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <strong>🎯 Demo nút chatbox (góc dưới bên phải):</strong>
+        </div>
+    </div>
+    
+    <!-- Demo nút chatbox -->
+    <div class="demo-chatbox" onclick="alert('Chatbox sẽ mở với memory!')">
+        <i class="fas fa-robot"></i>
+    </div>
+    
+    <script>
+        // Kiểm tra FontAwesome đã load chưa
+        document.addEventListener('DOMContentLoaded', function() {
+            const icon = document.querySelector('.demo-chatbox i');
+            if (icon && getComputedStyle(icon).fontFamily.includes('Font Awesome')) {
+                console.log('✅ FontAwesome đã load thành công');
+            } else {
+                console.log('❌ FontAwesome chưa load');
+            }
+        });
+    </script>
+</body>
+</html>
+

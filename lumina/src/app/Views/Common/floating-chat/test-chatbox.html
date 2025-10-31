@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Chatbox Display</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #4F46E5;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .status {
+            background: #ECFDF5;
+            border: 1px solid #10B981;
+            color: #065F46;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .status.error {
+            background: #FEF2F2;
+            border-color: #EF4444;
+            color: #991B1B;
+        }
+        
+        .checklist {
+            background: #F3F4F6;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .checklist h3 {
+            color: #4F46E5;
+            margin-top: 0;
+        }
+        
+        .checklist ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .checklist li {
+            margin: 8px 0;
+            color: #374151;
+        }
+        
+        .checklist li.completed {
+            color: #10B981;
+            text-decoration: line-through;
+        }
+        
+        .code-block {
+            background: #1F2937;
+            color: #F9FAFB;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        
+        .highlight {
+            color: #FBBF24;
+        }
+        
+        .comment {
+            color: #9CA3AF;
+        }
+        
+        .demo-chatbox {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .demo-chatbox:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        .demo-chatbox i {
+            font-size: 28px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test Chatbox Display</h1>
+        
+        <div class="status">
+            <strong>✅ Status:</strong> Chatbox component đã được cấu hình và sẵn sàng hiển thị!
+        </div>
+        
+        <div class="checklist">
+            <h3>📋 Checklist Kiểm Tra:</h3>
+            <ul>
+                <li class="completed">✅ FloatingChatComponent đã được tạo</li>
+                <li class="completed">✅ Component đã được import trong app.component.ts</li>
+                <li class="completed">✅ Component đã được thêm vào app.component.html</li>
+                <li class="completed">✅ FontAwesome icons đã được cấu hình</li>
+                <li class="completed">✅ CSS styling đã được thiết lập</li>
+                <li>🔄 <strong>Kiểm tra:</strong> Nút chatbox có hiển thị ở góc dưới bên phải không?</li>
+                <li>🔄 <strong>Kiểm tra:</strong> Click nút có mở chatbox không?</li>
+                <li>🔄 <strong>Kiểm tra:</strong> Tính năng minimize có hoạt động không?</li>
+            </ul>
+        </div>
+        
+        <div class="code-block">
+<span class="comment">// app.component.ts</span>
+<span class="highlight">import</span> { <span class="highlight">FloatingChatComponent</span> } <span class="highlight">from</span> <span class="highlight">'./Views/Common/floating-chat/floating-chat.component'</span>;
+
+<span class="highlight">@Component</span>({
+  <span class="highlight">selector</span>: <span class="highlight">'app-root'</span>,
+  <span class="highlight">standalone</span>: <span class="highlight">true</span>,
+  <span class="highlight">imports</span>: [<span class="highlight">RouterOutlet</span>, <span class="highlight">RouterModule</span>, <span class="highlight">FloatingChatComponent</span>],
+  <span class="highlight">templateUrl</span>: <span class="highlight">'./app.component.html'</span>,
+  <span class="highlight">styleUrl</span>: <span class="highlight">'./app.component.scss'</span>
+})
+        </div>
+        
+        <div class="code-block">
+<span class="comment">// app.component.html</span>
+&lt;<span class="highlight">router-outlet</span>&gt;&lt;/<span class="highlight">router-outlet</span>&gt;
+&lt;<span class="highlight">app-floating-chat</span>&gt;&lt;/<span class="highlight">app-floating-chat</span>&gt;
+        </div>
+        
+        <div class="code-block">
+<span class="comment">// styles.scss</span>
+<span class="highlight">@import</span> <span class="highlight">"@fortawesome/fontawesome-free/css/all.min.css"</span>;
+        </div>
+        
+        <div style="background: #FEF3C7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #F59E0B;">
+            <strong>💡 Lưu ý:</strong> Nếu chatbox vẫn không hiển thị, hãy:
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Restart Angular development server</li>
+                <li>Kiểm tra console browser có lỗi không</li>
+                <li>Đảm bảo FontAwesome CSS đã load</li>
+                <li>Kiểm tra z-index của các element khác</li>
+            </ul>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <strong>🎯 Demo nút chatbox (góc dưới bên phải):</strong>
+        </div>
+    </div>
+    
+    <!-- Demo nút chatbox -->
+    <div class="demo-chatbox" onclick="alert('Chatbox sẽ mở ở đây!')">
+        <i class="fas fa-robot"></i>
+    </div>
+    
+    <script>
+        // Kiểm tra FontAwesome đã load chưa
+        document.addEventListener('DOMContentLoaded', function() {
+            const icon = document.querySelector('.demo-chatbox i');
+            if (icon && getComputedStyle(icon).fontFamily.includes('Font Awesome')) {
+                console.log('✅ FontAwesome đã load thành công');
+            } else {
+                console.log('❌ FontAwesome chưa load');
+            }
+        });
+    </script>
+</body>
+</html>
+

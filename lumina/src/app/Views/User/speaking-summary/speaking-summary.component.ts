@@ -20,6 +20,9 @@ export class SpeakingSummaryComponent {
   @Output() retryTest = new EventEmitter<void>();
   @Output() tryOtherTest = new EventEmitter<void>();
 
+  // Track which questions are expanded
+  expandedQuestions: Set<number> = new Set();
+
   // Tính tổng điểm TOEIC Speaking (0-200 scale)
   get toeicScore(): number {
     if (this.results.length === 0) return 0;
@@ -94,6 +97,19 @@ export class SpeakingSummaryComponent {
     }, 0);
 
     return sum / filteredResults.length;
+  }
+
+  // Toggle methods for question details
+  toggleQuestion(index: number): void {
+    if (this.expandedQuestions.has(index)) {
+      this.expandedQuestions.delete(index);
+    } else {
+      this.expandedQuestions.add(index);
+    }
+  }
+
+  isQuestionExpanded(index: number): boolean {
+    return this.expandedQuestions.has(index);
   }
 
   // Action methods
