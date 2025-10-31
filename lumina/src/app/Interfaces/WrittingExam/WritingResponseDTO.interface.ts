@@ -4,8 +4,6 @@ export interface WritingResponseDTO {
 
    vocabularyFeedback: string;
 
-   requiredWordsCheck: string;
-
    contentAccuracyFeedback: string;
 
    correededAnswerProposal: string;
