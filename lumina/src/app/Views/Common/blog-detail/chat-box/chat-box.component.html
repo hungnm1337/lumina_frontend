@@ -1,0 +1,75 @@
+<div class="chat-container">
+  <!-- Floating Chat Button -->
+  <button class="chat-toggle-btn" (click)="toggleChat()" [class.active]="isChatOpen">
+    <i class="fas" [ngClass]="isChatOpen ? 'fa-times' : 'fa-comment-dots'"></i>
+  </button>
+
+  <!-- Chat Window -->
+  <div class="chat-window" [class.open]="isChatOpen">
+    <div class="chat-box">
+      <header class="chat-header">
+        <div class="header-content">
+          <i class="fas fa-robot"></i>
+          <h3>AI Chat Assistant</h3>
+        </div>
+        <button type="button" class="minimize-btn" (click)="toggleChat()">
+          <i class="fas fa-minus"></i>
+        </button>
+      </header>
+
+      <section class="chat-body" #messagesContainer>
+        <div *ngIf="messages.length === 0" class="empty">
+          <i class="fas fa-comment-dots"></i>
+          <p>Chào bạn! Hãy hỏi tôi bất cứ điều gì về bài viết này.</p>
+        </div>
+
+        <div class="messages">
+          <div *ngFor="let m of messages" [ngClass]="{'msg': true, 'user': m.Role === 'user', 'assistant': m.Role === 'assistant'}">
+            <div class="content" [innerHTML]="formatMessage(m.Content)"></div>
+            <div class="time">{{ m.Timestamp | date:'short' }}</div>
+          </div>
+
+          <!-- Typing indicator when loading -->
+          <div *ngIf="loading" class="msg assistant typing-indicator">
+            <div class="typing-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="chat-controls">
+        <div class="input-wrapper">
+          <textarea
+            [(ngModel)]="question"
+            placeholder="Nhập câu hỏi của bạn..."
+            rows="2"
+            (keydown.enter)="$event.preventDefault(); useQuickAsk ? sendQuickAsk() : sendWithContext()"
+          ></textarea>
+
+          <button
+            class="send-btn"
+            [disabled]="loading || !question.trim()"
+            (click)="useQuickAsk ? sendQuickAsk() : sendWithContext()"
+          >
+            <i class="fas" [ngClass]="loading ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
+          </button>
+        </div>
+
+        <div class="chat-footer">
+          <label class="mode-toggle">
+            <input type="checkbox" [(ngModel)]="useQuickAsk" />
+            <span>Quick Ask</span>
+          </label>
+          <button type="button" class="clear-btn" (click)="clear()" *ngIf="messages.length > 0">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+
+        <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+      </section>
+    </div>
+  </div>
+</div>

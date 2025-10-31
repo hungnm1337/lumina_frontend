@@ -2,14 +2,15 @@ import { Component, Input, Output, EventEmitter, OnChanges, OnDestroy, SimpleCha
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../Services/Auth/auth.service';
-import { WritingRequestDTO } from '../../../Interfaces/WrittingExam/WritingRequestDTO.interface';
+import { WritingRequestP1DTO } from '../../../Interfaces/WrittingExam/WritingRequestP1DTO.interface';
 import { WritingResponseDTO } from '../../../Interfaces/WrittingExam/WritingResponseDTO.interface';
 import { WritingAnswerRequestDTO } from '../../../Interfaces/WritingAnswer/WritingAnswerRequestDTO.interface';
 import { ToastService } from '../../../Services/Toast/toast.service';
 import { FeedbackComponent } from "./Feedback/feedback/feedback.component";
-import { WritingExamPartOneService } from '../../../Services/Exam/Writing/writing-exam-part-one.service';
+import { WritingExamPartOneService } from '../../../Services/Exam/Writing/writing-exam.service';
 import { ExamAttemptService } from '../../../Services/ExamAttempt/exam-attempt.service';
 import { forkJoin } from 'rxjs';
+import { WritingRequestP23DTO } from '../../../Interfaces/WrittingExam/WritingRequestP23DTO.interface';
 @Component({
   selector: 'app-writing-answer-box',
   standalone: true,
@@ -28,7 +29,7 @@ export class WritingAnswerBoxComponent implements OnChanges, OnDestroy {
   @Output() submitStart = new EventEmitter<number>(); // ✅ Emit when submission starts
   @Output() submitEnd = new EventEmitter<number>();   // ✅ Emit when submission ends
 
-  writingRequest: WritingRequestDTO | undefined;;
+  writingRequest: WritingRequestP1DTO | undefined;;
   userAnswer: string = '';
   isLoadingFeedback: boolean = false;
 
@@ -102,13 +103,10 @@ export class WritingAnswerBoxComponent implements OnChanges, OnDestroy {
         }
       }
 
-      console.log('🔒 Marking question as submitted:', this.questionId);
-      console.log('📦 Before:', submittedQuestions);
 
       submittedQuestions[String(this.questionId)] = true;
       localStorage.setItem(key, JSON.stringify(submittedQuestions));
 
-      console.log('📦 After:', submittedQuestions);
     } catch {
       // Best-effort only; ignore storage errors
     }
@@ -199,8 +197,12 @@ export class WritingAnswerBoxComponent implements OnChanges, OnDestroy {
     this.isLoadingFeedback = true;
     this.submitStart.emit(this.questionId); // ✅ Emit start event
 
+    //lấy part code
+    const partCodeRaw = localStorage.getItem('PartCodeStorage');
     // Bước 1: Lấy feedback từ AI
-    this.writingExamPartOneService.GetFeedbackOfWritingPartOne(this.writingRequest).subscribe({
+    if(Number(partCodeRaw) == 1) {
+      // nếu là part 1
+      this.writingExamPartOneService.GetFeedbackOfWritingPartOne(this.writingRequest).subscribe({
       next: (feedback) => {
         // Lưu feedback vào localStorage
         this.saveFeedbackToLocalStorage(this.questionId, feedback);
@@ -252,7 +254,70 @@ export class WritingAnswerBoxComponent implements OnChanges, OnDestroy {
         this.toast.error('Lỗi khi lấy phản hồi từ AI. Vui lòng thử lại!');
       }
     });
+
+  }else{
+    const data : WritingRequestP23DTO = {
+      partNumber: Number(partCodeRaw),
+      prompt: this.contentText || '',
+      userAnswer: this.userAnswer
+    };
+    console.log('WritingRequestP23DTO data:', data);
+    // nếu là part 2 hoặc 3
+       this.writingExamPartOneService.GetFeedbackOfWritingPartTwoAndThree(data).subscribe({
+      next: (feedback) => {
+
+        // Lưu feedback vào localStorage
+        this.saveFeedbackToLocalStorage(this.questionId, feedback);
+
+        // Bước 2: Tạo DTO để lưu vào database
+        const dto: WritingAnswerRequestDTO = {
+          userAnswerWritingId: 0,
+          attemptID: attemptId,
+          questionId: this.questionId,
+          userAnswerContent: this.userAnswer,
+          feedbackFromAI: JSON.stringify(feedback),
+        };
+
+        // Bước 3: Lưu vào database
+        this.writingExamPartOneService.SaveWritingAnswer(dto).subscribe({
+          next: (success) => {
+            if (success) {
+              // Đánh dấu câu đã nộp
+              this.markQuestionAsSubmitted();
+
+              // Tắt loading
+              this.isLoadingFeedback = false;
+              this.submitEnd.emit(this.questionId); // ✅ Emit end event
+
+              // Hiển thị thông báo thành công
+              const displayIndex = (this.resetAt || 0) + 1;
+              this.toast.success(`Nộp câu thành công (Câu ${displayIndex})`);
+
+              // Emit event
+              this.answered.emit(true);
+            } else {
+              this.isLoadingFeedback = false;
+              this.submitEnd.emit(this.questionId); // ✅ Emit end event on failure
+              this.toast.error('Không thể lưu câu trả lời. Vui lòng thử lại!');
+            }
+          },
+          error: (error) => {
+            console.error('Error saving writing answer to database:', error);
+            this.isLoadingFeedback = false;
+            this.submitEnd.emit(this.questionId); // ✅ Emit end event on error
+            this.toast.error('Lỗi khi lưu câu trả lời. Vui lòng thử lại!');
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Error fetching writing feedback:', error);
+        this.isLoadingFeedback = false;
+        this.submitEnd.emit(this.questionId); // ✅ Emit end event on error
+        this.toast.error('Lỗi khi lấy phản hồi từ AI. Vui lòng thử lại!');
+      }
+    });
   }
+}
 
   onSave(): void {
     if (this.isQuestionSubmitted()) return;
