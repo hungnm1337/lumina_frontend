@@ -33,6 +33,7 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
   @Input() disabled: boolean = false;
   @Input() resetAt: number = 0;
   @Input() questionTime: number = 0; // Time limit for this question
+  @Input() attemptId: number = 0; // ✅ THÊM: Attempt ID của lượt thi hiện tại
   @Output() answered = new EventEmitter<boolean>();
   @Output() scoringResult = new EventEmitter<SpeakingScoringResult>();
   @Output() submitting = new EventEmitter<boolean>(); // New: Notify parent về trạng thái submit
@@ -61,6 +62,15 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    // Debug attemptId changes
+    if (changes['attemptId']) {
+      console.log('[SpeakingAnswerBox] attemptId changed:', {
+        current: changes['attemptId'].currentValue,
+        previous: changes['attemptId'].previousValue,
+        questionId: this.questionId,
+      });
+    }
+
     // Initialize state service if not exists
     if (changes['questionId'] && this.questionId) {
       this.speakingStateService.initializeQuestion(this.questionId);
@@ -267,15 +277,21 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
 
     try {
       // Submit via service-level method to ensure continuity across navigation
+      console.log(
+        `[SpeakingAnswerBox] Submitting answer for question ${this.questionId} with attemptId: ${this.attemptId}`
+      );
+
       const result = await this.speakingStateService.submitAnswerAndStore(
         this.questionId,
-        this.audioBlob
+        this.audioBlob,
+        this.attemptId // ✅ Truyền attemptId
       );
 
       if (result) {
         this.result = result;
         this.state = 'submitted';
-        this.toastService.success('Đã nộp bài thành công!');
+        // Remove toast notification - chấm điểm ngầm, không thông báo
+        // this.toastService.success('Đã nộp bài thành công!');
 
         // State already saved by service method
 

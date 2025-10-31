@@ -128,9 +128,244 @@
 
 /* Overlay hiệu ứng mềm, mờ */
 .fixed.inset-0.bg-black, .bg-black.bg-opacity-50, .bg-black.bg-opacity-40, .bg-gray-600.bg-opacity-40 {
-  background: rgba(30, 41, 59, 0.38) !important;
-  backdrop-filter: blur(3px);
+  background: rgba(30, 41, 59, 0.5) !important;
+  backdrop-filter: blur(8px);
   z-index: 50;
+}
+
+/* ===== MODAL REDESIGN - MODERN & PROFESSIONAL ===== */
+
+/* Container modal hiện đại */
+.bg-white.rounded-2xl {
+  border-radius: 24px !important;
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 12px 24px -8px rgba(0, 0, 0, 0.15) !important;
+  background: #ffffff !important;
+  animation: modalSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  overflow: hidden;
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Header gradient đẹp */
+.bg-gradient-to-r.from-blue-50.to-indigo-50 {
+  background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 50%, #eef2ff 100%) !important;
+  border-bottom: 1px solid #e0e7ff !important;
+}
+
+/* Icon containers trong modal */
+.w-10.h-10.bg-gradient-to-br,
+.w-8.h-8.bg-blue-500,
+.w-8.h-8.bg-indigo-500,
+.w-8.h-8.bg-green-500 {
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  transition: all 0.2s ease;
+}
+
+.w-10.h-10.bg-gradient-to-br:hover,
+.w-8.h-8.bg-blue-500:hover,
+.w-8.h-8.bg-indigo-500:hover,
+.w-8.h-8.bg-green-500:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+/* Cards bên trong modal */
+.bg-gradient-to-br.from-blue-50.to-indigo-50,
+.bg-white.rounded-xl.border {
+  transition: all 0.2s ease;
+}
+
+.bg-gradient-to-br.from-blue-50.to-indigo-50:hover,
+.bg-white.rounded-xl.border:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Input & Textarea modern */
+.bg-white input[type="text"],
+.bg-white input[type="number"],
+.bg-white textarea,
+.bg-white select {
+  border-radius: 10px !important;
+  border: 1.5px solid #e5e7eb !important;
+  background: #ffffff !important;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  color: #1f2937;
+}
+
+.bg-white input[type="text"]:focus,
+.bg-white input[type="number"]:focus,
+.bg-white textarea:focus,
+.bg-white select:focus {
+  outline: none !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important;
+  transform: translateY(-1px);
+}
+
+.bg-white input[type="text"]::placeholder,
+.bg-white textarea::placeholder {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* File input modern */
+input[type="file"] {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+input[type="file"]:hover {
+  background: #f9fafb !important;
+}
+
+input[type="file"]::file-selector-button {
+  margin-right: 16px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+input[type="file"]::file-selector-button:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+/* Select dropdown */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 1.25em;
+  padding-right: 2.5rem !important;
+}
+
+/* Labels với icon */
+label {
+  display: flex;
+  align-items: center;
+  color: #374151 !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em;
+}
+
+label i {
+  font-size: 0.85rem;
+}
+
+/* Question cards trong form */
+.bg-gradient-to-br.from-gray-50.to-gray-100 {
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%) !important;
+  border: 1.5px solid #e5e7eb !important;
+  transition: all 0.2s ease;
+}
+
+.bg-gradient-to-br.from-gray-50.to-gray-100:hover {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.1);
+}
+
+/* Option answer cards */
+.bg-white.rounded-lg.border.border-gray-200 {
+  transition: all 0.2s ease;
+}
+
+.bg-white.rounded-lg.border.border-gray-200:hover {
+  border-color: #3b82f6 !important;
+  background: #f0f9ff !important;
+}
+
+/* Checkbox modern */
+input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid #d1d5db;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+input[type="checkbox"]:checked {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-color: #10b981;
+}
+
+input[type="checkbox"]:hover {
+  border-color: #3b82f6;
+  transform: scale(1.1);
+}
+
+/* Info boxes */
+.bg-gradient-to-r.from-blue-50.to-indigo-50.border {
+  background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%) !important;
+  border: 1.5px solid #bfdbfe !important;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.95; }
+}
+
+.p-5.bg-gradient-to-r.from-yellow-50.to-orange-50 {
+  background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%) !important;
+  border-left: 4px solid #f59e0b !important;
+  animation: slideInLeft 0.3s ease;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Footer buttons */
+.bg-gray-50 button {
+  transition: all 0.2s ease;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+}
+
+.bg-gray-50 button:hover {
+  transform: translateY(-2px);
+}
+
+.bg-gradient-to-r.from-green-500.to-emerald-600 {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.bg-gradient-to-r.from-green-500.to-emerald-600:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
 }
 
 /* Container modal bo góc lớn, đổ bóng nâng */
