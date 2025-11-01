@@ -81,6 +81,13 @@ export const routes: Routes = [
   { path: 'blog', component: BlogComponent },
   { path: 'blog/:id', component: BlogDetailComponent },
   { path: 'tu-vung', component: UserVocabularyComponent },
+  {
+    path: 'tu-vung/list/:id',
+    loadComponent: () =>
+      import('./Views/User/vocabulary-list-detail/vocabulary-list-detail.component').then(
+        (m) => m.VocabularyListDetailComponent
+      )
+  },
 
   // <-- DI CHUYỂN 2 ROUTE FLASHCARDS RA ĐÂY, ĐẶT Ở CẤP CAO NHẤT
   { path: 'flashcards', component: DeckListComponent },

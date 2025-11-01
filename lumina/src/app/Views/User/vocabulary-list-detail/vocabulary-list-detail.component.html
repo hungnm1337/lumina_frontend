@@ -1,0 +1,92 @@
+<div class="vocab-list-detail-page w-full min-h-screen bg-gray-50">
+  <app-header *ngIf="close?.observers?.length === 0"></app-header>
+
+  <div class="max-w-5xl mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex flex-col items-center mb-6 text-center relative">
+      <!-- Nút quay lại -->
+      <button
+        type="button"
+        (click)="goBack()"
+        class="absolute left-0 top-1/2 -translate-y-1/2 inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700"
+        aria-label="Quay lại"
+      >
+        <span class="material-icons text-[18px]">arrow_back</span>
+        <span class="font-medium">Quay lại</span>
+      </button>
+
+      <!-- Tiêu đề + mô tả -->
+      <div>
+        <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-gray-900">
+          Danh sách từ vựng
+        </h1>
+        <p class="text-gray-500 leading-6">
+          Duyệt và tìm kiếm từ vựng TOEIC
+        </p>
+      </div>
+    </div>
+
+    <!-- Ô tìm kiếm -->
+    <div class="flex justify-center mb-8">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        class="w-full sm:w-[400px] rounded-xl px-4 py-2.5 border shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-200 text-center"
+        placeholder="Tìm kiếm từ vựng..."
+      />
+    </div>
+
+    <!-- Grid danh sách từ vựng -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div
+        *ngFor="let w of filteredWords | slice:0:shownCount; let i = index"
+        class="card-vocab bg-white shadow border rounded-xl p-5 flex flex-col gap-2"
+      >
+        <div class="flex justify-between items-start">
+          <div class="flex-1">
+            <div class="flex items-center gap-2">
+              <div class="font-bold text-lg text-gray-900">{{ w.question }}</div>
+            </div>
+            <div class="text-gray-500 mt-1">{{ w.answer }}</div>
+          </div>
+
+          <!-- Icon loa -->
+          <button
+            type="button"
+            class="btn-audio ml-2 mt-1 inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 hover:bg-blue-100"
+            (click)="playAudio(w.audioUrl, w.question)"
+            [attr.aria-label]="'Phát âm: ' + w.question"
+          >
+            <span class="material-icons text-blue-600 text-2xl">volume_up</span>
+          </button>
+        </div>
+
+        <div class="flex gap-2 mt-2 items-center">
+          <span
+            *ngIf="w.level"
+            class="badge-level"
+            [ngClass]="{
+              'level-intermediate': w.level === 'Trung cấp',
+              'level-advanced': w.level === 'Nâng cao',
+              'level-basic': w.level === 'Cơ bản'
+            }"
+          >
+            {{ w.level }}
+          </span>
+          <span *ngIf="w.topic" class="badge-topic">{{ w.topic }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Load more -->
+    <div class="flex justify-center mt-8">
+      <button
+        type="button"
+        class="btn-primary px-5 py-2 rounded-lg font-medium"
+        (click)="shownCount = shownCount + 9"
+      >
+        + Tải thêm từ
+      </button>
+    </div>
+  </div>
+</div>

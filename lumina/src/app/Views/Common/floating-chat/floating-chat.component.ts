@@ -40,7 +40,6 @@ export class FloatingChatComponent {
         timestamp: new Date(),
         conversationType: 'general',
         suggestions: [
-          'Tạo đề thi TOEIC',
           'Tư vấn học TOEIC',
           'Giải thích ngữ pháp',
           'Chiến lược làm bài'
