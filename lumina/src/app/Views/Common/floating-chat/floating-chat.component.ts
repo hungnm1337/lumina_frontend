@@ -1,7 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, NavigationEnd } from '@angular/router';
+import { Subscription, filter } from 'rxjs';
 import { ChatComponent } from '../../User/chat/chat.component';
 import { ChatMessage } from '../../../Interfaces/Chat/ChatResponseDTO.interface';
+import { AuthService } from '../../../Services/Auth/auth.service';
 
 @Component({
   selector: 'app-floating-chat',
@@ -10,16 +13,84 @@ import { ChatMessage } from '../../../Interfaces/Chat/ChatResponseDTO.interface'
   templateUrl: './floating-chat.component.html',
   styleUrls: ['./floating-chat.component.scss']
 })
-export class FloatingChatComponent {
+export class FloatingChatComponent implements OnInit, OnDestroy {
   isOpen = false;
-   private isProcessingMessage = false;
+  private isProcessingMessage = false;
+  private routerSubscription?: Subscription;
+  private authSubscription?: Subscription;
+  currentRoute = '';
+  isAuthenticated = false;
   
   // Lưu trữ tin nhắn trong memory
   savedMessages: ChatMessage[] = [];
 
-  constructor() {
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {
     // Khởi tạo tin nhắn chào mừng nếu chưa có
     this.initializeWelcomeMessage();
+  }
+
+  ngOnInit() {
+    // Theo dõi thay đổi route
+    this.routerSubscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        this.currentRoute = event.url;
+        // Đóng chatbox nếu chuyển sang trang không cho phép hiển thị
+        if (!this.shouldShowChatbox) {
+          this.isOpen = false;
+        }
+      });
+
+    // Theo dõi trạng thái authentication
+    this.authSubscription = this.authService.currentUser$.subscribe(user => {
+      this.isAuthenticated = !!user;
+      // Đóng chatbox nếu đăng xuất
+      if (!this.isAuthenticated) {
+        this.isOpen = false;
+      }
+    });
+
+    // Set route ban đầu
+    this.currentRoute = this.router.url;
+    
+    // Set authentication state ban đầu
+    this.isAuthenticated = !!this.authService.getCurrentUser();
+    
+    // Đóng chatbox nếu route ban đầu không cho phép
+    if (!this.shouldShowChatbox) {
+      this.isOpen = false;
+    }
+  }
+
+  ngOnDestroy() {
+    this.routerSubscription?.unsubscribe();
+    this.authSubscription?.unsubscribe();
+  }
+
+  // Kiểm tra xem có nên hiển thị chatbox không
+  get shouldShowChatbox(): boolean {
+    // 1. Không hiển thị nếu chưa đăng nhập
+    if (!this.isAuthenticated) {
+      return false;
+    }
+
+    // 2. Không hiển thị ở trang Articles-detail (blog/:id)
+    // Route: /blog/:id (không phải /blog)
+    if (this.currentRoute.match(/^\/blog\/\d+/)) {
+      return false;
+    }
+
+    // 3. Không hiển thị khi đang làm bài thi
+    // Route: /homepage/user-dashboard/exam/:id hoặc /homepage/user-dashboard/part/:id
+    if (this.currentRoute.includes('/user-dashboard/exam/') || 
+        this.currentRoute.includes('/user-dashboard/part/')) {
+      return false;
+    }
+
+    return true;
   }
 
   toggleChatbox() {

@@ -40,13 +40,13 @@ interface BlogAuthor {
 }
 
 @Component({
-  selector: 'app-blog',
+  selector: 'app-blog-articles',
   standalone: true,
   imports: [CommonModule, FormsModule, HeaderComponent],
-  templateUrl: './blog.component.html',
-  styleUrls: ['./blog.component.scss']
+  templateUrl: './Articles.component.html',
+  styleUrls: ['./Articles.component.scss']
 })
-export class BlogComponent implements OnInit {
+export class BlogArticlesComponent implements OnInit {
   searchQuery: string = '';
   selectedCategory: string = 'all';
   selectedSort: string = 'newest';

@@ -15,8 +15,8 @@ import { RoleGuard } from './Services/Auth/role.guard';
 import { ManageEventsDashboardComponent } from './Views/Manage/Event/dashboardevent.component';
 import { UserEventsDashboardComponent } from './Views/User/event-dashboard/dashboardevent.component';
 import { DashboardSlideComponent } from './Views/Manage/Slide/dashboardslide.component';
-import { BlogComponent } from './Views/Common/blog/blog.component';
-import { BlogDetailComponent } from './Views/Common/blog-detail/blog-detail.component';
+import { BlogArticlesComponent } from './Views/Common/Articles/Articles.component';
+import { BlogDetailComponent } from './Views/Common/Articles-detail/Articles-detail.component';
 import { UserVocabularyComponent } from './Views/User/vocabulary/vocabulary.component';
 import { DeckListComponent } from './pages/deck-list/deck-list.component';
 import { DeckDetailComponent } from './pages/deck-detail/deck-detail.component';
@@ -78,7 +78,7 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
-  { path: 'blog', component: BlogComponent },
+  { path: 'blog', component: BlogArticlesComponent },
   { path: 'blog/:id', component: BlogDetailComponent },
   { path: 'tu-vung', component: UserVocabularyComponent },
   {

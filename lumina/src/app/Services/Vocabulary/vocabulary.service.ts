@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment.development';
 import { 
   VocabularyWord,
@@ -32,7 +33,17 @@ export class VocabularyService {
     if (listId) params.listId = listId.toString();
     if (search) params.search = search;
 
-    return this.http.get<VocabularyWord[]>(this.apiUrl, { headers, params });
+    // Sử dụng endpoint student-list để hỗ trợ cả Student và Staff
+    return this.http.get<VocabularyWord[]>(`${this.apiUrl}/student-list`, { headers, params }).pipe(
+      tap((data) => {
+        // Debug: log response để kiểm tra
+        console.log('🔍 API Response from /student-list:', data);
+        if (Array.isArray(data) && data.length > 0) {
+          console.log('🔍 First word from API:', data[0]);
+          console.log('🔍 First word ID:', data[0]?.id, 'Type:', typeof data[0]?.id);
+        }
+      })
+    );
   }
 
   // Tạo từ vựng mới
@@ -42,6 +53,7 @@ export class VocabularyService {
     typeOfWord: string;
     definition: string;
     example?: string;
+    category?: string; // Loại từ
   }): Observable<any> {
     const token = localStorage.getItem('lumina_token');
     const headers = new HttpHeaders({
@@ -68,6 +80,7 @@ export class VocabularyService {
     word: string;
     typeOfWord: string;
     definition: string;
+    category?: string;
     example?: string;
   }): Observable<any> {
     const token = localStorage.getItem('lumina_token');
@@ -160,6 +173,22 @@ export class VocabularyService {
     }
 
     return this.http.get<VocabularyListResponse[]>(`${this.vocabularyListsUrl}/my`, { headers, params });
+  }
+
+  // Lấy danh sách vocabulary lists của user hiện tại + folder của staff (cho Flashcards)
+  getMyAndStaffVocabularyLists(searchTerm?: string): Observable<VocabularyListResponse[]> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    let params: any = {};
+    if (searchTerm) {
+      params.searchTerm = searchTerm;
+    }
+
+    return this.http.get<VocabularyListResponse[]>(`${this.vocabularyListsUrl}/my-and-staff`, { headers, params });
   }
 
   // Tạo vocabulary list mới

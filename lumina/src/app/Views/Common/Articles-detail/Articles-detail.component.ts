@@ -70,8 +70,8 @@ interface BlogArticle {
   selector: 'app-blog-detail',
   standalone: true,
   imports: [CommonModule, FormsModule, HeaderComponent],
-  templateUrl: './blog-detail.component.html',
-  styleUrls: ['./blog-detail.component.scss']
+  templateUrl: './Articles-detail.component.html',
+  styleUrls: ['./Articles-detail.component.scss']
 })
 export class BlogDetailComponent implements OnInit {
   article: ArticleResponse | null = null;
