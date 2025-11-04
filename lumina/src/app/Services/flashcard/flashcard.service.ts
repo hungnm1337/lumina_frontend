@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, of } from 'rxjs';
+import { Observable, map, of, catchError, tap } from 'rxjs';
 import { environment } from '../../../environments/environment.development';
 import { VocabularyService } from '../Vocabulary/vocabulary.service';
 
@@ -53,30 +53,45 @@ export class FlashcardService {
   getDeckById(id: string): Observable<Deck | undefined> {
     const listId = parseInt(id);
     if (isNaN(listId)) {
+      console.warn('Invalid deck ID:', id);
       return of(undefined);
     }
 
+    console.log('Loading deck with ID:', listId);
+
     // Load cả vocabulary words và list info cùng lúc
     return this.vocabularyService.getPublicVocabularyByList(listId).pipe(
+      tap(vocabularies => {
+        console.log('Vocabulary response:', vocabularies);
+      }),
       map(vocabularies => {
         if (!vocabularies || vocabularies.length === 0) {
+          console.warn('No vocabularies found for list ID:', listId);
           return undefined;
         }
 
         // Tạo deck với thông tin cơ bản
-        return {
+        const deck: Deck = {
           id: id,
           title: 'Loading...', // Sẽ được cập nhật sau
           author: 'Loading...', // Sẽ được cập nhật sau
           termCount: vocabularies.length,
           terms: vocabularies.map(vocab => ({
             id: vocab.id,
-            question: vocab.word,
-            answer: vocab.definition,
+            question: vocab.word || '',
+            answer: vocab.definition || '',
             options: vocab.example ? [vocab.example] : undefined,
-            audioUrl: vocab.audioUrl
+            audioUrl: vocab.audioUrl || undefined
           }))
         };
+        
+        console.log('Deck created:', deck);
+        return deck;
+      }),
+      catchError(error => {
+        console.error('Error in getDeckById:', error);
+        // Re-throw error để component có thể xử lý
+        throw error;
       })
     );
   }

@@ -48,21 +48,31 @@ export class DeckDetailComponent implements OnInit {
 
     this.flashcardService.getDeckById(deckId).subscribe({
       next: (deck) => {
+        console.log('Deck loaded:', deck);
         if (deck) {
           this.deck = deck;
-          this.terms = deck.terms;
+          this.terms = deck.terms || [];
+          console.log('Terms loaded:', this.terms.length);
           this.learningCount = this.terms.length; // Initially all are "learning"
           
           // Load thông tin chi tiết của list để có title và author
           this.loadDeckInfo(deckId);
         } else {
-          this.error = 'Không tìm thấy bộ từ vựng này';
+          this.error = 'Không tìm thấy bộ từ vựng này hoặc bộ từ vựng này chưa được xuất bản';
         }
         this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading deck:', error);
-        this.error = 'Không thể tải bộ từ vựng. Vui lòng thử lại sau.';
+        console.error('Error details:', JSON.stringify(error, null, 2));
+        // Hiển thị thông báo lỗi chi tiết hơn
+        if (error.status === 404) {
+          this.error = 'Không tìm thấy bộ từ vựng này hoặc bộ từ vựng này chưa được xuất bản';
+        } else if (error.status === 0) {
+          this.error = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+        } else {
+          this.error = `Không thể tải bộ từ vựng. Lỗi: ${error.message || 'Vui lòng thử lại sau.'}`;
+        }
         this.isLoading = false;
       }
     });
