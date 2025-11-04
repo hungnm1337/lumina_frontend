@@ -10,6 +10,7 @@ export interface Term {
   question: string;
   answer: string;
   options?: string[]; 
+  audioUrl?: string; // URL của audio file hoặc undefined nếu không có
   // Dành cho câu hỏi trắc nghiệm
 }
 
@@ -33,9 +34,9 @@ export class FlashcardService {
     private vocabularyService: VocabularyService
   ) { }
 
-  // Lấy tất cả các học phần từ API (vocabulary lists đã được duyệt)
+  // Lấy các học phần từ API (vocabulary lists của user hiện tại + folder của staff)
   getDecks(): Observable<Deck[]> {
-    return this.vocabularyService.getPublicVocabularyLists().pipe(
+    return this.vocabularyService.getMyAndStaffVocabularyLists().pipe(
       map(vocabularyLists => 
         vocabularyLists.map(list => ({
           id: list.vocabularyListId.toString(),
@@ -72,7 +73,8 @@ export class FlashcardService {
             id: vocab.id,
             question: vocab.word,
             answer: vocab.definition,
-            options: vocab.example ? [vocab.example] : undefined
+            options: vocab.example ? [vocab.example] : undefined,
+            audioUrl: vocab.audioUrl
           }))
         };
       })

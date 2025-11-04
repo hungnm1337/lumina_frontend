@@ -70,9 +70,9 @@ interface BlogArticle {
 @Component({
   selector: 'app-blog-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, HeaderComponent, ChatBoxComponent],
-  templateUrl: './blog-detail.component.html',
-  styleUrls: ['./blog-detail.component.scss']
+  imports: [CommonModule, FormsModule, HeaderComponent],
+  templateUrl: './Articles-detail.component.html',
+  styleUrls: ['./Articles-detail.component.scss']
 })
 export class BlogDetailComponent implements OnInit {
   article: ArticleResponse | null = null;

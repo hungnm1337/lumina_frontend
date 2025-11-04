@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ChatService } from '../../../Services/Chat/chat.service';
 import { AuthService } from '../../../Services/Auth/auth.service';
 import { ToastService } from '../../../Services/Toast/toast.service';
+import { Router } from '@angular/router';
 import { 
   ChatRequestDTO, 
   ChatResponseDTO, 
@@ -62,7 +63,8 @@ export class ChatComponent implements OnInit, OnDestroy {
   constructor(
     private chatService: ChatService,
     private authService: AuthService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -206,6 +208,16 @@ export class ChatComponent implements OnInit, OnDestroy {
           content: response.message,
           timestamp: new Date()
         });
+
+        // Điều hướng đến trang Từ vựng và highlight folder mới tạo
+        try {
+          const listId = response.vocabularyListId;
+          if (listId) {
+            this.router.navigate(['/tu-vung'], { queryParams: { highlight: listId } });
+          } else {
+            this.router.navigate(['/tu-vung']);
+          }
+        } catch {}
       }
 
     } catch (error) {
