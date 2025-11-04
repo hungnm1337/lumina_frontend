@@ -104,8 +104,8 @@ export class UserVocabularyComponent implements OnInit {
   }
 
   startQuiz(): void {
-    console.log('Bắt đầu làm Quiz...');
-    // Tại đây bạn sẽ xử lý logic điều hướng đến trang Quiz
+    // Navigate đến trang quiz config để chọn folder
+    this.router.navigate(['/quiz/config']);
   }
 
   browseWords(): void {

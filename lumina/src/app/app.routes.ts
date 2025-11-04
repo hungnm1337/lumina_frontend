@@ -89,6 +89,36 @@ export const routes: Routes = [
       )
   },
 
+  // Quiz routes
+  {
+    path: 'quiz/config',
+    loadComponent: () =>
+      import('./Views/User/quiz-config/quiz-config.component').then(
+        (m) => m.QuizConfigComponent
+      )
+  },
+  {
+    path: 'quiz/config-detail',
+    loadComponent: () =>
+      import('./Views/User/quiz-config-detail/quiz-config-detail.component').then(
+        (m) => m.QuizConfigDetailComponent
+      )
+  },
+  {
+    path: 'quiz/do',
+    loadComponent: () =>
+      import('./Views/User/quiz-do/quiz-do.component').then(
+        (m) => m.QuizDoComponent
+      )
+  },
+  {
+    path: 'quiz/results',
+    loadComponent: () =>
+      import('./Views/User/quiz-results/quiz-results.component').then(
+        (m) => m.QuizResultsComponent
+      )
+  },
+
   // <-- DI CHUYỂN 2 ROUTE FLASHCARDS RA ĐÂY, ĐẶT Ở CẤP CAO NHẤT
   { path: 'flashcards', component: DeckListComponent },
   { path: 'flashcards/:id', component: DeckDetailComponent },
