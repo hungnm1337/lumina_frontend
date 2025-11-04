@@ -1,28 +1,5 @@
 @if (questions && questions.length > 0 && !isFinished) {
 <div class="w-full bg-white rounded-lg shadow-md p-6">
-  <!-- Progress Header -->
-  <div class="mb-4 flex items-center justify-between">
-    <div class="text-sm text-gray-600">
-      Câu {{ currentIndex + 1 }} / {{ questions.length }}
-    </div>
-    <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded font-medium">
-      Điểm: {{ totalScore }}
-    </span>
-  </div>
-
-  @if (showExplain && isFetchingFeedback) {
-  <!-- Global feedback fetching screen -->
-  <div class="py-10 text-center">
-    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 border border-blue-200 mb-3">
-      <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25" />
-        <path d="M4 12h16" stroke="currentColor" stroke-width="4" stroke-linecap="round" class="opacity-75" />
-      </svg>
-    </div>
-    <div class="text-lg font-semibold text-gray-800">Đang tổng hợp phản hồi từ AI...</div>
-    <div class="text-sm text-gray-600 mt-1">{{ feedbackDone }} / {{ feedbackTotal }} câu</div>
-  </div>
-  } @else {
   <!-- Header with Timer and Question Info -->
   <div class="flex items-start justify-between gap-3 mb-4">
     <div class="space-y-2">
@@ -34,7 +11,7 @@
       ></app-time>
     </div>
   </div>
-  }
+
 
   <!-- Question Content -->
   @if (getCurrentQuestion()) {
@@ -46,7 +23,7 @@
       @if (getCurrentQuestion()?.prompt?.contentText) {
       <div class="font-medium text-gray-600 mb-2">
         <strong>{{ getCurrentQuestion()?.prompt?.title }}</strong>
-        {{ getCurrentQuestion()?.prompt?.contentText }}
+        <p style="white-space: pre-wrap;">{{ getCurrentQuestion()?.prompt?.contentText }}</p>
       </div>
       }
     </div>
@@ -119,13 +96,6 @@
 
       <div class="flex gap-2">
         <button
-          (click)="confirmExit()"
-          [disabled]="isAnyQuestionSubmitting()"
-          class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Lưu & Thoát
-        </button>
-        <button
           (click)="finishWritingExam()"
           [disabled]="isAnyQuestionSubmitting()"
           class="px-4 py-2 rounded bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -181,7 +151,6 @@
         }
       </div>
 
-      <!-- ✅ Legend - Chú thích màu sắc -->
       <div class="mt-4 flex items-center gap-4 text-xs text-gray-600">
         <div class="flex items-center gap-1">
           <div class="w-4 h-4 bg-gray-200 rounded"></div>
@@ -224,12 +193,7 @@
 
   <!-- Score Statistics -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-6">
-      <div class="text-4xl font-bold text-purple-600 mb-2">
-        {{ totalScore }}
-      </div>
-      <div class="text-sm text-purple-700">Tổng điểm</div>
-    </div>
+
     <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6">
       <div class="text-4xl font-bold text-green-600 mb-2">
         {{ correctCount }}/{{ questions?.length || 0 }}

@@ -157,14 +157,19 @@ export class SpeakingQuestionStateService {
   // Submit recording and persist state even if component is destroyed
   async submitAnswerAndStore(
     questionId: number,
-    audioBlob: Blob
+    audioBlob: Blob,
+    attemptId?: number // ✅ THÊM: attemptId parameter
   ): Promise<SpeakingScoringResult> {
     // Mark as scoring immediately
     this.markAsScoring(questionId);
 
+    console.log(
+      `[SpeakingStateService] Submitting answer for question ${questionId}, attemptId: ${attemptId}`
+    );
+
     // Fire the HTTP request from a long-lived service so it continues across navigation
     const result = await this.speakingApi
-      .submitSpeakingAnswer(audioBlob, questionId)
+      .submitSpeakingAnswer(audioBlob, questionId, attemptId) // ✅ Truyền attemptId
       .toPromise();
 
     if (result) {

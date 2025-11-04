@@ -9,7 +9,7 @@
       class="w-8/12 h-auto rounded-md object-cover"
     />
   </div>
-  @if (!isSpeakingQuestion()) {
+  @if (!isSpeakingQuestion() && !isListeningQuestion()) {
   <button
     class="btn border-s-blue-400 inline-flex items-center gap-2 px-4 py-2 rounded-md border border-blue-500 text-blue-600 hover:bg-blue-50 active:bg-blue-100 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
     (click)="generateCaption()"
@@ -55,7 +55,7 @@
   </h4>
   } @if (prompt?.contentText) {
   <div class="pt-2 border-t border-gray-100">
-    <p class="text-gray-700 whitespace-pre-line leading-relaxed">
+    <p class="text-gray-700 leading-relaxed" style="white-space: pre-wrap;">
       {{ prompt?.contentText }}
     </p>
   </div>

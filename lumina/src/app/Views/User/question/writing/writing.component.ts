@@ -12,8 +12,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../Services/Auth/auth.service';
-import { WritingExamPartOneService } from '../../../../Services/Exam/Writing/writing-exam-part-one.service';
-import { WritingRequestDTO } from '../../../../Interfaces/WrittingExam/WritingRequestDTO.interface';
+import { WritingExamPartOneService } from '../../../../Services/Exam/Writing/writing-exam.service';
+import { WritingRequestP1DTO } from '../../../../Interfaces/WrittingExam/WritingRequestP1DTO.interface';
 import { WritingResponseDTO } from '../../../../Interfaces/WrittingExam/WritingResponseDTO.interface';
 import { QuestionDTO } from '../../../../Interfaces/exam.interfaces';
 import { Router } from '@angular/router';
@@ -55,8 +55,8 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   savedTimeRemaining: number = 0;
   private autoSaveInterval: any = null;
   private readonly AUTO_SAVE_INTERVAL = 10000; // 10 seconds
-  attemptId: number | null = null; // ✅ THÊM
-  submittingQuestions: Set<number> = new Set(); // ✅ Track questions being submitted
+  attemptId: number | null = null;
+  submittingQuestions: Set<number> = new Set();
 
   constructor(
     private router: Router,
@@ -74,7 +74,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     this.isShowHint = !this.isShowHint;
   }
   ngOnInit(): void {
-    this.clearPreviousWritingAnswers(); // ✅ Xóa câu trả lời cũ trước khi bắt đầu
+    this.clearPreviousWritingAnswers();
     this.loadSavedData();
     this.loadAttemptId();
     if (this.questions && this.questions.length > 0) {
@@ -92,7 +92,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   ngOnDestroy(): void {
     this.stopAutoSave();
     this.saveCurrentState();
-    this.saveProgressOnExit(); // ✅ THÊM
+    this.saveProgressOnExit();
   }
 
   // ============= ATTEMPT MANAGEMENT (NEW) =============
@@ -100,13 +100,13 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   private clearPreviousWritingAnswers(): void {
     try {
       const keys = Object.keys(localStorage);
-      keys.forEach(key => {
+      keys.forEach((key) => {
         if (key.includes('Writing') || key.includes('Writting')) {
           localStorage.removeItem(key);
         }
       });
     } catch (error) {
-      console.error('❌ Error clearing previous writing answers:', error);
+      console.error('Error clearing previous writing answers:', error);
     }
   }
 
@@ -119,10 +119,10 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       }
 
       if (!this.attemptId) {
-        console.error('❌ No attemptId found for Writing');
+        console.error('No attemptId found for Writing');
       }
     } catch (error) {
-      console.error('❌ Error loading attemptId:', error);
+      console.error('Error loading attemptId:', error);
     }
   }
 
@@ -176,7 +176,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
         newFormat[qId] = {
           questionId: Number(qId),
           feedback: map[qId],
-          savedAt: new Date().toISOString()
+          savedAt: new Date().toISOString(),
         };
       }
       localStorage.setItem(key, JSON.stringify(newFormat));
@@ -220,7 +220,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
           if (data && typeof data === 'object' && data.questionId) {
             this.savedAnswers.push({
               questionId: Number(data.questionId),
-              answer: String(data.answer || '')
+              answer: String(data.answer || ''),
             });
           }
         }
@@ -305,7 +305,8 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       .GetCaptionOfPicture(question.prompt.referenceImageUrl)
       .subscribe({
         next: (response) => {
-          this.captions[question.questionId] = response.caption || 'Can not generate caption';
+          this.captions[question.questionId] =
+            response.caption || 'Can not generate caption';
           this.captionLoading[question.questionId] = false;
         },
         error: (error) => {
@@ -321,10 +322,12 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       if (q.prompt?.referenceImageUrl) {
         if (!(q.questionId in this.captions)) {
           this.captionLoading[q.questionId] = true;
-          this.pictureCaptioningService.GetCaptionOfPicture(q.prompt.referenceImageUrl)
+          this.pictureCaptioningService
+            .GetCaptionOfPicture(q.prompt.referenceImageUrl)
             .subscribe({
               next: (response) => {
-                this.captions[q.questionId] = response.caption || 'Can not generate caption';
+                this.captions[q.questionId] =
+                  response.caption || 'Can not generate caption';
                 this.captionLoading[q.questionId] = false;
               },
               error: (error) => {
@@ -341,7 +344,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   nextQuestion(): void {
-    // ✅ Chặn không cho chuyển câu khi đang nộp
+    // Chặn không cho chuyển câu khi đang nộp
     if (this.isAnyQuestionSubmitting()) {
       return;
     }
@@ -356,7 +359,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   previousQuestion(): void {
-    // ✅ Chặn không cho chuyển câu khi đang nộp
+    // Chặn không cho chuyển câu khi đang nộp
     if (this.isAnyQuestionSubmitting()) {
       return;
     }
@@ -369,7 +372,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   navigateToQuestion(index: number): void {
-    // ✅ Chặn không cho chuyển câu khi đang nộp
+    // Chặn không cho chuyển câu khi đang nộp
     if (this.isAnyQuestionSubmitting()) {
       return;
     }
@@ -385,7 +388,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     this.showExplain = true;
     this.saveCurrentState();
 
-    // ✅ Gọi API endExam trước khi fetch feedback
     this.callEndExamAPI();
 
     // After submit, fetch feedback for all questions and save to localStorage
@@ -396,7 +398,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     try {
       const storedAttempt = localStorage.getItem('currentExamAttempt');
       if (!storedAttempt) {
-        console.error('❌ No currentExamAttempt found in localStorage');
+        console.error('No currentExamAttempt found in localStorage');
         return;
       }
 
@@ -410,7 +412,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
         startTime: attemptData.startTime,
         endTime: new Date().toISOString(),
         score: 0,
-        status: 'Completed'
+        status: 'Completed',
       };
 
       this.examAttemptService.endExam(endExamRequest).subscribe({
@@ -418,11 +420,11 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
           // Exam ended successfully
         },
         error: (error) => {
-          console.error('❌ Error ending writing exam:', error);
-        }
+          console.error('Error ending writing exam:', error);
+        },
       });
     } catch (error) {
-      console.error('❌ Error parsing currentExamAttempt:', error);
+      console.error('Error parsing currentExamAttempt:', error);
     }
   }
 
@@ -434,10 +436,13 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     }
 
     const feedbackMap = this.loadFeedbackMap();
-    const answersMap: Record<number, string> = this.savedAnswers.reduce((acc, a) => {
-      acc[a.questionId] = a.answer;
-      return acc;
-    }, {} as Record<number, string>);
+    const answersMap: Record<number, string> = this.savedAnswers.reduce(
+      (acc, a) => {
+        acc[a.questionId] = a.answer;
+        return acc;
+      },
+      {} as Record<number, string>
+    );
 
     let pending = 0;
     let started = 0;
@@ -482,7 +487,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
         continue;
       }
 
-      const req: WritingRequestDTO = {
+      const req: WritingRequestP1DTO = {
         pictureCaption: caption,
         vocabularyRequest: vocabReq,
         userAnswer: userAnswer,
@@ -556,9 +561,12 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   viewHistory(): void {
     // Điều hướng đến trang lịch sử làm bài với attemptId hiện tại
     if (this.attemptId) {
-      this.router.navigate(['/homepage/user-dashboard/exam-attempts', this.attemptId]);
+      this.router.navigate([
+        '/homepage/user-dashboard/exam-attempts',
+        this.attemptId,
+      ]);
     } else {
-      console.error('❌ No attemptId found for viewing history');
+      console.error('No attemptId found for viewing history');
     }
   }
 
@@ -633,11 +641,12 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   finishWritingExam(): void {
     const totalQuestions = this.questions?.length || 0;
 
-    const questionsInProgress = this.questions?.filter(q => {
-      const hasAnswer = this.hasAnswer(q.questionId);
-      const isSubmitted = this.isQuestionSubmitted(q.questionId);
-      return hasAnswer && !isSubmitted;
-    }) || [];
+    const questionsInProgress =
+      this.questions?.filter((q) => {
+        const hasAnswer = this.hasAnswer(q.questionId);
+        const isSubmitted = this.isQuestionSubmitted(q.questionId);
+        return hasAnswer && !isSubmitted;
+      }) || [];
 
     if (questionsInProgress.length > 0) {
       const questionNumbers = questionsInProgress
@@ -646,14 +655,14 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
 
       this.toastService.warning(
         `Bạn có ${questionsInProgress.length} câu đang làm dở chưa nộp: ${questionNumbers}. ` +
-        'Vui lòng nộp các câu này trước khi nộp bài.'
+          'Vui lòng nộp các câu này trước khi nộp bài.'
       );
       return;
     }
 
-    const submittedCount = this.questions?.filter(q =>
-      this.isQuestionSubmitted(q.questionId)
-    ).length || 0;
+    const submittedCount =
+      this.questions?.filter((q) => this.isQuestionSubmitted(q.questionId))
+        .length || 0;
 
     const confirmFinish = confirm(
       'Bạn có chắc chắn muốn nộp bài thi Writing không?\n\n' +
@@ -683,7 +692,8 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
 
       this.examAttemptService.saveProgress(model).subscribe({
         next: () => {},
-        error: (error) => console.error('❌ Error saving writing progress:', error)
+        error: (error) =>
+          console.error('Error saving writing progress:', error),
       });
     }
   }
@@ -717,7 +727,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
         this.router.navigate(['homepage/user-dashboard/exams']);
       },
       error: (error) => {
-        console.error('❌ Error saving writing progress:', error);
+        console.error('Error saving writing progress:', error);
         this.router.navigate(['homepage/user-dashboard/exams']);
       },
     });
@@ -725,7 +735,9 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
 
   getCurrentCaption(): string {
     const q = this.getCurrentQuestion();
-    return q && this.captions[q.questionId] !== undefined ? this.captions[q.questionId] : '';
+    return q && this.captions[q.questionId] !== undefined
+      ? this.captions[q.questionId]
+      : '';
   }
   isCurrentCaptionLoading(): boolean {
     const q = this.getCurrentQuestion();

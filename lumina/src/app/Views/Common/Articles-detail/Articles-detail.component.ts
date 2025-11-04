@@ -5,6 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { HeaderComponent } from '../header/header.component';
 import { ArticleService } from '../../../Services/Article/article.service';
 import { ArticleResponse } from '../../../Interfaces/article.interfaces';
+import { ChatBoxComponent } from "./chat-box/chat-box.component";
 
 interface BlogComment {
   id: number;
@@ -77,11 +78,11 @@ export class BlogDetailComponent implements OnInit {
   article: ArticleResponse | null = null;
   isLoading: boolean = true;
   error: string = '';
-  
+  contentArticle : string = '';
+  // Additional properties for UI
   articleLikes: number = 0;
   articleCommentsCount: number = 0;
-  
-  comments: BlogComment[] = [];
+
   newComment: string = '';
   sortComments: string = 'newest';
   isFollowing: boolean = false;
@@ -99,7 +100,7 @@ export class BlogDetailComponent implements OnInit {
   loadArticle(): void {
     this.isLoading = true;
     this.error = '';
-    
+
     const articleId = this.route.snapshot.paramMap.get('id');
     if (!articleId) {
       this.error = 'Không tìm thấy bài viết';
@@ -112,6 +113,7 @@ export class BlogDetailComponent implements OnInit {
         this.article = article;
         this.articleLikes = 0;
         this.articleCommentsCount = 0;
+        this.contentArticle = article.sections.map(section => section.sectionContent).join('\n\n');
         this.isLoading = false;
       },
       error: (error) => {
@@ -141,33 +143,11 @@ export class BlogDetailComponent implements OnInit {
   }
 
   onSubmitComment(): void {
-    if (this.newComment.trim()) {
-      const newComment: BlogComment = {
-        id: this.comments.length + 1,
-        author: {
-          name: 'Bạn',
-          avatar: 'U',
-          avatarColor: 'bg-gray-500'
-        },
-        content: this.newComment,
-        timestamp: 'Vừa xong',
-        likes: 0,
-        replies: 0,
-        isLiked: false
-      };
-      
-      this.comments.unshift(newComment);
-      this.articleCommentsCount++;
-      this.newComment = '';
-    }
+
   }
 
   onLikeComment(commentId: number): void {
-    const comment = this.comments.find(c => c.id === commentId);
-    if (comment) {
-      comment.isLiked = !comment.isLiked;
-      comment.likes += comment.isLiked ? 1 : -1;
-    }
+
   }
 
   onReplyComment(commentId: number): void {
