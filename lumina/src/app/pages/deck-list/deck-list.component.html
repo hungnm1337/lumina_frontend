@@ -69,36 +69,15 @@
       </a>
     </div>
 
-    <!-- Pagination controls -->
-    <div *ngIf="decks.length > pageSize" class="pagination-container">
-      <button 
-        class="pagination-button prev-button"
-        (click)="prevPage()" 
-        [disabled]="currentPage === 1">
-        « Trước
-      </button>
-      
-      <!-- Hiển thị số trang -->
-      <div class="page-numbers">
-        <button 
-          *ngFor="let page of getPageNumbers()" 
-          class="page-number"
-          [class.active]="page === currentPage"
-          [class.disabled]="page === '...'"
-          (click)="handlePageClick(page)"
-          [disabled]="page === '...'">
-          {{ page }}
-        </button>
+    <!-- Pagination -->
+    <div class="pagination-section" *ngIf="decks.length > 0 && totalPages > 1">
+      <div class="pagination-controls">
+        <button class="btn-page" [disabled]="currentPage === 1" (click)="prevPage()">Trước</button>
+        <div class="page-numbers">
+          <button *ngFor="let p of getPageNumbers()" class="page-number" [class.active]="p === currentPage" (click)="goToPage(p)">{{ p }}</button>
+        </div>
+        <button class="btn-page" [disabled]="currentPage === totalPages" (click)="nextPage()">Tiếp</button>
       </div>
-      
-      <span class="page-info">Trang {{ currentPage }}/{{ totalPages }}</span>
-      
-      <button 
-        class="pagination-button next-button"
-        (click)="nextPage()" 
-        [disabled]="currentPage === totalPages">
-        Tiếp »
-      </button>
     </div>
   </div>
 </div>

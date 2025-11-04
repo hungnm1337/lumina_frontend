@@ -33,7 +33,7 @@ export class DeckListComponent implements OnInit {
   }
 
   get totalPages(): number {
-    return Math.ceil(this.decks.length / this.pageSize);
+    return Math.max(1, Math.ceil(this.decks.length / this.pageSize));
   }
 
   nextPage(): void {
@@ -57,50 +57,10 @@ export class DeckListComponent implements OnInit {
     }
   }
 
-  handlePageClick(page: number | string): void {
-    if (typeof page === 'number') {
-      this.goToPage(page);
-    }
-  }
-
-  getPageNumbers(): (number | string)[] {
-    const pages: (number | string)[] = [];
+  getPageNumbers(): number[] {
     const total = this.totalPages;
-    const current = this.currentPage;
-    
-    if (total <= 7) {
-      // Nếu có ít hơn hoặc bằng 7 trang, hiển thị tất cả
-      for (let i = 1; i <= total; i++) {
-        pages.push(i);
-      }
-    } else {
-      // Logic hiển thị thông minh khi có nhiều trang
-      if (current <= 3) {
-        // Hiển thị: 1, 2, 3, 4, ..., total
-        for (let i = 1; i <= 4; i++) {
-          pages.push(i);
-        }
-        pages.push('...');
-        pages.push(total);
-      } else if (current >= total - 2) {
-        // Hiển thị: 1, ..., total-3, total-2, total-1, total
-        pages.push(1);
-        pages.push('...');
-        for (let i = total - 3; i <= total; i++) {
-          pages.push(i);
-        }
-      } else {
-        // Hiển thị: 1, ..., current-1, current, current+1, ..., total
-        pages.push(1);
-        pages.push('...');
-        pages.push(current - 1);
-        pages.push(current);
-        pages.push(current + 1);
-        pages.push('...');
-        pages.push(total);
-      }
-    }
-    
+    const pages: number[] = [];
+    for (let i = 1; i <= total; i++) pages.push(i);
     return pages;
   }
 
