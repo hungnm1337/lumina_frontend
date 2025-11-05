@@ -35,6 +35,7 @@ export class ExamPartComponent {
       this.examService.GetExamDetailAndPart(this.examId).subscribe({
         next: (data) => {
           this.examDetail = data;
+          console.log('Exam detail data:', data);
           this.isLoading = false;
           console.log('Exam detail loaded:', this.examDetail);
         },

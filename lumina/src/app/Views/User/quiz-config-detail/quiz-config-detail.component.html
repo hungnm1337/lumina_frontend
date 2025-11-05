@@ -1,0 +1,282 @@
+<app-header></app-header>
+
+<div class="quiz-config-detail-page min-h-screen bg-gray-50">
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <button
+        type="button"
+        (click)="goBack()"
+        class="mb-4 inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700 transition"
+      >
+        <i class="fas fa-arrow-left"></i>
+        <span>Quay lại</span>
+      </button>
+      
+      <div class="text-center">
+        <h1 class="text-4xl font-bold text-gray-900 mb-3">
+          <i class="fas fa-cog text-green-600 mr-3"></i>
+          Cấu hình Quiz
+        </h1>
+        <p class="text-lg text-gray-600">
+          Tùy chỉnh cài đặt cho bài quiz của bạn
+        </p>
+      </div>
+    </div>
+
+    <!-- Folder Info Card -->
+    <div class="mb-6 bg-green-50 border border-green-200 rounded-xl p-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center">
+          <i class="fas fa-folder text-white text-xl"></i>
+        </div>
+        <div>
+          <p class="font-semibold text-green-900">Folder: {{ folderName }}</p>
+          <p class="text-sm text-green-700">
+            <strong>{{ wordCount }}</strong> từ vựng có sẵn
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <form [formGroup]="quizConfigForm" (ngSubmit)="startQuiz()" class="space-y-6">
+      <!-- Chế độ làm bài -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <i class="fas fa-flag text-green-600"></i>
+          Chế độ làm bài
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <label
+            *ngFor="let mode of modes"
+            [class]="'mode-card cursor-pointer border-2 rounded-lg p-4 transition-all ' +
+                     (getCurrentMode() === mode.value
+                       ? 'border-green-500 bg-green-50 shadow-md'
+                       : 'border-gray-200 hover:border-green-300 hover:shadow-sm')"
+          >
+            <input
+              type="radio"
+              [value]="mode.value"
+              formControlName="mode"
+              class="hidden"
+            />
+            <div class="text-center">
+              <i class="fas {{ mode.icon }} text-3xl mb-2"
+                 [class.text-green-600]="getCurrentMode() === mode.value"
+                 [class.text-gray-400]="getCurrentMode() !== mode.value">
+              </i>
+              <h3 class="font-bold text-lg mb-1">{{ mode.label }}</h3>
+              <p class="text-xs text-gray-600">{{ mode.description }}</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Số câu hỏi -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <i class="fas fa-list-ol text-green-600"></i>
+          Số câu hỏi
+        </h2>
+        <select
+          formControlName="questionCount"
+          class="w-full max-w-xs px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+        >
+          <option *ngFor="let count of questionCountOptions" [value]="count">
+            {{ count === wordCount ? 'Tất cả (' + count + ' câu)' : count + ' câu' }}
+          </option>
+        </select>
+        <p class="text-sm text-gray-500 mt-2">
+          Chọn số câu hỏi bạn muốn làm (tối đa {{ wordCount }} câu)
+        </p>
+      </div>
+
+      <!-- Thời gian -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <i class="fas fa-clock text-green-600"></i>
+          Thời gian
+        </h2>
+        
+        <div class="space-y-4">
+          <!-- Time Mode Selection -->
+          <div class="flex flex-col gap-3">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input
+                type="radio"
+                value="none"
+                formControlName="timeMode"
+                [disabled]="isPracticeMode()"
+                class="w-5 h-5 text-green-600"
+              />
+              <span [class.text-gray-400]="isPracticeMode()">
+                Không giới hạn thời gian
+              </span>
+            </label>
+
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input
+                type="radio"
+                value="per-question"
+                formControlName="timeMode"
+                class="w-5 h-5 text-green-600"
+              />
+              <span>Thời gian cho mỗi câu:</span>
+            </label>
+
+            <div *ngIf="isPerQuestionTimeMode()" class="ml-8">
+              <select
+                formControlName="timePerQuestion"
+                class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                <option *ngFor="let opt of timePerQuestionOptions" [value]="opt.value">
+                  {{ opt.label }}
+                </option>
+              </select>
+            </div>
+
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input
+                type="radio"
+                value="total"
+                formControlName="timeMode"
+                class="w-5 h-5 text-green-600"
+              />
+              <span>Tổng thời gian:</span>
+            </label>
+
+            <div *ngIf="isTotalTimeMode()" class="ml-8 flex items-center gap-2">
+              <input
+                type="number"
+                formControlName="totalTime"
+                min="1"
+                placeholder="Nhập số phút"
+                class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 w-32"
+              />
+              <span class="text-gray-600">phút</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loại câu hỏi -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <i class="fas fa-question-circle text-green-600"></i>
+          Loại câu hỏi
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <label
+            *ngFor="let type of questionTypes"
+            [class]="'question-type-card cursor-pointer border-2 rounded-lg p-4 transition-all ' +
+                     (getCurrentQuestionType() === type.value
+                       ? 'border-green-500 bg-green-50 shadow-md'
+                       : 'border-gray-200 hover:border-green-300 hover:shadow-sm')"
+          >
+            <input
+              type="radio"
+              [value]="type.value"
+              formControlName="questionType"
+              class="hidden"
+            />
+            <div class="text-center">
+              <h3 class="font-bold text-lg mb-1">{{ type.label }}</h3>
+              <p class="text-xs text-gray-600">{{ type.description }}</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Tùy chọn -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <i class="fas fa-sliders-h text-green-600"></i>
+          Tùy chọn
+        </h2>
+        <div class="space-y-3">
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              formControlName="shuffleQuestions"
+              class="w-5 h-5 text-green-600 rounded"
+            />
+            <span>Trộn thứ tự câu hỏi</span>
+          </label>
+
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              formControlName="shuffleAnswers"
+              class="w-5 h-5 text-green-600 rounded"
+            />
+            <span>Trộn thứ tự đáp án</span>
+          </label>
+
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              formControlName="showExamples"
+              class="w-5 h-5 text-green-600 rounded"
+            />
+            <span>Hiển thị ví dụ sử dụng từ</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Preview/Summary -->
+      <div class="bg-gradient-to-br from-green-50 to-blue-50 border-2 border-green-200 rounded-xl p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <i class="fas fa-info-circle text-green-600"></i>
+          Tóm tắt cấu hình
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <span class="text-gray-600">Chế độ:</span>
+            <span class="font-semibold ml-2">
+              {{ getSelectedModeLabel() }}
+            </span>
+          </div>
+          <div>
+            <span class="text-gray-600">Số câu:</span>
+            <span class="font-semibold ml-2">
+              {{ getQuestionCount() }}/{{ wordCount }}
+            </span>
+          </div>
+          <div>
+            <span class="text-gray-600">Thời gian:</span>
+            <span class="font-semibold ml-2">{{ getEstimatedTime() }}</span>
+          </div>
+          <div>
+            <span class="text-gray-600">Loại câu hỏi:</span>
+            <span class="font-semibold ml-2">
+              {{ getSelectedQuestionTypeLabel() }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex justify-center gap-4 pt-6">
+        <button
+          type="button"
+          (click)="goBack()"
+          class="px-8 py-3 rounded-xl font-semibold text-lg bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+        >
+          Quay lại
+        </button>
+        <button
+          type="submit"
+          [disabled]="quizConfigForm.invalid"
+          [class]="'px-8 py-3 rounded-xl font-semibold text-lg transition-all shadow-lg ' +
+                   (quizConfigForm.invalid
+                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                     : 'bg-gradient-to-r from-green-500 to-green-700 text-white hover:from-green-600 hover:to-green-800 transform hover:scale-105')"
+        >
+          <i class="fas fa-play mr-2"></i>
+          Bắt đầu Quiz
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+

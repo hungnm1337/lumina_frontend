@@ -3,8 +3,8 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ExamAttemptDetailResponseDTO } from '../../../../Interfaces/ExamAttempt/ExamAttemptDetailResponseDTO.interface';
 import { ExamAttemptService } from '../../../../Services/ExamAttempt/exam-attempt.service';
-import { SpeakingSummaryComponent } from '../../speaking-summary/speaking-summary.component';
 import { SpeakingScoringResult } from '../../../../Interfaces/exam.interfaces';
+import { SpeakingSummaryComponent } from '../../speaking-summary/speaking-summary.component';
 
 // Interface for speaking question results
 interface QuestionResult {
