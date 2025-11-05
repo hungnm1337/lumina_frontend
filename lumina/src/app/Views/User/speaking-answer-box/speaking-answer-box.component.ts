@@ -52,6 +52,11 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
   // Cache for audio URL to prevent ExpressionChangedAfterItHasBeenCheckedError
   private audioUrl: string | null = null;
 
+  // ✅ FIX Bug #9: Accurate timer với Page Visibility API
+  private recordingStartTime: number = 0; // Timestamp khi bắt đầu record
+  private pausedTime: number = 0; // Tổng thời gian bị pause (khi user chuyển tab)
+  private visibilityChangeHandler: (() => void) | null = null;
+
   constructor(
     private speakingService: SpeakingService,
     private toastService: ToastService,
@@ -59,6 +64,9 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
   ) {
     // Initialize with idle state
     this.state = 'idle';
+
+    // ✅ FIX Bug #9: Setup Page Visibility API
+    this.setupVisibilityHandler();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -172,6 +180,15 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
       URL.revokeObjectURL(this.audioUrl);
       this.audioUrl = null;
     }
+
+    // ✅ FIX Bug #9: Remove visibility event listener
+    if (this.visibilityChangeHandler) {
+      document.removeEventListener(
+        'visibilitychange',
+        this.visibilityChangeHandler
+      );
+      this.visibilityChangeHandler = null;
+    }
   }
 
   async startRecording(): Promise<void> {
@@ -260,19 +277,39 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
   }
 
   async submitRecording(): Promise<void> {
+    if (this.state === 'processing' || this.state === 'submitted') {
+      console.warn('[SpeakingAnswerBox] Already processing/submitted');
+      return;
+    }
+
     if (!this.audioBlob || this.disabled) {
       this.toastService.error('Không có bản ghi âm để nộp');
       return;
     }
 
+    // ✅ DEBUG: Kiểm tra attemptId trước khi submit
+    console.log('[SpeakingAnswerBox] 🔍 DEBUG attemptId:', {
+      attemptId: this.attemptId,
+      type: typeof this.attemptId,
+      questionId: this.questionId,
+      hasAudioBlob: !!this.audioBlob,
+    });
+
+    if (!this.attemptId || this.attemptId <= 0) {
+      console.error(
+        '[SpeakingAnswerBox] ❌ Invalid attemptId before submit:',
+        this.attemptId
+      );
+      this.toastService.error(
+        'Lỗi: Không tìm thấy ID bài thi. Vui lòng refresh trang và thử lại.'
+      );
+      this.state = 'error';
+      return;
+    }
+
     this.state = 'processing';
     this.errorMessage = '';
-    this.submitting.emit(true); // ← Notify parent: Bắt đầu submit
-
-    // Immediately mark as scoring in shared state so UI shows loading when navigating away
-    console.log(
-      `[SpeakingAnswerBox] Marking question ${this.questionId} as 'scoring' before API call`
-    );
+    this.submitting.emit(true);
     this.speakingStateService.markAsScoring(this.questionId);
 
     try {
@@ -280,7 +317,12 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
       console.log(
         `[SpeakingAnswerBox] Submitting answer for question ${this.questionId} with attemptId: ${this.attemptId}`
       );
-
+      if (!navigator.onLine) {
+        this.errorMessage = 'Mất kết nối mạng. Vui lòng kiểm tra và thử lại.';
+        this.state = 'error';
+        this.submitting.emit(false);
+        return;
+      }
       const result = await this.speakingStateService.submitAnswerAndStore(
         this.questionId,
         this.audioBlob,
@@ -300,6 +342,13 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
         this.answered.emit(true);
       }
     } catch (error: any) {
+      if (error.status === 0 || error.message?.includes('NetworkError')) {
+        this.errorMessage =
+          'Lỗi kết nối mạng. Bản ghi âm đã được lưu tạm thời.';
+        // TODO: Implement offline storage
+      } else {
+        this.errorMessage = error.message || 'Có lỗi xảy ra';
+      }
       console.error('Error submitting recording:', error);
       this.errorMessage =
         error?.error?.message ||
@@ -336,12 +385,25 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
     this.result = null;
     this.errorMessage = '';
     this.clearTimer();
+    if (this.audioUrl) {
+      URL.revokeObjectURL(this.audioUrl);
+      this.audioUrl = null;
+    }
   }
 
   private startTimer(): void {
     this.clearTimer();
+
+    // ✅ FIX Bug #9: Lưu timestamp khi bắt đầu record
+    this.recordingStartTime = Date.now();
+    this.pausedTime = 0;
+
     this.recordingTimer = setInterval(() => {
-      this.recordingTime++;
+      // ✅ FIX: Tính thời gian dựa trên timestamp thay vì đếm tăng dần
+      const elapsed = Math.floor(
+        (Date.now() - this.recordingStartTime - this.pausedTime) / 1000
+      );
+      this.recordingTime = elapsed;
 
       // Auto-stop based on question time limit (if set) or default 120 seconds
       const timeLimit = this.questionTime > 0 ? this.questionTime : 120;
@@ -359,6 +421,25 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
       clearInterval(this.recordingTimer);
       this.recordingTimer = null;
     }
+  }
+
+  // ✅ FIX Bug #9: Setup Page Visibility API để handle khi user chuyển tab
+  private setupVisibilityHandler(): void {
+    this.visibilityChangeHandler = () => {
+      if (document.hidden && this.state === 'recording') {
+        // User chuyển tab/minimize → pause timer
+        console.log('[SpeakingAnswerBox] ⚠️ Page hidden, pausing timer');
+        const currentElapsed =
+          Date.now() - this.recordingStartTime - this.pausedTime;
+        this.pausedTime += currentElapsed;
+      } else if (!document.hidden && this.state === 'recording') {
+        // User quay lại tab → resume timer
+        console.log('[SpeakingAnswerBox] ✅ Page visible, resuming timer');
+        this.recordingStartTime = Date.now(); // Reset start time
+      }
+    };
+
+    document.addEventListener('visibilitychange', this.visibilityChangeHandler);
   }
 
   private getSupportedMimeType(): string {
