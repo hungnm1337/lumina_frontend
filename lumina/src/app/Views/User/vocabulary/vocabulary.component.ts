@@ -43,6 +43,7 @@ export class UserVocabularyComponent implements OnInit {
   pageSize = 12;
   selectedVocabularyListDetail: any = null;
 
+
   get showLimitedUserLists() {
     if (!this.showAllLists) {
       return this.userLists.slice(0, 6);
@@ -74,7 +75,8 @@ export class UserVocabularyComponent implements OnInit {
     }
   }
   
-  constructor(private router: Router,
+  constructor(
+    private router: Router,
     private vocabularyService: VocabularyService
   ) { }
 
@@ -109,8 +111,13 @@ export class UserVocabularyComponent implements OnInit {
   }
 
   browseWords(): void {
-    console.log('Duyệt danh sách từ vựng...');
-    // Tại đây bạn sẽ xử lý logic điều hướng đến trang danh sách từ
+    // Navigate to flashcards page để xem tất cả decks
+    this.router.navigate(['/flashcards']);
+  }
+
+  // View all progress - Navigate to Spaced Repetition Dashboard
+  viewAllProgress(): void {
+    this.router.navigate(['/spaced-repetition/dashboard']);
   }
 
   openCategory(categoryId: string): void {

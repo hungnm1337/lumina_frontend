@@ -20,6 +20,7 @@ import { BlogDetailComponent } from './Views/Common/Articles-detail/Articles-det
 import { UserVocabularyComponent } from './Views/User/vocabulary/vocabulary.component';
 import { DeckListComponent } from './pages/deck-list/deck-list.component';
 import { DeckDetailComponent } from './pages/deck-detail/deck-detail.component';
+import { SpacedRepetitionDashboardComponent } from './pages/spaced-repetition-dashboard/spaced-repetition-dashboard.component';
 import { ExamAttemptListComponent } from './Views/User/ExamAttempt/exam-attempt-list/exam-attempt-list.component';
 import { ExamAttemptDetailComponent } from './Views/User/ExamAttempt/exam-attempt-detail/exam-attempt-detail.component';
 
@@ -122,6 +123,9 @@ export const routes: Routes = [
   // <-- DI CHUYỂN 2 ROUTE FLASHCARDS RA ĐÂY, ĐẶT Ở CẤP CAO NHẤT
   { path: 'flashcards', component: DeckListComponent },
   { path: 'flashcards/:id', component: DeckDetailComponent },
+
+  // Spaced Repetition Dashboard
+  { path: 'spaced-repetition/dashboard', component: SpacedRepetitionDashboardComponent },
 
   { path: '', redirectTo: '/homepage', pathMatch: 'full' },
   { path: '**', component: ErrorComponent },
