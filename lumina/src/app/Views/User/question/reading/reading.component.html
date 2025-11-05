@@ -7,14 +7,14 @@
   ></app-exam-attempt-detail>
   } @if (!finished) {
   <!-- Progress Header -->
-  <div class="mb-4 flex items-center justify-between">
+  <!-- <div class="mb-4 flex items-center justify-between">
     <div class="text-sm text-gray-600">
       Câu {{ currentIndex + 1 }} / {{ questions.length }}
     </div>
     <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded font-medium">
       Điểm: {{ totalScore }}
     </span>
-  </div>
+  </div> -->
 
   <!-- Question Content -->
   <div class="mb-6">
@@ -50,13 +50,13 @@
     </button>
 
     <div class="flex gap-2">
-      <button
+      <!-- <button
         (click)="confirmExit()"
         class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600"
         title="Lưu tiến trình và thoát"
       >
         Lưu & Thoát
-      </button>
+      </button> -->
       <button
         (click)="finishExamManual()"
         class="px-4 py-2 rounded bg-orange-600 text-white hover:bg-orange-700"
