@@ -1,6 +1,8 @@
-import { Component, AfterViewInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Chart, registerables } from 'chart.js';
+import { GoogleAnalyticsService } from '../../../Services/Analytics/google-analytics.service';
+import { Ga4DataService } from '../../../Services/Analytics/ga4-data.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-user-activity',
@@ -9,112 +11,157 @@ import { Chart, registerables } from 'chart.js';
   templateUrl: './user-activity.component.html',
   styleUrl: './user-activity.component.scss'
 })
-export class UserActivityComponent implements AfterViewInit {
+export class UserActivityComponent implements OnInit {
 
-  private trafficChart?: Chart;
+  isLoading = true;
+  errorMessage = '';
 
-  constructor() {
-    // Register Chart.js components
-    Chart.register(...registerables);
+  // Key metrics
+  keyMetrics = {
+    totalUsers: 0,
+    newUsers: 0,
+    sessions: 0,
+    pageViews: 0,
+    avgSessionDuration: 0,
+    bounceRate: 0,
+    activeUsersNow: 0
+  };
+
+  // Top pages
+  topPages: any[] = [];
+
+  // Traffic sources
+  trafficSources: any[] = [];
+
+  // Devices
+  devices: any[] = [];
+
+  // Countries
+  countries: any[] = [];
+
+  // Daily traffic
+  dailyTraffic: any[] = [];
+
+  // Browsers
+  browsers: any[] = [];
+
+  constructor(
+    private analyticsService: GoogleAnalyticsService,
+    private ga4DataService: Ga4DataService
+  ) {}
+
+  ngOnInit(): void {
+    this.analyticsService.trackEvent('view_user_activity', {
+      event_category: 'Admin',
+      event_label: 'User Activity Page'
+    });
+
+    this.loadAllData();
   }
 
-  ngAfterViewInit(): void {
-    // Khởi tạo biểu đồ sau khi view đã render
-    this.createTrafficChart();
-  }
+  loadAllData(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
 
-  // Biểu đồ Lưu lượng truy cập
-  createTrafficChart(): void {
-    const ctx = document.getElementById('trafficChart') as HTMLCanvasElement;
-    if (ctx) {
-      this.trafficChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'],
-          datasets: [
-            {
-              label: 'Lượt truy cập',
-              data: [5234, 6789, 7456, 6234, 8123, 7890, 5432],
-              borderColor: 'rgb(99, 102, 241)',
-              backgroundColor: 'rgba(99, 102, 241, 0.1)',
-              tension: 0.4,
-              fill: true,
-              pointBackgroundColor: 'rgb(99, 102, 241)',
-              pointBorderColor: '#fff',
-              pointBorderWidth: 2,
-              pointRadius: 4,
-              pointHoverRadius: 6
-            },
-            {
-              label: 'Người dùng duy nhất',
-              data: [3456, 4123, 4890, 4012, 5234, 5012, 3678],
-              borderColor: 'rgb(6, 182, 212)',
-              backgroundColor: 'rgba(6, 182, 212, 0.1)',
-              tension: 0.4,
-              fill: true,
-              pointBackgroundColor: 'rgb(6, 182, 212)',
-              pointBorderColor: '#fff',
-              pointBorderWidth: 2,
-              pointRadius: 4,
-              pointHoverRadius: 6
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: {
-            mode: 'index',
-            intersect: false,
-          },
-          plugins: {
-            legend: {
-              display: false
-            },
-            tooltip: {
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
-              padding: 12,
-              titleColor: '#fff',
-              bodyColor: '#fff',
-              borderColor: 'rgba(255, 255, 255, 0.1)',
-              borderWidth: 1,
-              displayColors: true,
-              callbacks: {
-                label: function(context) {
-                  const value = context.parsed.y ?? 0;
-                  return context.dataset.label + ': ' + value.toLocaleString() + ' người dùng';
-                }
-              }
-            }
-          },
-          scales: {
-            x: {
-              grid: {
-                display: false
-              },
-              ticks: {
-                font: {
-                  size: 12
-                }
-              }
-            },
-            y: {
-              beginAtZero: true,
-              grid: {
-                color: 'rgba(0, 0, 0, 0.05)'
-              },
-              ticks: {
-                callback: function(value) {
-                  return value.toLocaleString();
-                },
-                font: {
-                  size: 12
-                }
-              }
-            }
-          }
+    // ✅ Dùng forkJoin để gọi tất cả API cùng lúc
+    forkJoin({
+      keyMetrics: this.ga4DataService.getKeyMetrics(),
+      realtime: this.ga4DataService.getRealtimeUsers(),
+      topPages: this.ga4DataService.getTopPages(),
+      trafficSources: this.ga4DataService.getTrafficSources(),
+      devices: this.ga4DataService.getDeviceStats(),
+      countries: this.ga4DataService.getCountryStats(),
+      dailyTraffic: this.ga4DataService.getDailyTraffic(),
+      browsers: this.ga4DataService.getBrowserStats()
+    }).subscribe({
+      next: (results) => {
+        // Key metrics
+        if (results.keyMetrics.success) {
+          this.keyMetrics = { ...this.keyMetrics, ...results.keyMetrics.data };
         }
-      });
+
+        // Realtime users
+        if (results.realtime.success) {
+          this.keyMetrics.activeUsersNow = results.realtime.data.activeUsers;
+        }
+
+        // Top pages
+        if (results.topPages.success) {
+          this.topPages = results.topPages.data;
+        }
+
+        // Traffic sources
+        if (results.trafficSources.success) {
+          this.trafficSources = results.trafficSources.data;
+        }
+
+        // Devices
+        if (results.devices.success) {
+          this.devices = results.devices.data;
+        }
+
+        // Countries
+        if (results.countries.success) {
+          this.countries = results.countries.data;
+        }
+
+        // Daily traffic
+        if (results.dailyTraffic.success) {
+          this.dailyTraffic = results.dailyTraffic.data;
+        }
+
+        // Browsers
+        if (results.browsers.success) {
+          this.browsers = results.browsers.data;
+        }
+
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('❌ Error loading analytics data:', err);
+        this.errorMessage = 'Không thể tải dữ liệu analytics. Vui lòng thử lại sau.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  // ✅ Format duration (seconds → mm:ss)
+  formatDuration(seconds: number): string {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  // ✅ Format date (20241105 → 05/11/2024)
+  formatDate(dateStr: string): string {
+    const year = dateStr.substring(0, 4);
+    const month = dateStr.substring(4, 6);
+    const day = dateStr.substring(6, 8);
+    return `${day}/${month}/${year}`;
+  }
+
+  // ✅ Get device icon
+  getDeviceIcon(device: string): string {
+    switch (device.toLowerCase()) {
+      case 'desktop': return '💻';
+      case 'mobile': return '📱';
+      case 'tablet': return '📲';
+      default: return '🖥️';
     }
+  }
+
+  // ✅ Get max users for chart scaling (THÊM METHOD NÀY)
+  getMaxUsers(): number {
+    if (this.dailyTraffic.length === 0) return 1;
+    return Math.max(...this.dailyTraffic.map(d => d.users));
+  }
+
+  // ✅ Refresh data
+  refreshData(): void {
+    this.analyticsService.trackEvent('refresh_analytics', {
+      event_category: 'Admin',
+      event_label: 'Refresh User Activity Data'
+    });
+    this.loadAllData();
   }
 }

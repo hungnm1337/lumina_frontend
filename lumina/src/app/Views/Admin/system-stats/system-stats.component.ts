@@ -12,14 +12,14 @@ import { StatisticService } from '../../../Services/Statistic/statistic.service'
   styleUrl: './system-stats.component.scss'
 })
 export class SystemStatsComponent implements OnInit, AfterViewInit {
-  
+
   // Data properties
   dashboardStats: any = null;
   revenueChartData: any = null;
   userGrowthData: any = null;
   planDistributionData: any = null;
   dailyAnalytics: any[] = [];
-  
+
   // Chart instances
   private revenueChart?: Chart;
   private userGrowthChart?: Chart;
@@ -41,7 +41,6 @@ export class SystemStatsComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // Charts sẽ được khởi tạo sau khi data load xong
   }
 
   // ✅ Load tất cả dữ liệu
@@ -137,14 +136,31 @@ export class SystemStatsComponent implements OnInit, AfterViewInit {
           plugins: {
             legend: {
               display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const value = context.parsed.y;
+                  return value !== null
+                    ? 'Doanh thu: ' + value.toLocaleString('vi-VN') + ' ₫'
+                    : 'Doanh thu: 0 ₫';
+
+                }
+              }
             }
           },
           scales: {
             y: {
               beginAtZero: true,
               ticks: {
-                callback: function(value) {
-                  return '$' + value.toLocaleString();
+                callback: (value) => {
+                  const numValue = value as number;
+                  if (numValue >= 1000000) {
+                    return (numValue / 1000000).toFixed(1) + ' tr';
+                  } else if (numValue >= 1000) {
+                    return (numValue / 1000).toFixed(0) + 'k';
+                  }
+                  return numValue.toLocaleString('vi-VN');
                 }
               }
             }
@@ -241,9 +257,24 @@ export class SystemStatsComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // ✅ Format currency
+  // ✅ Format currency VNĐ
   formatCurrency(amount: number): string {
-    return '$' + amount.toLocaleString();
+    if (amount >= 1000000000) {
+      // >= 1 tỷ
+      return (amount / 1000000000).toFixed(1) + ' tỷ';
+    } else if (amount >= 1000000) {
+      // >= 1 triệu
+      return (amount / 1000000).toFixed(1) + ' tr';
+    } else if (amount >= 1000) {
+      // >= 1 nghìn
+      return (amount / 1000).toFixed(0) + 'k';
+    }
+    return amount.toLocaleString('vi-VN') + ' đ';
+  }
+
+  // ✅ Format currency đầy đủ (cho tooltip)
+  formatCurrencyFull(amount: number): string {
+    return amount.toLocaleString('vi-VN') + ' VNĐ';
   }
 
   // ✅ Format date

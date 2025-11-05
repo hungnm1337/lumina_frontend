@@ -1,403 +1,229 @@
-<div class="min-h-screen bg-gray-50 p-6">
-  <div class="max-w-7xl mx-auto space-y-6">
+<div class="user-activity-container">
+  <!-- Header -->
+  <div class="page-header">
+    <h1>📊 User Activity Analytics</h1>
+    <button class="btn-refresh" (click)="refreshData()" [disabled]="isLoading">
+      <span *ngIf="!isLoading">🔄 Refresh</span>
+      <span *ngIf="isLoading">⏳ Loading...</span>
+    </button>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-message" *ngIf="errorMessage">
+    ⚠️ {{ errorMessage }}
+  </div>
+
+  <!-- Loading Spinner -->
+  <div class="loading-spinner" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu analytics...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div class="analytics-content" *ngIf="!isLoading && !errorMessage">
     
-    <!-- Header -->
-    <div class="bg-white rounded-xl shadow-sm p-6">
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h3 class="text-2xl font-bold text-gray-800">Hành vi người dùng</h3>
-          <p class="text-gray-600 mt-1">Phân tích chi tiết về cách người dùng tương tác với website</p>
-        </div>
-        <div class="flex items-center space-x-3">
-          <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-            <option>7 ngày qua</option>
-            <option>30 ngày qua</option>
-            <option>90 ngày qua</option>
-            <option>12 tháng qua</option>
-          </select>
-          <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-            <i class="fas fa-download mr-2"></i>Xuất báo cáo
-          </button>
-        </div>
+    <!-- Key Metrics Cards -->
+    <div class="metrics-grid">
+      <div class="metric-card realtime">
+        <div class="metric-icon">🔴</div>
+        <div class="metric-value">{{ keyMetrics.activeUsersNow }}</div>
+        <div class="metric-label">Online Now</div>
       </div>
 
-      <!-- Key Metrics -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg p-4 text-white">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm opacity-90">Lượt truy cập</p>
-              <p class="text-2xl font-bold">45,678</p>
-              <p class="text-xs opacity-80">+15.2% so với tuần trước</p>
-            </div>
-            <i class="fas fa-eye text-2xl opacity-80"></i>
-          </div>
-        </div>
+      <div class="metric-card">
+        <div class="metric-icon">👥</div>
+        <div class="metric-value">{{ keyMetrics.totalUsers | number }}</div>
+        <div class="metric-label">Total Users (7 days)</div>
+        <div class="metric-sub">{{ keyMetrics.newUsers | number }} new</div>
+      </div>
 
-        <div class="bg-gradient-to-r from-cyan-500 to-cyan-600 rounded-lg p-4 text-white">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm opacity-90">Người dùng duy nhất</p>
-              <p class="text-2xl font-bold">28,947</p>
-              <p class="text-xs opacity-80">+8.7% so với tuần trước</p>
-            </div>
-            <i class="fas fa-user text-2xl opacity-80"></i>
-          </div>
-        </div>
+      <div class="metric-card">
+        <div class="metric-icon">🎯</div>
+        <div class="metric-value">{{ keyMetrics.sessions | number }}</div>
+        <div class="metric-label">Sessions</div>
+      </div>
 
-        <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg p-4 text-white">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm opacity-90">Lượt xem trang</p>
-              <p class="text-2xl font-bold">127,456</p>
-              <p class="text-xs opacity-80">+22.1% so với tuần trước</p>
-            </div>
-            <i class="fas fa-file-alt text-2xl opacity-80"></i>
-          </div>
-        </div>
+      <div class="metric-card">
+        <div class="metric-icon">📄</div>
+        <div class="metric-value">{{ keyMetrics.pageViews | number }}</div>
+        <div class="metric-label">Page Views</div>
+      </div>
 
-        <div class="bg-gradient-to-r from-amber-500 to-amber-600 rounded-lg p-4 text-white">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm opacity-90">Thời gian TB/phiên</p>
-              <p class="text-2xl font-bold">4:27</p>
-              <p class="text-xs opacity-80">+0:34 so với tuần trước</p>
-            </div>
-            <i class="fas fa-clock text-2xl opacity-80"></i>
-          </div>
-        </div>
+      <div class="metric-card">
+        <div class="metric-icon">⏱️</div>
+        <div class="metric-value">{{ formatDuration(keyMetrics.avgSessionDuration) }}</div>
+        <div class="metric-label">Avg. Session Duration</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon">📊</div>
+        <div class="metric-value">{{ keyMetrics.bounceRate | number:'1.1-1' }}%</div>
+        <div class="metric-label">Bounce Rate</div>
       </div>
     </div>
 
-    <!-- Traffic Overview Chart -->
-    <div class="bg-white rounded-xl shadow-sm p-6">
-      <div class="flex items-center justify-between mb-6">
-        <h4 class="text-lg font-semibold text-gray-800">Lưu lượng truy cập (7 ngày qua)</h4>
-        <div class="flex items-center space-x-2">
-          <span class="text-sm text-gray-500">Tổng lượt truy cập:</span>
-          <span class="text-lg font-bold text-indigo-600">45,678</span>
-        </div>
-      </div>
-      <!-- Chart Container -->
-      <div class="relative h-80">
-        <canvas id="trafficChart" class="w-full h-full"></canvas>
-      </div>
-      <!-- Chart Legend -->
-      <div class="flex items-center justify-center space-x-6 mt-4 pt-4 border-t border-gray-200">
-        <div class="flex items-center space-x-2">
-          <div class="w-3 h-3 bg-indigo-500 rounded-full"></div>
-          <span class="text-sm text-gray-600">Lượt truy cập</span>
-        </div>
-        <div class="flex items-center space-x-2">
-          <div class="w-3 h-3 bg-cyan-500 rounded-full"></div>
-          <span class="text-sm text-gray-600">Người dùng duy nhất</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Page Analytics Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Charts Grid -->
+    <div class="charts-grid">
       
-      <!-- Popular Pages -->
-      <div class="bg-white rounded-xl shadow-sm p-6">
-        <h4 class="text-lg font-semibold text-gray-800 mb-6">Trang phổ biến nhất</h4>
-        <div class="space-y-4">
-          
-          <!-- Home Page -->
-          <div class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                <i class="fas fa-home text-white"></i>
-              </div>
-              <div>
-                <div class="font-semibold text-blue-800">Trang chủ</div>
-                <div class="text-sm text-blue-600">/</div>
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="text-lg font-bold text-blue-800">18,247</div>
-              <div class="text-sm text-blue-600">40.0% lượt truy cập</div>
-            </div>
-          </div>
-
-          <!-- Test Page -->
-          <div class="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg border border-green-200">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-                <i class="fas fa-clipboard-check text-white"></i>
-              </div>
-              <div>
-                <div class="font-semibold text-green-800">Trang Test</div>
-                <div class="text-sm text-green-600">/test</div>
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="text-lg font-bold text-green-800">12,456</div>
-              <div class="text-sm text-green-600">27.3% lượt truy cập</div>
-            </div>
-          </div>
-
-          <!-- Pricing Page -->
-          <div class="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg border border-purple-200">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
-                <i class="fas fa-tags text-white"></i>
-              </div>
-              <div>
-                <div class="font-semibold text-purple-800">Trang Pricing</div>
-                <div class="text-sm text-purple-600">/pricing</div>
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="text-lg font-bold text-purple-800">8,934</div>
-              <div class="text-sm text-purple-600">19.6% lượt truy cập</div>
-            </div>
-          </div>
-
-          <!-- Dashboard Page -->
-          <div class="flex items-center justify-between p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg border border-orange-200">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-                <i class="fas fa-tachometer-alt text-white"></i>
-              </div>
-              <div>
-                <div class="font-semibold text-orange-800">Dashboard</div>
-                <div class="text-sm text-orange-600">/dashboard</div>
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="text-lg font-bold text-orange-800">4,567</div>
-              <div class="text-sm text-orange-600">10.0% lượt truy cập</div>
-            </div>
-          </div>
-
-          <!-- About Page -->
-          <div class="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-gray-500 rounded-lg flex items-center justify-center">
-                <i class="fas fa-info-circle text-white"></i>
-              </div>
-              <div>
-                <div class="font-semibold text-gray-800">Trang About</div>
-                <div class="text-sm text-gray-600">/about</div>
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="text-lg font-bold text-gray-800">1,474</div>
-              <div class="text-sm text-gray-600">3.2% lượt truy cập</div>
-            </div>
-          </div>
-
+      <!-- Top Pages -->
+      <div class="chart-card">
+        <h2>🏆 Top Pages</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Page</th>
+                <th>Views</th>
+                <th>Users</th>
+                <th>Avg. Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let page of topPages">
+                <td class="page-title">
+                  <div class="page-title-text">{{ page.title }}</div>
+                  <div class="page-path">{{ page.path }}</div>
+                </td>
+                <td>{{ page.views | number }}</td>
+                <td>{{ page.users | number }}</td>
+                <td>{{ formatDuration(page.avgDuration) }}</td>
+              </tr>
+              <tr *ngIf="topPages.length === 0">
+                <td colspan="4" class="no-data">No data available</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <!-- Time on Page -->
-      <div class="bg-white rounded-xl shadow-sm p-6">
-        <h4 class="text-lg font-semibold text-gray-800 mb-6">Thời gian trung bình trên trang</h4>
-        <div class="space-y-4">
-          
-          <!-- Test Page -->
-          <div class="flex items-center justify-between p-4 bg-green-50 rounded-lg">
-            <div class="flex items-center space-x-3">
-              <i class="fas fa-clipboard-check text-green-500 text-lg"></i>
-              <span class="font-medium text-gray-800">Trang Test</span>
-            </div>
-            <div class="text-right">
-              <div class="text-lg font-bold text-green-600">8:47</div>
-              <div class="text-sm text-gray-500">phút:giây</div>
-            </div>
-          </div>
-
-          <!-- Dashboard -->
-          <div class="flex items-center justify-between p-4 bg-orange-50 rounded-lg">
-            <div class="flex items-center space-x-3">
-              <i class="fas fa-tachometer-alt text-orange-500 text-lg"></i>
-              <span class="font-medium text-gray-800">Dashboard</span>
-            </div>
-            <div class="text-right">
-              <div class="text-lg font-bold text-orange-600">6:23</div>
-              <div class="text-sm text-gray-500">phút:giây</div>
-            </div>
-          </div>
-
-          <!-- Pricing Page -->
-          <div class="flex items-center justify-between p-4 bg-purple-50 rounded-lg">
-            <div class="flex items-center space-x-3">
-              <i class="fas fa-tags text-purple-500 text-lg"></i>
-              <span class="font-medium text-gray-800">Trang Pricing</span>
-            </div>
-            <div class="text-right">
-              <div class="text-lg font-bold text-purple-600">3:15</div>
-              <div class="text-sm text-gray-500">phút:giây</div>
-            </div>
-          </div>
-
-          <!-- Home Page -->
-          <div class="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
-            <div class="flex items-center space-x-3">
-              <i class="fas fa-home text-blue-500 text-lg"></i>
-              <span class="font-medium text-gray-800">Trang chủ</span>
-            </div>
-            <div class="text-right">
-              <div class="text-lg font-bold text-blue-600">2:34</div>
-              <div class="text-sm text-gray-500">phút:giây</div>
-            </div>
-          </div>
-
-          <!-- About Page -->
-          <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div class="flex items-center space-x-3">
-              <i class="fas fa-info-circle text-gray-500 text-lg"></i>
-              <span class="font-medium text-gray-800">Trang About</span>
-            </div>
-            <div class="text-right">
-              <div class="text-lg font-bold text-gray-600">1:47</div>
-              <div class="text-sm text-gray-500">phút:giây</div>
-            </div>
-          </div>
-
+      <!-- Traffic Sources -->
+      <div class="chart-card">
+        <h2>🌐 Traffic Sources</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Source / Medium</th>
+                <th>Sessions</th>
+                <th>Users</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let source of trafficSources">
+                <td>
+                  <strong>{{ source.source }}</strong>
+                  <span class="medium"> / {{ source.medium }}</span>
+                </td>
+                <td>{{ source.sessions | number }}</td>
+                <td>{{ source.users | number }}</td>
+              </tr>
+              <tr *ngIf="trafficSources.length === 0">
+                <td colspan="3" class="no-data">No data available</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-    </div>
-
-    <!-- Additional Analytics -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      
-      <!-- Bounce Rate -->
-      <div class="bg-white rounded-xl shadow-sm p-6">
-        <h4 class="text-lg font-semibold text-gray-800 mb-6">Tỷ lệ thoát (Bounce Rate)</h4>
-        <div class="text-center">
-          <div class="relative inline-flex items-center justify-center w-32 h-32">
-            <svg class="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
-              <path class="text-gray-200" stroke="currentColor" stroke-width="3" fill="none" 
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-              <path class="text-red-500" stroke="currentColor" stroke-width="3" fill="none" 
-                    stroke-dasharray="32.4, 100" 
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-            </svg>
-            <div class="absolute inset-0 flex items-center justify-center">
-              <span class="text-2xl font-bold text-red-600">32.4%</span>
+      <!-- Devices -->
+      <div class="chart-card">
+        <h2>📱 Devices</h2>
+        <div class="device-list">
+          <div class="device-item" *ngFor="let device of devices">
+            <div class="device-info">
+              <span class="device-icon">{{ getDeviceIcon(device.device) }}</span>
+              <span class="device-name">{{ device.device }}</span>
+            </div>
+            <div class="device-stats">
+              <div class="stat">
+                <span class="stat-label">Users:</span>
+                <span class="stat-value">{{ device.users | number }}</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Sessions:</span>
+                <span class="stat-value">{{ device.sessions | number }}</span>
+              </div>
             </div>
           </div>
-          <p class="text-sm text-gray-600 mt-2">-2.1% so với tuần trước</p>
+          <div *ngIf="devices.length === 0" class="no-data">No data available</div>
         </div>
       </div>
 
-      <!-- Session Duration -->
-      <div class="bg-white rounded-xl shadow-sm p-6">
-        <h4 class="text-lg font-semibold text-gray-800 mb-6">Thời lượng phiên TB</h4>
-        <div class="text-center">
-          <div class="text-4xl font-bold text-blue-600 mb-2">4:27</div>
-          <div class="text-lg text-gray-600 mb-2">phút:giây</div>
-          <div class="flex items-center justify-center space-x-1">
-            <i class="fas fa-arrow-up text-green-500 text-sm"></i>
-            <span class="text-sm text-green-600">+0:34 so với tuần trước</span>
-          </div>
+      <!-- Countries -->
+      <div class="chart-card">
+        <h2>🌍 Top Countries</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Country / City</th>
+                <th>Users</th>
+                <th>Sessions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let country of countries">
+                <td>
+                  <strong>{{ country.country }}</strong>
+                  <span class="city"> - {{ country.city }}</span>
+                </td>
+                <td>{{ country.users | number }}</td>
+                <td>{{ country.sessions | number }}</td>
+              </tr>
+              <tr *ngIf="countries.length === 0">
+                <td colspan="3" class="no-data">No data available</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <!-- Pages per Session -->
-      <div class="bg-white rounded-xl shadow-sm p-6">
-        <h4 class="text-lg font-semibold text-gray-800 mb-6">Trang/Phiên TB</h4>
-        <div class="text-center">
-          <div class="text-4xl font-bold text-purple-600 mb-2">2.79</div>
-          <div class="text-lg text-gray-600 mb-2">trang</div>
-          <div class="flex items-center justify-center space-x-1">
-            <i class="fas fa-arrow-up text-green-500 text-sm"></i>
-            <span class="text-sm text-green-600">+0.15 so với tuần trước</span>
+      <!-- Daily Traffic -->
+      <div class="chart-card full-width">
+        <h2>📈 Daily Traffic (Last 7 Days)</h2>
+        <div class="daily-chart">
+          <div class="chart-bar" *ngFor="let day of dailyTraffic">
+            <div class="bar-wrapper">
+              <div class="bar" [style.height.%]="(day.users / getMaxUsers()) * 100">
+                <span class="bar-value">{{ day.users }}</span>
+              </div>
+            </div>
+            <div class="bar-label">{{ formatDate(day.date) }}</div>
+            <div class="bar-stats">
+              <div>Sessions: {{ day.sessions }}</div>
+              <div>Views: {{ day.pageViews }}</div>
+            </div>
           </div>
+          <div *ngIf="dailyTraffic.length === 0" class="no-data">No data available</div>
+        </div>
+      </div>
+
+      <!-- Browsers -->
+      <div class="chart-card">
+        <h2>🌐 Browsers</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Browser</th>
+                <th>Users</th>
+                <th>Sessions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let browser of browsers">
+                <td>{{ browser.browser }}</td>
+                <td>{{ browser.users | number }}</td>
+                <td>{{ browser.sessions | number }}</td>
+              </tr>
+              <tr *ngIf="browsers.length === 0">
+                <td colspan="3" class="no-data">No data available</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
     </div>
-
-    <!-- Detailed User Behavior Table -->
-    <div class="bg-white rounded-xl shadow-sm">
-      <div class="p-6 border-b border-gray-200">
-        <h4 class="text-lg font-semibold text-gray-800">Chi tiết hành vi theo trang</h4>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trang</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lượt xem</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Người dùng duy nhất</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thời gian TB</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tỷ lệ thoát</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Xu hướng</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <i class="fas fa-home text-blue-500 mr-3"></i>
-                  <div>
-                    <div class="text-sm font-medium text-gray-900">Trang chủ</div>
-                    <div class="text-sm text-gray-500">/</div>
-                  </div>
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">18,247</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">15,678</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2:34</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">45.2%</td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  <i class="fas fa-arrow-up mr-1"></i>+8%
-                </span>
-              </td>
-            </tr>
-
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <i class="fas fa-clipboard-check text-green-500 mr-3"></i>
-                  <div>
-                    <div class="text-sm font-medium text-gray-900">Trang Test</div>
-                    <div class="text-sm text-gray-500">/test</div>
-                  </div>
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">12,456</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">9,234</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">8:47</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">18.7%</td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  <i class="fas fa-arrow-up mr-1"></i>+15%
-                </span>
-              </td>
-            </tr>
-
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <i class="fas fa-tags text-purple-500 mr-3"></i>
-                  <div>
-                    <div class="text-sm font-medium text-gray-900">Trang Pricing</div>
-                    <div class="text-sm text-gray-500">/pricing</div>
-                  </div>
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">8,934</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">7,456</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">3:15</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">28.4%</td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                  <i class="fas fa-arrow-down mr-1"></i>-3%
-                </span>
-              </td>
-            </tr>
-
-          </tbody>
-        </table>
-      </div>
-    </div>
-
   </div>
 </div>
