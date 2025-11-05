@@ -28,6 +28,12 @@ export class SpeakingQuestionStateService {
     Map<number, QuestionRecordingState>
   >(new Map());
 
+  // ✅ FIX Bug #11: Track pending requests để prevent duplicates
+  private pendingSubmissions = new Map<
+    number,
+    Promise<SpeakingScoringResult>
+  >();
+
   constructor(private speakingApi: SpeakingService) {}
 
   // Get observable for state changes
@@ -160,6 +166,15 @@ export class SpeakingQuestionStateService {
     audioBlob: Blob,
     attemptId?: number // ✅ THÊM: attemptId parameter
   ): Promise<SpeakingScoringResult> {
+    // ✅ FIX Bug #11: Check if already submitting
+    const existingSubmission = this.pendingSubmissions.get(questionId);
+    if (existingSubmission) {
+      console.warn(
+        `[SpeakingStateService] ⚠️ Question ${questionId} already submitting, returning existing promise`
+      );
+      return existingSubmission;
+    }
+
     // Mark as scoring immediately
     this.markAsScoring(questionId);
 
@@ -167,18 +182,67 @@ export class SpeakingQuestionStateService {
       `[SpeakingStateService] Submitting answer for question ${questionId}, attemptId: ${attemptId}`
     );
 
-    // Fire the HTTP request from a long-lived service so it continues across navigation
-    const result = await this.speakingApi
-      .submitSpeakingAnswer(audioBlob, questionId, attemptId) // ✅ Truyền attemptId
-      .toPromise();
+    // ✅ FIX Bug #11: Create promise với timeout và error handling
+    const submissionPromise = this.executeSubmission(
+      questionId,
+      audioBlob,
+      attemptId
+    );
 
-    if (result) {
-      this.markAsScored(questionId, result);
+    // Track pending submission
+    this.pendingSubmissions.set(questionId, submissionPromise);
+
+    try {
+      const result = await submissionPromise;
       return result;
+    } finally {
+      // ✅ FIX: Always clean up pending submission
+      this.pendingSubmissions.delete(questionId);
     }
+  }
 
-    // Shouldn't happen, but keep types happy
-    throw new Error('No result received from speaking scoring API');
+  // ✅ FIX Bug #11: Separate method với timeout và error handling
+  private async executeSubmission(
+    questionId: number,
+    audioBlob: Blob,
+    attemptId?: number
+  ): Promise<SpeakingScoringResult> {
+    try {
+      // Create submission promise with timeout (60 seconds)
+      const submissionPromise = this.speakingApi
+        .submitSpeakingAnswer(audioBlob, questionId, attemptId)
+        .toPromise();
+
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error('Submission timeout after 60s')),
+          60000
+        )
+      );
+
+      // Race between submission and timeout
+      const result = await Promise.race([submissionPromise, timeoutPromise]);
+
+      if (result) {
+        this.markAsScored(questionId, result);
+        return result;
+      }
+
+      throw new Error('No result received from speaking scoring API');
+    } catch (error: any) {
+      console.error(
+        `[SpeakingStateService] ❌ Submission failed for question ${questionId}:`,
+        error
+      );
+
+      // ✅ FIX: Rollback state to 'has_recording' để user có thể retry
+      this.updateQuestionState(questionId, {
+        state: 'has_recording',
+        errorMessage: error.message || 'Submission failed',
+      });
+
+      throw error;
+    }
   }
 
   private emitStates(): void {
