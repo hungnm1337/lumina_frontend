@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Deck, FlashcardService, Term } from '../../Services/flashcard/flashcard.service';
 import { VocabularyService } from '../../Services/Vocabulary/vocabulary.service';
+import { SpacedRepetitionService, SpacedRepetition, ReviewVocabularyRequest } from '../../Services/spaced-repetition/spaced-repetition.service';
 import { HeaderComponent } from '../../Views/Common/header/header.component';
 
 @Component({
@@ -26,10 +27,16 @@ export class DeckDetailComponent implements OnInit {
   learningCount = 0;
   difficultCount = 0;
 
+  // Spaced Repetition
+  spacedRepetition: SpacedRepetition | null = null;
+  isReviewing = false;
+  showReviewButtons = false;
+
   constructor(
     private route: ActivatedRoute,
     private flashcardService: FlashcardService,
-    private vocabularyService: VocabularyService
+    private vocabularyService: VocabularyService,
+    private spacedRepetitionService: SpacedRepetitionService
   ) { }
 
   ngOnInit(): void {
@@ -57,6 +64,9 @@ export class DeckDetailComponent implements OnInit {
           
           // Load thông tin chi tiết của list để có title và author
           this.loadDeckInfo(deckId);
+          
+          // Load hoặc tạo SpacedRepetition
+          this.loadOrCreateSpacedRepetition(deckId);
         } else {
           this.error = 'Không tìm thấy bộ từ vựng này hoặc bộ từ vựng này chưa được xuất bản';
         }
@@ -176,7 +186,109 @@ export class DeckDetailComponent implements OnInit {
       console.warn('Browser không hỗ trợ Text-to-Speech');
     }
   }
-   jumpToTerm(index: number): void {
+  private loadOrCreateSpacedRepetition(deckId: string): void {
+    const listId = parseInt(deckId);
+    if (isNaN(listId)) return;
+
+    // Kiểm tra xem đã có SpacedRepetition chưa
+    this.spacedRepetitionService.getByList(listId).subscribe({
+      next: (repetition) => {
+        this.spacedRepetition = repetition;
+        console.log('SpacedRepetition loaded:', repetition);
+      },
+      error: (error) => {
+        // Nếu không tìm thấy (404), tạo mới
+        if (error.status === 404) {
+          this.spacedRepetitionService.createRepetition(listId).subscribe({
+            next: (newRepetition) => {
+              this.spacedRepetition = newRepetition;
+              console.log('SpacedRepetition created:', newRepetition);
+            },
+            error: (createError) => {
+              console.error('Error creating SpacedRepetition:', createError);
+            }
+          });
+        } else {
+          console.error('Error loading SpacedRepetition:', error);
+        }
+      }
+    });
+  }
+
+  // Review vocabulary với quality 0-5
+  reviewVocabulary(quality: number): void {
+    if (!this.spacedRepetition || this.isReviewing) return;
+
+    this.isReviewing = true;
+
+    const request: ReviewVocabularyRequest = {
+      userSpacedRepetitionId: this.spacedRepetition.userSpacedRepetitionId,
+      quality: quality
+    };
+
+    this.spacedRepetitionService.reviewVocabulary(request).subscribe({
+      next: (response) => {
+        if (response.success && response.updatedRepetition) {
+          this.spacedRepetition = response.updatedRepetition;
+          this.showReviewButtons = false;
+          console.log('Review successful:', response);
+          
+          // Hiển thị thông báo thành công
+          alert(`Đã đánh giá thành công! Lần review tiếp theo: ${this.formatNextReviewDate(response.nextReviewAt)}`);
+        }
+        this.isReviewing = false;
+      },
+      error: (error) => {
+        console.error('Error reviewing vocabulary:', error);
+        alert('Có lỗi xảy ra khi đánh giá. Vui lòng thử lại.');
+        this.isReviewing = false;
+      }
+    });
+  }
+
+  // Hiển thị nút đánh giá
+  showReviewOptions(): void {
+    this.showReviewButtons = true;
+  }
+
+  // Ẩn nút đánh giá
+  hideReviewOptions(): void {
+    this.showReviewButtons = false;
+  }
+
+  // Format ngày review tiếp theo
+  formatNextReviewDate(dateString: string | null | undefined): string {
+    if (!dateString) return 'Chưa xác định';
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = date.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 0) {
+      return 'Hôm nay';
+    } else if (diffDays === 1) {
+      return 'Ngày mai';
+    } else {
+      return `${diffDays} ngày nữa`;
+    }
+  }
+
+  // Lấy màu sắc cho quality button
+  getQualityButtonClass(quality: number): string {
+    if (quality <= 1) return 'quality-poor';
+    if (quality <= 2) return 'quality-fair';
+    if (quality <= 3) return 'quality-good';
+    return 'quality-excellent';
+  }
+
+  // Lấy label cho quality button
+  getQualityLabel(quality: number): string {
+    const labels = ['Không nhớ', 'Nhớ kém', 'Nhớ vừa', 'Nhớ tốt', 'Nhớ rất tốt', 'Nhớ xuất sắc'];
+    return labels[quality] || 'Đánh giá';
+  }
+
+  jumpToTerm(index: number): void {
     this.currentTermIndex = index;
     this.isFlipped = false;
     // Scroll lên đầu flashcard

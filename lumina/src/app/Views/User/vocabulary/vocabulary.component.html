@@ -67,17 +67,43 @@
             <button class="w-full btn-primary bg-gradient-to-r from-green-500 to-green-700" (click)="startQuiz()"><i class="fas fa-play mr-2"></i>Làm quiz</button>
           </div>
         </div>
-        <!-- Word Lists Card -->
+        <!-- Word Lists Card với Spaced Repetition Dashboard -->
         <div class="vocab-card">
-          <div class="bg-gradient-to-br from-purple-500 to-purple-700 p-6 text-white"><div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4"><i class="fas fa-list-ul text-2xl"></i></div><h3 class="text-2xl font-bold mb-2">Danh sách từ</h3><p class="text-purple-100">Duyệt từ vựng theo chủ đề</p></div>
-          <div class="p-6">
-            <div class="space-y-3 mb-6">
-              <div class="flex items-center space-x-3"><i class="fas fa-folder text-purple-600"></i><span>Phân loại theo chủ đề</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-search text-purple-600"></i><span>Tìm kiếm nhanh</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-filter text-purple-600"></i><span>Lọc theo độ khó</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-bookmark text-purple-600"></i><span>Đánh dấu từ khó</span></div>
+          <div class="bg-gradient-to-br from-purple-500 to-purple-700 p-6 text-white">
+            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
+              <i class="fas fa-brain text-2xl"></i>
             </div>
-            <button class="w-full btn-primary bg-gradient-to-r from-purple-500 to-purple-700" (click)="browseWords()"><i class="fas fa-book mr-2"></i>Duyệt từ vựng</button>
+            <h3 class="text-2xl font-bold mb-2">Học tập thông minh</h3>
+            <p class="text-purple-100">Theo dõi và ôn lại từ vựng với Spaced Repetition</p>
+          </div>
+          
+          <div class="p-6">
+            <!-- Features List -->
+            <div class="space-y-3 mb-6">
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-bell text-purple-600"></i>
+                <span class="text-sm">Nhắc nhở review tự động</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-chart-line text-purple-600"></i>
+                <span class="text-sm">Theo dõi tiến độ học tập</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-clock text-purple-600"></i>
+                <span class="text-sm">Lịch review thông minh</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-star text-purple-600"></i>
+                <span class="text-sm">Đánh giá mức độ nhớ</span>
+              </div>
+            </div>
+
+            <!-- Action Button -->
+            <button 
+              class="w-full btn-primary bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800" 
+              (click)="viewAllProgress()">
+              <i class="fas fa-chart-bar mr-2"></i>Xem tất cả tiến độ
+            </button>
           </div>
         </div>
       </div>
