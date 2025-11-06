@@ -21,7 +21,7 @@ export class DashboardComponent implements OnInit {
   }
 
   loadStats(): void {
-    this.statisticService.getDashboardStats().subscribe({
+    this.statisticService.getDashboardStatsBasic().subscribe({
       next: (data) => {
         this.stats = data;
       },
