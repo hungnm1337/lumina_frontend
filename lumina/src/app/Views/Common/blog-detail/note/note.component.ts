@@ -2,7 +2,7 @@ import { Component, Input, ViewEncapsulation, OnInit, OnDestroy } from '@angular
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserNoteService } from '../../../../Services/UserNote/user-note.service';
-import { UserNoteRequestDTO } from '../../../../Interfaces/UserNote/UserNote.interface';
+import { UserNoteRequestDTO, UserNoteResponseDTO } from '../../../../Interfaces/UserNote/UserNote.interface';
 import { AuthService } from '../../../../Services/Auth/auth.service';
 import { ToastService } from '../../../../Services/Toast/toast.service';
 @Component({
@@ -25,7 +25,7 @@ export class NoteComponent implements OnInit, OnDestroy {
   private autoSaveInterval: any;
   private lastSavedContent: string = '';
   private currentNoteId: number = 0; // Store the loaded note ID
-  private note: UserNoteRequestDTO | null = null;
+
   constructor(
     private toastService: ToastService,
     private userNoteService: UserNoteService,
@@ -64,11 +64,30 @@ export class NoteComponent implements OnInit, OnDestroy {
       userId,
       this.articleId
     ).subscribe({
-      next: (note: UserNoteRequestDTO) => {
-        this.noteContent = note.noteContent;
+      next: (note: UserNoteResponseDTO) => {
+        console.log('Loaded note:', note);
+        if (note && note.noteId) {
+          this.currentNoteId = note.noteId;
+          this.noteContent = note.noteContent || '';
+          this.lastSavedContent = this.noteContent;
+          this.sectionId = note.sectionId || 0;
+          console.log('Note loaded successfully:', {
+            noteId: this.currentNoteId,
+            contentLength: this.noteContent.length
+          });
+        } else {
+          console.log('No existing note found for this article');
+          this.currentNoteId = 0;
+          this.noteContent = '';
+          this.lastSavedContent = '';
+        }
       },
       error: (err) => {
         console.error('Error loading note:', err);
+        // If error is 404 or no note found, reset to new note state
+        this.currentNoteId = 0;
+        this.noteContent = '';
+        this.lastSavedContent = '';
       },
       complete: () => {
         this.isLoading = false;
