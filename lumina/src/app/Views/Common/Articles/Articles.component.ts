@@ -67,14 +67,36 @@ export class BlogArticlesComponent implements OnInit {
     { id: 'reading', name: 'Đọc', icon: 'fas fa-book' }
   ];
 
+  // Pagination for latest articles
+  currentPage: number = 1;
+  itemsPerPage: number = 6;
+
   // Computed properties for display
   get featuredArticles(): ArticleResponse[] {
     return this.publishedArticles.slice(0, 2);
   }
 
   get latestArticles(): ArticleResponse[] {
-    return this.publishedArticles.slice(0, 3);
+    if (!this.showAllLatestArticles) {
+      return this.publishedArticles.slice(0, 3);
+    }
+    
+    // Show paginated articles
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    return this.publishedArticles.slice(startIndex, endIndex);
   }
+
+  get totalPages(): number {
+    return Math.ceil(this.publishedArticles.length / this.itemsPerPage);
+  }
+
+  get hasMoreArticles(): boolean {
+    return this.publishedArticles.length > 3;
+  }
+
+  // Flag to show all articles in latest section
+  showAllLatestArticles: boolean = false;
 
   get featuredAuthors(): BlogAuthor[] {
     // Extract unique authors from published articles
@@ -111,6 +133,7 @@ export class BlogArticlesComponent implements OnInit {
   loadPublishedArticles(): void {
     this.isLoading = true;
     this.error = '';
+    this.currentPage = 1; // Reset to first page
     
     this.articleService.queryArticles({
       isPublished: true,
@@ -152,6 +175,8 @@ export class BlogArticlesComponent implements OnInit {
 
   filterArticles(): void {
     this.isLoading = true;
+    this.currentPage = 1; // Reset to first page when filtering
+    this.showAllLatestArticles = false; // Reset view state when filtering
     
     const params: any = {
       isPublished: true,
@@ -253,6 +278,55 @@ export class BlogArticlesComponent implements OnInit {
     const wordCount = content.split(' ').length;
     const minutes = Math.ceil(wordCount / wordsPerMinute);
     return `${minutes} phút đọc`;
+  }
+
+  onViewMoreLatestArticles(): void {
+    if (!this.showAllLatestArticles) {
+      this.showAllLatestArticles = true;
+      this.currentPage = 1; // Reset to first page when expanding
+    } else {
+      this.showAllLatestArticles = false;
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      // Scroll to top of latest articles section
+      const element = document.querySelector('.latest-section');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.goToPage(this.currentPage - 1);
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.goToPage(this.currentPage + 1);
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, this.currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(this.totalPages, startPage + maxPagesToShow - 1);
+    
+    if (endPage - startPage < maxPagesToShow - 1) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    
+    return pages;
   }
 }
 

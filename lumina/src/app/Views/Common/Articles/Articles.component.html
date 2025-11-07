@@ -146,7 +146,13 @@
   <div class="section-header">
     <h2 class="section-title">Bài viết mới nhất</h2>
     <p class="section-subtitle">Cập nhật kiến thức TOEIC mới nhất</p>
-    <button class="view-more-btn">+ Xem thêm</button>
+    <button 
+      class="view-more-btn" 
+      (click)="onViewMoreLatestArticles()"
+      *ngIf="hasMoreArticles"
+    >
+      {{ showAllLatestArticles ? 'Thu gọn' : '+ Xem thêm' }}
+    </button>
   </div>
   
   <div class="articles-grid latest-grid" *ngIf="!isLoading">
@@ -197,6 +203,64 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container" *ngIf="showAllLatestArticles && totalPages > 1 && !isLoading">
+    <div class="pagination">
+      <button 
+        class="pagination-btn prev-btn" 
+        (click)="previousPage()"
+        [disabled]="currentPage === 1"
+        [class.disabled]="currentPage === 1"
+      >
+        <i class="fas fa-chevron-left"></i>
+        <span>Trước</span>
+      </button>
+      
+      <div class="pagination-numbers">
+        <button 
+          *ngIf="currentPage > 3"
+          class="pagination-number"
+          (click)="goToPage(1)"
+        >
+          1
+        </button>
+        <span *ngIf="currentPage > 4" class="pagination-ellipsis">...</span>
+        
+        <button 
+          *ngFor="let page of getPageNumbers()"
+          class="pagination-number"
+          [class.active]="currentPage === page"
+          (click)="goToPage(page)"
+        >
+          {{ page }}
+        </button>
+        
+        <span *ngIf="currentPage < totalPages - 3" class="pagination-ellipsis">...</span>
+        <button 
+          *ngIf="currentPage < totalPages - 2"
+          class="pagination-number"
+          (click)="goToPage(totalPages)"
+        >
+          {{ totalPages }}
+        </button>
+      </div>
+      
+      <button 
+        class="pagination-btn next-btn" 
+        (click)="nextPage()"
+        [disabled]="currentPage === totalPages"
+        [class.disabled]="currentPage === totalPages"
+      >
+        <span>Sau</span>
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+    
+    <div class="pagination-info">
+      Trang {{ currentPage }} / {{ totalPages }} ({{ publishedArticles.length }} bài viết)
     </div>
   </div>
 </div>
