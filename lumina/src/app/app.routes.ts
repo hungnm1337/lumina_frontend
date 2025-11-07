@@ -22,6 +22,8 @@ import { DeckListComponent } from './pages/deck-list/deck-list.component';
 import { DeckDetailComponent } from './pages/deck-detail/deck-detail.component';
 import { ExamAttemptListComponent } from './Views/User/ExamAttempt/exam-attempt-list/exam-attempt-list.component';
 import { ExamAttemptDetailComponent } from './Views/User/ExamAttempt/exam-attempt-detail/exam-attempt-detail.component';
+import { UserNoteListComponent } from './Views/User/UserNote/user-note-list/user-note-list.component';
+import { UserNoteDetailComponent } from './Views/User/UserNote/user-note-detail/user-note-detail.component';
 
 export const routes: Routes = [
   {
@@ -61,6 +63,8 @@ export const routes: Routes = [
           { path: 'exam-attempts/:id', component: ExamAttemptDetailComponent },
           { path: 'exam/:id', component: ExamPartComponent },
           { path: 'part/:id', component: PartQuestionComponent },
+          { path: 'notes', component: UserNoteListComponent },
+          { path: 'note/:id', component: UserNoteDetailComponent },
           { path: '', redirectTo: 'exams', pathMatch: 'full' },
         ],
       },

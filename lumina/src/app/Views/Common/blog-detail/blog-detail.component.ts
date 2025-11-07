@@ -6,6 +6,7 @@ import { HeaderComponent } from '../header/header.component';
 import { ArticleService } from '../../../Services/Article/article.service';
 import { ArticleResponse } from '../../../Interfaces/article.interfaces';
 import { ChatBoxComponent } from "./chat-box/chat-box.component";
+import { NoteComponent } from "./note/note.component";
 
 interface BlogComment {
   id: number;
@@ -70,7 +71,7 @@ interface BlogArticle {
 @Component({
   selector: 'app-blog-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, HeaderComponent, ChatBoxComponent],
+  imports: [CommonModule, FormsModule, HeaderComponent, ChatBoxComponent, NoteComponent],
   templateUrl: './blog-detail.component.html',
   styleUrls: ['./blog-detail.component.scss']
 })

@@ -176,3 +176,4 @@
 
 <!-- Floating Chat Box - Always visible at bottom right -->
 <app-chat-box [contentArticle]="contentArticle"></app-chat-box>
+<app-note *ngIf="article" [articleId]="article.articleId"></app-note>
