@@ -8,6 +8,9 @@ import { Router } from '@angular/router';
   styleUrl: './menu.component.scss'
 })
 export class MenuComponent {
+moveToNoteList() {
+    this.router.navigate(['homepage/user-dashboard/notes']);
+}
 
   constructor(private router: Router ) {}
   movetoExams() {

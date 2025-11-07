@@ -6,6 +6,8 @@ import {
   ChatRequestDTO,
   ChatResponseDTO,
   ChatConversationResponseDTO,
+  UserNoteResponseDTO,
+  UserNoteRequestDTO,
 } from '../../Interfaces/UserNote/UserNote.interface';
 
 /**
@@ -43,6 +45,7 @@ export interface QuickAskResponse {
 export class UserNoteService {
   // Matches the controller route: [Route("api/[controller]")], controller class is AIChatController
   private apiUrl = `${environment.apiUrl}/UserNoteAIChat`;
+  private apiUrlUserNote = `${environment.apiUrl}/UserNote`;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -116,6 +119,36 @@ export class UserNoteService {
         headers: this.getAuthHeaders(),
         observe: 'body'
       }
+    );
+  }
+
+  public getUserNoteById(userNoteId: number): Observable<UserNoteResponseDTO> {
+    return this.httpClient.get<UserNoteResponseDTO>(
+      `${this.apiUrlUserNote}/note/${userNoteId}`,
+      { headers: this.getAuthHeaders() }
+    );
+
+  }
+
+  public getUserNotesByUserId(userId: number): Observable<UserNoteResponseDTO[]> {
+    return this.httpClient.get<UserNoteResponseDTO[]>(
+      `${this.apiUrlUserNote}/user/${userId}/notes`,
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+  public GetUserNoteByUserIDAndArticleId(userId: number, articleId: number): Observable<UserNoteResponseDTO> {
+    return this.httpClient.get<UserNoteResponseDTO>(
+      `${this.apiUrlUserNote}/user/${userId}/article/${articleId}`,
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+  public UpSertUserNote(noteData: UserNoteRequestDTO): Observable<boolean> {
+    return this.httpClient.post<boolean>(
+      `${this.apiUrlUserNote}/upsert`,
+      noteData,
+      { headers: this.getAuthHeaders() }
     );
   }
 }
