@@ -3,8 +3,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "./out-tsc/app",
-    "types": ["jquery", "summernote"]
+    "outDir": "./out-tsc/app"
   },
   "files": [
     "src/main.ts"
