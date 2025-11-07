@@ -165,7 +165,16 @@ export class SystemPlansComponent implements OnInit {
     );
   }
 
-
-
+  // ✅ Format currency VNĐ
+  formatCurrency(amount: number): string {
+    if (amount >= 1000000000) {
+      return (amount / 1000000000).toFixed(1) + ' tỷ';
+    } else if (amount >= 1000000) {
+      return (amount / 1000000).toFixed(1) + ' tr';
+    } else if (amount >= 1000) {
+      return (amount / 1000).toFixed(0) + 'k';
+    }
+    return amount.toLocaleString('vi-VN') + ' đ';
+  }
 
 }

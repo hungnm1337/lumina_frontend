@@ -5,9 +5,9 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { HeaderComponent } from '../header/header.component';
 import { ArticleService } from '../../../Services/Article/article.service';
 import { ArticleResponse } from '../../../Interfaces/article.interfaces';
-import { ChatBoxComponent } from "./chat-box/chat-box.component";
-import { NoteComponent } from "./note/note.component";
-
+import { ChatBoxComponent } from '../blog-detail/chat-box/chat-box.component';
+import { NoteComponent } from '../blog-detail/note/note.component';
+import { AuthService } from '../../../Services/Auth/auth.service';
 interface BlogComment {
   id: number;
   author: {
@@ -72,8 +72,8 @@ interface BlogArticle {
   selector: 'app-blog-detail',
   standalone: true,
   imports: [CommonModule, FormsModule, HeaderComponent, ChatBoxComponent, NoteComponent],
-  templateUrl: './blog-detail.component.html',
-  styleUrls: ['./blog-detail.component.scss']
+  templateUrl: './Articles-detail.component.html',
+  styleUrls: ['./Articles-detail.component.scss']
 })
 export class BlogDetailComponent implements OnInit {
   article: ArticleResponse | null = null;
@@ -87,8 +87,10 @@ export class BlogDetailComponent implements OnInit {
   newComment: string = '';
   sortComments: string = 'newest';
   isFollowing: boolean = false;
+  isLogin: boolean = false;
 
   constructor(
+    private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute,
     private articleService: ArticleService
@@ -96,6 +98,7 @@ export class BlogDetailComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadArticle();
+    this.isLogin = this.authService.getCurrentUser() !== null;
   }
 
   loadArticle(): void {
