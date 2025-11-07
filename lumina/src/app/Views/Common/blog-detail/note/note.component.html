@@ -1,0 +1,64 @@
+<div class="note-container">
+  <!-- Floating Note Button -->
+  <button class="note-toggle-btn" (click)="toggleNote()" [class.active]="isNoteOpen">
+    <i class="fas" [ngClass]="isNoteOpen ? 'fa-times' : 'fa-pen'"></i>
+  </button>
+
+  <!-- Note Window -->
+  <div class="note-window" [class.open]="isNoteOpen">
+    <div class="note-box">
+      <header class="note-header">
+        <div class="header-content">
+          <i class="fas fa-sticky-note"></i>
+          <h3>My Notes</h3>
+        </div>
+        <button type="button" class="minimize-btn" (click)="toggleNote()">
+          <i class="fas fa-minus"></i>
+        </button>
+      </header>
+
+      <section class="note-body">
+        <!-- Loading State -->
+        <div class="note-loading" *ngIf="isLoading">
+          <i class="fas fa-spinner fa-spin"></i>
+          <span>Loading note...</span>
+        </div>
+
+        <!-- Note Editor -->
+        <div class="note-editor" *ngIf="!isLoading">
+          <textarea
+            [(ngModel)]="noteContent"
+            (ngModelChange)="onNoteContentChange()"
+            placeholder="Write your notes here..."
+            class="note-textarea"
+          ></textarea>
+        </div>
+
+        <!-- Save Status -->
+        <div class="note-info" *ngIf="saveMessage && !isLoading">
+          <i class="fas" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-check-circle'"></i>
+          <span>{{ saveMessage }}</span>
+        </div>
+      </section>
+
+      <section class="note-controls">
+        <div class="note-footer">
+          <span class="auto-save-text">Auto-save: 30s</span>
+          <div class="note-actions">
+
+            <button
+              type="button"
+              class="save-btn"
+              (click)="saveNote()"
+              [disabled]="isSaving || !noteContent.trim()"
+            >
+              <i class="fas" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+              {{ isSaving ? 'Saving...' : 'Save' }}
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+

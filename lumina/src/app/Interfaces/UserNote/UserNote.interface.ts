@@ -75,3 +75,23 @@ export interface ChatConversationResponseDTO {
 
   SessionId: string;
 }
+
+export interface UserNoteRequestDTO {
+  noteId: number;
+  articleId: number;
+  userId: number;
+  sectionId: number;
+  noteContent: string;
+}
+export interface UserNoteResponseDTO {
+  noteId: number;
+  user: string;
+  userId: number;
+  articleId: number;
+  sectionId: number;
+  section: string;
+  article: string;
+  noteContent: string;
+  createAt: string;
+  updateAt: string;
+}
