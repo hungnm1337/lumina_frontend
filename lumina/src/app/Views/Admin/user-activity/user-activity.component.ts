@@ -63,7 +63,7 @@ export class UserActivityComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    // ✅ Dùng forkJoin để gọi tất cả API cùng lúc
+    // Dùng forkJoin để gọi tất cả API cùng lúc
     forkJoin({
       keyMetrics: this.ga4DataService.getKeyMetrics(),
       realtime: this.ga4DataService.getRealtimeUsers(),
@@ -125,14 +125,14 @@ export class UserActivityComponent implements OnInit {
     });
   }
 
-  // ✅ Format duration (seconds → mm:ss)
+  // Format duration (seconds → mm:ss)
   formatDuration(seconds: number): string {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
 
-  // ✅ Format date (20241105 → 05/11/2024)
+  // Format date 
   formatDate(dateStr: string): string {
     const year = dateStr.substring(0, 4);
     const month = dateStr.substring(4, 6);
@@ -140,7 +140,7 @@ export class UserActivityComponent implements OnInit {
     return `${day}/${month}/${year}`;
   }
 
-  // ✅ Get device icon
+  // Get device icon
   getDeviceIcon(device: string): string {
     switch (device.toLowerCase()) {
       case 'desktop': return '💻';
@@ -150,13 +150,13 @@ export class UserActivityComponent implements OnInit {
     }
   }
 
-  // ✅ Get max users for chart scaling (THÊM METHOD NÀY)
+  // Get max users for chart scaling 
   getMaxUsers(): number {
     if (this.dailyTraffic.length === 0) return 1;
     return Math.max(...this.dailyTraffic.map(d => d.users));
   }
 
-  // ✅ Refresh data
+  // Refresh data
   refreshData(): void {
     this.analyticsService.trackEvent('refresh_analytics', {
       event_category: 'Admin',
