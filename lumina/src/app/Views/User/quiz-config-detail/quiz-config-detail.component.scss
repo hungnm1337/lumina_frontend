@@ -1,0 +1,11 @@
+.quiz-config-detail-page {
+  .mode-card,
+  .question-type-card {
+    transition: all 0.2s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
+}
+

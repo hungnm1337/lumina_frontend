@@ -12,8 +12,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../Services/Auth/auth.service';
-import { WritingExamPartOneService } from '../../../../Services/Exam/Writing/writing-exam-part-one.service';
-import { WritingRequestDTO } from '../../../../Interfaces/WrittingExam/WritingRequestDTO.interface';
+import { WritingExamPartOneService } from '../../../../Services/Exam/Writing/writing-exam.service';
+import { WritingRequestP1DTO } from '../../../../Interfaces/WrittingExam/WritingRequestP1DTO.interface';
 import { WritingResponseDTO } from '../../../../Interfaces/WrittingExam/WritingResponseDTO.interface';
 import { QuestionDTO } from '../../../../Interfaces/exam.interfaces';
 import { Router } from '@angular/router';
@@ -487,7 +487,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
         continue;
       }
 
-      const req: WritingRequestDTO = {
+      const req: WritingRequestP1DTO = {
         pictureCaption: caption,
         vocabularyRequest: vocabReq,
         userAnswer: userAnswer,

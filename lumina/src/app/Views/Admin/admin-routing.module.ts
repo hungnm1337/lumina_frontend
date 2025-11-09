@@ -5,7 +5,8 @@ import { DashboardComponent } from './Dashboard/dashboard/dashboard.component';
 import { UserListComponent } from './User/user-list/user-list.component';
 import { UserDetailComponent } from './User/user-detail/user-detail.component'; // import user detail component
 import { SystemPlansComponent } from './system-plans/system-plans.component';
-
+import { SystemStatsComponent } from './system-stats/system-stats.component';
+import { UserActivityComponent } from './user-activity/user-activity.component';
 const routes: Routes = [
   {
     path: '',
@@ -31,6 +32,16 @@ const routes: Routes = [
         path: 'system-plans',
         component: SystemPlansComponent,
         data: { title: 'Quản lý gói và hạn mức' }
+      },
+      {
+        path: 'system-stats',
+        component: SystemStatsComponent,
+        data: { title: 'Thống kê & Biểu đồ' }
+      },
+      {
+        path: 'user-activity',
+        component: UserActivityComponent,
+        data: { title: 'Hành vi người dùng' }
       }
     ]
   }

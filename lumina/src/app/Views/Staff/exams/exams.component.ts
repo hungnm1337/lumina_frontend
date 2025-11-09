@@ -96,16 +96,15 @@ export class ExamsComponent implements OnInit {
     this.showCreateExamModal = false;
   }
 
+  // ✅ Bỏ tham số fromSetKey
   createExamForMonth(toSetKey: string) {
-    const fromSetKey = '10-2025';
-
-    this.examService.createExamForMonth(fromSetKey, toSetKey).subscribe({
+    this.examService.createExamForMonth(toSetKey).subscribe({
       next: (res: any) => {
         this.showMessage(
           res?.message || 'Tạo bài thi thành công!',
-          res?.success !== false ? 'success' : 'error'
+          'success'
         );
-        if (res?.success) this.loadExamsGroupedByMonth();
+        this.loadExamsGroupedByMonth(); // Reload danh sách
       },
       error: (err) => {
         let msg = 'Có lỗi khi tạo bài thi';

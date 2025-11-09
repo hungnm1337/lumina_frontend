@@ -41,10 +41,8 @@ export class ExamService {
     return this.httpClient.get<any[]>(`${this.apiUrl}/exam/all-with-parts`);
   }
 
-createExamForMonth(fromSetKey: string, toSetKey: string) {
-  const params = new HttpParams()
-    .set('fromExamSetKey', fromSetKey)
-    .set('toExamSetKey', toSetKey);
+createExamForMonth(toSetKey: string) {
+  const params = new HttpParams().set('toExamSetKey', toSetKey);
 
   return this.httpClient.post<any>(`${this.apiUrl}/exam/CreateExam`, null, {
     headers: this.getAuthHeaders(), 

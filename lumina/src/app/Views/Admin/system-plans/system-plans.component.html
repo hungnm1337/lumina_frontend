@@ -248,30 +248,44 @@
         <!-- Doanh thu theo gói (30 ngày) -->
         <div class="bg-white rounded-xl shadow-sm p-6 mt-8">
             <h4 class="text-lg font-semibold text-gray-800 mb-4">Doanh thu theo gói (30 ngày)</h4>
+            
+            <!-- ✅ DEBUG: Hiển thị tổng doanh thu -->
+            <div class="text-sm text-gray-500 mb-2">
+                Tổng: {{planStats.totalRevenue | currency:'VND':'symbol':'1.0-0'}}
+            </div>
+            
             <div class="space-y-4" *ngIf="planStats">
                 <ng-container *ngFor="let pkg of planStats.packageStats">
                     <div>
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-3">
                                 <div [ngClass]="{
-              'bg-blue-500': pkg.packageName.includes('1 Tháng'),
-              'bg-green-500': pkg.packageName.includes('6 Tháng'),
-              'bg-purple-500': pkg.packageName.includes('12 Tháng')
-            }" class="w-4 h-4 rounded"></div>
+                                  'bg-blue-500': pkg.packageName.includes('1 tháng') || pkg.packageName.includes('1 Tháng'),
+                                  'bg-green-500': pkg.packageName.includes('3 tháng') || pkg.packageName.includes('3 Tháng'),
+                                  'bg-purple-500': pkg.packageName.includes('12 tháng') || pkg.packageName.includes('12 Tháng')
+                                }" class="w-4 h-4 rounded"></div>
                                 <span class="text-sm text-gray-700">{{pkg.packageName}}</span>
                             </div>
                             <div class="text-right">
-                                <div class="text-sm font-medium text-gray-900">{{pkg.revenue |
-                                    currency:'VND':'symbol':'1.0-0'}}</div>
-                                <div class="text-xs text-gray-500">{{pkg.revenuePercent}}%</div>
+                                <div class="text-sm font-medium text-gray-900">
+                                    {{pkg.revenue | currency:'VND':'symbol':'1.0-0'}}
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    {{pkg.revenuePercent | number:'1.1-1'}}%
+                                   
+                                </div>
                             </div>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                            <div [ngClass]="{
-            'bg-blue-500': pkg.packageName.includes('1 Tháng'),
-            'bg-green-500': pkg.packageName.includes('6 Tháng'),
-            'bg-purple-500': pkg.packageName.includes('12 Tháng')
-          }" class="h-2 rounded-full" [style.width.%]="pkg.revenuePercent"></div>
+                            <div 
+                                [ngClass]="{
+                                  'bg-blue-500': pkg.packageName.includes('1 tháng') || pkg.packageName.includes('1 Tháng'),
+                                  'bg-green-500': pkg.packageName.includes('3 tháng') || pkg.packageName.includes('3 Tháng'),
+                                  'bg-purple-500': pkg.packageName.includes('12 tháng') || pkg.packageName.includes('12 Tháng')
+                                }" 
+                                class="h-2 rounded-full transition-all duration-500"
+                                [style.width.%]="pkg.revenuePercent || 0">
+                            </div>
                         </div>
                     </div>
                 </ng-container>
@@ -281,29 +295,42 @@
         <!-- Phân bổ người dùng Pro -->
         <div class="bg-white rounded-xl shadow-sm p-6 mt-8">
             <h4 class="text-lg font-semibold text-gray-800 mb-4">Phân bổ người dùng Pro</h4>
+            
+            <!-- ✅ DEBUG: Hiển thị tổng users -->
+            <div class="text-sm text-gray-500 mb-2">
+                Tổng: {{planStats.totalProUsers | number}} users
+            </div>
+            
             <div class="space-y-4" *ngIf="planStats">
                 <ng-container *ngFor="let pkg of planStats.packageStats">
                     <div>
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-3">
                                 <div [ngClass]="{
-              'bg-blue-500': pkg.packageName.includes('1 Tháng'),
-              'bg-green-500': pkg.packageName.includes('6 Tháng'),
-              'bg-purple-500': pkg.packageName.includes('12 Tháng')
-            }" class="w-4 h-4 rounded"></div>
+                                  'bg-blue-500': pkg.packageName.includes('1 tháng') || pkg.packageName.includes('1 Tháng'),
+                                  'bg-green-500': pkg.packageName.includes('3 tháng') || pkg.packageName.includes('3 Tháng'),
+                                  'bg-purple-500': pkg.packageName.includes('12 tháng') || pkg.packageName.includes('12 Tháng')
+                                }" class="w-4 h-4 rounded"></div>
                                 <span class="text-sm text-gray-700">{{pkg.packageName}}</span>
                             </div>
                             <div class="text-right">
                                 <div class="text-sm font-medium text-gray-900">{{pkg.userCount | number}}</div>
-                                <div class="text-xs text-gray-500">{{pkg.userPercent}}%</div>
+                                <div class="text-xs text-gray-500">
+                                    {{pkg.userPercent | number:'1.1-1'}}%
+                                  
+                                </div>
                             </div>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                            <div [ngClass]="{
-            'bg-blue-500': pkg.packageName.includes('1 Tháng'),
-            'bg-green-500': pkg.packageName.includes('6 Tháng'),
-            'bg-purple-500': pkg.packageName.includes('12 Tháng')
-          }" class="h-2 rounded-full" [style.width.%]="pkg.userPercent"></div>
+                            <div 
+                                [ngClass]="{
+                                  'bg-blue-500': pkg.packageName.includes('1 tháng') || pkg.packageName.includes('1 Tháng'),
+                                  'bg-green-500': pkg.packageName.includes('3 tháng') || pkg.packageName.includes('3 Tháng'),
+                                  'bg-purple-500': pkg.packageName.includes('12 tháng') || pkg.packageName.includes('12 Tháng')
+                                }" 
+                                class="h-2 rounded-full transition-all duration-500"
+                                [style.width.%]="pkg.userPercent || 0">
+                            </div>
                         </div>
                     </div>
                 </ng-container>

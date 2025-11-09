@@ -39,8 +39,8 @@ export class SidebarComponent {
     {
       title: 'Giám sát & Báo cáo',
       items: [
-        { path: '/admin/questions', name: 'Nhật ký kiểm toán', icon: 'fas fa-clipboard-list' },
-        { path: '/admin/revenue-reports', name: 'Báo cáo doanh thu', icon: 'fas fa-chart-line' },
+        { path: '/admin/system-stats', name: 'Thống kê & Biểu đồ', icon: 'fas fa-chart-bar' },
+        { path: '/admin/user-activity', name: 'Hành vi người dùng', icon: 'fas fa-user-clock' },
       ],
     }
   ];

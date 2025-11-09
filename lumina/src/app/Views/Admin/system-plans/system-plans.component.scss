@@ -51,6 +51,21 @@
   }
 }
 
+// ✅ Progress bar animation
+.rounded-full {
+  transition: width 0.5s ease-in-out;
+}
+
+// ✅ Đảm bảo container có chiều rộng
+.w-full {
+  width: 100% !important;
+}
+
+// ✅ Debug: Highlight progress bar
+.bg-gray-200 {
+  min-height: 8px; // Đảm bảo có chiều cao
+}
+
 @keyframes progress-bar {
   from {
     width: 100%;

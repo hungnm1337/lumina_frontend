@@ -67,17 +67,43 @@
             <button class="w-full btn-primary bg-gradient-to-r from-green-500 to-green-700" (click)="startQuiz()"><i class="fas fa-play mr-2"></i>Làm quiz</button>
           </div>
         </div>
-        <!-- Word Lists Card -->
+        <!-- Word Lists Card với Spaced Repetition Dashboard -->
         <div class="vocab-card">
-          <div class="bg-gradient-to-br from-purple-500 to-purple-700 p-6 text-white"><div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4"><i class="fas fa-list-ul text-2xl"></i></div><h3 class="text-2xl font-bold mb-2">Danh sách từ</h3><p class="text-purple-100">Duyệt từ vựng theo chủ đề</p></div>
-          <div class="p-6">
-            <div class="space-y-3 mb-6">
-              <div class="flex items-center space-x-3"><i class="fas fa-folder text-purple-600"></i><span>Phân loại theo chủ đề</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-search text-purple-600"></i><span>Tìm kiếm nhanh</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-filter text-purple-600"></i><span>Lọc theo độ khó</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-bookmark text-purple-600"></i><span>Đánh dấu từ khó</span></div>
+          <div class="bg-gradient-to-br from-purple-500 to-purple-700 p-6 text-white">
+            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
+              <i class="fas fa-brain text-2xl"></i>
             </div>
-            <button class="w-full btn-primary bg-gradient-to-r from-purple-500 to-purple-700" (click)="browseWords()"><i class="fas fa-book mr-2"></i>Duyệt từ vựng</button>
+            <h3 class="text-2xl font-bold mb-2">Học tập thông minh</h3>
+            <p class="text-purple-100">Theo dõi và ôn lại từ vựng với Spaced Repetition</p>
+          </div>
+          
+          <div class="p-6">
+            <!-- Features List -->
+            <div class="space-y-3 mb-6">
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-bell text-purple-600"></i>
+                <span class="text-sm">Nhắc nhở review tự động</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-chart-line text-purple-600"></i>
+                <span class="text-sm">Theo dõi tiến độ học tập</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-clock text-purple-600"></i>
+                <span class="text-sm">Lịch review thông minh</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-star text-purple-600"></i>
+                <span class="text-sm">Đánh giá mức độ nhớ</span>
+              </div>
+            </div>
+
+            <!-- Action Button -->
+            <button 
+              class="w-full btn-primary bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800" 
+              (click)="viewAllProgress()">
+              <i class="fas fa-chart-bar mr-2"></i>Xem tất cả tiến độ
+            </button>
           </div>
         </div>
       </div>
@@ -85,24 +111,49 @@
   </section>
 
   <!-- Categories Section -->
-  <section class="py-16 bg-gray-50">
+  <section class="py-12 bg-white border-b border-gray-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-12"><h2 class="text-3xl font-bold text-gray-900 mb-4">Chủ đề từ vựng</h2><p class="text-lg text-gray-600">Học từ vựng theo các chủ đề phổ biến trong TOEIC</p></div>
-      
-      <!-- Sử dụng *ngFor để tự động tạo danh sách chủ đề từ dữ liệu trong file .ts -->
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        <div *ngFor="let category of categoryList" class="vocab-card cursor-pointer" (click)="openCategory(category.id)">
-          <div class="p-6 text-center">
-            <div class="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4" [ngClass]="category.bgColor">
-              <i class="text-2xl" [ngClass]="category.iconClass"></i>
+      <div class="flex justify-center mb-6">  
+        <div class="text-center mb-12">
+          <h2 class="text-3xl font-bold text-gray-900 mb-4">Chủ đề từ vựng </h2>
+          <p class="text-lg text-gray-600">Học từ vựng theo các chủ đề phổ biến trong TOEIC</p>
+        </div>
+      </div>
+      <div *ngIf="isLoadingLists" class="text-gray-600">Đang tải danh sách...</div>
+      <div *ngIf="!isLoadingLists && userLists.length === 0" class="text-gray-500">Chưa có danh sách nào. Hãy tạo từ chat AI và lưu vào folder để bắt đầu.</div>
+      <div *ngIf="!isLoadingLists && userLists.length > 0">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div *ngFor="let list of showLimitedUserLists" class="vocab-card cursor-pointer" (click)="navigateToVocabularyList(list)">
+            <div class="p-6">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-gray-900">{{ list.name }}</h3>
+                <span class="text-xs text-gray-500">{{ list.createAt | date:'dd/MM/yyyy' }}</span>
+              </div>
+              <p class="text-gray-600 text-sm mb-3">{{ list.vocabularyCount }} từ</p>
+              <div class="progress-bar mb-2"><div class="progress-fill" [style.width]="(Math.min(list.vocabularyCount,100)) + '%'" ></div></div>
+              <p class="text-xs text-gray-500">Trạng thái: {{ list.status || 'Approved' }}</p>
             </div>
-            <h3 class="font-bold text-gray-900 mb-2">{{ category.name }}</h3>
-            <p class="text-gray-600 text-sm mb-3">{{ category.wordCount }} từ</p>
-            <div class="progress-bar mb-3">
-              <div class="progress-fill" [style.width]="category.progress + '%'"></div>
-            </div>
-            <p class="text-xs text-gray-500">{{ category.progress }}% hoàn thành</p>
           </div>
+        </div>
+        <!-- Pagination controls khi xem tất cả và số lượng > pageSize -->
+        <div *ngIf="showAllLists && userLists.length > pageSize" class="flex items-center justify-center gap-2 mt-8">
+          <button class="btn-primary px-4 py-2 rounded-l shadow text-white bg-blue-400 hover:bg-blue-500 transition disabled:opacity-50" (click)="prevPage()" [disabled]="currentPage === 1">« Trước</button>
+          <span class="mx-2 text-base text-gray-700">Trang {{ currentPage }}/{{ totalPages }}</span>
+          <button class="btn-primary px-4 py-2 rounded-r shadow text-white bg-blue-400 hover:bg-blue-500 transition disabled:opacity-50" (click)="nextPage()" [disabled]="currentPage === totalPages">Tiếp »</button>
+        </div>
+        <div class="flex justify-center mt-8" *ngIf="userLists.length > 6">
+          <button class="btn-primary px-6 py-2 rounded shadow text-white bg-blue-500 hover:bg-blue-600 transition" (click)="toggleShowAllLists()">
+            {{ showAllLists ? 'Thu gọn' : 'Xem thêm' }}
+          </button>
+
+        </div>
+
+      </div>
+      <!-- Overlay hiển thị chi tiết list dạng modal -->
+      <div *ngIf="selectedVocabularyListDetail" class="fixed inset-0 z-50 bg-black/30 flex items-center justify-center" (click)="closeVocabularyListDetail()">
+        <div class="relative bg-white rounded-2xl w-[90vw] max-w-[900px] max-h-[90vh] overflow-auto p-6" (click)="$event.stopPropagation()">
+          <button (click)="closeVocabularyListDetail()" class="absolute top-4 right-4 btn-primary">Đóng</button>
+          <app-vocabulary-list-detail [vocabularyList]="selectedVocabularyListDetail" (close)="closeVocabularyListDetail()"></app-vocabulary-list-detail>
         </div>
       </div>
     </div>

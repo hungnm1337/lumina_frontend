@@ -78,7 +78,17 @@
 
     <!-- Control Buttons -->
     <div class="control-buttons">
-      
+      <!-- Review Button -->
+      <button 
+        *ngIf="!showReviewButtons && spacedRepetition" 
+        class="control-btn review" 
+        (click)="showReviewOptions()" 
+        type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Đánh giá
+      </button>
 
       <button class="control-btn prev" (click)="previousTerm()" [disabled]="currentTermIndex === 0" type="button">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -94,24 +104,41 @@
         </svg>
       </button>
     </div>
+
+    <!-- Review Quality Buttons -->
+    <div class="review-quality-section" *ngIf="showReviewButtons && spacedRepetition">
+      <h3 class="review-title">Bạn nhớ từ này như thế nào?</h3>
+      <div class="quality-buttons">
+        <button 
+          *ngFor="let quality of [0, 1, 2, 3, 4, 5]" 
+          class="quality-btn" 
+          [class]="getQualityButtonClass(quality)"
+          [disabled]="isReviewing"
+          (click)="reviewVocabulary(quality)"
+          type="button">
+          <div class="quality-number">{{ quality }}</div>
+          <div class="quality-label">{{ getQualityLabel(quality) }}</div>
+        </button>
+      </div>
+      <button class="cancel-review-btn" (click)="hideReviewOptions()" type="button">Hủy</button>
+    </div>
   </div>
 
   <!-- Statistics Cards -->
   <div class="stats-cards" *ngIf="terms.length > 0">
-    <!-- <div class="stat-card easy">
-      <div class="stat-number">{{ easyCount }}</div>
-      <div class="stat-label">Đã biết</div>
-    </div> -->
+    <!-- Spaced Repetition Info -->
+    <div class="stat-card spaced-repetition-info" *ngIf="spacedRepetition">
+      <div class="stat-number">{{ spacedRepetition.reviewCount }}</div>
+      <div class="stat-label">Lần đã review</div>
+      <div class="stat-detail" *ngIf="spacedRepetition.nextReviewAt">
+        <small>Review tiếp theo: {{ formatNextReviewDate(spacedRepetition.nextReviewAt) }}</small>
+      </div>
+    </div>
 
     <div class="stat-card learning">
       <div class="stat-number">{{ learningCount }}</div>
       <div class="stat-label">Đang học</div>
     </div>
-
-    <!-- <div class="stat-card hard">
-      <div class="stat-number">{{ difficultCount }}</div>
-      <div class="stat-label">Khó</div>
-    </div> -->
   </div>
 
   <!-- THÊM PHẦN NÀY: Vocabulary List -->
@@ -138,7 +165,7 @@
         </div>
 
         <div class="vocab-actions">
-          <button class="play-audio-btn" (click)="playAudio($event)" type="button">
+          <button class="play-audio-btn" (click)="playAudio($event, i)" type="button">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
               <path d="M11 5L6 9H2v6h4l5 4V5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>

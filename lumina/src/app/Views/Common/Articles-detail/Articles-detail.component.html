@@ -103,7 +103,7 @@
             <span class="stat">0 likes</span>
           </div>
         </div>
-        <button 
+        <button
           [class]="isFollowing ? 'follow-btn following' : 'follow-btn'"
           (click)="onFollowAuthor()"
         >
@@ -118,7 +118,7 @@
 <div class="comments-section">
   <div class="comments-container">
     <h2 class="comments-title">Bình luận ({{ articleCommentsCount }})</h2>
-    
+
     <!-- Comment Input -->
     <div class="comment-input-section">
       <div class="comment-input-header">
@@ -126,9 +126,9 @@
           <i class="fas fa-user"></i>
         </div>
         <div class="comment-input-content">
-          <textarea 
+          <textarea
             [(ngModel)]="newComment"
-            placeholder="Viết bình luận của bạn..." 
+            placeholder="Viết bình luận của bạn..."
             class="comment-textarea"
             rows="3"
           ></textarea>
@@ -151,46 +151,6 @@
       <a href="#" class="sort-link active">{{ sortComments }}</a>
     </div>
 
-    <!-- Comments List -->
-    <div class="comments-list">
-      <div *ngFor="let comment of comments" class="comment-item">
-        <div class="comment-avatar">
-          <div [class]="'avatar ' + comment.author.avatarColor">
-            {{ comment.author.avatar }}
-          </div>
-        </div>
-        <div class="comment-content">
-          <div class="comment-header">
-            <span class="comment-author">{{ comment.author.name }}</span>
-            <span class="comment-time">{{ comment.timestamp }}</span>
-          </div>
-          <p class="comment-text">{{ comment.content }}</p>
-          <div class="comment-actions">
-            <button 
-              [class]="comment.isLiked ? 'action-btn liked' : 'action-btn'"
-              (click)="onLikeComment(comment.id)"
-            >
-              <i class="fas fa-heart"></i>
-              {{ comment.likes }}
-            </button>
-            <button class="action-btn reply-btn" (click)="onReplyComment(comment.id)">
-              Trả lời
-            </button>
-            <a href="#" class="replies-link" *ngIf="comment.replies > 0">
-              {{ comment.replies }} phản hồi
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- View More Comments -->
-    <div class="view-more-comments">
-      <button class="view-more-btn">
-        <i class="fas fa-chevron-down"></i>
-        Xem thêm bình luận
-      </button>
-    </div>
   </div>
 </div>
 
@@ -213,3 +173,6 @@
     <!-- Related articles content will be added here -->
   </div>
 </div>
+
+<!-- Floating Chat Box - Always visible at bottom right -->
+<app-chat-box [contentArticle]="contentArticle"></app-chat-box>

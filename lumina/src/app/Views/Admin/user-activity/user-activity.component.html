@@ -1,0 +1,229 @@
+<div class="user-activity-container">
+  <!-- Header -->
+  <div class="page-header">
+    <h1>📊 User Activity Analytics</h1>
+    <button class="btn-refresh" (click)="refreshData()" [disabled]="isLoading">
+      <span *ngIf="!isLoading">🔄 Refresh</span>
+      <span *ngIf="isLoading">⏳ Loading...</span>
+    </button>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-message" *ngIf="errorMessage">
+    ⚠️ {{ errorMessage }}
+  </div>
+
+  <!-- Loading Spinner -->
+  <div class="loading-spinner" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu analytics...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div class="analytics-content" *ngIf="!isLoading && !errorMessage">
+    
+    <!-- Key Metrics Cards -->
+    <div class="metrics-grid">
+      <div class="metric-card realtime">
+        <div class="metric-icon">🔴</div>
+        <div class="metric-value">{{ keyMetrics.activeUsersNow }}</div>
+        <div class="metric-label">Online Now</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon">👥</div>
+        <div class="metric-value">{{ keyMetrics.totalUsers | number }}</div>
+        <div class="metric-label">Total Users (7 days)</div>
+        <div class="metric-sub">{{ keyMetrics.newUsers | number }} new</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon">🎯</div>
+        <div class="metric-value">{{ keyMetrics.sessions | number }}</div>
+        <div class="metric-label">Sessions</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon">📄</div>
+        <div class="metric-value">{{ keyMetrics.pageViews | number }}</div>
+        <div class="metric-label">Page Views</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon">⏱️</div>
+        <div class="metric-value">{{ formatDuration(keyMetrics.avgSessionDuration) }}</div>
+        <div class="metric-label">Avg. Session Duration</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon">📊</div>
+        <div class="metric-value">{{ keyMetrics.bounceRate | number:'1.1-1' }}%</div>
+        <div class="metric-label">Bounce Rate</div>
+      </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="charts-grid">
+      
+      <!-- Top Pages -->
+      <div class="chart-card">
+        <h2>🏆 Top Pages</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Page</th>
+                <th>Views</th>
+                <th>Users</th>
+                <th>Avg. Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let page of topPages">
+                <td class="page-title">
+                  <div class="page-title-text">{{ page.title }}</div>
+                  <div class="page-path">{{ page.path }}</div>
+                </td>
+                <td>{{ page.views | number }}</td>
+                <td>{{ page.users | number }}</td>
+                <td>{{ formatDuration(page.avgDuration) }}</td>
+              </tr>
+              <tr *ngIf="topPages.length === 0">
+                <td colspan="4" class="no-data">No data available</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Traffic Sources -->
+      <div class="chart-card">
+        <h2>🌐 Traffic Sources</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Source / Medium</th>
+                <th>Sessions</th>
+                <th>Users</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let source of trafficSources">
+                <td>
+                  <strong>{{ source.source }}</strong>
+                  <span class="medium"> / {{ source.medium }}</span>
+                </td>
+                <td>{{ source.sessions | number }}</td>
+                <td>{{ source.users | number }}</td>
+              </tr>
+              <tr *ngIf="trafficSources.length === 0">
+                <td colspan="3" class="no-data">No data available</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Devices -->
+      <div class="chart-card">
+        <h2>📱 Devices</h2>
+        <div class="device-list">
+          <div class="device-item" *ngFor="let device of devices">
+            <div class="device-info">
+              <span class="device-icon">{{ getDeviceIcon(device.device) }}</span>
+              <span class="device-name">{{ device.device }}</span>
+            </div>
+            <div class="device-stats">
+              <div class="stat">
+                <span class="stat-label">Users:</span>
+                <span class="stat-value">{{ device.users | number }}</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Sessions:</span>
+                <span class="stat-value">{{ device.sessions | number }}</span>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="devices.length === 0" class="no-data">No data available</div>
+        </div>
+      </div>
+
+      <!-- Countries -->
+      <div class="chart-card">
+        <h2>🌍 Top Countries</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Country / City</th>
+                <th>Users</th>
+                <th>Sessions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let country of countries">
+                <td>
+                  <strong>{{ country.country }}</strong>
+                  <span class="city"> - {{ country.city }}</span>
+                </td>
+                <td>{{ country.users | number }}</td>
+                <td>{{ country.sessions | number }}</td>
+              </tr>
+              <tr *ngIf="countries.length === 0">
+                <td colspan="3" class="no-data">No data available</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Daily Traffic -->
+      <div class="chart-card full-width">
+        <h2>📈 Daily Traffic (Last 7 Days)</h2>
+        <div class="daily-chart">
+          <div class="chart-bar" *ngFor="let day of dailyTraffic">
+            <div class="bar-wrapper">
+              <div class="bar" [style.height.%]="(day.users / getMaxUsers()) * 100">
+                <span class="bar-value">{{ day.users }}</span>
+              </div>
+            </div>
+            <div class="bar-label">{{ formatDate(day.date) }}</div>
+            <div class="bar-stats">
+              <div>Sessions: {{ day.sessions }}</div>
+              <div>Views: {{ day.pageViews }}</div>
+            </div>
+          </div>
+          <div *ngIf="dailyTraffic.length === 0" class="no-data">No data available</div>
+        </div>
+      </div>
+
+      <!-- Browsers -->
+      <div class="chart-card">
+        <h2>🌐 Browsers</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Browser</th>
+                <th>Users</th>
+                <th>Sessions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let browser of browsers">
+                <td>{{ browser.browser }}</td>
+                <td>{{ browser.users | number }}</td>
+                <td>{{ browser.sessions | number }}</td>
+              </tr>
+              <tr *ngIf="browsers.length === 0">
+                <td colspan="3" class="no-data">No data available</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

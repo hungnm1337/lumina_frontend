@@ -498,3 +498,53 @@
     }
   }
 }
+.suggested-questions {
+  background: white;
+  padding: 12px 16px; // Giảm từ 16px
+  border-bottom: 1px solid #e5e7eb;
+  
+  .suggested-questions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px; // Giảm từ 12px
+    
+    h4 {
+      margin: 0;
+      font-size: 14px; // Giảm từ 16px
+      font-weight: 600;
+      color: #374151;
+    }
+  }
+  
+  .suggestion-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px; // Giảm từ 8px
+    animation: slideDown 0.3s ease-out;
+    
+    .suggestion-chip {
+      padding: 5px 10px; // ✅ GIẢM TỪ 6px 12px
+      background: #f3f4f6;
+      border: 1px solid #d1d5db;
+      border-radius: 16px; // ✅ GIẢM TỪ 20px
+      cursor: pointer;
+      font-size: 12px; // ✅ GIẢM TỪ 14px
+      transition: all 0.2s;
+      color: #374151;
+      font-weight: 500;
+      white-space: nowrap; // Không xuống dòng
+      
+      &:hover {
+        background: #e5e7eb;
+        border-color: #9ca3af;
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+}
+

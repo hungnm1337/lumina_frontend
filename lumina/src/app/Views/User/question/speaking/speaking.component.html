@@ -43,6 +43,7 @@
       [disabled]="showExplain"
       [resetAt]="resetCounter"
       [questionTime]="questions[currentIndex].time"
+      [attemptId]="attemptId ?? 0"
       (answered)="onSpeakingAnswered($event)"
       (scoringResult)="onSpeakingResult($event)"
       (submitting)="onSpeakingSubmitting($event)"

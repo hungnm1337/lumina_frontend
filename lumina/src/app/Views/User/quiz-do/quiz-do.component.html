@@ -1,0 +1,262 @@
+<app-header></app-header>
+
+<div class="quiz-do-page min-h-screen bg-gray-50">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex items-center justify-center min-h-screen">
+    <div class="text-center">
+      <i class="fas fa-spinner fa-spin text-6xl text-green-600 mb-4"></i>
+      <p class="text-gray-600 text-lg">Đang tải quiz...</p>
+    </div>
+  </div>
+
+  <!-- Quiz Content -->
+  <div *ngIf="!isLoading && !isFinished" class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-2xl font-bold text-gray-900">
+          {{ folderName }}
+        </h1>
+        <button
+          type="button"
+          (click)="goBack()"
+          class="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition"
+        >
+          <i class="fas fa-times mr-2"></i>
+          Thoát
+        </button>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-medium text-gray-700">
+            Câu {{ currentQuestionIndex + 1 }} / {{ questions.length }}
+          </span>
+          <span class="text-sm font-medium text-gray-700">
+            {{ getProgress() }}%
+          </span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-3">
+          <div 
+            class="bg-gradient-to-r from-green-500 to-green-700 h-3 rounded-full transition-all duration-300"
+            [style.width.%]="getProgress()"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Timer -->
+      <div class="flex items-center justify-center gap-4 mb-6">
+        <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200">
+          <i class="fas fa-clock text-green-600"></i>
+          <span class="font-bold text-lg" [class.text-red-600]="timeRemaining <= 10 && timeRemaining > 0">
+            {{ timeMode === 'total' ? formatTime(totalTimeRemaining) : formatTime(timeRemaining) }}
+          </span>
+        </div>
+        <div class="text-sm text-gray-600">
+          Chế độ: <span class="font-semibold">{{ mode === 'practice' ? 'Practice' : mode === 'test' ? 'Test' : 'Challenge' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Question Card -->
+    <div *ngIf="getCurrentQuestion()" class="bg-white rounded-xl shadow-lg border border-gray-200 p-8 mb-6">
+      <!-- Question -->
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">
+          {{ getCurrentQuestion()?.questionType === 'word-to-meaning' 
+            ? 'Từ này có nghĩa là gì?' 
+            : getCurrentQuestion()?.questionType === 'meaning-to-word'
+            ? 'Nghĩa này là từ nào?'
+            : 'Nghe và chọn đáp án đúng' }}
+        </h2>
+        
+        <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6 border-2 border-green-200">
+          <div class="text-center">
+            <!-- Listening Question: Chỉ hiển thị icon loa -->
+            <div *ngIf="getCurrentQuestion()?.questionType === 'listening'" class="mb-4">
+              <div class="flex flex-col items-center gap-4">
+                <p class="text-lg font-semibold text-gray-700 mb-2">
+                  🔊 Nghe và chọn đáp án đúng
+                </p>
+                
+                <!-- Icon loa lớn để phát âm -->
+                <button
+                  type="button"
+                  (click)="playAudio(getCurrentQuestion()?.audioUrl, getCurrentQuestion()?.word)"
+                  class="flex items-center justify-center w-20 h-20 rounded-full bg-blue-100 hover:bg-blue-200 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300"
+                  [attr.aria-label]="'Phát âm: ' + getCurrentQuestion()?.word"
+                >
+                  <i class="fas fa-volume-up text-blue-600 text-4xl"></i>
+                </button>
+                
+                <p class="text-sm text-gray-500 italic">
+                  Click vào icon để nghe phát âm
+                </p>
+              </div>
+            </div>
+            
+            <!-- Word-to-meaning và Meaning-to-word: Hiển thị như cũ -->
+            <div *ngIf="getCurrentQuestion()?.questionType !== 'listening'">
+              <p class="text-3xl font-bold text-gray-900 mb-2">
+                {{ getCurrentQuestion()?.questionType === 'word-to-meaning' 
+                  ? getCurrentQuestion()?.word 
+                  : getCurrentQuestion()?.definition }}
+              </p>
+              
+              <!-- Example (if enabled) -->
+              <p *ngIf="showExamples && getCurrentQuestion()?.example" class="text-sm text-gray-600 italic mt-2">
+                "{{ getCurrentQuestion()?.example }}"
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Answer Options -->
+      <div class="space-y-3 mb-6">
+        <button
+          *ngFor="let option of getCurrentQuestion()?.options"
+          type="button"
+          (click)="selectAnswer(option)"
+          [disabled]="getCurrentAnswer()"
+          [class]="'w-full text-left px-6 py-4 rounded-lg border-2 transition-all ' +
+                   (selectedAnswer === option && !getCurrentAnswer()
+                     ? (mode === 'practice' && isAnswerCorrect(option)
+                       ? 'border-green-500 bg-green-50 text-green-900'
+                       : mode === 'practice' && selectedAnswer === option && !isAnswerCorrect(option)
+                       ? 'border-red-500 bg-red-50 text-red-900'
+                       : 'border-blue-500 bg-blue-50 text-blue-900')
+                     : 'border-gray-200 hover:border-green-300 hover:bg-gray-50') +
+                   (getCurrentAnswer() && option === getCurrentQuestion()?.correctAnswer
+                     ? ' border-green-500 bg-green-50 text-green-900'
+                     : '') +
+                   (getCurrentAnswer() && option === getCurrentAnswer()?.selectedAnswer && !getCurrentAnswer()?.isCorrect
+                     ? ' border-red-500 bg-red-50 text-red-900'
+                     : '') +
+                   (getCurrentAnswer() ? ' cursor-not-allowed opacity-75' : '')"
+        >
+          <div class="flex items-center justify-between">
+            <span class="font-medium">{{ option }}</span>
+            <i *ngIf="mode === 'practice' && selectedAnswer === option && !getCurrentAnswer()"
+               class="fas"
+               [class.fa-check-circle]="isAnswerCorrect(option)"
+               [class.fa-times-circle]="!isAnswerCorrect(option)"
+               [class.text-green-600]="isAnswerCorrect(option)"
+               [class.text-red-600]="!isAnswerCorrect(option)">
+            </i>
+            <i *ngIf="getCurrentAnswer() && option === getCurrentQuestion()?.correctAnswer"
+               class="fas fa-check-circle text-green-600">
+            </i>
+            <i *ngIf="getCurrentAnswer() && option === getCurrentAnswer()?.selectedAnswer && !getCurrentAnswer()?.isCorrect"
+               class="fas fa-times-circle text-red-600">
+            </i>
+          </div>
+        </button>
+      </div>
+
+      <!-- Explanation (Practice mode) -->
+      <div *ngIf="mode === 'practice' && getCurrentAnswer() && getCurrentQuestion()" 
+           class="p-4 rounded-lg mb-4"
+           [class.bg-green-50]="getCurrentAnswer()?.isCorrect"
+           [class.bg-red-50]="!getCurrentAnswer()?.isCorrect"
+           [class.border-green-200]="getCurrentAnswer()?.isCorrect"
+           [class.border-red-200]="!getCurrentAnswer()?.isCorrect"
+           [class.border]="true">
+        <div class="flex items-start gap-3">
+          <i class="fas"
+             [class.fa-check-circle]="getCurrentAnswer()?.isCorrect"
+             [class.fa-times-circle]="!getCurrentAnswer()?.isCorrect"
+             [class.text-green-600]="getCurrentAnswer()?.isCorrect"
+             [class.text-red-600]="!getCurrentAnswer()?.isCorrect"
+             [class.text-xl]="true">
+          </i>
+          <div>
+            <p class="font-semibold mb-1"
+               [class.text-green-900]="getCurrentAnswer()?.isCorrect"
+               [class.text-red-900]="!getCurrentAnswer()?.isCorrect">
+              {{ getCurrentAnswer()?.isCorrect ? 'Đúng rồi!' : 'Sai rồi!' }}
+            </p>
+            <p class="text-sm"
+               [class.text-green-700]="getCurrentAnswer()?.isCorrect"
+               [class.text-red-700]="!getCurrentAnswer()?.isCorrect">
+              {{ getCurrentAnswer()?.isCorrect 
+                ? 'Bạn đã trả lời đúng!' 
+                : 'Đáp án đúng là: ' + getCurrentQuestion()?.correctAnswer }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Explanation (Test/Challenge mode after submit) -->
+      <div *ngIf="(mode === 'test' || mode === 'challenge') && getCurrentAnswer() && getCurrentQuestion()" 
+           class="p-4 rounded-lg mb-4"
+           [class.bg-green-50]="getCurrentAnswer()?.isCorrect"
+           [class.bg-red-50]="!getCurrentAnswer()?.isCorrect"
+           [class.border-green-200]="getCurrentAnswer()?.isCorrect"
+           [class.border-red-200]="!getCurrentAnswer()?.isCorrect"
+           [class.border]="true">
+        <div class="flex items-start gap-3">
+          <i class="fas"
+             [class.fa-check-circle]="getCurrentAnswer()?.isCorrect"
+             [class.fa-times-circle]="!getCurrentAnswer()?.isCorrect"
+             [class.text-green-600]="getCurrentAnswer()?.isCorrect"
+             [class.text-red-600]="!getCurrentAnswer()?.isCorrect"
+             [class.text-xl]="true">
+          </i>
+          <div>
+            <p class="font-semibold mb-1"
+               [class.text-green-900]="getCurrentAnswer()?.isCorrect"
+               [class.text-red-900]="!getCurrentAnswer()?.isCorrect">
+              {{ getCurrentAnswer()?.isCorrect ? 'Đúng!' : 'Sai!' }}
+            </p>
+            <p class="text-sm"
+               [class.text-green-700]="getCurrentAnswer()?.isCorrect"
+               [class.text-red-700]="!getCurrentAnswer()?.isCorrect">
+              {{ getCurrentAnswer()?.isCorrect 
+                ? 'Chúc mừng bạn!' 
+                : 'Đáp án đúng là: ' + getCurrentQuestion()?.correctAnswer }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="flex justify-between items-center">
+      <button
+        type="button"
+        (click)="previousQuestion()"
+        [disabled]="currentQuestionIndex === 0"
+        class="px-6 py-3 rounded-lg font-semibold border-2 border-gray-300 bg-white hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <i class="fas fa-arrow-left mr-2"></i>
+        Câu trước
+      </button>
+
+      <div class="flex gap-3">
+        <button
+          *ngIf="currentQuestionIndex < questions.length - 1"
+          type="button"
+          (click)="nextQuestion()"
+          [disabled]="(mode === 'test' || mode === 'challenge') && !selectedAnswer && !getCurrentAnswer()"
+          class="px-8 py-3 rounded-lg font-semibold bg-gradient-to-r from-green-500 to-green-700 text-white hover:from-green-600 hover:to-green-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Câu tiếp
+          <i class="fas fa-arrow-right ml-2"></i>
+        </button>
+        <button
+          *ngIf="currentQuestionIndex === questions.length - 1"
+          type="button"
+          (click)="finishQuiz()"
+          [disabled]="(mode === 'test' || mode === 'challenge') && !selectedAnswer && !getCurrentAnswer()"
+          class="px-8 py-3 rounded-lg font-semibold bg-gradient-to-r from-green-500 to-green-700 text-white hover:from-green-600 hover:to-green-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Hoàn thành
+          <i class="fas fa-check ml-2"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

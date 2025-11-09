@@ -119,17 +119,78 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   private loadAttemptId(): void {
     try {
       const stored = localStorage.getItem('currentExamAttempt');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        this.attemptId = parsed.attemptID || parsed.attemptId;
+
+      if (!stored) {
+        console.warn('[Speaking] ⚠️ No currentExamAttempt in localStorage');
+
+        // ✅ FIX Bug #12: Tự động tạo attempt nếu chưa có
+        this.createNewAttempt();
+        return;
       }
 
-      if (!this.attemptId) {
-        console.error('No attemptId found for Speaking');
+      const parsed = JSON.parse(stored);
+      this.attemptId = parsed.attemptID || parsed.attemptId || null;
+
+      if (this.attemptId === null || this.attemptId <= 0) {
+        console.error('[Speaking] ❌ Invalid attemptId:', this.attemptId);
+
+        // ✅ FIX: Tạo attempt mới nếu invalid
+        this.createNewAttempt();
+      } else {
+        console.log('[Speaking] ✅ Loaded attemptId:', this.attemptId);
       }
     } catch (error) {
-      console.error('Error loading attemptId:', error);
+      console.error('[Speaking] ❌ Error loading attemptId:', error);
+      this.createNewAttempt();
     }
+  }
+
+  // ✅ FIX Bug #12: Tạo attempt mới nếu không có trong localStorage
+  private createNewAttempt(): void {
+    console.log('[Speaking] 🆕 Creating new exam attempt...');
+
+    if (!this.partInfo || !this.partInfo.examId || !this.partInfo.partId) {
+      console.error('[Speaking] ❌ Cannot create attempt: Missing partInfo');
+      alert('Lỗi: Không thể khởi tạo bài thi. Vui lòng quay lại và thử lại.');
+      return;
+    }
+
+    // Get current user ID from localStorage
+    const userStr = localStorage.getItem('lumina_user');
+    if (!userStr) {
+      console.error('[Speaking] ❌ No user found in localStorage');
+      alert('Vui lòng đăng nhập lại.');
+      this.router.navigate(['/auth/login']);
+      return;
+    }
+
+    const currentUser = JSON.parse(userStr);
+
+    const attemptRequest = {
+      attemptID: 0, // ✅ FIX: Set to 0 for new attempt
+      userID: Number(currentUser.id),
+      examID: this.partInfo.examId,
+      examPartId: this.partInfo.partId,
+      startTime: new Date().toISOString(),
+      endTime: null,
+      score: null,
+      status: 'Doing',
+    };
+
+    this.examAttemptService.startExam(attemptRequest).subscribe({
+      next: (response) => {
+        // Lưu vào localStorage
+        localStorage.setItem('currentExamAttempt', JSON.stringify(response));
+
+        this.attemptId = response.attemptID; // ✅ FIX: Chỉ dùng attemptID
+
+        console.log('[Speaking] ✅ Created new attemptId:', this.attemptId);
+      },
+      error: (error) => {
+        console.error('[Speaking] ❌ Failed to create attempt:', error);
+        alert('Lỗi khi khởi tạo bài thi. Vui lòng thử lại.');
+      },
+    });
   }
 
   // Getters for base service properties
@@ -159,6 +220,13 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   // Speaking-specific methods
   onSpeakingResult(result: SpeakingScoringResult): void {
+    console.log('[SpeakingComponent] 📊 Received scoring result:', {
+      questionIndex: this.currentIndex,
+      questionId: this.questions[this.currentIndex]?.questionId,
+      result: result,
+      overallScore: result?.overallScore,
+    });
+
     const q = this.questions[this.currentIndex];
     if (
       q &&
@@ -183,19 +251,37 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         this.speakingQuestionResults.push(item);
       }
 
+      console.log('[SpeakingComponent] ✅ Updated results:', {
+        totalResults: this.speakingQuestionResults.length,
+        mapSize: this.speakingResults.size,
+      });
+
       // Tính điểm dựa trên overallScore (0-100) chuyển sang scoreWeight
       // Giả sử scoreWeight tối đa là 10, scale theo tỷ lệ
       const scoreRatio = result.overallScore / 100;
       const earnedScore = (q.scoreWeight ?? 0) * scoreRatio;
-      this.baseQuestionService.addScore(earnedScore);
+
+      // ✅ FIX: Round điểm để tránh floating-point errors (8.340000001 → 8.34)
+      const roundedScore = Math.round(earnedScore * 100) / 100;
+      this.baseQuestionService.addScore(roundedScore);
+
+      console.log('[SpeakingComponent] 📈 Score calculated:', {
+        overallScore: result.overallScore,
+        scoreWeight: q.scoreWeight,
+        earnedScore: earnedScore,
+        roundedScore: roundedScore,
+        totalScore: this.totalScore,
+      });
 
       // Coi là đúng nếu điểm >= 60
       if (result.overallScore >= 60) {
         this.baseQuestionService.incrementCorrectCount();
       }
-
-      // Check if all questions are completed
-      this.checkSpeakingCompletion();
+    } else {
+      console.warn('[SpeakingComponent] ⚠️ Invalid result received:', {
+        hasQuestion: !!q,
+        overallScore: result?.overallScore,
+      });
     }
   }
 
@@ -316,14 +402,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     }
 
     this.isProcessingQueue = false;
-
-    // Check if all questions are completed
-    if (
-      this.hasSpeakingQuestions() &&
-      this.speakingStateService.areAllQuestionsCompleted()
-    ) {
-      this.showSpeakingSummary = true;
-    }
   }
 
   private async scoreQuestion(questionId: number): Promise<void> {
@@ -358,24 +436,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         }
       }
     });
-  }
-
-  // Check if all speaking questions are completed
-  private checkSpeakingCompletion(): void {
-    if (!this.hasSpeakingQuestions()) {
-      return;
-    }
-
-    const allCompleted = this.speakingStateService.areAllQuestionsCompleted();
-    console.log(
-      '[SpeakingComponent] All speaking questions completed:',
-      allCompleted
-    );
-
-    if (allCompleted) {
-      this.showSpeakingSummary = true;
-      this.baseQuestionService.finishQuiz();
-    }
   }
 
   // UI helper methods
@@ -432,7 +492,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     return index === this.currentIndex;
   }
 
-  // Speaking actions
+  // Line 436-465: finishSpeakingExam()
   finishSpeakingExam(): void {
     if (!this.hasSpeakingQuestions()) {
       return;
@@ -441,10 +501,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     // Check if all questions are completed
     const allCompleted = this.speakingStateService.areAllQuestionsCompleted();
 
-    if (allCompleted) {
-      this.showSpeakingSummary = true;
-      this.baseQuestionService.finishQuiz();
-    } else {
+    if (!allCompleted) {
       // Show warning about incomplete questions
       const incompleteQuestions = this.questions.filter((q) => {
         if (!q.questionType || !this.isSpeakingQuestion(q.questionType))
@@ -457,24 +514,107 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         alert(
           `Bạn còn ${incompleteQuestions.length} câu chưa hoàn thành. Vui lòng hoàn thành tất cả câu hỏi trước khi nộp bài.`
         );
-      } else {
-        this.showSpeakingSummary = true;
-        this.baseQuestionService.finishQuiz();
+        return;
       }
     }
-  }
 
+    if (this.attemptId === null || this.attemptId <= 0) {
+      // ✅ FIX
+      console.error('[Speaking] ❌ Invalid attemptId:', this.attemptId);
+      alert('Lỗi hệ thống: Không tìm thấy ID bài thi. Vui lòng thử lại.');
+      return;
+    }
+    this.callEndExamAPI();
+    this.examAttemptService.finalizeAttempt(this.attemptId).subscribe({
+      next: (summary) => {
+        console.log('Speaking exam finalized:', summary);
+
+        // Update scores from backend if available
+        if (summary.totalScore !== undefined) {
+          this.baseQuestionService.setTotalScore(summary.totalScore);
+        }
+
+        // Show summary
+        this.showSpeakingSummary = true;
+        this.baseQuestionService.finishQuiz();
+
+        // ✅ FIX Bug #14: KHÔNG xóa speakingQuestionResults ngay
+        // Chỉ cleanup localStorage, để results hiển thị trong modal
+        localStorage.removeItem('currentExamAttempt');
+      },
+      error: (error) => {
+        console.error('Error finalizing speaking exam:', error);
+        // Still show summary even if API fails
+        this.showSpeakingSummary = true;
+        this.baseQuestionService.finishQuiz();
+
+        // ✅ FIX Bug #14: Giữ results để hiển thị
+        localStorage.removeItem('currentExamAttempt');
+      },
+    });
+  }
+  private callEndExamAPI(): void {
+    try {
+      const storedAttempt = localStorage.getItem('currentExamAttempt');
+      if (!storedAttempt) {
+        console.error(
+          '[Speaking] ❌ No currentExamAttempt found in localStorage'
+        );
+        return;
+      }
+
+      const attemptData = JSON.parse(storedAttempt);
+      console.log('[Speaking] 📦 Attempt data from localStorage:', attemptData);
+
+      const endExamRequest = {
+        attemptID: attemptData.attemptID || attemptData.attemptId,
+        userID: attemptData.userID || attemptData.userId,
+        examID: attemptData.examID || attemptData.examId,
+        examPartId: attemptData.examPartId || null,
+        startTime: attemptData.startTime,
+        endTime: new Date().toISOString(),
+        score: Math.round(this.totalScore), // Lấy điểm từ baseQuestionService
+        status: 'Completed',
+      };
+
+      console.log(
+        '[Speaking] 🚀 Calling endExam API with request:',
+        endExamRequest
+      );
+
+      this.examAttemptService.endExam(endExamRequest).subscribe({
+        next: (response) => {
+          console.log(
+            '[Speaking] ✅ Speaking exam ended successfully:',
+            response
+          );
+        },
+        error: (error) => {
+          console.error('[Speaking] ❌ Error ending speaking exam:', error);
+          console.error('[Speaking] ❌ Error details:', {
+            status: error.status,
+            message: error.message,
+            error: error.error,
+          });
+        },
+      });
+    } catch (error) {
+      console.error('[Speaking] ❌ Error parsing currentExamAttempt:', error);
+    }
+  }
   closeSpeakingSummary(): void {
     this.showSpeakingSummary = false;
   }
 
   onRetrySpeakingTest(): void {
     console.log('[SpeakingComponent] Retry speaking test');
+    this.cleanupSpeakingSession(); // ✅ Cleanup trước khi reset
     this.resetQuiz();
   }
 
   onTryOtherSpeakingTest(): void {
     console.log('[SpeakingComponent] Try other speaking test');
+    this.cleanupSpeakingSession(); // ✅ Cleanup trước khi navigate
     this.goToExams();
   }
 
@@ -552,13 +692,37 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     this.examAttemptService.saveProgress(model).subscribe({
       next: () => {
         console.log('Speaking progress saved successfully');
-        localStorage.removeItem('currentExamAttempt');
+
+        // ✅ FIX Bug #10: Clean up toàn bộ state
+        this.cleanupSpeakingSession();
+
         this.router.navigate(['homepage/user-dashboard/exams']);
       },
       error: (error) => {
         console.error('Error saving speaking progress:', error);
+
+        // ✅ FIX Bug #10: Clean up ngay cả khi API fail
+        this.cleanupSpeakingSession();
+
         this.router.navigate(['homepage/user-dashboard/exams']);
       },
     });
+  }
+
+  // ✅ FIX Bug #10: Centralized cleanup method
+  private cleanupSpeakingSession(): void {
+    console.log('[Speaking] 🧹 Cleaning up session...');
+
+    // 1. Remove localStorage
+    localStorage.removeItem('currentExamAttempt');
+
+    // 2. Clear service state (includes audio blobs, results, etc.)
+    this.speakingStateService.resetAllStates();
+
+    // 3. Clear component-level caches
+    this.speakingResults.clear();
+    this.speakingQuestionResults = [];
+
+    console.log('[Speaking] ✅ Cleanup completed');
   }
 }
