@@ -189,7 +189,8 @@
   }
 
   <!-- Trạng thái: Submitted - Đã nộp bài (ẩn chi tiết cho đến khi kết thúc bài thi) -->
-  @if (isSubmitted) {
+  <!-- ✅ FIX: Chỉ hiển thị khi isCurrentQuestion = true -->
+  @if (isSubmitted && isCurrentQuestion) {
   <div class="py-6">
     <div
       class="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg shadow-sm"
