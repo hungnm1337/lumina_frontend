@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "ng": "ng",
-  "start": "ng serve",  
-  "build": "ng build",
-  "watch": "ng build --watch --configuration development",
-  "test": "ng test"
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test"
   },
   "repository": {
     "type": "git",
@@ -20,5 +20,11 @@
   "bugs": {
     "url": "https://github.com/hungnm1337/lumina_frontend/issues"
   },
-  "homepage": "https://github.com/hungnm1337/lumina_frontend#readme"
+  "homepage": "https://github.com/hungnm1337/lumina_frontend#readme",
+  "dependencies": {
+    "@ng-bootstrap/ng-bootstrap": "^19.0.1",
+    "@types/summernote": "^0.8.10",
+    "jquery": "^3.7.1",
+    "summernote": "^0.9.1"
+  }
 }

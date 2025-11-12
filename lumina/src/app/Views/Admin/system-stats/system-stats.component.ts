@@ -139,7 +139,7 @@ export class SystemStatsComponent implements OnInit, AfterViewInit {
             },
             tooltip: {
               callbacks: {
-                label: (context) => {
+                label: (context: any) => {
                   const value = context.parsed.y;
                   return value !== null
                     ? 'Doanh thu: ' + value.toLocaleString('vi-VN') + ' ₫'
@@ -153,7 +153,7 @@ export class SystemStatsComponent implements OnInit, AfterViewInit {
             y: {
               beginAtZero: true,
               ticks: {
-                callback: (value) => {
+                callback: (value: any) => {
                   const numValue = value as number;
                   if (numValue >= 1000000) {
                     return (numValue / 1000000).toFixed(1) + ' tr';

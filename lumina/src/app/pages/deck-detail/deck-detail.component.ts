@@ -61,10 +61,10 @@ export class DeckDetailComponent implements OnInit {
           this.terms = deck.terms || [];
           console.log('Terms loaded:', this.terms.length);
           this.learningCount = this.terms.length; // Initially all are "learning"
-          
+
           // Load thông tin chi tiết của list để có title và author
           this.loadDeckInfo(deckId);
-          
+
           // Load hoặc tạo SpacedRepetition
           this.loadOrCreateSpacedRepetition(deckId);
         } else {
@@ -143,11 +143,11 @@ export class DeckDetailComponent implements OnInit {
 
   playAudio(event: Event, termIndex?: number): void {
     event.stopPropagation(); // Prevent card flip when clicking audio
-    
+
     // Nếu có termIndex (từ danh sách từ vựng), dùng term đó, nếu không dùng currentTermIndex (từ flashcard chính)
     const index = termIndex !== undefined ? termIndex : this.currentTermIndex;
     const term = this.terms[index];
-    
+
     if (!term) return;
 
     const audioUrl = term.audioUrl;
@@ -232,7 +232,7 @@ export class DeckDetailComponent implements OnInit {
           this.spacedRepetition = response.updatedRepetition;
           this.showReviewButtons = false;
           console.log('Review successful:', response);
-          
+
           // Hiển thị thông báo thành công
           alert(`Đã đánh giá thành công! Lần review tiếp theo: ${this.formatNextReviewDate(response.nextReviewAt)}`);
         }
@@ -259,7 +259,7 @@ export class DeckDetailComponent implements OnInit {
   // Format ngày review tiếp theo
   formatNextReviewDate(dateString: string | null | undefined): string {
     if (!dateString) return 'Chưa xác định';
-    
+
     const date = new Date(dateString);
     const now = new Date();
     const diffTime = date.getTime() - now.getTime();

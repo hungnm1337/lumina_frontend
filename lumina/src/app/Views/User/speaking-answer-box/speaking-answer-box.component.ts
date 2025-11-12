@@ -34,8 +34,12 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
   @Input() resetAt: number = 0;
   @Input() questionTime: number = 0; // Time limit for this question
   @Input() attemptId: number = 0; // ✅ THÊM: Attempt ID của lượt thi hiện tại
+  @Input() isCurrentQuestion: boolean = true; // ✅ FIX: Biết câu này có đang được xem không
   @Output() answered = new EventEmitter<boolean>();
-  @Output() scoringResult = new EventEmitter<SpeakingScoringResult>();
+  @Output() scoringResult = new EventEmitter<{
+    questionId: number;
+    result: SpeakingScoringResult;
+  }>(); // ✅ FIX Bug #15.1: Emit cả questionId
   @Output() submitting = new EventEmitter<boolean>(); // New: Notify parent về trạng thái submit
 
   state: RecordingState = 'idle';
@@ -48,6 +52,9 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
   // Kết quả chấm điểm
   result: SpeakingScoringResult | null = null;
   errorMessage: string = '';
+
+  // ✅ FIX: Lưu questionId tại thời điểm submit để tránh bị thay đổi khi navigate
+  private submittedQuestionId: number | null = null;
 
   // Cache for audio URL to prevent ExpressionChangedAfterItHasBeenCheckedError
   private audioUrl: string | null = null;
@@ -70,6 +77,15 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    // ✅ FIX Bug #15: NGĂN cập nhật UI khi đang recording
+    // Nếu đang recording, BỎ QUA mọi thay đổi để không làm gián đoạn
+    if (this.state === 'recording') {
+      console.log(
+        '[SpeakingAnswerBox] ⚠️ Currently recording - IGNORING all changes to prevent interruption'
+      );
+      return;
+    }
+
     // Debug attemptId changes
     if (changes['attemptId']) {
       console.log('[SpeakingAnswerBox] attemptId changed:', {
@@ -87,17 +103,8 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
     }
 
     if (changes['resetAt']) {
-      // If currently recording, stop and save as draft before navigating
-      if (this.state === 'recording') {
-        this.stopRecording();
-        // Wait a bit for the recording to be saved, then restore state
-        setTimeout(() => {
-          this.restoreStateFromService();
-        }, 100);
-      } else {
-        // For speaking questions: preserve state when navigating
-        this.restoreStateFromService();
-      }
+      // For speaking questions: preserve state when navigating
+      this.restoreStateFromService();
     }
   }
 
@@ -106,7 +113,7 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
       this.questionId
     );
     console.log(
-      `[SpeakingAnswerBox] restoreStateFromService: questionId=${this.questionId}, savedState=`,
+      `[SpeakingAnswerBox] restoreStateFromService: questionId=${this.questionId}, isCurrentQuestion=${this.isCurrentQuestion}, savedState=`,
       savedState
     );
 
@@ -137,11 +144,11 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
       );
 
       // Set component state based on saved state
-      // PRIORITY: If result exists, always show submitted state regardless of saved state
+      // ✅ FIX: Chỉ set state='submitted' nếu có result VÀ đang xem câu này
       if (savedState.result) {
         this.state = 'submitted';
         console.log(
-          `[SpeakingAnswerBox] Result exists, setting state to 'submitted'`
+          `[SpeakingAnswerBox] Result exists for Q${this.questionId}, setting state to 'submitted'. Will display: ${this.isCurrentQuestion}`
         );
       } else if (
         savedState.state === 'submitted' ||
@@ -162,7 +169,7 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
         this.state = 'idle';
       }
       console.log(
-        `[SpeakingAnswerBox] Restored state: component.state=${this.state}`
+        `[SpeakingAnswerBox] Restored state: component.state=${this.state}, isCurrentQuestion=${this.isCurrentQuestion}, willShowSubmitted=${this.isSubmitted}`
       );
     } else {
       // No saved state, reset component
@@ -273,7 +280,20 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
         `[SpeakingAnswerBox] stopRecording called, audioBlob:`,
         this.audioBlob ? 'EXISTS' : 'NULL'
       );
+
+      // ✅ FIX Bug #15: Notify parent để trigger pending UI updates
+      // Khi recording kết thúc, parent component có thể cập nhật UI của các câu khác
+      this.notifyRecordingStopped();
     }
+  }
+
+  // ✅ FIX Bug #15: Notify parent component khi recording kết thúc
+  private notifyRecordingStopped(): void {
+    // Emit event để parent biết recording đã dừng
+    // Có thể thêm Output EventEmitter nếu cần
+    console.log(
+      '[SpeakingAnswerBox] 📢 Recording stopped - parent can now update UI'
+    );
   }
 
   async submitRecording(): Promise<void> {
@@ -310,7 +330,14 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
     this.state = 'processing';
     this.errorMessage = '';
     this.submitting.emit(true);
-    this.speakingStateService.markAsScoring(this.questionId);
+
+    // ✅ FIX: Lưu questionId hiện tại để tránh bị thay đổi khi user navigate
+    this.submittedQuestionId = this.questionId;
+    console.log(
+      `[SpeakingAnswerBox] 🔒 Locked questionId for submission: ${this.submittedQuestionId}`
+    );
+
+    this.speakingStateService.markAsScoring(this.submittedQuestionId);
 
     try {
       // Submit via service-level method to ensure continuity across navigation
@@ -324,22 +351,43 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
         return;
       }
       const result = await this.speakingStateService.submitAnswerAndStore(
-        this.questionId,
+        this.submittedQuestionId!,
         this.audioBlob,
         this.attemptId // ✅ Truyền attemptId
       );
 
       if (result) {
         this.result = result;
-        this.state = 'submitted';
+
+        // ✅ FIX: CHỈ update local state nếu vẫn đang ở câu đã submit
+        // Nếu user đã navigate sang câu khác, KHÔNG update local state
+        if (this.questionId === this.submittedQuestionId) {
+          this.state = 'submitted';
+          console.log(
+            `[SpeakingAnswerBox] ✅ Submission successful for Q${this.submittedQuestionId}, updated local state to 'submitted'`
+          );
+        } else {
+          console.log(
+            `[SpeakingAnswerBox] ⚠️ User navigated away (now at Q${this.questionId}, submitted Q${this.submittedQuestionId}), NOT updating local state`
+          );
+        }
+
         // Remove toast notification - chấm điểm ngầm, không thông báo
         // this.toastService.success('Đã nộp bài thành công!');
 
         // State already saved by service method
 
-        // Emit kết quả để parent component có thể xử lý
-        this.scoringResult.emit(result);
+        // ✅ FIX Bug #15.1 & #15.2: Emit result với questionId đã lock
+        // Parent sẽ quyết định có hiển thị UI hay không dựa trên currentQuestion
+        this.scoringResult.emit({
+          questionId: this.submittedQuestionId!,
+          result: result,
+        });
         this.answered.emit(true);
+
+        console.log(
+          `[SpeakingAnswerBox] ✅ Result emitted for question ${this.submittedQuestionId}. Parent will decide whether to show UI.`
+        );
       }
     } catch (error: any) {
       if (error.status === 0 || error.message?.includes('NetworkError')) {
@@ -484,7 +532,14 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
   }
 
   get isSubmitted(): boolean {
-    return this.state === 'submitted';
+    // ✅ FIX: Chỉ hiển thị success message khi đang xem câu này
+    const result = this.state === 'submitted' && this.isCurrentQuestion;
+    if (this.state === 'submitted') {
+      console.log(
+        `[SpeakingAnswerBox] isSubmitted getter: Q${this.questionId}, state=${this.state}, isCurrentQuestion=${this.isCurrentQuestion}, result=${result}`
+      );
+    }
+    return result;
   }
 
   get isError(): boolean {

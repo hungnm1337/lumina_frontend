@@ -1,0 +1,29 @@
+// Line clamp utility for limiting text to 3 lines
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 4.5rem; // Approximately 3 lines
+}
+
+// Override any HTML styling from noteContent
+.line-clamp-3 ::ng-deep {
+  p {
+    margin: 0;
+    padding: 0;
+  }
+
+  ul, ol {
+    margin: 0;
+    padding-left: 1.5rem;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-size: inherit;
+    font-weight: inherit;
+    margin: 0;
+  }
+}
