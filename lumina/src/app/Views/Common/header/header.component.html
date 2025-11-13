@@ -33,12 +33,12 @@
       </div>
 
       <!-- Navigation Menu -->
-      <nav class="hidden lg:flex items-center space-x-6">
+      <nav class="hidden lg:flex items-center space-x-1 xl:space-x-2">
         <a
           routerLink="/homepage"
           class="px-2 xl:px-3 py-2 rounded-lg text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 font-medium relative group whitespace-nowrap"
         >
-          <i class="fas fa-home mr-1"></i>Homepage
+          <i class="fas fa-home mr-1"></i>Trang chủ
           <div
             class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-200"
           ></div>
@@ -48,7 +48,7 @@
           (click)="moveToExams()"
           class="px-2 xl:px-3 py-2 rounded-lg hover: cursor-pointer text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 font-medium relative group whitespace-nowrap"
         >
-          <i class="fas fa-dumbbell mr-1"></i>Dashboard
+          <i class="fas fa-dumbbell mr-1"></i>Luyện tập
           <div
             class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-200"
           ></div>
@@ -58,12 +58,41 @@
           routerLink="/thi-thu"
           class="px-2 xl:px-3 py-2 rounded-lg text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 font-medium relative group whitespace-nowrap"
         >
-          <i class="fas fa-clipboard-check mr-1"></i>Test your level
+          <i class="fas fa-clipboard-check mr-1"></i>Thi thử
           <div
             class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-200"
           ></div>
         </a>
 
+        <a
+          routerLink="/tu-vung"
+          class="px-2 xl:px-3 py-2 rounded-lg text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 font-medium relative group whitespace-nowrap"
+        >
+          <i class="fas fa-book mr-1"></i>Từ vựng
+          <div
+            class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-200"
+          ></div>
+        </a>
+
+        <a
+          routerLink="/ngu-phap"
+          class="px-2 xl:px-3 py-2 rounded-lg text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 font-medium relative group whitespace-nowrap"
+        >
+          <i class="fas fa-language mr-1"></i>Ngữ pháp
+          <div
+            class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-200"
+          ></div>
+        </a>
+
+        <a
+          routerLink="/blog"
+          class="px-2 xl:px-3 py-2 rounded-lg text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 font-medium relative group whitespace-nowrap"
+        >
+          <i class="fas fa-blog mr-1"></i>Articles
+          <div
+            class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-200"
+          ></div>
+        </a>
       </nav>
 
       <!-- User Actions -->
