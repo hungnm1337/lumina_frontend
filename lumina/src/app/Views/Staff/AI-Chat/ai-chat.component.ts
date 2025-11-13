@@ -282,7 +282,9 @@ export class AiChatComponent implements OnInit, OnDestroy {
           
           this.saveToStorage();
         } else {
-          this.addAssistantMessage(response.message);
+          // ✅ ĐƠN GIẢN: Chỉ lấy message ra (đã là plain text)
+          const displayMessage = response.message || 'Không có phản hồi';
+          this.addAssistantMessage(displayMessage);
         }
         
         this.isLoading = false;
@@ -291,17 +293,13 @@ export class AiChatComponent implements OnInit, OnDestroy {
         console.error('Error:', error);
         this.removeLoadingMessage();
         
-        // ✅ Chỉ lấy message từ error response
         let errorMessage = 'Có lỗi xảy ra, vui lòng thử lại sau!';
         
         if (error.error?.error?.message) {
-          // Trường hợp Gemini API error format
           errorMessage = error.error.error.message;
         } else if (error.error?.message) {
-          // Trường hợp error format khác
           errorMessage = error.error.message;
         } else if (error.message) {
-          // Trường hợp error từ HTTP client
           errorMessage = error.message;
         }
         
