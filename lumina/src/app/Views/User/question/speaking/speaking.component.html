@@ -44,6 +44,7 @@
       [resetAt]="resetCounter"
       [questionTime]="questions[currentIndex].time"
       [attemptId]="attemptId ?? 0"
+      [isCurrentQuestion]="true"
       (answered)="onSpeakingAnswered($event)"
       (scoringResult)="onSpeakingResult($event)"
       (submitting)="onSpeakingSubmitting($event)"

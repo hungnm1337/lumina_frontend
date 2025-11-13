@@ -66,6 +66,9 @@ export const routes: Routes = [
           { path: 'part/:id', component: PartQuestionComponent },
           { path: 'notes', component: UserNoteListComponent },
           { path: 'note/:id', component: UserNoteDetailComponent },
+          { path: 'articles', component: BlogArticlesComponent },
+          { path: 'article/:id', component: BlogDetailComponent },
+          { path: 'vocabulary', component: UserVocabularyComponent },
           { path: '', redirectTo: 'exams', pathMatch: 'full' },
         ],
       },
@@ -83,9 +86,7 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
-  { path: 'blog', component: BlogArticlesComponent },
-  { path: 'blog/:id', component: BlogDetailComponent },
-  { path: 'tu-vung', component: UserVocabularyComponent },
+
   {
     path: 'tu-vung/list/:id',
     loadComponent: () =>

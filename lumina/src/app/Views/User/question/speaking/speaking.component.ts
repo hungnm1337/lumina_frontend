@@ -66,6 +66,12 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   isProcessingQueue = false;
   resetCounter = 0; // Force trigger resetAt changes
 
+  // ✅ FIX Bug #15: Queue để lưu các kết quả chấm điểm bị defer khi có recording đang diễn ra
+  private deferredResults: Map<number, SpeakingScoringResult> = new Map();
+
+  // ✅ FIX: Track câu hỏi vừa được submit để validate kết quả trả về
+  private recentlySubmittedQuestions: Set<number> = new Set();
+
   constructor(
     private router: Router,
     private baseQuestionService: BaseQuestionService,
@@ -111,6 +117,31 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     if (this.advanceTimer) {
       clearTimeout(this.advanceTimer);
     }
+
+    // ✅ FIX Bug #15: Xử lý các deferred results trước khi destroy
+    if (this.deferredResults.size > 0) {
+      console.log(
+        `[SpeakingComponent] 🧹 Processing ${this.deferredResults.size} deferred results before destroy`
+      );
+      // Force process ngay lập tức, không check recording
+      this.deferredResults.forEach((result, questionId) => {
+        const question = this.questions.find(
+          (q) => q.questionId === questionId
+        );
+        if (question) {
+          this.speakingResults.set(questionId, result);
+          const scoreRatio = result.overallScore / 100;
+          const earnedScore = (question.scoreWeight ?? 0) * scoreRatio;
+          const roundedScore = Math.round(earnedScore * 100) / 100;
+          this.baseQuestionService.addScore(roundedScore);
+          if (result.overallScore >= 60) {
+            this.baseQuestionService.incrementCorrectCount();
+          }
+        }
+      });
+      this.deferredResults.clear();
+    }
+
     this.saveProgressOnExit();
   }
 
@@ -219,64 +250,139 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   // Speaking-specific methods
-  onSpeakingResult(result: SpeakingScoringResult): void {
+  onSpeakingResult(event: {
+    questionId: number;
+    result: SpeakingScoringResult;
+  }): void {
+    // ✅ FIX Bug #15.1: Event giờ chứa cả questionId và result
+    const { questionId, result } = event;
+    const q = this.questions.find(
+      (question) => question.questionId === questionId
+    );
+
+    const isCurrentQuestion =
+      this.questions[this.currentIndex]?.questionId === questionId;
+
     console.log('[SpeakingComponent] 📊 Received scoring result:', {
-      questionIndex: this.currentIndex,
-      questionId: this.questions[this.currentIndex]?.questionId,
+      currentIndex: this.currentIndex,
+      currentQuestionId: this.questions[this.currentIndex]?.questionId,
+      resultQuestionId: questionId,
       result: result,
       overallScore: result?.overallScore,
+      isCurrentQuestion: isCurrentQuestion,
+      allQuestions: this.questions.map((q) => ({
+        id: q.questionId,
+        index: this.questions.indexOf(q),
+      })),
+      WARNING:
+        questionId !== this.questions[this.currentIndex]?.questionId
+          ? `⚠️ MISMATCH: Result for Q${questionId} but viewing Q${
+              this.questions[this.currentIndex]?.questionId
+            }`
+          : '✅ Match: viewing same question',
     });
 
-    const q = this.questions[this.currentIndex];
     if (
       q &&
       result.overallScore !== null &&
       result.overallScore !== undefined
     ) {
-      // Lưu kết quả cho câu hỏi (map theo questionId, không đẩy trùng vào mảng)
-      this.speakingResults.set(q.questionId, result);
+      // ✅ LUÔN LUÔN lưu vào map và tính điểm (silent)
+      this.speakingResults.set(questionId, result);
+
+      const scoreRatio = result.overallScore / 100;
+      const earnedScore = (q.scoreWeight ?? 0) * scoreRatio;
+      const roundedScore = Math.round(earnedScore * 100) / 100;
+      this.baseQuestionService.addScore(roundedScore);
+
+      if (result.overallScore >= 60) {
+        this.baseQuestionService.incrementCorrectCount();
+      }
+
+      console.log(
+        `[SpeakingComponent] ✅ Score calculated silently: ${roundedScore.toFixed(
+          2
+        )}`
+      );
+
+      // ✅ FIX: KHÔNG hiển thị UI nếu user đang ở câu khác hoặc đang recording
+      const isAnyRecording = Array.from(
+        this.speakingStateService.getCurrentStates().values()
+      ).some((state) => state.state === 'in_progress');
+
+      if (!isCurrentQuestion) {
+        console.log(
+          `[SpeakingComponent] 🔇 Silently saved result for question ${questionId} (user is viewing question ${
+            this.questions[this.currentIndex]?.questionId
+          })`
+        );
+        // Lưu vào deferred để hiển thị khi user quay lại câu này
+        this.deferredResults.set(questionId, result);
+        return;
+      }
+
+      if (isAnyRecording) {
+        console.log(
+          '[SpeakingComponent] ⚠️ Detected active recording - deferring UI update to prevent interruption'
+        );
+        // ✅ FIX Bug #15: Lưu kết quả vào deferred queue để xử lý sau
+        this.deferredResults.set(questionId, result);
+        console.log(
+          `[SpeakingComponent] 📦 Deferred result for question ${questionId}. Queue size: ${this.deferredResults.size}`
+        );
+
+        // Setup timer để check lại sau 2 giây
+        setTimeout(() => this.processDeferredResults(), 2000);
+        return;
+      }
+
+      // ✅ CHỈ KHI user đang xem câu này VÀ không có recording → Hiển thị UI
+      console.log(
+        `[SpeakingComponent] ✅ Showing UI for question ${questionId}`
+      );
+
+      // ✅ FIX Bug #15.1: Tìm questionNumber theo questionId thay vì dùng currentIndex
+      const questionIndex = this.questions.indexOf(q);
+      const questionNumber = questionIndex + 1;
+
+      console.log('[SpeakingComponent] 🔍 Question mapping:', {
+        questionId: questionId,
+        questionIndex: questionIndex,
+        questionNumber: questionNumber,
+        currentIndex: this.currentIndex,
+        questionText: q.stemText?.substring(0, 50),
+      });
 
       // Cập nhật mảng summary không bị trùng: thay thế nếu đã tồn tại
       const existingIndex = this.speakingQuestionResults.findIndex(
-        (x) => x.questionNumber === this.currentIndex + 1
+        (x) => x.questionNumber === questionNumber
       );
       const item = {
-        questionNumber: this.currentIndex + 1,
+        questionNumber: questionNumber,
         questionText: q.stemText,
         result: result,
       };
       if (existingIndex >= 0) {
+        console.log(
+          `[SpeakingComponent] 🔄 Replacing existing result at index ${existingIndex} for questionNumber ${questionNumber}`
+        );
         this.speakingQuestionResults[existingIndex] = item;
       } else {
+        console.log(
+          `[SpeakingComponent] ➕ Adding new result for questionNumber ${questionNumber}`
+        );
         this.speakingQuestionResults.push(item);
       }
 
-      console.log('[SpeakingComponent] ✅ Updated results:', {
+      console.log('[SpeakingComponent] ✅ Updated results UI displayed:', {
         totalResults: this.speakingQuestionResults.length,
         mapSize: this.speakingResults.size,
+        allResults: this.speakingQuestionResults.map((r) => ({
+          qNum: r.questionNumber,
+          score: r.result.overallScore,
+          text: r.questionText?.substring(0, 30),
+        })),
       });
-
-      // Tính điểm dựa trên overallScore (0-100) chuyển sang scoreWeight
-      // Giả sử scoreWeight tối đa là 10, scale theo tỷ lệ
-      const scoreRatio = result.overallScore / 100;
-      const earnedScore = (q.scoreWeight ?? 0) * scoreRatio;
-
-      // ✅ FIX: Round điểm để tránh floating-point errors (8.340000001 → 8.34)
-      const roundedScore = Math.round(earnedScore * 100) / 100;
-      this.baseQuestionService.addScore(roundedScore);
-
-      console.log('[SpeakingComponent] 📈 Score calculated:', {
-        overallScore: result.overallScore,
-        scoreWeight: q.scoreWeight,
-        earnedScore: earnedScore,
-        roundedScore: roundedScore,
-        totalScore: this.totalScore,
-      });
-
-      // Coi là đúng nếu điểm >= 60
-      if (result.overallScore >= 60) {
-        this.baseQuestionService.incrementCorrectCount();
-      }
     } else {
       console.warn('[SpeakingComponent] ⚠️ Invalid result received:', {
         hasQuestion: !!q,
@@ -371,6 +477,64 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
     // Force trigger resetAt change for speaking questions
     this.resetCounter++;
+
+    // ✅ FIX: Khi navigate về câu hỏi, check xem có deferred result không và hiển thị
+    if (targetQuestion) {
+      this.checkAndShowDeferredResult(targetQuestion.questionId);
+    }
+  }
+
+  private checkAndShowDeferredResult(questionId: number): void {
+    const deferredResult = this.deferredResults.get(questionId);
+    if (!deferredResult) {
+      return;
+    }
+
+    // Kiểm tra xem có đang recording không
+    const isAnyRecording = Array.from(
+      this.speakingStateService.getCurrentStates().values()
+    ).some((state) => state.state === 'in_progress');
+
+    if (isAnyRecording) {
+      console.log(
+        `[SpeakingComponent] ⏳ Cannot show deferred result for question ${questionId} - recording in progress`
+      );
+      return;
+    }
+
+    // Hiển thị UI cho deferred result
+    console.log(
+      `[SpeakingComponent] 📢 Showing deferred result for question ${questionId}`
+    );
+
+    const question = this.questions.find((q) => q.questionId === questionId);
+    if (!question) {
+      return;
+    }
+
+    const questionIndex = this.questions.indexOf(question);
+    const questionNumber = questionIndex + 1;
+
+    // Cập nhật mảng summary
+    const existingIndex = this.speakingQuestionResults.findIndex(
+      (x) => x.questionNumber === questionNumber
+    );
+    const item = {
+      questionNumber: questionNumber,
+      questionText: question.stemText,
+      result: deferredResult,
+    };
+    if (existingIndex >= 0) {
+      this.speakingQuestionResults[existingIndex] = item;
+    } else {
+      this.speakingQuestionResults.push(item);
+    }
+
+    // Remove khỏi deferred queue
+    this.deferredResults.delete(questionId);
+    console.log(
+      `[SpeakingComponent] ✅ Displayed deferred result and removed from queue. Remaining: ${this.deferredResults.size}`
+    );
   }
 
   private handleSpeakingNavigation(questionId: number): void {
@@ -420,22 +584,117 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   private updateSpeakingResults(states: Map<number, any>): void {
-    // Update speakingQuestionResults when states change
-    this.speakingQuestionResults = [];
-    states.forEach((state, questionId) => {
-      if (state.result) {
-        const question = this.questions.find(
-          (q) => q.questionId === questionId
+    // ✅ FIX Bug #15.2: KHÔNG tự động update UI khi state thay đổi
+    // Chỉ log để debug, không rebuild speakingQuestionResults array
+    // Array này chỉ được update trong onSpeakingResult() khi isCurrentQuestion = true
+
+    console.log('[SpeakingComponent] 🔔 State service emitted update:', {
+      totalStates: states.size,
+      scoredCount: Array.from(states.values()).filter(
+        (s) => s.state === 'scored'
+      ).length,
+    });
+
+    // KHÔNG làm gì cả - để tránh trigger re-render không mong muốn
+    // speakingQuestionResults được quản lý trực tiếp trong onSpeakingResult()
+  }
+
+  // ✅ FIX Bug #15: Xử lý các kết quả bị defer khi recording đã kết thúc
+  private processDeferredResults(): void {
+    if (this.deferredResults.size === 0) {
+      return;
+    }
+
+    // Kiểm tra xem còn recording nào đang diễn ra không
+    const isAnyRecording = Array.from(
+      this.speakingStateService.getCurrentStates().values()
+    ).some((state) => state.state === 'in_progress');
+
+    if (isAnyRecording) {
+      console.log(
+        '[SpeakingComponent] ⏳ Still recording - deferring again...'
+      );
+      // Vẫn còn recording, check lại sau 2 giây
+      setTimeout(() => this.processDeferredResults(), 2000);
+      return;
+    }
+
+    // Không còn recording nào, xử lý tất cả deferred results
+    console.log(
+      `[SpeakingComponent] ✅ No active recording - processing ${this.deferredResults.size} deferred results`
+    );
+
+    this.deferredResults.forEach((result, questionId) => {
+      const question = this.questions.find((q) => q.questionId === questionId);
+      if (!question) {
+        console.warn(
+          `[SpeakingComponent] ⚠️ Question ${questionId} not found for deferred result`
         );
-        if (question) {
-          this.speakingQuestionResults.push({
-            questionNumber: this.questions.indexOf(question) + 1,
-            questionText: question.stemText,
-            result: state.result,
-          });
+        return;
+      }
+
+      const isCurrentQuestion =
+        this.questions[this.currentIndex]?.questionId === questionId;
+
+      // ✅ FIX Bug #15.2: Chỉ update UI summary nếu đang xem câu đó
+      if (isCurrentQuestion) {
+        console.log(
+          `[SpeakingComponent] 📢 Processing deferred result for CURRENT question ${questionId} - will show UI`
+        );
+
+        // Lưu kết quả
+        this.speakingResults.set(questionId, result);
+
+        // Cập nhật mảng summary
+        const questionIndex = this.questions.indexOf(question);
+        const existingIndex = this.speakingQuestionResults.findIndex(
+          (x) => x.questionNumber === questionIndex + 1
+        );
+        const item = {
+          questionNumber: questionIndex + 1,
+          questionText: question.stemText,
+          result: result,
+        };
+        if (existingIndex >= 0) {
+          this.speakingQuestionResults[existingIndex] = item;
+        } else {
+          this.speakingQuestionResults.push(item);
         }
+      } else {
+        console.log(
+          `[SpeakingComponent] 🔇 Silently processing deferred result for question ${questionId} (user is viewing different question)`
+        );
+
+        // Lưu kết quả nhưng không update UI summary
+        this.speakingResults.set(questionId, result);
+
+        // ✅ Result đã được lưu vào state service, không cần gọi lại markAsScored()
+      }
+
+      // Tính điểm (luôn tính, bất kể có hiển thị UI hay không)
+      const scoreRatio = result.overallScore / 100;
+      const earnedScore = (question.scoreWeight ?? 0) * scoreRatio;
+      const roundedScore = Math.round(earnedScore * 100) / 100;
+      this.baseQuestionService.addScore(roundedScore);
+
+      console.log(
+        `[SpeakingComponent] 📈 Processed deferred result for question ${questionId}:`,
+        {
+          overallScore: result.overallScore,
+          roundedScore: roundedScore,
+          isCurrentQuestion: isCurrentQuestion,
+        }
+      );
+
+      // Coi là đúng nếu điểm >= 60
+      if (result.overallScore >= 60) {
+        this.baseQuestionService.incrementCorrectCount();
       }
     });
+
+    // Clear deferred queue
+    this.deferredResults.clear();
+    console.log('[SpeakingComponent] 🧹 Cleared deferred results queue');
   }
 
   // UI helper methods
