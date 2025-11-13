@@ -27,7 +27,7 @@ export class ExamGeneratorService {
     return this.http.post<any>(`${this.baseUrl}/generate-exam`, { userRequest });
   }
 
-  smartChat(userRequest: string): Observable<any> {
+    smartChat(userRequest: string): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/smart-chat`, { userRequest });
   }
 
