@@ -8,8 +8,17 @@ import { Router } from '@angular/router';
   styleUrl: './menu.component.scss'
 })
 export class MenuComponent {
+  moveToArticles() {
+    this.router.navigate(['homepage/user-dashboard/articles']);
+  }
+  moveToVocabulary() {
+    this.router.navigate(['homepage/user-dashboard/vocabulary']);
+  }
+  moveToNoteList() {
+    this.router.navigate(['homepage/user-dashboard/notes']);
+  }
 
-  constructor(private router: Router ) {}
+  constructor(private router: Router) { }
   movetoExams() {
     this.router.navigate(['homepage/user-dashboard/exams']);
   }

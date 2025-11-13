@@ -88,6 +88,38 @@ export class VocabularyListDetailComponent implements OnInit {
 
 
   ngOnInit(): void {
+    // Nếu vocabularyList được truyền qua @Input, đảm bảo các words có ID
+    if (this.vocabularyList && this.vocabularyList.words) {
+      this.vocabularyList.words = this.vocabularyList.words.map((w: any) => {
+        // Nếu đã có ID hợp lệ, giữ nguyên
+        if (w.id !== undefined && w.id !== null && !isNaN(Number(w.id))) {
+          return w;
+        }
+        
+        // Thử nhiều cách lấy ID từ object gốc
+        let wordId: number | undefined = undefined;
+        if (w.id !== undefined && w.id !== null) {
+          wordId = Number(w.id);
+        } else if (w.vocabularyId !== undefined && w.vocabularyId !== null) {
+          wordId = Number(w.vocabularyId);
+        } else if (w.VocabularyId !== undefined && w.VocabularyId !== null) {
+          wordId = Number(w.VocabularyId);
+        } else if (w.ID !== undefined && w.ID !== null) {
+          wordId = Number(w.ID);
+        }
+        
+        // Chỉ set ID nếu conversion thành công
+        if (wordId !== undefined && !isNaN(wordId) && wordId > 0) {
+          return {
+            ...w,
+            id: wordId
+          };
+        }
+        
+        return w;
+      });
+    }
+    
     // Nếu component được mở qua route (không truyền @Input), tự fetch theo param :id
     if (!this.vocabularyList) {
       const idParam = this.route.snapshot.paramMap.get('id');
@@ -101,11 +133,28 @@ export class VocabularyListDetailComponent implements OnInit {
                 vocabularyListId: listId,
                 name: 'Vocabulary List',
                 vocabularyCount: publicWords.length,
-                words: publicWords.map((w: any) => ({
-                  question: w.word || '',
-                  answer: w.definition || '',
-                  topic: w.category
-                }))
+                words: publicWords.map((w: any) => {
+                  // Thử nhiều cách lấy ID
+                  let wordId: number | undefined = undefined;
+                  if (w.id !== undefined && w.id !== null) {
+                    wordId = Number(w.id);
+                  } else if (w.vocabularyId !== undefined && w.vocabularyId !== null) {
+                    wordId = Number(w.vocabularyId);
+                  } else if (w.VocabularyId !== undefined && w.VocabularyId !== null) {
+                    wordId = Number(w.VocabularyId);
+                  } else if (w.ID !== undefined && w.ID !== null) {
+                    wordId = Number(w.ID);
+                  }
+                  
+                  return {
+                    id: wordId,
+                    question: w.word || '',
+                    answer: w.definition || '',
+                    topic: w.category,
+                    audioUrl: w.audioUrl,
+                    example: w.example
+                  };
+                })
               } as VocabularyListDetail;
             } else {
               this.fetchPrivateListDetail(listId);

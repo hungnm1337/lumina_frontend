@@ -1,4 +1,3 @@
-<app-header></app-header>
 
 <!-- Back to Blog Link -->
 <div class="back-to-blog">
@@ -175,4 +174,7 @@
 </div>
 
 <!-- Floating Chat Box - Always visible at bottom right -->
+@if(isLogin){
 <app-chat-box [contentArticle]="contentArticle"></app-chat-box>
+<app-note *ngIf="article" [articleId]="article.articleId"></app-note>
+}
