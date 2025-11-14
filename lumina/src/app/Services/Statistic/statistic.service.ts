@@ -45,6 +45,7 @@ export class StatisticService {
     });
   }
 
+  // ==================== CÁC API MỚI ====================
 
   /**
    * Lấy 4 key metrics dashboard (Doanh thu, User mới, Chuyển đổi Pro, Tỷ lệ giữ chân)

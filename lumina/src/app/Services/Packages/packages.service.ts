@@ -6,9 +6,9 @@ import { environment } from '../../../environments/environment.development';
 export interface Package {
   packageId?: number; // Optional cho trường hợp tạo mới
   packageName: string;
-  price: number;
-  durationInDays: number;
-  isActive: boolean;
+  price: number | null;
+  durationInDays: number | null;
+  isActive: boolean | null;
 }
 
 @Injectable({
@@ -71,6 +71,11 @@ export class PackagesService {
   // Xóa gói - No authorization required (but should be protected)
   deletePackage(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
+
+  // Lấy tất cả gói active (public - không cần auth)
+  getActivePackages(): Observable<Package[]> {
+    return this.http.get<Package[]>(`${this.baseUrl}/active`);
   }
 
 }
