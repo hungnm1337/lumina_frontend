@@ -1,0 +1,131 @@
+<div class="leaderboard-ranking">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>Bảng Xếp Hạng</h1>
+      <p class="subtitle">Xem bảng xếp hạng theo mùa giải</p>
+    </div>
+    <div class="header-right">
+      <button class="btn btn-secondary" (click)="refreshRanking()" [disabled]="loading">
+        <span *ngIf="!loading">Làm Mới</span>
+        <span *ngIf="loading">Đang tải...</span>
+      </button>
+      <button class="btn btn-primary" (click)="exportRanking()" [disabled]="!ranking || ranking.length === 0">
+        Xuất CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- Current Season Info -->
+  <div class="current-season-card" *ngIf="currentSeason">
+    <div class="card-header">
+      <h2>Mùa Giải Hiện Tại</h2>
+      <span class="badge badge-active">{{ leaderboardService.getStatusText(currentSeason.status) }}</span>
+    </div>
+    <div class="card-body">
+      <div class="season-info">
+        <div class="info-item">
+          <span class="label">Tên:</span>
+          <span class="value">{{ currentSeason.seasonName || 'Season ' + currentSeason.seasonNumber }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Thời gian:</span>
+          <span class="value">
+            {{ leaderboardService.formatDate(currentSeason.startDate) }} -
+            {{ leaderboardService.formatDate(currentSeason.endDate) }}
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="label">Người tham gia:</span>
+          <span class="value">{{ currentSeason.totalParticipants }} người</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Còn lại:</span>
+          <span class="value highlight">{{ currentSeason.daysRemaining }} ngày</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div class="alert alert-success" *ngIf="success">
+    {{ success }}
+  </div>
+  <div class="alert alert-error" *ngIf="error">
+    {{ error }}
+  </div>
+
+  <!-- Season Selector -->
+  <div class="season-selector">
+    <label>Chọn Mùa Giải:</label>
+    <select
+      class="form-select"
+      [value]="selectedSeason?.leaderboardId"
+      (change)="onSeasonChange($event)"
+      [disabled]="loading">
+      <option *ngFor="let season of seasons" [value]="season.leaderboardId">
+        {{ season.seasonName || 'Season ' + season.seasonNumber }}
+        ({{ leaderboardService.formatDate(season.startDate) }} - {{ leaderboardService.formatDate(season.endDate) }})
+        - {{ leaderboardService.getStatusText(season.status) }}
+      </option>
+    </select>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Đang tải bảng xếp hạng...</p>
+  </div>
+
+  <!-- Ranking Table -->
+  <div class="table-container" *ngIf="!loading && selectedSeason">
+    <div class="table-header">
+      <h3>
+        Bảng Xếp Hạng: {{ selectedSeason.seasonName || 'Season ' + selectedSeason.seasonNumber }}
+      </h3>
+      <p class="table-subtitle">Tổng số: {{ ranking.length }} người chơi</p>
+    </div>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Hạng</th>
+          <th>Người Chơi</th>
+          <th>Điểm</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let rank of ranking" [class.top-3]="rank.rank <= 3">
+          <td>
+            <span class="rank-badge" [class.rank-1]="rank.rank === 1"
+                  [class.rank-2]="rank.rank === 2"
+                  [class.rank-3]="rank.rank === 3">
+              #{{ rank.rank }}
+            </span>
+          </td>
+          <td>
+            <div class="user-info">
+              <img [src]="rank.avatarUrl || '/assets/default-avatar.png'" alt="avatar" class="avatar" />
+              <span class="user-name">{{ rank.fullName }}</span>
+            </div>
+          </td>
+          <td>
+            <strong class="score">{{ rank.score }}</strong>
+          </td>
+        </tr>
+        <tr *ngIf="ranking.length === 0">
+          <td colspan="3" class="text-center empty-message">
+            Chưa có dữ liệu xếp hạng cho mùa giải này
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- No Season Selected -->
+  <div class="empty-state" *ngIf="!loading && !selectedSeason">
+    <div class="empty-icon">📊</div>
+    <h3>Không có mùa giải nào</h3>
+    <p>Vui lòng tạo mùa giải mới để xem bảng xếp hạng</p>
+  </div>
+</div>

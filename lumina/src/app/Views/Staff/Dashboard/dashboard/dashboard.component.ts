@@ -38,7 +38,7 @@ export class DashboardComponent implements OnInit {
   quickActions: QuickAction[] = [
     { title: 'Tạo bài viết mới', description: 'Viết hướng dẫn học TOEIC', icon: 'fas fa-edit', route: '/staff/articles', color: 'purple' },
     { title: 'Thêm câu hỏi', description: 'Tạo câu hỏi luyện tập', icon: 'fas fa-question-circle', route: '/staff/questions', color: 'blue' },
-    { title: 'Tạo bài thi', description: 'Thiết kế bài thi mới', icon: 'fas fa-clipboard-list', route: '/staff/tests', color: 'green' },
+    { title: 'Tạo bài thi', description: 'Thiết kế bài thi mới', icon: 'fas fa-clipboard-list', route: '/staff/exams', color: 'green' },
     { title: 'Quản lý từ vựng', description: 'Bổ sung từ vựng mới', icon: 'fas fa-spell-check', route: '/staff/vocabulary', color: 'orange' }
   ];
 

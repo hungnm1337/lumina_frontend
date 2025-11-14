@@ -1,0 +1,122 @@
+<div class="leaderboard-container">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-bold text-gray-900 mb-4">
+        <i class="fas fa-trophy text-yellow-500 mr-3"></i>
+        Bảng Xếp Hạng
+      </h1>
+      <p class="text-xl text-gray-600">Thi đấu và leo hạng cùng hàng nghìn học viên khác</p>
+    </div>
+
+    <!-- Current Season Info -->
+    <div class="season-card bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 rounded-2xl p-8 mb-8 text-white shadow-2xl" *ngIf="currentSeason">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+        <div>
+          <div class="text-sm text-blue-100 mb-2">Mùa giải hiện tại</div>
+          <h2 class="text-3xl font-bold mb-3">{{ currentSeason.seasonName || 'Season ' + currentSeason.seasonNumber }}</h2>
+          <div class="flex flex-wrap gap-4 text-sm">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-calendar"></i>
+              <span>{{ leaderboardService.formatDate(currentSeason.startDate) }} - {{ leaderboardService.formatDate(currentSeason.endDate) }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="fas fa-users"></i>
+              <span>{{ currentSeason.totalParticipants }} người tham gia</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="text-center py-20" *ngIf="loading">
+      <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
+      <p class="mt-4 text-gray-600">Đang tải bảng xếp hạng...</p>
+    </div>
+
+    <!-- Error -->
+    <div class="bg-red-50 border border-red-200 rounded-xl p-6 text-center" *ngIf="error && !loading">
+      <i class="fas fa-exclamation-circle text-red-500 text-3xl mb-3"></i>
+      <p class="text-red-700">{{ error }}</p>
+    </div>
+
+    <!-- Ranking Table -->
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden" *ngIf="!loading && !error && ranking.length > 0">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Hạng</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Người chơi</th>
+              <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">TOEIC Ước Tính</th>
+              <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">Trình Độ</th>
+              <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">Điểm</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr *ngFor="let rank of ranking; let i = index"
+                [class.bg-yellow-50]="rank.rank <= 3"
+                class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4">
+                <div class="flex items-center">
+                  <span *ngIf="rank.rank === 1" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 text-white font-bold text-lg shadow-lg">
+                    {{ rank.rank }}
+                  </span>
+                  <span *ngIf="rank.rank === 2" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-gray-300 to-gray-500 text-white font-bold text-lg shadow-lg">
+                    {{ rank.rank }}
+                  </span>
+                  <span *ngIf="rank.rank === 3" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-white font-bold text-lg shadow-lg">
+                    {{ rank.rank }}
+                  </span>
+                  <span *ngIf="rank.rank > 3" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-700 font-semibold">
+                    {{ rank.rank }}
+                  </span>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <img [src]="rank.avatarUrl || '/assets/default-avatar.png'"
+                       alt="avatar"
+                       class="w-10 h-10 rounded-full object-cover border-2 border-gray-200">
+                  <div>
+                    <div class="font-semibold text-gray-900">{{ rank.fullName }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 text-center">
+                <div class="text-lg font-bold text-gray-900">
+                  {{ rank.estimatedTOEICScore || 'N/A' }}
+                </div>
+                <div class="text-xs text-gray-500" *ngIf="rank.estimatedTOEICScore">
+                  {{ leaderboardService.getTOEICScoreRange(rank.toeicLevel) }}
+                </div>
+              </td>
+              <td class="px-6 py-4 text-center">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold"
+                      [ngClass]="leaderboardService.getTOEICLevelColor(rank.toeicLevel)">
+                  {{ leaderboardService.getTOEICLevelText(rank.toeicLevel) }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-center">
+                <span class="inline-flex items-center justify-center px-4 py-2 rounded-full bg-blue-100 text-blue-700 font-bold text-lg">
+                  {{ rank.score }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="text-center py-20" *ngIf="!loading && !error && ranking.length === 0">
+      <i class="fas fa-trophy text-gray-300 text-6xl mb-4"></i>
+      <h3 class="text-2xl font-bold text-gray-700 mb-2">Chưa có dữ liệu xếp hạng</h3>
+      <p class="text-gray-500">Hãy bắt đầu làm bài thi để tham gia bảng xếp hạng!</p>
+    </div>
+
+  </div>
+</div>

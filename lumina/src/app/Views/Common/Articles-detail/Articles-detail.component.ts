@@ -5,8 +5,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { HeaderComponent } from '../header/header.component';
 import { ArticleService } from '../../../Services/Article/article.service';
 import { ArticleResponse } from '../../../Interfaces/article.interfaces';
-import { ChatBoxComponent } from '../Articles-detail/chat-box/chat-box.component';
-import { NoteComponent } from '../Articles-detail/note/note.component';
+import { ChatBoxComponent } from '../blog-detail/chat-box/chat-box.component';
+import { NoteComponent } from '../blog-detail/note/note.component';
 import { AuthService } from '../../../Services/Auth/auth.service';
 interface BlogComment {
   id: number;

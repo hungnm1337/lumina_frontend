@@ -23,6 +23,7 @@ import { DeckDetailComponent } from './pages/deck-detail/deck-detail.component';
 import { SpacedRepetitionDashboardComponent } from './pages/spaced-repetition-dashboard/spaced-repetition-dashboard.component';
 import { ExamAttemptListComponent } from './Views/User/ExamAttempt/exam-attempt-list/exam-attempt-list.component';
 import { ExamAttemptDetailComponent } from './Views/User/ExamAttempt/exam-attempt-detail/exam-attempt-detail.component';
+import { UserLeaderboardComponent } from './Views/User/Leaderboard/user-leaderboard.component';
 import { UserNoteListComponent } from './Views/User/UserNote/user-note-list/user-note-list.component';
 import { UserNoteDetailComponent } from './Views/User/UserNote/user-note-detail/user-note-detail.component';
 
@@ -55,6 +56,7 @@ export const routes: Routes = [
       { path: '', component: ContentHomepageComponent },
       { path: 'events', component: UserEventsDashboardComponent },
       { path: 'slides', component: DashboardSlideComponent },
+      { path: 'leaderboard', component: UserLeaderboardComponent },
       {
         path: 'user-dashboard',
         component: UserDashboardComponent,
@@ -66,9 +68,6 @@ export const routes: Routes = [
           { path: 'part/:id', component: PartQuestionComponent },
           { path: 'notes', component: UserNoteListComponent },
           { path: 'note/:id', component: UserNoteDetailComponent },
-          { path: 'articles', component: BlogArticlesComponent },
-          { path: 'article/:id', component: BlogDetailComponent },
-          { path: 'vocabulary', component: UserVocabularyComponent },
           { path: '', redirectTo: 'exams', pathMatch: 'full' },
         ],
       },
@@ -86,7 +85,9 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
-
+  { path: 'blog', component: BlogArticlesComponent },
+  { path: 'blog/:id', component: BlogDetailComponent },
+  { path: 'tu-vung', component: UserVocabularyComponent },
   {
     path: 'tu-vung/list/:id',
     loadComponent: () =>

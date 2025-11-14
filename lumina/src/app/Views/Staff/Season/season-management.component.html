@@ -1,0 +1,337 @@
+<div class="season-management">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>Quản Lý Mùa Giải</h1>
+      <p class="subtitle">Quản lý các mùa giải và bảng xếp hạng</p>
+    </div>
+    <div class="header-right">
+      <button class="btn btn-primary" (click)="openCreateModal()">
+        Tạo Mùa Giải Mới
+      </button>
+    </div>
+  </div>
+
+  <!-- Current Season Card -->
+  <div class="current-season-card" *ngIf="currentSeason">
+    <div class="card-header">
+      <h2>Mùa Giải Hiện Tại</h2>
+      <span class="badge badge-active">{{ leaderboardService.getStatusText(currentSeason.status) }}</span>
+    </div>
+    <div class="card-body">
+      <div class="season-info">
+        <div class="info-item">
+          <span class="label">Tên:</span>
+          <span class="value">{{ currentSeason.seasonName || 'Season ' + currentSeason.seasonNumber }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Thời gian:</span>
+          <span class="value">
+            {{ leaderboardService.formatDate(currentSeason.startDate) }} -
+            {{ leaderboardService.formatDate(currentSeason.endDate) }}
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="label">Người tham gia:</span>
+          <span class="value">{{ currentSeason.totalParticipants }} người</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Còn lại:</span>
+          <span class="value highlight">{{ currentSeason.daysRemaining }} ngày</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div class="alert alert-success" *ngIf="success">
+    {{ success }}
+  </div>
+  <div class="alert alert-error" *ngIf="error">
+    {{ error }}
+  </div>
+
+  <!-- Search & Filters -->
+  <div class="search-bar">
+    <div class="search-input-wrapper">
+      <input
+        type="text"
+        [(ngModel)]="keyword"
+        (keyup.enter)="onSearch()"
+        placeholder="Tìm kiếm theo tên hoặc số mùa..."
+        class="search-input"
+      />
+      <button class="btn btn-search" (click)="onSearch()">Tìm</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button
+      class="tab"
+      [class.active]="activeTab === 'all'"
+      (click)="activeTab = 'all'">
+      Tất cả ({{ seasons.length }})
+    </button>
+    <button
+      class="tab"
+      [class.active]="activeTab === 'active'"
+      (click)="activeTab = 'active'">
+      Đang diễn ra
+    </button>
+    <button
+      class="tab"
+      [class.active]="activeTab === 'upcoming'"
+      (click)="activeTab = 'upcoming'">
+      Sắp diễn ra
+    </button>
+    <button
+      class="tab"
+      [class.active]="activeTab === 'ended'"
+      (click)="activeTab = 'ended'">
+      Đã kết thúc
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Đang tải...</p>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container" *ngIf="!loading">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tên Mùa Giải</th>
+          <th>Số Mùa</th>
+          <th>Thời Gian</th>
+          <th>Người Tham Gia</th>
+          <th>Trạng Thái</th>
+          <th>Hành Động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let season of filterByTab()">
+          <td>{{ season.leaderboardId }}</td>
+          <td>
+            <strong>{{ season.seasonName || 'Season ' + season.seasonNumber }}</strong>
+            <span class="badge badge-current" *ngIf="currentSeason && season.leaderboardId === currentSeason.leaderboardId">
+              Hiện tại
+            </span>
+          </td>
+          <td>#{{ season.seasonNumber }}</td>
+          <td>
+            <div class="date-range">
+              <div>{{ leaderboardService.formatDate(season.startDate) }}</div>
+              <div>{{ leaderboardService.formatDate(season.endDate) }}</div>
+            </div>
+          </td>
+          <td>{{ season.totalParticipants }}</td>
+          <td>
+            <span class="badge" [ngClass]="leaderboardService.getStatusClass(season.status)">
+              {{ leaderboardService.getStatusText(season.status) }}
+            </span>
+            <div class="days-remaining" *ngIf="season.status === 'Active'">
+              {{ season.daysRemaining }} ngày còn lại
+            </div>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-action" (click)="openEditModal(season)" title="Chỉnh sửa">
+                Sửa
+              </button>
+              <button
+                class="btn-action"
+                (click)="setAsCurrent(season)"
+                title="Đặt làm mùa hiện tại"
+                *ngIf="!currentSeason || season.leaderboardId !== currentSeason.leaderboardId">
+                Đặt Hiện Tại
+              </button>
+              <button class="btn-action" (click)="recalculate(season)" title="Tính lại điểm">
+                Tính Lại
+              </button>
+              <button class="btn-action btn-warning" (click)="resetSeason(season)" title="Reset điểm">
+                Reset
+              </button>
+              <button class="btn-action btn-danger" (click)="openDeleteModal(season)" title="Xóa">
+                Xóa
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="filterByTab().length === 0">
+          <td colspan="7" class="text-center">Không có dữ liệu</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button
+      class="btn btn-secondary"
+      (click)="goToPage(currentPage - 1)"
+      [disabled]="currentPage === 1">
+      Trước
+    </button>
+    <span class="page-info">
+      Trang {{ currentPage }} / {{ totalPages }} ({{ totalItems }} mục)
+    </span>
+    <button
+      class="btn btn-secondary"
+      (click)="goToPage(currentPage + 1)"
+      [disabled]="currentPage === totalPages">
+      Sau
+    </button>
+  </div>
+</div>
+
+<!-- Create Modal -->
+<div class="modal" *ngIf="showCreateModal" (click)="closeAllModals()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Tạo Mùa Giải Mới</h2>
+      <button class="close-btn" (click)="closeAllModals()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Tên Mùa Giải</label>
+        <input
+          type="text"
+          [(ngModel)]="createForm.seasonName"
+          placeholder="VD: Spring Challenge 2025"
+          class="form-control" />
+      </div>
+      <div class="form-group">
+        <label>Số Mùa <span class="required">*</span></label>
+        <input
+          type="number"
+          [(ngModel)]="createForm.seasonNumber"
+          min="1"
+          required
+          class="form-control" />
+      </div>
+      <div class="form-group">
+        <label>Ngày Bắt Đầu <span class="required">*</span></label>
+        <input
+          type="datetime-local"
+          [(ngModel)]="createForm.startDate"
+          required
+          class="form-control" />
+        <small class="help-text">Định dạng: YYYY-MM-DD HH:mm (VD: 2024-01-01 00:00)</small>
+      </div>
+      <div class="form-group">
+        <label>Ngày Kết Thúc <span class="required">*</span></label>
+        <input
+          type="datetime-local"
+          [(ngModel)]="createForm.endDate"
+          required
+          class="form-control" />
+        <small class="help-text">Phải sau ngày bắt đầu</small>
+      </div>
+      <div class="form-group checkbox">
+        <label>
+          <input type="checkbox" [(ngModel)]="createForm.isActive" />
+          Kích hoạt ngay
+        </label>
+      </div>
+      <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeAllModals()" [disabled]="loading">Hủy</button>
+      <button
+        class="btn btn-primary"
+        (click)="onCreate()"
+        [disabled]="loading || !createForm.startDate || !createForm.endDate">
+        <span *ngIf="loading">Đang tạo...</span>
+        <span *ngIf="!loading">Tạo Mùa Giải</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal" *ngIf="showEditModal" (click)="closeAllModals()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Chỉnh Sửa Mùa Giải</h2>
+      <button class="close-btn" (click)="closeAllModals()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Tên Mùa Giải</label>
+        <input
+          type="text"
+          [(ngModel)]="editForm.seasonName"
+          class="form-control" />
+      </div>
+      <div class="form-group">
+        <label>Số Mùa <span class="required">*</span></label>
+        <input
+          type="number"
+          [(ngModel)]="editForm.seasonNumber"
+          min="1"
+          required
+          class="form-control" />
+      </div>
+      <div class="form-group">
+        <label>Ngày Bắt Đầu <span class="required">*</span></label>
+        <input
+          type="datetime-local"
+          [(ngModel)]="editForm.startDate"
+          required
+          class="form-control" />
+      </div>
+      <div class="form-group">
+        <label>Ngày Kết Thúc <span class="required">*</span></label>
+        <input
+          type="datetime-local"
+          [(ngModel)]="editForm.endDate"
+          required
+          class="form-control" />
+      </div>
+      <div class="form-group checkbox">
+        <label>
+          <input type="checkbox" [(ngModel)]="editForm.isActive" />
+          Kích hoạt
+        </label>
+      </div>
+      <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeAllModals()" [disabled]="loading">Hủy</button>
+      <button
+        class="btn btn-primary"
+        (click)="onUpdate()"
+        [disabled]="loading || !editForm.startDate || !editForm.endDate">
+        <span *ngIf="loading">Đang cập nhật...</span>
+        <span *ngIf="!loading">Cập Nhật</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal" *ngIf="showDeleteModal" (click)="closeAllModals()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Xác Nhận Xóa</h2>
+      <button class="close-btn" (click)="closeAllModals()">×</button>
+    </div>
+    <div class="modal-body">
+      <p>Bạn có chắc chắn muốn xóa mùa giải:</p>
+      <p class="highlight-text">{{ selectedSeason?.seasonName || 'Season ' + selectedSeason?.seasonNumber }}</p>
+      <p class="warning-text">Hành động này không thể hoàn tác!</p>
+      <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeAllModals()">Hủy</button>
+      <button class="btn btn-danger" (click)="onDelete()" [disabled]="loading">
+        Xóa Mùa Giải
+      </button>
+    </div>
+  </div>
+</div>
