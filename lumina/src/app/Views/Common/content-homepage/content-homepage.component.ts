@@ -19,7 +19,7 @@ import { LeaderboardPreviewComponent } from '../../User/leaderboard-preview/lead
 @Component({
   selector: 'app-content-homepage',
   standalone: true,
-  imports: [FooterComponent, EventPreviewComponent, UserSlideDashboardComponent, LeaderboardPreviewComponent],
+  imports: [CommonModule, FooterComponent, EventPreviewComponent, UserSlideDashboardComponent, LeaderboardPreviewComponent],
   templateUrl: './content-homepage.component.html',
   styleUrl: './content-homepage.component.scss'
 })
