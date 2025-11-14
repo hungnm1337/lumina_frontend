@@ -107,7 +107,7 @@ export class BlogDetailComponent implements OnInit {
 
     const articleId = this.route.snapshot.paramMap.get('id');
     if (!articleId) {
-      this.error = 'Không tìm thấy bài viết';
+      this.error = 'Article not found';
       this.isLoading = false;
       return;
     }
@@ -122,7 +122,7 @@ export class BlogDetailComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading article:', error);
-        this.error = 'Không thể tải bài viết. Vui lòng thử lại sau.';
+        this.error = 'Unable to load article. Please try again later.';
         this.isLoading = false;
       }
     });

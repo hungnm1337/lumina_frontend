@@ -9,7 +9,7 @@
     <div
       class="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-4"
     ></div>
-    <p class="text-gray-600 text-lg">Đang tải danh sách bài thi...</p>
+    <p class="text-gray-600 text-lg">Loading exam list...</p>
   </div>
 
   <!-- Skills Grid -->
@@ -31,7 +31,7 @@
         <div class="flex-1">
           <h2 class="text-2xl font-bold mb-1">{{ skillGroup.skillName }}</h2>
           <p class="text-sm opacity-90">
-            {{ skillGroup.exams.length }} bài thi
+            {{ skillGroup.exams.length }} exams
           </p>
         </div>
       </div>
@@ -51,8 +51,8 @@
               <i [class]="skillGroup.icon" class="text-3xl text-gray-400"></i>
             </div>
             <p class="text-lg font-medium text-gray-500">
-              Chưa có bài thi cho kỹ năng
-              {{ skillGroup.skillName.toLowerCase() }}
+              No exams available for
+              {{ skillGroup.skillName.toLowerCase() }} skill
             </p>
           </div>
 
@@ -98,7 +98,7 @@
               class="flex items-center text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-full"
             >
               <i class="fas fa-calendar-alt mr-1"></i>
-              Ngày tạo: {{ formatDate(exam.createdAt) }}
+              Created: {{ formatDate(exam.createdAt) }}
             </div>
             <!-- Exam Footer -->
             <div class="space-y-3">
@@ -108,7 +108,7 @@
                 (click)="startExam(exam)"
               >
                 <i class="fas fa-play mr-2"></i>
-                Bắt đầu thi
+                Start exam
               </button>
             </div>
           </div>

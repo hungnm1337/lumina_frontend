@@ -182,7 +182,7 @@ export class WritingAnswerBoxComponent implements OnChanges, OnDestroy {
 
     const attemptId = this.getAttemptIdFromLocalStorage();
     if (!attemptId) {
-      this.toast.error('Không tìm thấy thông tin bài thi');
+      this.toast.error('Exam information not found');
       return;
     }
 
@@ -305,7 +305,7 @@ export class WritingAnswerBoxComponent implements OnChanges, OnDestroy {
             console.error('Error saving writing answer to database:', error);
             this.isLoadingFeedback = false;
             this.submitEnd.emit(this.questionId); // ✅ Emit end event on error
-            this.toast.error('Lỗi khi lưu câu trả lời. Vui lòng thử lại!');
+            this.toast.error('Error saving answer. Please try again!');
           }
         });
       },
@@ -313,7 +313,7 @@ export class WritingAnswerBoxComponent implements OnChanges, OnDestroy {
         console.error('Error fetching writing feedback:', error);
         this.isLoadingFeedback = false;
         this.submitEnd.emit(this.questionId); // ✅ Emit end event on error
-        this.toast.error('Lỗi khi lấy phản hồi từ AI. Vui lòng thử lại!');
+        this.toast.error('Error getting AI feedback. Please try again!');
       }
     });
   }

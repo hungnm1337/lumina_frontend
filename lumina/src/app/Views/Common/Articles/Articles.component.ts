@@ -50,13 +50,13 @@ export class BlogArticlesComponent implements OnInit {
   searchQuery: string = '';
   selectedCategory: string = 'all';
   selectedSort: string = 'newest';
-  
+
   // Real data from API
   publishedArticles: ArticleResponse[] = [];
   categories: ArticleCategory[] = [];
   isLoading: boolean = true;
   error: string = '';
-  
+
   // Filter categories for UI
   filterCategories = [
     { id: 'all', name: 'Tất cả', icon: 'fas fa-th' },
@@ -80,7 +80,7 @@ export class BlogArticlesComponent implements OnInit {
     if (!this.showAllLatestArticles) {
       return this.publishedArticles.slice(0, 3);
     }
-    
+
     // Show paginated articles
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
@@ -134,7 +134,7 @@ export class BlogArticlesComponent implements OnInit {
     this.isLoading = true;
     this.error = '';
     this.currentPage = 1; // Reset to first page
-    
+
     this.articleService.queryArticles({
       isPublished: true,
       status: 'published',
@@ -177,7 +177,7 @@ export class BlogArticlesComponent implements OnInit {
     this.isLoading = true;
     this.currentPage = 1; // Reset to first page when filtering
     this.showAllLatestArticles = false; // Reset view state when filtering
-    
+
     const params: any = {
       isPublished: true,
       status: 'published',
@@ -191,7 +191,7 @@ export class BlogArticlesComponent implements OnInit {
 
     if (this.selectedCategory !== 'all') {
       // Map UI category to backend category ID
-      const category = this.categories.find(c => 
+      const category = this.categories.find(c =>
         c.name.toLowerCase().includes(this.selectedCategory.toLowerCase())
       );
       if (category) {
@@ -235,7 +235,7 @@ export class BlogArticlesComponent implements OnInit {
   }
 
   goToArticleDetail(articleId: number): void {
-    this.router.navigate(['/blog', articleId]);
+    this.router.navigate(['homepage/user-dashboard/article', articleId]);
   }
 
   getAuthorAvatarColor(index: number): string {
@@ -317,15 +317,15 @@ export class BlogArticlesComponent implements OnInit {
     const maxPagesToShow = 5;
     let startPage = Math.max(1, this.currentPage - Math.floor(maxPagesToShow / 2));
     let endPage = Math.min(this.totalPages, startPage + maxPagesToShow - 1);
-    
+
     if (endPage - startPage < maxPagesToShow - 1) {
       startPage = Math.max(1, endPage - maxPagesToShow + 1);
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
-    
+
     return pages;
   }
 }

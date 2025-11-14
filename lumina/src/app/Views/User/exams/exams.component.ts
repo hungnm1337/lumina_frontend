@@ -133,7 +133,7 @@ export class ExamsComponent {
 
     if (unmatchedExams.length > 0) {
       this.skillGroups.push({
-        skillName: 'Khác',
+        skillName: 'Other',
         skillCode: 'OTHER',
         icon: 'fas fa-question-circle',
         color: 'gray',

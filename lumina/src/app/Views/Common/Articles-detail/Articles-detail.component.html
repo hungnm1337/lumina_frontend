@@ -3,7 +3,7 @@
 <div class="back-to-blog">
   <button (click)="goBackToBlog()" class="back-btn">
     <i class="fas fa-arrow-left"></i>
-    Quay lại blog
+    Back to blog
   </button>
 </div>
 
@@ -38,7 +38,7 @@
         </button>
         <button class="action-btn share-btn" (click)="onShareArticle()">
           <i class="fas fa-bookmark"></i>
-          Chia sẻ bài viết
+          Share article
         </button>
       </div>
     </div>
@@ -58,7 +58,7 @@
       </div>
       <ng-template #noContent>
         <div class="no-content">
-          <p>Nội dung bài viết đang được cập nhật...</p>
+          <p>Article content is being updated...</p>
         </div>
       </ng-template>
     </div>
@@ -70,7 +70,7 @@
 
     <!-- Share Buttons -->
     <div class="share-section">
-      <h4 class="share-title">Chia sẻ bài viết</h4>
+      <h4 class="share-title">Share article</h4>
       <div class="share-buttons">
         <button class="share-btn facebook">
           <i class="fab fa-facebook-f"></i>
@@ -95,9 +95,9 @@
         </div>
         <div class="author-bio-info">
           <h3 class="author-name">{{ article.authorName }}</h3>
-          <p class="author-bio-text">Content Creator chuyên nghiệp với nhiều năm kinh nghiệm trong lĩnh vực giáo dục TOEIC.</p>
+          <p class="author-bio-text">Professional Content Creator with many years of experience in TOEIC education.</p>
           <div class="author-stats">
-            <span class="stat">1 bài viết</span>
+            <span class="stat">1 article</span>
             <span class="stat">0 followers</span>
             <span class="stat">0 likes</span>
           </div>
@@ -106,7 +106,7 @@
           [class]="isFollowing ? 'follow-btn following' : 'follow-btn'"
           (click)="onFollowAuthor()"
         >
-          {{ isFollowing ? 'Đang theo dõi' : '+ Theo dõi' }}
+          {{ isFollowing ? 'Following' : '+ Follow' }}
         </button>
       </div>
     </div>
@@ -116,7 +116,7 @@
 <!-- Comments Section -->
 <div class="comments-section">
   <div class="comments-container">
-    <h2 class="comments-title">Bình luận ({{ articleCommentsCount }})</h2>
+    <h2 class="comments-title">Comments ({{ articleCommentsCount }})</h2>
 
     <!-- Comment Input -->
     <div class="comment-input-section">
@@ -127,18 +127,18 @@
         <div class="comment-input-content">
           <textarea
             [(ngModel)]="newComment"
-            placeholder="Viết bình luận của bạn..."
+            placeholder="Write your comment..."
             class="comment-textarea"
             rows="3"
           ></textarea>
           <div class="comment-input-actions">
             <div class="comment-options">
               <a href="#" class="comment-option">Emoji</a>
-              <a href="#" class="comment-option">Hình ảnh</a>
+              <a href="#" class="comment-option">Image</a>
             </div>
             <button class="submit-comment-btn" (click)="onSubmitComment()">
               <i class="fas fa-paper-plane"></i>
-              Gửi bình luận
+              Submit comment
             </button>
           </div>
         </div>
@@ -156,19 +156,19 @@
 <!-- Loading State -->
 <div *ngIf="isLoading" class="loading-state">
   <div class="loading-spinner"></div>
-  <p>Đang tải bài viết...</p>
+  <p>Loading article...</p>
 </div>
 
 <!-- Error State -->
 <div *ngIf="error" class="error-state">
   <p>{{ error }}</p>
-  <button (click)="loadArticle()" class="retry-btn">Thử lại</button>
+  <button (click)="loadArticle()" class="retry-btn">Retry</button>
 </div>
 
 <!-- Related Articles Section -->
 <div class="related-articles" *ngIf="!isLoading && article">
   <div class="related-container">
-    <h2 class="related-title">Bài viết liên quan</h2>
+    <h2 class="related-title">Related articles</h2>
     <!-- Related articles content will be added here -->
   </div>
 </div>
