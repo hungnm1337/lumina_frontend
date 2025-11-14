@@ -790,4 +790,8 @@ onSkillChange(event: any): void {
       }
     });
   }
+
+  getMaxDisplayCount(): number {
+    return Math.min(this.page * this.size, this.totalPages);
+  }
 }

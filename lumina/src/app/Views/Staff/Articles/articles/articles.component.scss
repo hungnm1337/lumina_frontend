@@ -113,14 +113,15 @@ $toeic-purple: #8b5cf6;
           gap: 12px;
 
           .toeic-badge {
-            background: linear-gradient(135deg, $toeic-primary 0%, $toeic-secondary 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
             color: white;
             padding: 6px 16px;
             border-radius: 20px;
             font-size: 16px;
             font-weight: 600;
             letter-spacing: 1px;
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            border: 2px solid rgba(37, 99, 235, 0.3);
           }
         }
 
@@ -146,7 +147,7 @@ $toeic-purple: #8b5cf6;
           .stat-number {
             font-size: 24px;
             font-weight: 700;
-            color: $toeic-primary;
+            color: #1a202c;
             margin-bottom: 4px;
           }
 
@@ -163,7 +164,7 @@ $toeic-purple: #8b5cf6;
       display: flex;
       align-items: center;
       gap: 8px;
-      background: linear-gradient(135deg, $toeic-primary 0%, $toeic-secondary 100%);
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
       color: white;
       border: none;
       padding: 14px 24px;
@@ -171,11 +172,11 @@ $toeic-purple: #8b5cf6;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
 
       &:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
       }
     }
   }
@@ -1832,7 +1833,7 @@ $toeic-purple: #8b5cf6;
     display: flex;
     align-items: center;
     gap: 10px;
-    background: linear-gradient(135deg, $toeic-primary 0%, $toeic-secondary 100%);
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;
     border: none;
     padding: 16px 24px;
@@ -1841,7 +1842,7 @@ $toeic-purple: #8b5cf6;
     font-size: 15px;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
     position: relative;
     overflow: hidden;
 
@@ -1858,7 +1859,7 @@ $toeic-purple: #8b5cf6;
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
 
       &::before {
         left: 100%;
@@ -1882,7 +1883,7 @@ $toeic-purple: #8b5cf6;
 
     &:active {
       transform: translateY(0);
-      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
     }
 
     // Mobile responsive

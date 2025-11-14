@@ -1,5 +1,5 @@
-<div id="questions-management" class="content-section">
-
+<div class="exams-container">
+    <!-- Toast Notification -->
     <div *ngIf="message" class="toast-container" [ngClass]="messageType">
         <div class="toast-content">
             {{message}}
@@ -7,373 +7,322 @@
         </div>
         <div class="toast-progress" [style.animation-duration.ms]="3000"></div>
     </div>
-    <div class="space-y-6">
-        <!-- Header with Stats -->
-        <div class="bg-white rounded-xl shadow-sm p-6">
-            <div class="flex items-center justify-between mb-6">
-                <div>
-                    <h3 class="text-2xl font-bold text-gray-800">Quản lý bài thi TOEIC</h3>
-                    <p class="text-gray-600 mt-1">Quản lý bài thi TOEIC với 4 kỹ năng: Listening - Speaking - Reading -
-                        Writing</p>
-                </div>
-                <div class="flex items-center space-x-3">
-                    <button (click)="showCreateExamModal = true"
-                        class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
-                        <i class="fas fa-plus mr-2"></i>Tạo bài thi mới
-                    </button>
 
-                    <!-- <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                        <i class="fas fa-cog mr-2"></i>Cài đặt
-                    </button> -->
-                </div>
+    <!-- TOEIC Header Section -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="title-section">
+                <h1 class="page-title">
+                    <span class="toeic-badge">TOEIC</span>
+                    Exam Management
+                </h1>
+                <p class="page-subtitle">
+                    Manage TOEIC exams with 4 skills: Listening - Speaking - Reading - Writing
+                </p>
             </div>
-
-            <!-- Quick Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-4 text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm opacity-90">Tổng bài thi</p>
-                            <p class="text-2xl font-bold">48</p>
-                            <p class="text-xs opacity-80">12 tháng x 4 bài</p>
-                        </div>
-                        <i class="fas fa-file-alt text-2xl opacity-80"></i>
-                    </div>
+            <div class="header-stats">
+                <div class="stat-card">
+                    <div class="stat-number">48</div>
+                    <div class="stat-label">Total Exams</div>
                 </div>
-
-                <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-4 text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm opacity-90">Đã mở khóa</p>
-                            <p class="text-2xl font-bold">36</p>
-                            <p class="text-xs opacity-80">75% bài thi</p>
-                        </div>
-                        <i class="fas fa-unlock text-2xl opacity-80"></i>
-                    </div>
+                <div class="stat-card">
+                    <div class="stat-number">36</div>
+                    <div class="stat-label">Unlocked</div>
                 </div>
-
-                <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg p-4 text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm opacity-90">Đang khóa</p>
-                            <p class="text-2xl font-bold">12</p>
-                            <p class="text-xs opacity-80">25% bài thi</p>
-                        </div>
-                        <i class="fas fa-lock text-2xl opacity-80"></i>
-                    </div>
-                </div>
-
-                <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-4 text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm opacity-90">Lượt thi tháng này</p>
-                            <p class="text-2xl font-bold">2,847</p>
-                            <p class="text-xs opacity-80">+12% so với tháng trước</p>
-                        </div>
-                        <i class="fas fa-chart-line text-2xl opacity-80"></i>
-                    </div>
+                <div class="stat-card">
+                    <div class="stat-number">2,847</div>
+                    <div class="stat-label">Attempts</div>
                 </div>
             </div>
         </div>
+        
+        <!-- Action Button -->
+        <div class="header-actions">
+            <button class="btn-create-exam" (click)="showCreateExamModal = true">
+                <i class="fas fa-plus"></i>
+                <span class="btn-text">Create New Exam</span>
+            </button>
+        </div>
+    </div>
 
-        <!-- TOEIC Skills Introduction -->
-        <div class="bg-white rounded-xl shadow-sm p-6">
-            <h4 class="text-lg font-semibold text-gray-800 mb-4">Cấu trúc bài thi TOEIC</h4>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Listening Section -->
-                <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-4 border border-red-200">
-                    <div class="flex items-center space-x-3 mb-3">
-                        <div class="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-headphones text-white"></i>
-                        </div>
-                        <div>
-                            <h5 class="font-semibold text-red-800">Listening (Nghe)</h5>
-                            <p class="text-sm text-red-600">100 câu hỏi • 45 phút</p>
-                        </div>
-                    </div>
-                    <div class="space-y-2 text-sm text-red-700">
-                        <div class="flex justify-between">
-                            <span>Part 1: Photographs</span>
-                            <span class="font-medium">6 câu</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Part 2: Question-Response</span>
-                            <span class="font-medium">25 câu</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Part 3: Conversations</span>
-                            <span class="font-medium">15 câu</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Part 4: Talks</span>
-                            <span class="font-medium">15 câu</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Reading Section -->
-                <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
-                    <div class="flex items-center space-x-3 mb-3">
-                        <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-book-open text-white"></i>
-                        </div>
-                        <div>
-                            <h5 class="font-semibold text-green-800">Reading (Đọc)</h5>
-                            <p class="text-sm text-green-600">100 câu hỏi • 75 phút</p>
-                        </div>
-                    </div>
-                    <div class="space-y-2 text-sm text-green-700">
-                        <div class="flex justify-between">
-                            <span>Part 5: Incomplete Sentences</span>
-                            <span class="font-medium">30 câu</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Part 6: Text Completion</span>
-                            <span class="font-medium">16 câu</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Part 7: Reading Comprehension</span>
-                            <span class="font-medium">54 câu</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Speaking Section -->
-                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
-                    <div class="flex items-center space-x-3 mb-3">
-                        <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-microphone text-white"></i>
-                        </div>
-                        <div>
-                            <h5 class="font-semibold text-blue-800">Speaking (Nói)</h5>
-                            <p class="text-sm text-blue-600">11 câu hỏi • 20 phút</p>
-                        </div>
-                    </div>
-                    <div class="space-y-2 text-sm text-blue-700">
-                        <div class="flex justify-between">
-                            <span>Part 1: Read a text aloud</span>
-                            <span class="font-medium">2 câu</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Part 2: Describe a picture</span>
-                            <span class="font-medium">1 câu</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Part 3: Respond to questions</span>
-                            <span class="font-medium">3 câu</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Part 4: Respond using information</span>
-                            <span class="font-medium">3 câu</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Part 5: Express an opinion</span>
-                            <span class="font-medium">1 câu</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Writing Section -->
-                <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
-                    <div class="flex items-center space-x-3 mb-3">
-                        <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-pen text-white"></i>
-                        </div>
-                        <div>
-                            <h5 class="font-semibold text-purple-800">Writing (Viết)</h5>
-                            <p class="text-sm text-purple-600">8 câu hỏi • 60 phút</p>
-                        </div>
-                    </div>
-                    <div class="space-y-2 text-sm text-purple-700">
-                        <div class="flex justify-between">
-                            <span>Part 1: Write a sentence</span>
-                            <span class="font-medium">5 câu</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Part 2: Respond to a request</span>
-                            <span class="font-medium">2 câu</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Part 3: Write an opinion essay</span>
-                            <span class="font-medium">1 câu</span>
-                        </div>
-                    </div>
+    <!-- Skills Overview Cards -->
+    <div class="skills-overview">
+        <div class="skill-card listening">
+            <div class="skill-icon">
+                <i class="fas fa-headphones"></i>
+            </div>
+            <div class="skill-info">
+                <h4>Listening</h4>
+                <p>100 questions • 45 mins</p>
+                <div class="parts-info">
+                    <span>Part 1: 6 • Part 2: 25</span>
+                    <span>Part 3: 15 • Part 4: 15</span>
                 </div>
             </div>
         </div>
-
-        <!-- Filters and Search -->
-        <div class="bg-white rounded-xl shadow-sm p-6">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div class="lg:col-span-2">
-                    <div class="relative">
-                        <input type="text" placeholder="Tìm kiếm bài thi..." [(ngModel)]="searchName"
-                            (input)="filterExams()"
-                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                    </div>
-                </div>
-
-                <div>
-                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                        [(ngModel)]="selectedSetKey" (change)="filterExams()">
-                        <option value="">Tất cả tháng/năm</option>
-                        <option *ngFor="let key of examSetKeys" [value]="key">{{ key.split('-')[0] }}/{{
-                            key.split('-')[1] }}</option>
-                    </select>
+        <div class="skill-card reading">
+            <div class="skill-icon">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <div class="skill-info">
+                <h4>Reading</h4>
+                <p>100 questions • 75 mins</p>
+                <div class="parts-info">
+                    <span>Part 5: 30 • Part 6: 16</span>
+                    <span>Part 7: 54</span>
                 </div>
             </div>
         </div>
-
-
-        <!-- Exams List -->
-        <div class="bg-white rounded-xl shadow-sm">
-            <div class="p-6 border-b border-gray-200">
-                <div class="flex items-center justify-between">
-                    <h4 class="text-lg font-semibold text-gray-800">Danh sách bài thi TOEIC</h4>
-                    <div class="flex items-center space-x-3">
-                        <div class="text-sm text-gray-500">
-                            Hiển thị 12 bài thi (4 kỹ năng x 3 tháng gần nhất)
-                        </div>
-                    </div>
+        <div class="skill-card speaking">
+            <div class="skill-icon">
+                <i class="fas fa-microphone"></i>
+            </div>
+            <div class="skill-info">
+                <h4>Speaking</h4>
+                <p>11 questions • 20 mins</p>
+                <div class="parts-info">
+                    <span>Part 1: 2 • Part 2: 1</span>
+                    <span>Part 3-5: 7</span>
                 </div>
             </div>
-            <div class="p-6 space-y-6">
-                <ng-container *ngFor="let group of examGroups | slice:0:showMonths">
-                    <div class="border border-gray-200 rounded-lg">
-                        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                            <h5 class="text-lg font-semibold text-gray-800">
-                                Tháng {{ group.examSetKey.split('-')[0] }}/{{ group.examSetKey.split('-')[1] }}
-                            </h5>
-                            <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
-                                {{ group.exams.length }} bài thi
-                            </span>
-                        </div>
-                        <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <ng-container *ngFor="let exam of group.exams">
-                                <div class="border rounded-lg bg-gray-50">
-                                    <div class="p-4 flex flex-col h-full">
+        </div>
+        <div class="skill-card writing">
+            <div class="skill-icon">
+                <i class="fas fa-pen"></i>
+            </div>
+            <div class="skill-info">
+                <h4>Writing</h4>
+                <p>8 questions • 60 mins</p>
+                <div class="parts-info">
+                    <span>Part 1: 5 • Part 2: 2</span>
+                    <span>Part 3: 1</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                                        <div class="flex items-center justify-between mb-4">
-                                            <div class="flex items-center space-x-3">
-                                                <div class="w-10 h-10 rounded-lg flex items-center justify-center"
-                                                    [ngClass]="{
-                      'bg-red-500': exam.name.includes('Listening'),
-                      'bg-green-500': exam.name.includes('Reading'),
-                      'bg-blue-500': exam.name.includes('Speaking'),
-                      'bg-purple-500': exam.name.includes('Writing')
-                    }">
-                                                    <i class="fas" [ngClass]="{
-                        'fa-headphones': exam.name.includes('Listening'),
-                        'fa-book-open': exam.name.includes('Reading'),
-                        'fa-microphone': exam.name.includes('Speaking'),
-                        'fa-pen': exam.name.includes('Writing'),
-                        'text-white': true
-                      }"></i>
-                                                </div>
-                                                <div>
-                                                    <h6 class="font-semibold" [ngClass]="{
-                        'text-red-800': exam.name.includes('Listening'),
-                        'text-green-800': exam.name.includes('Reading'),
-                        'text-blue-800': exam.name.includes('Speaking'),
-                        'text-purple-800': exam.name.includes('Writing')
-                      }">{{ exam.name }}</h6>
-                                                </div>
-                                            </div>
-                                            <!-- <span *ngIf="exam.isActive; else locked"
-                                                class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Đã
-                                                mở khóa</span>
-                                            <ng-template #locked>
-                                                <span
-                                                    class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">Đang
-                                                    khóa</span>
-                                            </ng-template> -->
+    <!-- Search & Filter Panel -->
+    <div class="search-filter-panel">
+        <div class="filter-section">
+            <div class="filter-group search-group">
+                <label>
+                    <i class="fas fa-search"></i>
+                    Search Exams
+                </label>
+                <input type="text" 
+                       placeholder="Search by exam name..." 
+                       [(ngModel)]="searchName"
+                       (input)="filterExams()"
+                       class="filter-input">
+            </div>
+
+            <div class="filter-group">
+                <label>
+                    <i class="fas fa-calendar-alt"></i>
+                    Month/Year
+                </label>
+                <select [(ngModel)]="selectedSetKey" 
+                        (change)="filterExams()"
+                        class="filter-select">
+                    <option value="">All Months</option>
+                    <option *ngFor="let key of examSetKeys" [value]="key">
+                        {{ key.split('-')[0] }}/{{ key.split('-')[1] }}
+                    </option>
+                </select>
+            </div>
+
+            <div class="filter-actions">
+                <button (click)="searchName = ''; selectedSetKey = ''; filterExams()" 
+                        class="btn-clear-filters">
+                    <i class="fas fa-eraser"></i>
+                    Clear Filters
+                </button>
+                <button (click)="loadExamsGroupedByMonth()" class="btn-refresh">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exams List Section -->
+    <div class="exams-list-section">
+        <div class="section-header">
+            <div class="header-left">
+                <h3 class="section-title">
+                    <i class="fas fa-clipboard-list"></i>
+                    TOEIC Exams by Month
+                </h3>
+                <p class="section-subtitle">
+                    Showing {{ examGroups.length }} month(s) with exams
+                </p>
+            </div>
+        </div>
+
+        <!-- Exams Grid by Month -->
+        <div class="exams-months-grid">
+            <ng-container *ngFor="let group of examGroups | slice:0:showMonths">
+                <div class="month-group">
+                    <!-- Month Header -->
+                    <div class="month-header">
+                        <div class="month-title">
+                            <i class="fas fa-calendar-check"></i>
+                            <span>{{ group.examSetKey.split('-')[0] }}/{{ group.examSetKey.split('-')[1] }}</span>
+                        </div>
+                        <div class="month-badge">
+                            {{ group.exams.length }} Exams
+                        </div>
+                    </div>
+
+                    <!-- Exams Grid -->
+                    <div class="exams-grid">
+                        <div *ngFor="let exam of group.exams" class="exam-card" [ngClass]="{
+                            'listening': exam.name.includes('Listening'),
+                            'reading': exam.name.includes('Reading'),
+                            'speaking': exam.name.includes('Speaking'),
+                            'writing': exam.name.includes('Writing')
+                        }">
+                            <!-- Card Header -->
+                            <div class="card-header">
+                                <div class="skill-badge">
+                                    <i class="fas" [ngClass]="{
+                                        'fa-headphones': exam.name.includes('Listening'),
+                                        'fa-book-open': exam.name.includes('Reading'),
+                                        'fa-microphone': exam.name.includes('Speaking'),
+                                        'fa-pen': exam.name.includes('Writing')
+                                    }"></i>
+                                    {{ exam.name }}
+                                </div>
+                                <div class="status-badge" [class.active]="exam.isActive">
+                                    <i class="fas" [ngClass]="exam.isActive ? 'fa-unlock' : 'fa-lock'"></i>
+                                    {{ exam.isActive ? 'Active' : 'Locked' }}
+                                </div>
+                            </div>
+
+                            <!-- Card Content -->
+                            <div class="card-content">
+                                <!-- Parts List -->
+                                <div class="parts-list">
+                                    <div *ngFor="let part of exam.parts" class="part-item">
+                                        <div class="part-info">
+                                            <span class="part-code">{{ part.partCode }}</span>
+                                            <span class="part-title">{{ part.title }}</span>
                                         </div>
-                                        <div class="space-y-2 mb-4">
-                                            <div class="flex justify-between text-sm" *ngFor="let part of exam.parts">
-                                                <span class="font-medium" [ngClass]="{
-                      'text-red-700': exam.name.includes('Listening'),
-                      'text-green-700': exam.name.includes('Reading'),
-                      'text-blue-700': exam.name.includes('Speaking'),
-                      'text-purple-700': exam.name.includes('Writing')
-                    }">{{ part.partCode + " : " + part.title }}</span>
-                                                <span [ngClass]="{
-                      'text-red-800': exam.name.includes('Listening'),
-                      'text-green-800': exam.name.includes('Reading'),
-                      'text-blue-800': exam.name.includes('Speaking'),
-                      'text-purple-800': exam.name.includes('Writing')
-                    }">{{ part.questionCount }}/{{ part.maxQuestions }} câu</span>
-                                            </div>
-                                        </div>
-                                        <div
-                                            class="flex items-center justify-between pt-3 border-t border-purple-200 mt-auto">
-                                            <div class="text-sm text-purple-600">
-                                                <span class="font-medium">847</span> lượt thi
-                                            </div>
-                                            <div class="flex items-center space-x-2">
-                                                <button (click)="openExamModal(exam)"
-                                                    class="text-purple-600 hover:text-purple-800 text-sm font-medium">
-                                                    <i class="fas fa-eye mr-1"></i>Chi tiết
-                                                </button>
-                                                <button (click)="toggleExamStatus(exam)" [ngClass]="exam.isActive 
-    ? 'bg-red-600 hover:bg-red-700' 
-    : 'bg-green-600 hover:bg-green-700'" class="text-white px-3 py-1 rounded text-sm transition-colors">
-                                                    <i class="fas mr-1"
-                                                        [ngClass]="exam.isActive ? 'fa-lock' : 'fa-unlock'"></i>
-                                                    {{ exam.isActive ? 'Khóa bài thi' : 'Mở khóa' }}
-                                                </button>
-
+                                        <div class="part-progress">
+                                            <span class="progress-text">{{ part.questionCount }}/{{ part.maxQuestions }}</span>
+                                            <div class="progress-bar">
+                                                <div class="progress-fill" [style.width.%]="(part.questionCount / part.maxQuestions) * 100"></div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </ng-container>
+
+                                <!-- Card Footer -->
+                                <div class="card-footer">
+                                    <div class="attempts-count">
+                                        <i class="fas fa-users"></i>
+                                        <span>847 attempts</span>
+                                    </div>
+                                    <div class="card-actions">
+                                        <button class="btn-view" (click)="openExamModal(exam)">
+                                            <i class="fas fa-eye"></i>
+                                            View
+                                        </button>
+                                        <button class="btn-toggle" 
+                                                [class.lock]="exam.isActive"
+                                                [class.unlock]="!exam.isActive"
+                                                (click)="toggleExamStatus(exam)">
+                                            <i class="fas" [ngClass]="exam.isActive ? 'fa-lock' : 'fa-unlock'"></i>
+                                            {{ exam.isActive ? 'Lock' : 'Unlock' }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </ng-container>
-
-                <!-- Nút xem thêm tháng -->
-                <div class="flex justify-center pt-4" *ngIf="examGroups.length > showMonths">
-                    <button (click)="showMonths = showMonths + 3"
-                        class="px-6 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors font-medium">
-                        Xem thêm tháng trước
-                    </button>
                 </div>
-            </div>
+            </ng-container>
+        </div>
 
+        <!-- Load More Button -->
+        <div class="load-more-section" *ngIf="examGroups.length > showMonths">
+            <button class="btn-load-more" (click)="showMonths = showMonths + 3">
+                <i class="fas fa-chevron-down"></i>
+                Load More Months
+            </button>
+        </div>
 
+        <!-- Empty State -->
+        <div *ngIf="examGroups.length === 0" class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <h3>No exams found</h3>
+            <p>Try changing your filters or create a new exam</p>
+            <button class="btn-create-first" (click)="showCreateExamModal = true">
+                <i class="fas fa-plus"></i>
+                Create Your First Exam
+            </button>
         </div>
     </div>
-    <div *ngIf="showCreateExamModal" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
-        <div class="bg-white rounded-lg p-6 w-full max-w-md shadow-lg relative">
-            <button (click)="showCreateExamModal = false"
-                class="absolute right-3 top-2 text-2xl text-gray-400 hover:text-red-500">&times;</button>
-            <h3 class="text-xl font-semibold mb-4">Tạo đề thi theo tháng</h3>
-            <form (ngSubmit)="onCreateExam()">
 
-                <div class="mb-3">
-                    <label class="block mb-1 font-medium">Chọn tháng</label>
-                    <select [(ngModel)]="createMonth" name="createMonth" class="w-full border px-3 py-2 rounded"
-                        required>
+    <!-- Create Exam Modal -->
+    <div *ngIf="showCreateExamModal" class="modal-overlay" (click)="showCreateExamModal = false">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-header-content">
+                    <div class="modal-icon">
+                        <i class="fas fa-calendar-plus"></i>
+                    </div>
+                    <div class="modal-title-section">
+                        <h2>Create Monthly Exams</h2>
+                        <p>Generate 4 TOEIC exams for selected month</p>
+                    </div>
+                </div>
+                <button class="btn-close" (click)="showCreateExamModal = false" type="button">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form (ngSubmit)="onCreateExam()" class="modal-form">
+                <div class="form-group">
+                    <label for="createMonth">
+                        <i class="fas fa-calendar"></i>
+                        Select Month
+                    </label>
+                    <select id="createMonth" 
+                            [(ngModel)]="createMonth" 
+                            name="createMonth" 
+                            class="form-select" 
+                            required>
                         <option *ngFor="let m of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="m">
-                            {{ m < 10 ? '0' +m : m }} </option>
+                            {{ m < 10 ? '0' + m : m }}
+                        </option>
                     </select>
                 </div>
-                <div class="mb-3">
-                    <label class="block mb-1 font-medium">Chọn năm</label>
-                    <select [(ngModel)]="createYear" name="createYear" class="w-full border px-3 py-2 rounded" required>
-                        <option *ngFor="let y of validYears" [value]="y">{{y}}</option>
+
+                <div class="form-group">
+                    <label for="createYear">
+                        <i class="fas fa-calendar-alt"></i>
+                        Select Year
+                    </label>
+                    <select id="createYear" 
+                            [(ngModel)]="createYear" 
+                            name="createYear" 
+                            class="form-select" 
+                            required>
+                        <option *ngFor="let y of validYears" [value]="y">{{ y }}</option>
                     </select>
                 </div>
-                <div class="mt-5 flex justify-end">
-                    <button type="submit"
-                        class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 font-medium">
-                        Tạo đề thi
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" (click)="showCreateExamModal = false">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Create Exams
                     </button>
                 </div>
             </form>
         </div>
     </div>
-
-
 </div>

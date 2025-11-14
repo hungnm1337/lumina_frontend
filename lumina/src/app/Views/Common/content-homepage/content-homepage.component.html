@@ -32,14 +32,6 @@
         <button class="group relative inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white rounded-xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300 hover:bg-white/20 hover:border-white/40 hover:shadow-2xl hover:-translate-y-1">
           <i class="fas fa-video transition-transform duration-300 group-hover:rotate-12"></i> Bắt đầu học miễn phí
         </button>
-        <button
-          class="group relative inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white rounded-xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300 hover:bg-white/20 hover:border-white/40 hover:shadow-2xl hover:-translate-y-1">
-          <i class="fas fa-video transition-transform duration-300 group-hover:rotate-12"></i>
-          <span>Xem demo</span>
-        </button>
-
-
-
       </div>
 
       <div class="flex items-center space-x-8 text-sm">
@@ -59,12 +51,30 @@
       <h3 class="text-2xl font-bold text-white mb-2 text-center">Kiểm tra trình độ miễn phí</h3>
       <p class="text-blue-100 text-center mb-6">Làm bài test 15 phút để biết trình độ hiện tại</p>
 
-      <div class="space-y-4 mb-6">
+      <div class="grid grid-cols-2 gap-3 mb-6">
         <div class="bg-white/20 rounded-lg p-4">
-          <div class="flex justify-between text-white font-semibold">Listening <span>25 câu</span></div>
+          <div class="flex flex-col items-center text-center">
+            <div class="text-white font-semibold mb-1">Listening</div>
+            <div class="text-white text-sm">25 câu</div>
+          </div>
         </div>
         <div class="bg-white/20 rounded-lg p-4">
-          <div class="flex justify-between text-white font-semibold">Reading <span>25 câu</span></div>
+          <div class="flex flex-col items-center text-center">
+            <div class="text-white font-semibold mb-1">Reading</div>
+            <div class="text-white text-sm">25 câu</div>
+          </div>
+        </div>
+        <div class="bg-white/20 rounded-lg p-4">
+          <div class="flex flex-col items-center text-center">
+            <div class="text-white font-semibold mb-1">Writing</div>
+            <div class="text-white text-sm">25 câu</div>
+          </div>
+        </div>
+        <div class="bg-white/20 rounded-lg p-4">
+          <div class="flex flex-col items-center text-center">
+            <div class="text-white font-semibold mb-1">Speaking</div>
+            <div class="text-white text-sm">25 câu</div>
+          </div>
         </div>
       </div>
 
@@ -147,6 +157,88 @@
   <app-user-slide-dashboard></app-user-slide-dashboard>
   <app-event-preview></app-event-preview>
 
+</section>
+
+<!-- Packages Section -->
+<section class="py-20 bg-gray-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+      <h2 class="text-4xl font-bold text-gray-900 mb-4">
+        Khóa học phù hợp với mọi trình độ
+      </h2>
+      <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+        Từ người mới bắt đầu đến nâng cao, chúng tôi có khóa học dành cho bạn
+      </p>
+    </div>
+
+    <div *ngIf="isLoading" class="flex justify-center items-center py-20">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+
+    <div *ngIf="!isLoading && packages.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div *ngFor="let pkg of packages; let i = index" 
+           class="package-card bg-white rounded-lg shadow-lg overflow-hidden flex flex-col h-full">
+        
+        <!-- Colored Header -->
+        <div [class]="getPackageHeaderClass(pkg.color) + ' relative px-6 py-8 min-h-[180px]'">
+          <!-- Level Tag (Top Left) -->
+          <div [class]="'absolute top-4 left-4 bg-white px-3 py-1 rounded'">
+            <span [class]="'text-sm font-semibold ' + getPackageTextColor(pkg.color)">
+              {{ pkg.level }}
+            </span>
+          </div>
+          
+          <!-- Target Score (Top Right) -->
+          <div class="absolute top-4 right-4 text-white">
+            <span class="text-sm font-medium">{{ pkg.targetScore }} Mục tiêu</span>
+          </div>
+          
+          <!-- Course Name -->
+          <div class="mt-12">
+            <h3 class="text-3xl font-bold text-white mb-2">TOEIC {{ pkg.level }}</h3>
+            <p class="text-white text-sm opacity-90">{{ pkg.description }}</p>
+          </div>
+        </div>
+
+        <!-- White Body -->
+        <div class="flex-1 flex flex-col p-6">
+          <!-- Features -->
+          <ul class="space-y-3 mb-6 flex-1">
+            <li *ngFor="let feature of pkg.features" class="flex items-start">
+              <i [class]="'fas fa-check-circle mr-3 mt-1 ' + getPackageCheckColor(pkg.color)"></i>
+              <span class="text-gray-700 text-sm">{{ feature }}</span>
+            </li>
+          </ul>
+
+          <!-- Pricing -->
+          <div class="mb-4 pb-4 border-b border-gray-200">
+            <div class="flex items-baseline gap-2">
+              <span class="text-3xl font-bold text-gray-900">
+                {{ formatPrice(pkg.price) }}
+              </span>
+              <span *ngIf="pkg.originalPrice" class="text-lg text-gray-400 line-through">
+                {{ formatPrice(pkg.originalPrice) }}
+              </span>
+            </div>
+            <div class="text-gray-500 text-sm mt-1">
+              {{ formatDuration(pkg.durationInDays) }}
+            </div>
+          </div>
+
+          <!-- CTA Button -->
+          <button 
+            class="w-full py-3 px-6 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
+            Chọn khóa học
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!isLoading && packages.length === 0" class="text-center py-20">
+      <i class="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
+      <p class="text-gray-500 text-lg">Hiện tại chưa có gói khóa học nào</p>
+    </div>
+  </div>
 </section>
 
 <!-- You can continue building similarly for Courses Section, Testimonials, CTA, Footer -->
