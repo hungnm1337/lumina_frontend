@@ -26,10 +26,11 @@ export class SidebarComponent {
       ],
     },
     {
-      title: 'Quản lý Tài nguyên', 
+      title: 'Quản lý Tài nguyên',
       items: [
         { path: 'vocabulary', name: 'Từ vựng', icon: 'fas fa-spell-check' },
         { path: 'seasons', name: 'Mùa thi đấu', icon: 'fas fa-trophy' },
+        { path: 'leaderboard', name: 'Bảng xếp hạng', icon: 'fas fa-chart-bar' },
       ],
     },
   ];

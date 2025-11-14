@@ -7,8 +7,8 @@ import { VocabularyComponent } from './Vocabulary/vocabulary/vocabulary.componen
 import { QuestionsComponent } from './Questions/questions/questions.component';
 import { ExamsComponent } from './exams/exams.component';
 import { AiChatComponent } from './AI-Chat/ai-chat.component';
-
-
+import { SeasonManagementComponent } from './Season/season-management.component';
+import { LeaderboardRankingComponent } from './Leaderboard/leaderboard-ranking.component';
 
 const routes: Routes = [
   {
@@ -49,6 +49,16 @@ const routes: Routes = [
         path: 'vocabulary',
         component: VocabularyComponent,
         data: { title: 'Từ Vựng' }
+      },
+      {
+        path: 'seasons',
+        component: SeasonManagementComponent,
+        data: { title: 'Quản lý Mùa giải' }
+      },
+      {
+        path: 'leaderboard',
+        component: LeaderboardRankingComponent,
+        data: { title: 'Bảng Xếp Hạng' }
       }
     ]
   }

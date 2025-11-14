@@ -14,11 +14,12 @@ interface PackageWithDetails extends Package {
   originalPrice?: number;
   color?: string;
 }
+import { LeaderboardPreviewComponent } from '../../User/leaderboard-preview/leaderboard-preview.component';
 
 @Component({
   selector: 'app-content-homepage',
   standalone: true,
-  imports: [CommonModule, FooterComponent, EventPreviewComponent, UserSlideDashboardComponent],
+  imports: [FooterComponent, EventPreviewComponent, UserSlideDashboardComponent, LeaderboardPreviewComponent],
   templateUrl: './content-homepage.component.html',
   styleUrl: './content-homepage.component.scss'
 })

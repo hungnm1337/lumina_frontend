@@ -1,0 +1,44 @@
+.leaderboard-container {
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #f9fafb, #ffffff);
+}
+
+.season-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.season-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  animation: pulse 8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.3;
+  }
+}
+
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+tbody tr {
+  transition: all 0.2s ease;
+}
+
+tbody tr:hover {
+  transform: translateX(4px);
+}
