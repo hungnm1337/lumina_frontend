@@ -333,6 +333,7 @@
   transition: all 0.3s ease;
   border: 1px solid #e2e8f0;
   cursor: pointer;
+  position: relative;
 
   &:hover {
     transform: translateY(-5px);
@@ -365,7 +366,47 @@
           color: #ea580c;
         }
       }
+
+      // Status badge styles
+      .status-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: none;
+        letter-spacing: 0.3px;
+
+        &.not-started {
+          background-color: #f1f5f9;
+          color: #64748b;
+        }
+
+        &.in-progress {
+          background-color: #dbeafe;
+          color: #2563eb;
+        }
+
+        &.completed {
+          background-color: #d1fae5;
+          color: #059669;
+        }
+      }
     }
+  }
+
+  // Completion icon
+  .completion-icon {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    color: #10b981;
+    font-size: 1.5rem;
+    background: white;
+    border-radius: 50%;
+    padding: 4px;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   .card-image {
@@ -476,86 +517,78 @@
       }
     }
   }
+
+  // Progress Bar
+  .card-progress {
+    margin-top: 16px;
+    padding: 16px 20px;
+    border-top: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 0.875rem;
+
+      .progress-label {
+        color: #64748b;
+        font-weight: 500;
+      }
+
+      .progress-percent {
+        font-weight: 700;
+        color: #2563eb;
+      }
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 8px;
+      background-color: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+
+      .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        border-radius: 4px;
+        transition: width 0.5s ease;
+        position: relative;
+
+        &::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          right: 0;
+          background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.3),
+            transparent
+          );
+          animation: shimmer 2s infinite;
+        }
+
+        &.completed {
+          background: linear-gradient(90deg, #10b981, #059669);
+        }
+      }
+    }
+  }
 }
 
-// Newsletter Section
-.newsletter-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 80px 0;
-  margin: 80px 0;
-  text-align: center;
-  color: white;
-
-  .newsletter-content {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 0 20px;
-
-    .newsletter-icon {
-      margin-bottom: 30px;
-
-      i {
-        font-size: 3rem;
-        opacity: 0.9;
-      }
-    }
-
-    .newsletter-title {
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin-bottom: 20px;
-    }
-
-    .newsletter-subtitle {
-      font-size: 1.1rem;
-      margin-bottom: 40px;
-      opacity: 0.9;
-    }
-
-    .newsletter-form {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      justify-content: center;
-
-      .newsletter-input {
-        flex: 1;
-        min-width: 300px;
-        padding: 15px 20px;
-        border: none;
-        border-radius: 12px;
-        font-size: 1rem;
-        color: #1a202c;
-
-        &:focus {
-          outline: none;
-          box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
-        }
-      }
-
-      .newsletter-btn {
-        background: white;
-        color: #667eea;
-        border: none;
-        padding: 15px 30px;
-        border-radius: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-
-        &:hover {
-          background: #f7fafc;
-          transform: translateY(-2px);
-        }
-      }
-    }
-
-    .newsletter-note {
-      font-size: 0.9rem;
-      opacity: 0.8;
-      margin: 0;
-    }
+// Shimmer animation for progress bar
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
   }
 }
 
@@ -783,25 +816,6 @@
     }
   }
 
-  .newsletter-section {
-    padding: 60px 0;
-
-    .newsletter-content {
-      .newsletter-title {
-        font-size: 2rem;
-      }
-
-      .newsletter-form {
-        flex-direction: column;
-        align-items: center;
-
-        .newsletter-input {
-          min-width: auto;
-          width: 100%;
-        }
-      }
-    }
-  }
 
   .authors-section {
     .authors-grid {

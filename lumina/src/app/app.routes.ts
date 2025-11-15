@@ -85,11 +85,11 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
-  { path: 'blog', component: BlogArticlesComponent },
-  { path: 'blog/:id', component: BlogDetailComponent },
-  { path: 'tu-vung', component: UserVocabularyComponent },
+  { path: 'articles', component: BlogArticlesComponent },
+  { path: 'articles/:id', component: BlogDetailComponent },
+  { path: 'vocabulary', component: UserVocabularyComponent },
   {
-    path: 'tu-vung/list/:id',
+    path: 'vocabulary/list/:id',
     loadComponent: () =>
       import('./Views/User/vocabulary-list-detail/vocabulary-list-detail.component').then(
         (m) => m.VocabularyListDetailComponent

@@ -77,9 +77,9 @@ export class FloatingChatComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    // 2. Không hiển thị ở trang Articles-detail (blog/:id)
-    // Route: /blog/:id (không phải /blog)
-    if (this.currentRoute.match(/^\/blog\/\d+/)) {
+    // 2. Không hiển thị ở trang Articles-detail (articles/:id)
+    // Route: /articles/:id (không phải /articles)
+    if (this.currentRoute.match(/^\/articles\/\d+/)) {
       return false;
     }
 
@@ -107,7 +107,7 @@ export class FloatingChatComponent implements OnInit, OnDestroy {
     if (this.savedMessages.length === 0) {
       this.savedMessages.push({
         type: 'ai',
-        content: '**Xin chào! Tôi là AI Assistant**\n\nTôi có thể giúp bạn:\n\n**Tạo đề thi TOEIC:**\n• Tạo 5 câu Reading Part 5 về giới từ\n• Gen 10 câu Listening Part 1\n\n**Tư vấn & Hỗ trợ:**\n• Cách học TOEIC hiệu quả?\n• Giải thích cấu trúc câu này\n\n**Tips**: Mô tả càng chi tiết, kết quả càng tốt!\n\nBạn muốn tôi giúp gì nào? 😊',
+        content: '**Xin chào! Tôi là AI Assistant**\n\nTôi có thể giúp bạn:\n\n**Tư vấn & Hỗ trợ:**\n• Cách học TOEIC hiệu quả?\n• Giải thích cấu trúc câu này\n\n**Tips**: Mô tả càng chi tiết, kết quả càng tốt!\n\nBạn muốn tôi giúp gì nào? 😊',
         timestamp: new Date(),
         conversationType: 'general',
         suggestions: [

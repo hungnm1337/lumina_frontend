@@ -31,11 +31,11 @@
 .article-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px 40px;
+  padding: 0 20px 60px;
 }
 
 .article-content {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
@@ -62,15 +62,47 @@
     font-size: 0.9rem;
     font-weight: 500;
   }
+
+  .completion-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #d1fae5;
+    color: #059669;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    i {
+      font-size: 0.9rem;
+    }
+  }
+
+  .progress-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #dbeafe;
+    color: #2563eb;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    i {
+      font-size: 0.9rem;
+    }
+  }
 }
 
 // Article Title
 .article-title {
-  font-size: 2.5rem;
+  font-size: 2.25rem;
   font-weight: 700;
   color: #1a202c;
   line-height: 1.3;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
 // Author Section
@@ -78,8 +110,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 40px;
-  padding: 20px 0;
+  margin-bottom: 32px;
+  padding: 16px 0;
   border-top: 1px solid #e2e8f0;
   border-bottom: 1px solid #e2e8f0;
 
@@ -155,14 +187,13 @@
 // Article Introduction
 .article-intro {
   font-size: 1.1rem;
-  line-height: 1.7;
+  line-height: 1.8;
   color: #374151;
-  margin-bottom: 50px;
+  margin-bottom: 40px;
   padding: 20px 0;
-  border-left: 4px solid #667eea;
-  padding-left: 20px;
-  background: #f8fafc;
-  border-radius: 0 8px 8px 0;
+  padding-left: 24px;
+  border-left: 4px solid #2563eb;
+  background: transparent;
 }
 
 // Content Sections
@@ -170,21 +201,275 @@
   margin-bottom: 50px;
 
   .content-section {
-    margin-bottom: 40px;
+    margin-bottom: 30px;
+    padding: 32px;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    transition: all 0.3s ease;
 
-    .section-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #1a202c;
-      margin-bottom: 15px;
-      line-height: 1.4;
+    &.active {
+      border-color: #e2e8f0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      background: white;
+    }
+
+    &.completed {
+      border-color: #10b981;
+      background: #f0fdf4;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+
+      .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin: 0;
+        line-height: 1.4;
+        flex: 1;
+      }
+
+      .section-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: transparent;
+        color: #10b981;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        white-space: nowrap;
+
+        i {
+          font-size: 1rem;
+          color: #10b981;
+        }
+      }
     }
 
     .section-content {
       font-size: 1rem;
-      line-height: 1.7;
+      line-height: 1.8;
       color: #374151;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
+
+      // Style cho các thẻ HTML trong content
+      p {
+        margin-bottom: 16px;
+      }
+
+      h1, h2, h3, h4 {
+        font-weight: 700;
+        margin-top: 24px;
+        margin-bottom: 12px;
+        line-height: 1.3;
+        color: #1a202c;
+      }
+      
+      h2 { font-size: 1.3rem; }
+      h3 { font-size: 1.1rem; }
+
+      ul, ol {
+        padding-left: 24px;
+        margin-bottom: 16px;
+        
+        li {
+          margin-bottom: 8px;
+          line-height: 1.6;
+        }
+      }
+
+      strong {
+        font-weight: 600;
+        color: #1a202c;
+      }
+    }
+
+    .section-actions {
+      margin-top: 30px;
+      display: flex;
+      justify-content: center;
+
+      .mark-read-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 28px;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+
+        &:hover {
+          background: #1d4ed8;
+          box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+        }
+
+        i {
+          font-size: 0.875rem;
+        }
+      }
+
+      .next-section-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background: #10b981;
+        color: white;
+        border: none;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+
+        &:hover {
+          background: #059669;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        i {
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+
+  // Navigation Buttons (giống exam)
+  .section-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+    margin-bottom: 20px;
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+
+      &.prev-btn {
+        background: #6b7280; // Gray
+        color: white;
+
+        &:hover:not(:disabled) {
+          background: #4b5563;
+        }
+      }
+
+      &.next-btn {
+        background: #3b82f6; // Light Blue
+        color: white;
+
+        &:hover:not(:disabled) {
+          background: #2563eb;
+        }
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      i {
+        font-size: 0.875rem;
+      }
+    }
+  }
+
+  // Section Navigator (nằm trong content-sections, dưới navigation buttons)
+  .section-navigator {
+    margin-top: 20px;
+    margin-bottom: 30px;
+
+    .navigator-container {
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 16px;
+      border: 1px solid #e5e7eb;
+
+      .navigator-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #4b5563;
+        margin-bottom: 12px;
+      }
+
+      .section-buttons {
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        gap: 8px;
+
+        .section-btn {
+          width: 40px;
+          height: 40px;
+          border-radius: 8px;
+          border: none;
+          font-weight: 600;
+          font-size: 0.875rem;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          &.active {
+            background: #2563eb; // Blue - đang xem
+            color: white;
+            font-weight: 700;
+          }
+
+          &.completed {
+            background: #10b981; // Green - đã hoàn thành
+            color: white;
+          }
+
+          &.accessible {
+            background: #e5e7eb; // Gray - có thể truy cập
+            color: #374151;
+            
+            &:hover {
+              background: #d1d5db;
+            }
+          }
+
+          &.locked {
+            background: #f3f4f6; // Light gray - bị khóa
+            color: #9ca3af;
+            cursor: not-allowed;
+            opacity: 0.6;
+          }
+
+          &:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+          }
+        }
+      }
     }
   }
 }
@@ -715,8 +1000,52 @@
   100% { transform: rotate(360deg); }
 }
 
+
 // Responsive Design
 @media (max-width: 768px) {
+  .section-navigator {
+    .navigator-container {
+      padding: 12px;
+
+      .section-buttons {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 6px;
+
+        .section-btn {
+          width: 36px;
+          height: 36px;
+          font-size: 0.75rem;
+        }
+      }
+    }
+  }
+
+  .content-sections {
+    .content-section {
+      padding: 20px;
+
+      .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+
+        .section-status {
+          align-self: flex-start;
+        }
+      }
+    }
+
+    .section-navigation {
+      flex-direction: column;
+      gap: 12px;
+
+      .nav-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
+
   .article-title {
     font-size: 2rem;
   }

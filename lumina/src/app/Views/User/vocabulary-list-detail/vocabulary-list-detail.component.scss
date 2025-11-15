@@ -1,4 +1,4 @@
-// Style chủ đề TOEIC: nền trắng-xanh, card bo góc, shadow nhẹ, badge hiện đại, spacing thoáng
+// TOEIC theme style: white-blue background, rounded cards, light shadow, modern badges, spacious spacing
 
 .vocab-list-detail-page {
   background-color: #f8fafc;
@@ -183,7 +183,7 @@ input[type="text"]:focus, select:focus {
   .btn-add-word { font-size: 0.95rem; padding: 10px 16px; }
 }
 
-/* Layout wrapper để cố định phân trang dưới nội dung */
+/* Layout wrapper to fix pagination below content */
 .content-column { display: flex; flex-direction: column; min-height: 60vh; }
 .vocab-grid { flex: 1 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; justify-content: center; }
 .vocab-grid .card-vocab { width: 100%; }
@@ -416,7 +416,7 @@ input[type="text"]:focus, select:focus {
   }
 }
 
-/* Modal Chi Tiết Từ Vựng */
+/* Vocabulary Detail Modal */
 .modal-detail-content {
   background: #fff;
   border-radius: 16px;
@@ -555,7 +555,7 @@ input[type="text"]:focus, select:focus {
 .btn-edit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  pointer-events: auto; /* Vẫn hiển thị tooltip khi hover */
+  pointer-events: auto; /* Still show tooltip when hovering */
 }
 
 .btn-delete {
@@ -595,7 +595,7 @@ input[type="text"]:focus, select:focus {
 .btn-delete:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  pointer-events: auto; /* Vẫn hiển thị tooltip khi hover */
+  pointer-events: auto; /* Still show tooltip when hovering */
 }
 
 @media (max-width: 650px) {

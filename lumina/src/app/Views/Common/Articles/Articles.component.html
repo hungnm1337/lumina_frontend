@@ -3,21 +3,21 @@
 <!-- Blog Hero Section -->
 <div class="blog-hero">
   <div class="hero-content">
-    <h1 class="hero-title">Blog TOEIC</h1>
-    <p class="hero-subtitle">Khám phá kiến thức, mẹo học tập và kinh nghiệm thi TOEIC từ các chuyên gia hàng đầu</p>
+    <h1 class="hero-title">Articles TOEIC</h1>
+    <p class="hero-subtitle">Discover knowledge, study tips and TOEIC exam experience from leading experts</p>
     
     <div class="hero-stats">
       <div class="stat-item">
         <i class="fas fa-file-alt"></i>
-        <span>500+ bài viết</span>
+        <span>500+ articles</span>
       </div>
       <div class="stat-item">
         <i class="fas fa-users"></i>
-        <span>50+ tác giả</span>
+        <span>50+ authors</span>
       </div>
       <div class="stat-item">
         <i class="fas fa-eye"></i>
-        <span>1M+ lượt đọc</span>
+        <span>1M+ reads</span>
       </div>
     </div>
   </div>
@@ -30,7 +30,7 @@
       <input 
         type="text" 
         [(ngModel)]="searchQuery"
-        placeholder="Tìm kiếm bài viết..." 
+        placeholder="Search articles..." 
         class="search-input"
         (keyup.enter)="onSearch()"
       >
@@ -41,18 +41,18 @@
     
     <div class="filter-group">
       <select [(ngModel)]="selectedCategory" class="filter-select">
-        <option value="all">Tất cả chủ đề</option>
-        <option value="study-tips">Mẹo học tập</option>
-        <option value="grammar">Ngữ pháp</option>
-        <option value="vocabulary">Từ vựng</option>
-        <option value="listening">Nghe</option>
-        <option value="reading">Đọc</option>
+        <option value="all">All topics</option>
+        <option value="study-tips">Study tips</option>
+        <option value="grammar">Grammar</option>
+        <option value="vocabulary">Vocabulary</option>
+        <option value="listening">Listening</option>
+        <option value="reading">Reading</option>
       </select>
       
       <select [(ngModel)]="selectedSort" class="filter-select">
-        <option value="newest">Mới nhất</option>
-        <option value="popular">Phổ biến</option>
-        <option value="trending">Xu hướng</option>
+        <option value="newest">Newest</option>
+        <option value="popular">Popular</option>
+        <option value="trending">Trending</option>
       </select>
     </div>
   </div>
@@ -73,16 +73,24 @@
 <!-- Featured Articles Section -->
 <div class="featured-section">
   <div class="section-header">
-    <h2 class="section-title">Bài viết nổi bật</h2>
-    <p class="section-subtitle">Những bài viết được đọc và chia sẻ nhiều nhất</p>
+    <h2 class="section-title">Featured Articles</h2>
+    <p class="section-subtitle">The most read and shared articles</p>
   </div>
   
   <div class="articles-grid featured-grid" *ngIf="!isLoading">
     <div *ngFor="let article of featuredArticles" class="article-card featured-card" (click)="goToArticleDetail(article.articleId)">
       <div class="card-header">
         <div class="card-tags">
-          <span class="tag featured-tag">Nổi bật</span>
+          <span class="tag featured-tag">Featured</span>
+          <span [class]="getStatusBadgeClass(getArticleProgress(article.articleId).status)">
+            {{ getStatusText(getArticleProgress(article.articleId).status) }}
+          </span>
         </div>
+      </div>
+      
+      <!-- Completion icon -->
+      <div class="completion-icon" *ngIf="getArticleProgress(article.articleId).status === 'completed'">
+        <i class="fas fa-check-circle"></i>
       </div>
       
       <div class="card-image">
@@ -131,27 +139,27 @@
   <!-- Loading State -->
   <div *ngIf="isLoading" class="loading-state">
     <div class="loading-spinner"></div>
-    <p>Đang tải bài viết...</p>
+    <p>Loading articles...</p>
   </div>
   
   <!-- Error State -->
   <div *ngIf="error" class="error-state">
     <p>{{ error }}</p>
-    <button (click)="loadPublishedArticles()" class="retry-btn">Thử lại</button>
+    <button (click)="loadPublishedArticles()" class="retry-btn">Retry</button>
   </div>
 </div>
 
 <!-- Latest Articles Section -->
 <div class="latest-section">
   <div class="section-header">
-    <h2 class="section-title">Bài viết mới nhất</h2>
-    <p class="section-subtitle">Cập nhật kiến thức TOEIC mới nhất</p>
+    <h2 class="section-title">Latest Articles</h2>
+    <p class="section-subtitle">Latest TOEIC knowledge updates</p>
     <button 
       class="view-more-btn" 
       (click)="onViewMoreLatestArticles()"
       *ngIf="hasMoreArticles"
     >
-      {{ showAllLatestArticles ? 'Thu gọn' : '+ Xem thêm' }}
+      {{ showAllLatestArticles ? 'Collapse' : '+ View more' }}
     </button>
   </div>
   
@@ -159,8 +167,16 @@
     <div *ngFor="let article of latestArticles" class="article-card latest-card" (click)="goToArticleDetail(article.articleId)">
       <div class="card-header">
         <div class="card-tags">
-          <span class="tag trending-tag">Mới</span>
+          <span class="tag trending-tag">New</span>
+          <span [class]="getStatusBadgeClass(getArticleProgress(article.articleId).status)">
+            {{ getStatusText(getArticleProgress(article.articleId).status) }}
+          </span>
         </div>
+      </div>
+      
+      <!-- Completion icon -->
+      <div class="completion-icon" *ngIf="getArticleProgress(article.articleId).status === 'completed'">
+        <i class="fas fa-check-circle"></i>
       </div>
       
       <div class="card-image">
@@ -216,7 +232,7 @@
         [class.disabled]="currentPage === 1"
       >
         <i class="fas fa-chevron-left"></i>
-        <span>Trước</span>
+        <span>Previous</span>
       </button>
       
       <div class="pagination-numbers">
@@ -254,45 +270,22 @@
         [disabled]="currentPage === totalPages"
         [class.disabled]="currentPage === totalPages"
       >
-        <span>Sau</span>
+        <span>Next</span>
         <i class="fas fa-chevron-right"></i>
       </button>
     </div>
     
     <div class="pagination-info">
-      Trang {{ currentPage }} / {{ totalPages }} ({{ publishedArticles.length }} bài viết)
+      Page {{ currentPage }} / {{ totalPages }} ({{ publishedArticles.length }} articles)
     </div>
-  </div>
-</div>
-
-<!-- Newsletter Signup Section -->
-<div class="newsletter-section">
-  <div class="newsletter-content">
-    <div class="newsletter-icon">
-      <i class="fas fa-envelope"></i>
-    </div>
-    <h2 class="newsletter-title">Đăng ký nhận bài viết mới</h2>
-    <p class="newsletter-subtitle">Nhận thông báo về bài viết mới và mẹo học TOEIC hiệu quả qua email</p>
-    
-    <div class="newsletter-form">
-      <input 
-        type="email" 
-        [(ngModel)]="newsletterEmail"
-        placeholder="Nhập email của bạn..." 
-        class="newsletter-input"
-      >
-      <button class="newsletter-btn" (click)="onSubscribeNewsletter()">Đăng ký</button>
-    </div>
-    
-    <p class="newsletter-note">Miễn phí và có thể hủy đăng ký bất cứ lúc nào</p>
   </div>
 </div>
 
 <!-- Featured Authors Section -->
 <div class="authors-section">
   <div class="section-header">
-    <h2 class="section-title">Tác giả nổi bật</h2>
-    <p class="section-subtitle">Những chuyên gia TOEIC hàng đầu</p>
+    <h2 class="section-title">Featured Authors</h2>
+    <p class="section-subtitle">Leading TOEIC experts</p>
   </div>
   
   <div class="authors-grid">
@@ -303,14 +296,14 @@
       <h3 class="author-name">{{ author.name }}</h3>
       <p class="author-expertise">{{ author.expertise }}</p>
       <div class="author-stats">
-        <span class="articles-count">{{ author.articlesCount }} bài viết</span>
+        <span class="articles-count">{{ author.articlesCount }} articles</span>
         <span class="followers-count">{{ author.followers }} followers</span>
       </div>
       <button 
         [class]="author.isFollowing ? 'follow-btn following' : 'follow-btn'"
         (click)="onFollowAuthor(author.id)"
       >
-        {{ author.isFollowing ? 'Đang theo dõi' : '+ Theo dõi' }}
+        {{ author.isFollowing ? 'Following' : '+ Follow' }}
       </button>
     </div>
   </div>

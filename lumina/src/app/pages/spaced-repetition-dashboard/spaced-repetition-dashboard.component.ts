@@ -212,7 +212,7 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
 
   // Go back
   goBack(): void {
-    this.router.navigate(['/tu-vung']);
+    this.router.navigate(['/vocabulary']);
   }
 }
 
