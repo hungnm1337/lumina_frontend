@@ -7,14 +7,14 @@ import { HeaderComponent } from '../../Common/header/header.component';
 
 
 export interface VocabularyItem {
-  id?: number; // ID của từ vựng để update/delete
+  id?: number; // Vocabulary ID for update/delete
   question: string;
   answer: string;
   topic?: string;
   level?: string;
   audioUrl?: string;
-  example?: string; // Ví dụ sử dụng từ
-  liked?: boolean; // Thêm trường để đánh dấu yêu thích
+  example?: string; // Example usage of the word
+  liked?: boolean; // Add field to mark as favorite
 }
 
 
@@ -42,8 +42,8 @@ export class VocabularyListDetailComponent implements OnInit {
 
 
   searchTerm: string = '';
-  selectedTopic: string = 'Tất cả';
-  selectedLevel: string = 'Tất cả';
+  selectedTopic: string = 'All';
+  selectedLevel: string = 'All';
   
   // Pagination
   currentPage = 1;
@@ -69,15 +69,15 @@ export class VocabularyListDetailComponent implements OnInit {
     private vocabularyService: VocabularyService,
     private fb: FormBuilder
   ) {
-    // Initialize form - 4 trường: word, definition, category (loại từ), example (ví dụ)
+    // Initialize form - 4 fields: word, definition, category, example
     this.addWordForm = this.fb.group({
       word: ['', [Validators.required, Validators.maxLength(100)]],
       definition: ['', [Validators.required, Validators.maxLength(500)]],
-      category: [''], // Loại từ - sẽ map vào category trong database
-      example: [''] // Ví dụ
+      category: [''], // Category - will map to category in database
+      example: [''] // Example
     });
     
-    // Form chỉnh sửa từ vựng
+    // Edit vocabulary form
     this.editWordForm = this.fb.group({
       word: ['', [Validators.required, Validators.maxLength(100)]],
       definition: ['', [Validators.required, Validators.maxLength(500)]],
@@ -88,15 +88,15 @@ export class VocabularyListDetailComponent implements OnInit {
 
 
   ngOnInit(): void {
-    // Nếu vocabularyList được truyền qua @Input, đảm bảo các words có ID
+    // If vocabularyList is passed via @Input, ensure words have ID
     if (this.vocabularyList && this.vocabularyList.words) {
       this.vocabularyList.words = this.vocabularyList.words.map((w: any) => {
-        // Nếu đã có ID hợp lệ, giữ nguyên
+        // If already has valid ID, keep it
         if (w.id !== undefined && w.id !== null && !isNaN(Number(w.id))) {
           return w;
         }
         
-        // Thử nhiều cách lấy ID từ object gốc
+        // Try multiple ways to get ID from original object
         let wordId: number | undefined = undefined;
         if (w.id !== undefined && w.id !== null) {
           wordId = Number(w.id);
@@ -108,7 +108,7 @@ export class VocabularyListDetailComponent implements OnInit {
           wordId = Number(w.ID);
         }
         
-        // Chỉ set ID nếu conversion thành công
+        // Only set ID if conversion successful
         if (wordId !== undefined && !isNaN(wordId) && wordId > 0) {
           return {
             ...w,
@@ -120,12 +120,12 @@ export class VocabularyListDetailComponent implements OnInit {
       });
     }
     
-    // Nếu component được mở qua route (không truyền @Input), tự fetch theo param :id
+    // If component is opened via route (not passed @Input), fetch by param :id
     if (!this.vocabularyList) {
       const idParam = this.route.snapshot.paramMap.get('id');
       const listId = idParam ? Number(idParam) : NaN;
       if (!Number.isNaN(listId)) {
-        // Thử lấy public words trước cho user thông thường
+        // Try to get public words first for regular users
         this.vocabularyService.getPublicVocabularyByList(listId).subscribe({
           next: (publicWords: any[]) => {
             if (Array.isArray(publicWords) && publicWords.length > 0) {
@@ -134,7 +134,7 @@ export class VocabularyListDetailComponent implements OnInit {
                 name: 'Vocabulary List',
                 vocabularyCount: publicWords.length,
                 words: publicWords.map((w: any) => {
-                  // Thử nhiều cách lấy ID
+                  // Try multiple ways to get ID
                   let wordId: number | undefined = undefined;
                   if (w.id !== undefined && w.id !== null) {
                     wordId = Number(w.id);
@@ -168,10 +168,10 @@ export class VocabularyListDetailComponent implements OnInit {
 
 
   private fetchPrivateListDetail(listId: number): void {
-    // Luôn load từ vocabularies API để đảm bảo có ID, đồng thời lấy tên list từ detail API
+    // Always load from vocabularies API to ensure ID, also get list name from detail API
     this.vocabularyService.getVocabularyListDetail(listId).subscribe({
       next: (detail: any) => {
-        // Load từ vocabularies API để đảm bảo có ID
+        // Load from vocabularies API to ensure ID
         this.vocabularyService.getVocabularies(listId).subscribe({
           next: (words) => {
             console.log('Loaded vocabularies from API:', words);
@@ -191,7 +191,7 @@ export class VocabularyListDetailComponent implements OnInit {
                   'w keys': Object.keys(w)
                 });
                 
-                // Thử nhiều cách lấy ID
+                // Try multiple ways to get ID
                 let wordId: number | undefined = undefined;
                 if (w.id !== undefined && w.id !== null) {
                   wordId = Number(w.id);
@@ -236,7 +236,7 @@ export class VocabularyListDetailComponent implements OnInit {
         });
       },
           error: () => {
-            // Nếu gọi detail lỗi (do backend chưa implement), vẫn cố gắng lấy vocabularies theo listId
+            // If detail call fails (backend not implemented), still try to get vocabularies by listId
             this.vocabularyService.getVocabularies(listId).subscribe({
               next: (words) => {
                 console.log('Loaded vocabularies (fallback):', words);
@@ -245,7 +245,7 @@ export class VocabularyListDetailComponent implements OnInit {
                   name: 'Vocabulary List',
                   vocabularyCount: Array.isArray(words) ? words.length : 0,
                   words: (words || []).map((w: any) => {
-                    // Thử nhiều cách lấy ID
+                    // Try multiple ways to get ID
                     let wordId: number | undefined = undefined;
                     if (w.id !== undefined && w.id !== null) {
                       wordId = Number(w.id);
@@ -305,10 +305,10 @@ export class VocabularyListDetailComponent implements OnInit {
         w.question?.toLowerCase().includes(term) || w.answer?.toLowerCase().includes(term)
       );
     }
-    if (this.selectedTopic !== 'Tất cả') {
+    if (this.selectedTopic !== 'All') {
       result = result.filter(w => w.topic === this.selectedTopic);
     }
-    if (this.selectedLevel !== 'Tất cả') {
+    if (this.selectedLevel !== 'All') {
       result = result.filter(w => w.level === this.selectedLevel);
     }
     return result;
@@ -357,39 +357,39 @@ export class VocabularyListDetailComponent implements OnInit {
   }
 
 
-  // Cập nhật hàm playAudio để hỗ trợ Text-to-Speech
+  // Update playAudio function to support Text-to-Speech
   playAudio(audioUrl?: string, word?: string) {
     if (audioUrl) {
-      // Nếu có audioUrl, phát audio từ URL
+      // If has audioUrl, play audio from URL
       const audio = new Audio(audioUrl);
       audio.play().catch(err => {
         console.error('Error playing audio:', err);
-        // Nếu lỗi, fallback sang TTS
+        // If error, fallback to TTS
         this.speakWord(word);
       });
     } else if (word) {
-      // Nếu không có audioUrl, dùng Text-to-Speech
+      // If no audioUrl, use Text-to-Speech
       this.speakWord(word);
     }
   }
 
-  // Hàm Text-to-Speech sử dụng Web Speech API
+  // Text-to-Speech function using Web Speech API
   private speakWord(word?: string) {
     if (!word) return;
 
-    // Kiểm tra browser có hỗ trợ Speech Synthesis không
+    // Check if browser supports Speech Synthesis
     if ('speechSynthesis' in window) {
-      // Dừng các audio đang phát (nếu có)
+      // Stop any currently playing audio (if any)
       window.speechSynthesis.cancel();
 
       const utterance = new SpeechSynthesisUtterance(word);
-      utterance.lang = 'en-US'; // Phát âm tiếng Anh
-      utterance.rate = 0.9; // Tốc độ nói (0.1 - 10)
-      utterance.pitch = 1; // Cao độ (0 - 2)
+      utterance.lang = 'en-US'; // English pronunciation
+      utterance.rate = 0.9; // Speech rate (0.1 - 10)
+      utterance.pitch = 1; // Pitch (0 - 2)
 
       window.speechSynthesis.speak(utterance);
     } else {
-      console.warn('Browser không hỗ trợ Text-to-Speech');
+      console.warn('Browser does not support Text-to-Speech');
     }
   }
 
@@ -404,15 +404,15 @@ export class VocabularyListDetailComponent implements OnInit {
   openAddWordModal(): void {
     const listId = this.vocabularyList?.vocabularyListId;
     if (!listId) {
-      alert('Không tìm thấy danh sách từ vựng');
+      alert('Vocabulary list not found');
       return;
     }
     
-    // Kiểm tra xem list có thuộc về user hiện tại không
-    // Lấy thông tin từ API để xác nhận quyền sở hữu
+    // Check if list belongs to current user
+    // Get information from API to confirm ownership
     this.vocabularyService.getVocabularyListDetail(listId).subscribe({
       next: (detail: any) => {
-        // Nếu có detail, cho phép mở modal
+        // If has detail, allow opening modal
     this.addWordForm.reset({
       word: '',
       definition: '',
@@ -422,11 +422,11 @@ export class VocabularyListDetailComponent implements OnInit {
         this.isAddWordModalOpen = true;
       },
       error: (error) => {
-        // Nếu không có quyền, hiển thị thông báo
+        // If no permission, show message
         if (error.status === 403 || error.status === 404) {
-          alert('Bạn chỉ có thể thêm từ vào danh sách của chính mình.');
+          alert('You can only add words to your own list.');
         } else {
-          alert('Không thể mở form thêm từ. Vui lòng thử lại.');
+          alert('Cannot open add word form. Please try again.');
         }
       }
     });
@@ -448,7 +448,7 @@ export class VocabularyListDetailComponent implements OnInit {
 
     const listId = this.vocabularyList?.vocabularyListId;
     if (!listId) {
-      alert('Không tìm thấy danh sách từ vựng');
+      alert('Vocabulary list not found');
       return;
     }
 
@@ -458,15 +458,15 @@ export class VocabularyListDetailComponent implements OnInit {
     const vocabularyData = {
       vocabularyListId: listId,
       word: formValue.word.trim(),
-      typeOfWord: 'Noun', // Giá trị mặc định vì backend yêu cầu field này
+      typeOfWord: 'Noun', // Default value because backend requires this field
       definition: formValue.definition.trim(),
-      category: formValue.category?.trim() || undefined, // Loại từ - map vào category
-      example: formValue.example?.trim() || undefined // Ví dụ
+      category: formValue.category?.trim() || undefined, // Category - map to category
+      example: formValue.example?.trim() || undefined // Example
     };
 
     this.vocabularyService.createVocabulary(vocabularyData).subscribe({
       next: (response) => {
-        console.log('Từ vựng đã được thêm thành công:', response);
+        console.log('Vocabulary added successfully:', response);
         this.isSubmitting = false;
         this.closeAddWordModal();
         
@@ -474,15 +474,15 @@ export class VocabularyListDetailComponent implements OnInit {
         this.reloadVocabularyList(listId);
       },
       error: (error) => {
-        console.error('Lỗi khi thêm từ vựng:', error);
+        console.error('Error adding vocabulary:', error);
         this.isSubmitting = false;
         
-        let errorMsg = 'Không thể thêm từ vựng. Vui lòng thử lại.';
+        let errorMsg = 'Cannot add vocabulary. Please try again.';
         
         if (error.status === 403) {
-          errorMsg = error?.error?.message || 'Bạn không có quyền thêm từ vào danh sách này. Chỉ có thể thêm vào danh sách của chính bạn.';
+          errorMsg = error?.error?.message || 'You do not have permission to add words to this list. You can only add to your own list.';
         } else if (error.status === 401) {
-          errorMsg = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+          errorMsg = 'Login session has expired. Please login again.';
         } else if (error.error?.message) {
           errorMsg = error.error.message;
         }
@@ -502,7 +502,7 @@ export class VocabularyListDetailComponent implements OnInit {
             next: (words) => {
               if (this.vocabularyList) {
                 this.vocabularyList.words = (words || []).map((w: any) => {
-                  // Thử nhiều cách lấy ID
+                  // Try multiple ways to get ID
                   let wordId: number | undefined = undefined;
                   if (w.id !== undefined && w.id !== null) {
                     wordId = Number(w.id);
@@ -530,14 +530,14 @@ export class VocabularyListDetailComponent implements OnInit {
               }
             },
             error: () => {
-              console.error('Không thể reload từ vựng');
+              console.error('Cannot reload vocabulary');
             }
           });
         } else {
           if (this.vocabularyList) {
-            // Map lại để đảm bảo có ID
+            // Map again to ensure ID
             this.vocabularyList.words = (detail.words || []).map((w: any) => {
-              // Thử nhiều cách lấy ID
+              // Try multiple ways to get ID
               let wordId: number | undefined = undefined;
               if (w.id !== undefined && w.id !== null) {
                 wordId = Number(w.id);
@@ -570,7 +570,7 @@ export class VocabularyListDetailComponent implements OnInit {
           next: (words) => {
             if (this.vocabularyList) {
               this.vocabularyList.words = (words || []).map((w: any) => {
-                // Thử nhiều cách lấy ID
+                // Try multiple ways to get ID
                 let wordId: number | undefined = undefined;
                 if (w.id !== undefined && w.id !== null) {
                   wordId = Number(w.id);
@@ -604,27 +604,27 @@ export class VocabularyListDetailComponent implements OnInit {
     console.log('Opening word detail for:', word);
     console.log('Word ID:', word.id, 'Type:', typeof word.id);
     
-    // Đảm bảo ID được set đúng (kiểm tra nhiều trường hợp)
+    // Ensure ID is set correctly (check multiple cases)
     let wordId: number | null = null;
     
-    // Kiểm tra nếu word.id tồn tại
+    // Check if word.id exists
     if (word.id !== undefined && word.id !== null) {
-      // Nếu đã là number, sử dụng trực tiếp
+      // If already a number, use directly
       if (typeof word.id === 'number') {
         wordId = word.id;
       } else {
-        // Thử convert sang number
+        // Try to convert to number
         const convertedId = Number(word.id);
-        // Kiểm tra nếu conversion thành công (không phải NaN và là số nguyên dương)
+        // Check if conversion successful (not NaN and is positive integer)
         if (!isNaN(convertedId) && convertedId > 0) {
           wordId = convertedId;
         }
       }
     }
     
-    // Nếu vẫn không có ID, log để debug
+    // If still no ID, log for debug
     if (wordId === null || wordId === undefined) {
-      console.warn('⚠️ Word ID không tồn tại - Chỉ có thể xem, không thể chỉnh sửa hoặc xóa');
+      console.warn('⚠️ Word ID does not exist - Can only view, cannot edit or delete');
       console.warn('Word object:', word);
       console.warn('Word.id value:', word.id, 'Type:', typeof word.id);
     } else {
@@ -636,8 +636,8 @@ export class VocabularyListDetailComponent implements OnInit {
     this.isEditMode = false;
     this.isDetailModalOpen = true;
     
-    // Debug: Log selectedWordId để kiểm tra
-    console.log('🔍 selectedWordId sau khi set:', this.selectedWordId);
+    // Debug: Log selectedWordId to check
+    console.log('🔍 selectedWordId after setting:', this.selectedWordId);
   }
 
   closeDetailModal(): void {
@@ -680,19 +680,19 @@ export class VocabularyListDetailComponent implements OnInit {
 
     const updateData = {
       word: formValue.word.trim(),
-      typeOfWord: 'Noun', // Giữ nguyên giá trị mặc định
+      typeOfWord: 'Noun', // Keep default value
       definition: formValue.definition.trim(),
-      category: formValue.category?.trim() || undefined, // Thêm category
+      category: formValue.category?.trim() || undefined, // Add category
       example: formValue.example?.trim() || undefined
     };
 
     this.vocabularyService.updateVocabulary(this.selectedWordId, updateData).subscribe({
       next: (response) => {
-        console.log('Từ vựng đã được cập nhật:', response);
+        console.log('Vocabulary updated:', response);
         this.isSubmitting = false;
         this.isEditMode = false;
         
-        // Cập nhật local data
+        // Update local data
         if (this.selectedWord && this.vocabularyList && this.selectedWordId) {
           const wordIndex = this.vocabularyList.words.findIndex(
             w => (w as any).id === this.selectedWordId || w.question === this.selectedWord!.question
@@ -710,9 +710,9 @@ export class VocabularyListDetailComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('Lỗi khi cập nhật từ vựng:', error);
+        console.error('Error updating vocabulary:', error);
         this.isSubmitting = false;
-        const errorMsg = error?.error?.message || 'Không thể cập nhật từ vựng. Vui lòng thử lại.';
+        const errorMsg = error?.error?.message || 'Cannot update vocabulary. Please try again.';
         alert(errorMsg);
       }
     });
@@ -721,32 +721,32 @@ export class VocabularyListDetailComponent implements OnInit {
   deleteWord(): void {
     if (!this.selectedWordId || this.isSubmitting) return;
     
-    const confirmDelete = confirm('Bạn có chắc chắn muốn xóa từ vựng này không?');
+    const confirmDelete = confirm('Are you sure you want to delete this vocabulary?');
     if (!confirmDelete) return;
 
     this.isSubmitting = true;
     this.vocabularyService.deleteVocabulary(this.selectedWordId).subscribe({
       next: () => {
-        console.log('Từ vựng đã được xóa');
+        console.log('Vocabulary deleted');
         this.isSubmitting = false;
         this.closeDetailModal();
         
-        // Xóa khỏi local data
+        // Remove from local data
         if (this.vocabularyList) {
           this.vocabularyList.words = this.vocabularyList.words.filter(
             w => (w as any).id !== this.selectedWordId
           );
           this.vocabularyList.vocabularyCount = this.vocabularyList.words.length;
-          // Reset về trang đầu nếu cần
+          // Reset to first page if needed
           if (this.currentPage > this.totalPages && this.totalPages > 0) {
             this.currentPage = this.totalPages;
           }
         }
       },
       error: (error) => {
-        console.error('Lỗi khi xóa từ vựng:', error);
+        console.error('Error deleting vocabulary:', error);
         this.isSubmitting = false;
-        const errorMsg = error?.error?.message || 'Không thể xóa từ vựng. Vui lòng thử lại.';
+        const errorMsg = error?.error?.message || 'Cannot delete vocabulary. Please try again.';
         alert(errorMsg);
       }
     });
@@ -756,7 +756,7 @@ export class VocabularyListDetailComponent implements OnInit {
     if (this.close.observers.length > 0) {
       this.close.emit();
     } else {
-      this.router.navigate(['/tu-vung']);
+      this.router.navigate(['/vocabulary']);
     }
   }
 }

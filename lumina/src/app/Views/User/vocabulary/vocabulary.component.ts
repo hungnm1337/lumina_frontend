@@ -17,11 +17,11 @@ import { VocabularyListDetailComponent } from '../vocabulary-list-detail/vocabul
 export class UserVocabularyComponent implements OnInit {
   Math = Math;
 
-  // Dữ liệu mẫu cho danh sách chủ đề
+  // Sample data for category list
   categoryList = [
     {
       id: 'business',
-      name: 'Kinh doanh',
+      name: 'Business',
       iconClass: 'fas fa-briefcase text-blue-600',
       bgColor: 'bg-blue-100',
       wordCount: 245,
@@ -29,7 +29,7 @@ export class UserVocabularyComponent implements OnInit {
     },
     {
       id: 'technology',
-      name: 'Công nghệ',
+      name: 'Technology',
       iconClass: 'fas fa-laptop text-green-600',
       bgColor: 'bg-green-100',
       wordCount: 189,
@@ -48,7 +48,7 @@ export class UserVocabularyComponent implements OnInit {
     if (!this.showAllLists) {
       return this.userLists.slice(0, 6);
     } else {
-      // Phân trang khi showAllLists
+      // Pagination when showAllLists
       const startIdx = (this.currentPage - 1) * this.pageSize;
       return this.userLists.slice(startIdx, startIdx + this.pageSize);
     }
@@ -81,12 +81,12 @@ export class UserVocabularyComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    // Component vocabulary cho User
+    // Vocabulary component for User
     this.loadUserLists();
   }
 
   openVocabularyListDetail(list: VocabularyListResponse) {
-    // Giả định API đã trả về đúng detail
+    // Assume API returns correct detail
     this.vocabularyService.getVocabularyListDetail(list.vocabularyListId).subscribe({
       next: (detail) => {
         this.selectedVocabularyListDetail = detail;
@@ -94,24 +94,24 @@ export class UserVocabularyComponent implements OnInit {
     });
   }
   navigateToVocabularyList(list: VocabularyListResponse) {
-    this.router.navigate(['/tu-vung/list', list.vocabularyListId]);
+    this.router.navigate(['/vocabulary/list', list.vocabularyListId]);
   }
   closeVocabularyListDetail() {
     this.selectedVocabularyListDetail = null;
   }
 
-  // Các hàm xử lý sự kiện click
+  // Event handler functions
   startFlashcards(): void {
     this.router.navigate(['/flashcards']); 
   }
 
   startQuiz(): void {
-    // Navigate đến trang quiz config để chọn folder
+    // Navigate to quiz config page to select folder
     this.router.navigate(['/quiz/config']);
   }
 
   browseWords(): void {
-    // Navigate to flashcards page để xem tất cả decks
+    // Navigate to flashcards page to view all decks
     this.router.navigate(['/flashcards']);
   }
 
@@ -121,12 +121,12 @@ export class UserVocabularyComponent implements OnInit {
   }
 
   openCategory(categoryId: string): void {
-    console.log(`Mở chủ đề: ${categoryId}`);
-    // Tại đây bạn sẽ xử lý logic điều hướng đến trang danh sách từ với bộ lọc
+    console.log(`Open category: ${categoryId}`);
+    // Handle navigation logic to vocabulary list page with filter
   }
 
   startDailyChallenge(): void {
-    console.log('Bắt đầu thử thách hàng ngày...');
+    console.log('Start daily challenge...');
   }
   private loadUserLists(): void {
     this.isLoadingLists = true;

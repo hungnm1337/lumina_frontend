@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, map, catchError, throwError } from 'rxjs';
+import { Observable, map, catchError, throwError, of } from 'rxjs';
 import { environment } from '../../../environments/environment.development';
 import { 
   ArticleCreate, 
   ArticleResponse, 
   ArticleCategory,
   Article,
-  ArticleSection
+  ArticleSection,
+  ArticleProgress
 } from '../../Interfaces/article.interfaces';
 
 @Injectable({
@@ -180,5 +181,68 @@ reviewArticle(id: number, isApproved: boolean, comment?: string): Observable<any
         orderIndex: index
       }))
     };
+  }
+
+  // Get user article progress (mock data tạm thời - sẽ thay bằng API call thật sau)
+  getUserArticleProgress(articleIds: number[]): Observable<ArticleProgress[]> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    // TODO: Thay bằng API call thật khi backend có endpoint
+    // return this.http.get<ArticleProgress[]>(`${this.apiUrl}/progress`, { 
+    //   params: { articleIds: articleIds.join(',') }, 
+    //   headers 
+    // });
+
+    // Mock data tạm thời
+    const mockProgress: ArticleProgress[] = articleIds.map((id, index) => {
+      // Tạo random progress để demo
+      const randomStatus = Math.random();
+      let status: 'not_started' | 'in_progress' | 'completed' = 'not_started';
+      let progressPercent = 0;
+
+      if (randomStatus > 0.6) {
+        status = 'completed';
+        progressPercent = 100;
+      } else if (randomStatus > 0.3) {
+        status = 'in_progress';
+        progressPercent = Math.floor(Math.random() * 80) + 10; // 10-90%
+      }
+
+      return {
+        articleId: id,
+        progressPercent,
+        status,
+        lastAccessedAt: status !== 'not_started' ? new Date().toISOString() : undefined,
+        completedAt: status === 'completed' ? new Date().toISOString() : undefined
+      };
+    });
+
+    // Return mock data with delay simulation
+    return of(mockProgress).pipe(
+      map(data => {
+        // Simulate API delay
+        return data;
+      })
+    );
+  }
+
+  // Save article progress (mock implementation - replace with actual API call)
+  saveArticleProgress(articleId: number, progress: { progressPercent: number; status: string }): Observable<any> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    // TODO: Replace with actual API call when backend endpoint is ready
+    // return this.http.post(`${this.apiUrl}/${articleId}/progress`, progress, { headers });
+
+    // Mock implementation - just log for now
+    console.log('Saving progress for article', articleId, progress);
+    return of({ success: true, message: 'Progress saved' });
   }
 }

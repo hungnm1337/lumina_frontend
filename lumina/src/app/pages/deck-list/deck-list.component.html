@@ -6,30 +6,30 @@
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="back-icon">
         <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
       </svg>
-      <span>Quay lại</span>
+      <span>Back</span>
     </button>
-    <h1 class="page-title">Bộ Từ Vựng TOEIC</h1>
-    <p class="page-subtitle">Học và luyện tập từ vựng TOEIC hiệu quả với hệ thống flashcard thông minh</p>
+    <h1 class="page-title">TOEIC Vocabulary Set</h1>
+    <p class="page-subtitle">Learn and practice TOEIC vocabulary effectively with smart flashcard system</p>
   </div>
 
   <!-- Loading State -->
   <div *ngIf="isLoading" class="loading-state">
     <div class="loading-spinner"></div>
-    <p>Đang tải danh sách từ vựng...</p>
+    <p>Loading vocabulary list...</p>
   </div>
 
   <!-- Error State -->
   <div *ngIf="error && !isLoading" class="error-state">
     <div class="error-icon">⚠️</div>
     <p>{{ error }}</p>
-    <button class="retry-button" (click)="loadDecks()">Thử lại</button>
+    <button class="retry-button" (click)="loadDecks()">Retry</button>
   </div>
 
   <!-- Empty State -->
   <div *ngIf="!isLoading && !error && decks.length === 0" class="empty-state">
     <div class="empty-icon">📚</div>
-    <h3>Chưa có bộ từ vựng nào</h3>
-    <p>Hiện tại chưa có bộ từ vựng nào được duyệt và công khai.</p>
+    <h3>No vocabulary sets yet</h3>
+    <p>Currently no vocabulary sets have been approved and published.</p>
   </div>
 
   <!-- Decks Grid -->
@@ -41,7 +41,7 @@
         class="deck-card"
         [attr.data-index]="getDeckIndex(i)">
         
-        <div class="card-badge">BỘ {{ getDeckIndex(i) + 1 }}</div>
+        <div class="card-badge">SET {{ getDeckIndex(i) + 1 }}</div>
         
         <div class="card-icon-wrapper" [attr.data-color]="getDeckIndex(i) % 3">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -58,7 +58,7 @@
         <div class="card-footer">
           <div class="term-count">
             <span class="count-number">{{ deck.termCount }}</span>
-            <span class="count-label">thuật ngữ</span>
+            <span class="count-label">terms</span>
           </div>
           <div class="arrow-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -72,11 +72,11 @@
     <!-- Pagination -->
     <div class="pagination-section" *ngIf="decks.length > 0 && totalPages > 1">
       <div class="pagination-controls">
-        <button class="btn-page" [disabled]="currentPage === 1" (click)="prevPage()">Trước</button>
+        <button class="btn-page" [disabled]="currentPage === 1" (click)="prevPage()">Previous</button>
         <div class="page-numbers">
           <button *ngFor="let p of getPageNumbers()" class="page-number" [class.active]="p === currentPage" (click)="goToPage(p)">{{ p }}</button>
         </div>
-        <button class="btn-page" [disabled]="currentPage === totalPages" (click)="nextPage()">Tiếp</button>
+        <button class="btn-page" [disabled]="currentPage === totalPages" (click)="nextPage()">Next</button>
       </div>
     </div>
   </div>
