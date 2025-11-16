@@ -65,7 +65,8 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   // Quota modal
   showQuotaModal = false;
-  quotaMessage = 'Kỹ năng Speaking chỉ dành cho tài khoản Premium. Vui lòng nâng cấp để sử dụng tính năng này!';
+  quotaMessage =
+    'Kỹ năng Speaking chỉ dành cho tài khoản Premium. Vui lòng nâng cấp để sử dụng tính năng này!';
 
   // Speaking navigation and state management
   private stateSubscription: Subscription = new Subscription();
@@ -209,7 +210,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       },
       error: (err) => {
         console.error('❌ Failed to check quota:', err);
-      }
+      },
     });
   }
 

@@ -28,11 +28,11 @@
   <div class="mb-6">
     <h3 class="m-3 font-medium">{{ questions[currentIndex].stemText }}</h3>
     @if( questions[currentIndex].prompt != null ) {
-      <app-prompt
-        [prompt]="questions[currentIndex].prompt"
-        [resetAt]="currentIndex"
-        [questionType]="questions[currentIndex].questionType ?? ''"
-      ></app-prompt>
+    <app-prompt
+      [prompt]="questions[currentIndex].prompt"
+      [resetAt]="currentIndex"
+      [questionType]="questions[currentIndex].questionType ?? ''"
+    ></app-prompt>
     }
   </div>
 
