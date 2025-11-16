@@ -200,5 +200,5 @@
 <!-- Floating Chat Box - Always visible at bottom right -->
 @if(isLogin){
 <app-chat-box [contentArticle]="contentArticle"></app-chat-box>
-<app-note *ngIf="article" [articleId]="article.articleId"></app-note>
+<app-note *ngIf="article" [articleId]="article.articleId" [sectionId]="currentSectionId"></app-note>
 }

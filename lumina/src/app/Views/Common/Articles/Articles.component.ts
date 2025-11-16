@@ -5,6 +5,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { HeaderComponent } from '../header/header.component';
 import { ArticleService } from '../../../Services/Article/article.service';
 import { ArticleResponse, ArticleCategory, ArticleProgress } from '../../../Interfaces/article.interfaces';
+import { AuthService } from '../../../Services/Auth/auth.service';
 import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 
@@ -126,12 +127,17 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
     return Array.from(authors.values()).slice(0, 4);
   }
 
+  // Track login status
+  isLogin: boolean = false;
+
   constructor(
     private router: Router,
-    private articleService: ArticleService
+    private articleService: ArticleService,
+    private authService: AuthService
   ) { }
 
   ngOnInit(): void {
+    this.isLogin = this.authService.getCurrentUser() !== null;
     this.loadPublishedArticles();
     this.loadCategories();
 
@@ -154,7 +160,7 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
 
   // Reload progress for all current articles
   reloadArticleProgress(): void {
-    if (this.publishedArticles.length > 0) {
+    if (this.isLogin && this.publishedArticles.length > 0) {
       const articleIds = this.publishedArticles.map(a => a.articleId);
       this.loadArticleProgress(articleIds);
     }
@@ -173,7 +179,9 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
     }).subscribe({
       next: (response) => {
         this.publishedArticles = response.items;
-        this.loadArticleProgress(response.items.map(a => a.articleId));
+        if (this.isLogin) {
+          this.loadArticleProgress(response.items.map(a => a.articleId));
+        }
         this.isLoading = false;
       },
       error: (error) => {
@@ -277,7 +285,9 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
     this.articleService.queryArticles(params).subscribe({
       next: (response) => {
         this.publishedArticles = response.items;
-        this.loadArticleProgress(response.items.map(a => a.articleId));
+        if (this.isLogin) {
+          this.loadArticleProgress(response.items.map(a => a.articleId));
+        }
         this.isLoading = false;
       },
       error: (error) => {
