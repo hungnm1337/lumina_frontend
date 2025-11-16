@@ -11,7 +11,7 @@ import {
 import { QuestionService } from '../../../../Services/Question/question.service';
 import { CommonModule } from '@angular/common';
 import { UploadService } from '../../../../Services/Upload/upload.service';
-import { noWhitespaceValidator } from '../../../../../environments/custom-validators'; 
+import { noWhitespaceValidator } from '../../../../../environments/custom-validators';
 
 @Component({
   selector: 'app-questions',
@@ -30,7 +30,7 @@ export class QuestionsComponent implements OnInit {
   importPartId: number | null = null;
   isEditModalOpen = false;
   editPassageForm!: FormGroup;
-  editPromptForm !: FormGroup;
+  editPromptForm!: FormGroup;
   message: string = '';
   messageType: string = 'success'; // hoặc 'error'
 
@@ -41,7 +41,7 @@ export class QuestionsComponent implements OnInit {
     private mediaService: UploadService
   ) {
     this.promptForm = this.fb.group({
-      contentText: ['',[Validators.required, noWhitespaceValidator()]],
+      contentText: ['', [Validators.required, noWhitespaceValidator()]],
       title: ['', [Validators.required, noWhitespaceValidator()]],
       skill: ['', Validators.required],
       partId: ['', Validators.required],
@@ -54,14 +54,16 @@ export class QuestionsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.initData();  
+    this.initData();
   }
 
-  initData(){
-    this.examPartService.getExamsParts().subscribe(res => {
+  initData() {
+    this.examPartService.getExamsParts().subscribe((res) => {
       this.parts = res || [];
       // ✅ Lấy danh sách ExamSetKey unique
-      this.examSetKeys = Array.from(new Set(this.parts.map(p => p.examSetKey)));
+      this.examSetKeys = Array.from(
+        new Set(this.parts.map((p) => p.examSetKey))
+      );
       console.log('📋 ExamSetKeys:', this.examSetKeys);
     });
     this.loadPrompts();
@@ -75,7 +77,7 @@ export class QuestionsComponent implements OnInit {
   selectedPartId: number | '' = '';
   loading = false;
   uploading = false;
-  
+
   // ✅ Thêm biến cho ExamSetKey filter
   examSetKeys: string[] = [];
   selectedExamSetKey: string | null = null;
@@ -108,7 +110,7 @@ export class QuestionsComponent implements OnInit {
     console.log('🔍 ExamSetKey filter changed:', this.selectedExamSetKey);
     if (this.selectedExamSetKey) {
       this.filteredPartsForView = this.parts.filter(
-        p => p.examSetKey === this.selectedExamSetKey
+        (p) => p.examSetKey === this.selectedExamSetKey
       );
       console.log('📋 Filtered parts for view:', this.filteredPartsForView);
     } else {
@@ -249,43 +251,43 @@ export class QuestionsComponent implements OnInit {
 
   // Hard code số lượng câu hỏi theo Part
   private readonly partQuestionCounts: { [key: string]: number } = {
-    'LISTENING_PART1': 1,
-    'LISTENING_PART2': 1,
-    'LISTENING_PART3': 3,
-    'LISTENING_PART4': 3,
-    'READING_PART6': 4,
-    'READING_PART7': 3,
-    'SPEAKING_PART1': 1,
-    'SPEAKING_PART2': 1,
-    'SPEAKING_PART3': 3,
-    'SPEAKING_PART4': 4,
-    'SPEAKING_PART5': 1,
-    'WRITING_PART1': 1,
-    'WRITING_PART2': 1,
-    'WRITING_PART3': 1
+    LISTENING_PART1: 1,
+    LISTENING_PART2: 1,
+    LISTENING_PART3: 3,
+    LISTENING_PART4: 3,
+    READING_PART6: 4,
+    READING_PART7: 3,
+    SPEAKING_PART1: 1,
+    SPEAKING_PART2: 1,
+    SPEAKING_PART3: 3,
+    SPEAKING_PART4: 4,
+    SPEAKING_PART5: 1,
+    WRITING_PART1: 1,
+    WRITING_PART2: 1,
+    WRITING_PART3: 1,
   };
 
   // XÓA hàm onSkillChange cũ này (từ dòng ~220)
-// onSkillChange(event: any) {
-//   this.selectedSkill = event.target.value;
-//   // Xoá câu hỏi cũ
-//   while (this.questions.length !== 0) {
-//     this.questions.removeAt(0);
-//   }
-//   // Thêm câu hỏi mới phù hợp skill
-//   this.addQuestion();
-//   // Reset partId
-//   this.promptForm.patchValue({ partId: '' });
-//   // Cập nhật filtered parts
-//   this.filterPartsBySkill();
-// }
+  // onSkillChange(event: any) {
+  //   this.selectedSkill = event.target.value;
+  //   // Xoá câu hỏi cũ
+  //   while (this.questions.length !== 0) {
+  //     this.questions.removeAt(0);
+  //   }
+  //   // Thêm câu hỏi mới phù hợp skill
+  //   this.addQuestion();
+  //   // Reset partId
+  //   this.promptForm.patchValue({ partId: '' });
+  //   // Cập nhật filtered parts
+  //   this.filterPartsBySkill();
+  // }
 
   // filterPartsBySkill() {
   //   if (!this.selectedSkill) {
   //     this.filteredParts = [];
   //   } else {
   //     const skillUpper = this.selectedSkill.toUpperCase();
-  //     this.filteredParts = this.parts.filter(p => 
+  //     this.filteredParts = this.parts.filter(p =>
   //       p.skillType && p.skillType.toUpperCase() === skillUpper
   //     );
   //   }
@@ -302,36 +304,36 @@ export class QuestionsComponent implements OnInit {
   //   }
   // }
 
-onSkillChange(event: any): void {
-  this.selectedSkill = event.target.value;
-  
-  console.log('=== onSkillChange ===');
-  console.log('selectedSkill:', this.selectedSkill);
-  
-  // Xóa tất cả câu hỏi cũ
-  while (this.questions.length !== 0) {
-    this.questions.removeAt(0);
+  onSkillChange(event: any): void {
+    this.selectedSkill = event.target.value;
+
+    console.log('=== onSkillChange ===');
+    console.log('selectedSkill:', this.selectedSkill);
+
+    // Xóa tất cả câu hỏi cũ
+    while (this.questions.length !== 0) {
+      this.questions.removeAt(0);
+    }
+
+    // Lọc parts theo skill
+    this.filterPartsBySkill();
+
+    // Reset partId và selectedPartQuestionCount
+    this.promptForm.patchValue({ partId: '' });
+    this.selectedPartQuestionCount = 0;
+
+    // KHÔNG thêm câu hỏi mẫu nữa - chỉ thêm khi chọn Part
+    // this.addQuestion();
+
+    console.log('filteredParts:', this.filteredParts);
   }
-  
-  // Lọc parts theo skill
-  this.filterPartsBySkill();
-  
-  // Reset partId và selectedPartQuestionCount
-  this.promptForm.patchValue({ partId: '' });
-  this.selectedPartQuestionCount = 0;
-  
-  // KHÔNG thêm câu hỏi mẫu nữa - chỉ thêm khi chọn Part
-  // this.addQuestion();
-  
-  console.log('filteredParts:', this.filteredParts);
-}
 
   filterPartsBySkill() {
     if (!this.selectedSkill) {
       this.filteredParts = [];
     } else {
       const skillUpper = this.selectedSkill.toUpperCase();
-      this.filteredParts = this.parts.filter(p => {
+      this.filteredParts = this.parts.filter((p) => {
         const partCodeUpper = p.partCode?.toUpperCase() || '';
         return partCodeUpper.includes(skillUpper);
       });
@@ -339,56 +341,63 @@ onSkillChange(event: any): void {
   }
 
   onPartSelected(): void {
-  const selectedPartId = this.promptForm.get('partId')?.value;
-  
-  console.log('=== DEBUG onPartSelected ===');
-  console.log('selectedPartId:', selectedPartId);
-  console.log('selectedPartId type:', typeof selectedPartId);
-  console.log('this.parts:', this.parts);
-  console.log('this.filteredParts:', this.filteredParts);
-  
-  // Tìm trong filteredParts thay vì this.parts
-  const selectedPart = this.filteredParts.find(p => {
-    console.log('Comparing:', p.partId, 'with', selectedPartId, 'equal?', p.partId == selectedPartId);
-    return p.partId == selectedPartId; // Dùng == để so sánh cả string và number
-  });
-  
-  console.log('selectedPart:', selectedPart);
-  
-  if (selectedPart && selectedPart.partCode) {
-    const partCode = selectedPart.partCode.toUpperCase().trim();
-    console.log('partCode (normalized):', partCode);
-    console.log('partQuestionCounts:', this.partQuestionCounts);
-    console.log('Looking for key:', partCode);
-    
-    this.selectedPartQuestionCount = this.partQuestionCounts[partCode] || 0;
-    console.log('selectedPartQuestionCount:', this.selectedPartQuestionCount);
-    
-    if (this.selectedPartQuestionCount > 0) {
-      this.adjustQuestionsToMatch(this.selectedPartQuestionCount);
+    const selectedPartId = this.promptForm.get('partId')?.value;
+
+    console.log('=== DEBUG onPartSelected ===');
+    console.log('selectedPartId:', selectedPartId);
+    console.log('selectedPartId type:', typeof selectedPartId);
+    console.log('this.parts:', this.parts);
+    console.log('this.filteredParts:', this.filteredParts);
+
+    // Tìm trong filteredParts thay vì this.parts
+    const selectedPart = this.filteredParts.find((p) => {
+      console.log(
+        'Comparing:',
+        p.partId,
+        'with',
+        selectedPartId,
+        'equal?',
+        p.partId == selectedPartId
+      );
+      return p.partId == selectedPartId; // Dùng == để so sánh cả string và number
+    });
+
+    console.log('selectedPart:', selectedPart);
+
+    if (selectedPart && selectedPart.partCode) {
+      const partCode = selectedPart.partCode.toUpperCase().trim();
+      console.log('partCode (normalized):', partCode);
+      console.log('partQuestionCounts:', this.partQuestionCounts);
+      console.log('Looking for key:', partCode);
+
+      this.selectedPartQuestionCount = this.partQuestionCounts[partCode] || 0;
+      console.log('selectedPartQuestionCount:', this.selectedPartQuestionCount);
+
+      if (this.selectedPartQuestionCount > 0) {
+        this.adjustQuestionsToMatch(this.selectedPartQuestionCount);
+      } else {
+        console.warn('Không tìm thấy số lượng câu hỏi cho partCode:', partCode);
+        console.warn('Các key có sẵn:', Object.keys(this.partQuestionCounts));
+        this.adjustQuestionsToMatch(1);
+      }
     } else {
-      console.warn('Không tìm thấy số lượng câu hỏi cho partCode:', partCode);
-      console.warn('Các key có sẵn:', Object.keys(this.partQuestionCounts));
+      console.log('Không tìm thấy part hoặc partCode');
+      console.log('selectedPart:', selectedPart);
+      this.selectedPartQuestionCount = 0;
       this.adjustQuestionsToMatch(1);
     }
-  } else {
-    console.log('Không tìm thấy part hoặc partCode');
-    console.log('selectedPart:', selectedPart);
-    this.selectedPartQuestionCount = 0;
-    this.adjustQuestionsToMatch(1);
+    console.log('=== END DEBUG ===');
   }
-  console.log('=== END DEBUG ===');
-}
 
   private adjustQuestionsToMatch(count: number): void {
     console.log('=== adjustQuestionsToMatch ===');
     console.log('Target count:', count);
     console.log('Current questions length:', this.questions.length);
-    
+
     while (this.questions.length !== 0) {
       this.questions.removeAt(0);
     }
-    
+
     if (count > 0) {
       for (let i = 0; i < count; i++) {
         this.addQuestion();
@@ -419,8 +428,11 @@ onSkillChange(event: any): void {
         if (f.skill === 'Speaking') questionType = 'SPEAKING';
         else if (f.skill === 'Writing') questionType = 'WRITING';
         else if (Array.isArray(q.options)) {
-          const correctCount = q.options.filter((opt: any) => opt.isCorrect).length;
-          questionType = correctCount === 1 ? 'SINGLE_CHOICE' : 'MULTIPLE_CHOICE';
+          const correctCount = q.options.filter(
+            (opt: any) => opt.isCorrect
+          ).length;
+          questionType =
+            correctCount === 1 ? 'SINGLE_CHOICE' : 'MULTIPLE_CHOICE';
         }
         return {
           question: {
@@ -431,19 +443,20 @@ onSkillChange(event: any): void {
             questionExplain: q.questionExplain,
             time: q.time,
           },
-          options: (f.skill === 'Speaking' || f.skill === 'Writing')
-            ? []
-            : (q.options || []).map((opt: any) => ({
-              content: opt.content,
-              isCorrect: !!opt.isCorrect,
-            }))
+          options:
+            f.skill === 'Speaking' || f.skill === 'Writing'
+              ? []
+              : (q.options || []).map((opt: any) => ({
+                  content: opt.content,
+                  isCorrect: !!opt.isCorrect,
+                })),
         };
-      })
+      }),
     };
     console.log('Submitting DTO:', dto);
 
     this.questionService.createPromptWithQuestions(dto).subscribe({
-      next: res => {
+      next: (res) => {
         alert('Tạo mới prompt thành công!');
         this.closeModal();
         this.loadPrompts();
@@ -464,8 +477,6 @@ onSkillChange(event: any): void {
       },
     });
   }
-
-
 
   onExcelFileSelected(event: any) {
     const file = event.target.files[0];
@@ -525,16 +536,16 @@ onSkillChange(event: any): void {
     this.editPromptForm = this.fb.group({
       promptId: [prompt.promptId],
       title: [prompt.title, [Validators.required, noWhitespaceValidator()]],
-      contentText: [prompt.contentText, [Validators.required, noWhitespaceValidator()]],
+      contentText: [
+        prompt.contentText,
+        [Validators.required, noWhitespaceValidator()],
+      ],
       skill: [prompt.skill || '', Validators.required],
       promptText: [prompt.promptText || ''],
       referenceImageUrl: [prompt.referenceImageUrl || ''],
-      referenceAudioUrl: [prompt.referenceAudioUrl || '']
+      referenceAudioUrl: [prompt.referenceAudioUrl || ''],
     });
   }
-
-
-
 
   // Hàm lưu khi submit modal
   saveEditPrompt() {
@@ -582,19 +593,24 @@ onSkillChange(event: any): void {
       stemText: ['', [Validators.required, noWhitespaceValidator()]],
       questionExplain: [''],
       scoreWeight: [1, Validators.required],
-      time: [30, Validators.required]
+      time: [30, Validators.required],
     };
 
-    if (this.currentSkill !== 'Speaking' && this.currentSkill !== 'Writing' && this.currentSkill !== 'SPEAKING' && this.currentSkill !== 'WRITING') {
+    if (
+      this.currentSkill !== 'Speaking' &&
+      this.currentSkill !== 'Writing' &&
+      this.currentSkill !== 'SPEAKING' &&
+      this.currentSkill !== 'WRITING'
+    ) {
       formObj.options = this.fb.array([
-        this.createOption(), this.createOption(), this.createOption(), this.createOption()
+        this.createOption(),
+        this.createOption(),
+        this.createOption(),
+        this.createOption(),
       ]);
     }
     this.questionForm = this.fb.group(formObj);
   }
-
-
-
 
   // Mở modal để sửa câu hỏi (truyền dữ liệu cũ vào form)
   editQuestionIdx: number | null = null;
@@ -602,6 +618,12 @@ onSkillChange(event: any): void {
   currentPartId: number | null = null;
 
   currentPromptId: number | null = null;
+
+  // Helper method để kiểm tra Speaking skill
+  private isSpeakingSkill(skill: string): boolean {
+    const speakingSkills = ['Speaking', 'SPEAKING'];
+    return speakingSkills.includes(skill);
+  }
 
   editQuestion(q: any, prompt: any) {
     this.isEditQuestion = true;
@@ -616,28 +638,32 @@ onSkillChange(event: any): void {
       stemText: [q.stemText, Validators.required],
       questionExplain: [q.questionExplain || ''],
       scoreWeight: [q.scoreWeight ?? 1, Validators.required],
-      time: [q.time ?? 30, Validators.required]
+      time: [q.time ?? 30, Validators.required],
     };
 
-    if (this.currentSkill !== 'Speaking' && this.currentSkill !== 'Writing' && this.currentSkill !== 'SPEAKING' && this.currentSkill !== 'WRITING') {
+    // Thêm Sample Answer cho Speaking questions
+    if (this.isSpeakingSkill(this.currentSkill)) {
+      formObj.sampleAnswer = [q.sampleAnswer || ''];
+    }
+
+    if (
+      this.currentSkill !== 'Speaking' &&
+      this.currentSkill !== 'Writing' &&
+      this.currentSkill !== 'SPEAKING' &&
+      this.currentSkill !== 'WRITING'
+    ) {
       formObj.options = this.fb.array(
-        (q.options && q.options.length ? q.options : [1, 2, 3, 4]).map((opt: any) =>
-          this.fb.group({
-            content: [opt?.content || '', Validators.required],
-            isCorrect: [!!opt?.isCorrect]
-          })
+        (q.options && q.options.length ? q.options : [1, 2, 3, 4]).map(
+          (opt: any) =>
+            this.fb.group({
+              content: [opt?.content || '', Validators.required],
+              isCorrect: [!!opt?.isCorrect],
+            })
         )
       );
     }
     this.questionForm = this.fb.group(formObj);
   }
-
-
-
-
-
-
-
 
   closeQuestionModal() {
     this.isQuestionModalOpen = false;
@@ -668,8 +694,11 @@ onSkillChange(event: any): void {
     } else if (this.currentSkill === 'Writing') {
       questionType = 'WRITING';
     } else if (Array.isArray(value.options)) {
-      const correctOptionCount = value.options.filter((opt: any) => opt.isCorrect).length;
-      questionType = correctOptionCount === 1 ? 'SINGLE_CHOICE' : 'MULTIPLE_CHOICE';
+      const correctOptionCount = value.options.filter(
+        (opt: any) => opt.isCorrect
+      ).length;
+      questionType =
+        correctOptionCount === 1 ? 'SINGLE_CHOICE' : 'MULTIPLE_CHOICE';
     }
 
     const dto: any = {
@@ -682,6 +711,11 @@ onSkillChange(event: any): void {
       time: +value.time,
       questionType: questionType,
     };
+
+    // Include sampleAnswer cho Speaking questions
+    if (this.isSpeakingSkill(this.currentSkill)) {
+      dto.sampleAnswer = value.sampleAnswer || null;
+    }
 
     if (
       this.currentSkill !== 'Speaking' &&
@@ -698,85 +732,90 @@ onSkillChange(event: any): void {
 
     console.log('Sending DTO:', dto);
 
-    const apiCall = this.isEditQuestion && this.editQuestionIdx !== null
-      ? this.questionService.editQuestion(dto)
-      : this.questionService.addQuestion(dto);
+    const apiCall =
+      this.isEditQuestion && this.editQuestionIdx !== null
+        ? this.questionService.editQuestion(dto)
+        : this.questionService.addQuestion(dto);
 
     apiCall.subscribe({
       next: (res) => {
         this.showMessage(
-          res?.message || (this.isEditQuestion ? 'Sửa câu hỏi thành công!' : 'Thêm câu hỏi thành công!'),
+          res?.message ||
+            (this.isEditQuestion
+              ? 'Sửa câu hỏi thành công!'
+              : 'Thêm câu hỏi thành công!'),
           'success'
         );
         this.isQuestionModalOpen = false;
         this.loadPrompts();
       },
       error: (err) => {
-        const errorMsg = err.error?.message || err.error?.error || 'Part đã đủ số lượng câu hỏi!';
+        const errorMsg =
+          err.error?.message ||
+          err.error?.error ||
+          'Part đã đủ số lượng câu hỏi!';
         this.showMessage(errorMsg, 'error');
-      }
-    });
-  }
-
-
- deleteQuestion(q: any) {
-  if (confirm('Bạn có chắc chắn muốn xóa câu hỏi này?')) {
-    this.questionService.deleteQuestion(q.questionId).subscribe({
-      next: (res) => {
-        // Ưu tiên show message từ backend (dạng object hoặc string)
-        const msg = res?.message
-          ? res.message
-          : (typeof res === 'string' ? res : 'Xóa câu hỏi thành công!');
-        this.showMessage(msg, 'success');
-        this.loadPrompts();
-      },
-      error: (err) => {
-        let msg = 'Xóa câu hỏi thất bại!';
-        // Ưu tiên err.error.message nếu có, tiếp đến err.error dạng string
-        if (err?.error?.message) msg = err.error.message;
-        else if (typeof err?.error === 'string') msg = err.error;
-        this.showMessage(msg, 'error');
       },
     });
   }
-}
 
+  deleteQuestion(q: any) {
+    if (confirm('Bạn có chắc chắn muốn xóa câu hỏi này?')) {
+      this.questionService.deleteQuestion(q.questionId).subscribe({
+        next: (res) => {
+          // Ưu tiên show message từ backend (dạng object hoặc string)
+          const msg = res?.message
+            ? res.message
+            : typeof res === 'string'
+            ? res
+            : 'Xóa câu hỏi thành công!';
+          this.showMessage(msg, 'success');
+          this.loadPrompts();
+        },
+        error: (err) => {
+          let msg = 'Xóa câu hỏi thất bại!';
+          // Ưu tiên err.error.message nếu có, tiếp đến err.error dạng string
+          if (err?.error?.message) msg = err.error.message;
+          else if (typeof err?.error === 'string') msg = err.error;
+          this.showMessage(msg, 'error');
+        },
+      });
+    }
+  }
 
   deletePrompt(prompt: any) {
-  // ✅ Kiểm tra xem prompt có câu hỏi không
-  const questionCount = prompt.questions?.length || 0;
-  
-  let confirmMsg = `Bạn có chắc chắn muốn xóa prompt này?`;
-  if (questionCount > 0) {
-    confirmMsg = `Prompt này có ${questionCount} câu hỏi. Xóa prompt sẽ xóa tất cả câu hỏi và đáp án bên trong.\n\nBạn có chắc chắn muốn xóa?`;
+    // ✅ Kiểm tra xem prompt có câu hỏi không
+    const questionCount = prompt.questions?.length || 0;
+
+    let confirmMsg = `Bạn có chắc chắn muốn xóa prompt này?`;
+    if (questionCount > 0) {
+      confirmMsg = `Prompt này có ${questionCount} câu hỏi. Xóa prompt sẽ xóa tất cả câu hỏi và đáp án bên trong.\n\nBạn có chắc chắn muốn xóa?`;
+    }
+
+    if (confirm(confirmMsg)) {
+      this.questionService.deletePrompt(prompt.promptId).subscribe({
+        next: (res) => {
+          const msg = res?.message || 'Xóa prompt thành công!';
+          this.showMessage(msg, 'success');
+          this.loadPrompts(); // Reload lại danh sách
+        },
+        error: (err) => {
+          let errorMsg = 'Xóa prompt thất bại!';
+
+          // ✅ Hiển thị lỗi từ backend (ví dụ: bài thi đang hoạt động)
+          if (err?.error?.message) {
+            errorMsg = err.error.message;
+          } else if (typeof err?.error === 'string') {
+            errorMsg = err.error;
+          } else if (err?.message) {
+            errorMsg = err.message;
+          }
+
+          this.showMessage(errorMsg, 'error');
+        },
+      });
+    }
   }
-
-  if (confirm(confirmMsg)) {
-    this.questionService.deletePrompt(prompt.promptId).subscribe({
-      next: (res) => {
-        const msg = res?.message || 'Xóa prompt thành công!';
-        this.showMessage(msg, 'success');
-        this.loadPrompts(); // Reload lại danh sách
-      },
-      error: (err) => {
-        let errorMsg = 'Xóa prompt thất bại!';
-        
-        // ✅ Hiển thị lỗi từ backend (ví dụ: bài thi đang hoạt động)
-        if (err?.error?.message) {
-          errorMsg = err.error.message;
-        } else if (typeof err?.error === 'string') {
-          errorMsg = err.error;
-        } else if (err?.message) {
-          errorMsg = err.message;
-        }
-        
-        this.showMessage(errorMsg, 'error');
-      }
-    });
-  }
-}
-
-
 
   //statistics
   questionStats: any = {};
@@ -786,8 +825,12 @@ onSkillChange(event: any): void {
         this.questionStats = res;
       },
       error: () => {
-        this.questionStats = { totalQuestions: 0, usedQuestions: 0, unusedQuestions: 0 };
-      }
+        this.questionStats = {
+          totalQuestions: 0,
+          usedQuestions: 0,
+          unusedQuestions: 0,
+        };
+      },
     });
   }
 
