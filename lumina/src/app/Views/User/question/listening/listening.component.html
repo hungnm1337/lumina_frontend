@@ -1,4 +1,12 @@
 <div class="w-full bg-white rounded-lg shadow-md p-6">
+  <!-- Quota Limit Modal -->
+  <app-quota-limit-modal
+    [isVisible]="showQuotaModal"
+    [skill]="'listening'"
+    [message]="quotaMessage"
+    (close)="closeQuotaModal()"
+  ></app-quota-limit-modal>
+
   <!-- Exam Attempt Details Modal -->
   @if (showExamAttemptDetailsFlag && examAttemptDetails) {
   <app-exam-attempt-detail
