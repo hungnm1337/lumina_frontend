@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ExamService } from '../../../Services/Exam/exam.service';
 import { ExamDTO } from '../../../Interfaces/exam.interfaces';
@@ -15,14 +16,20 @@ interface SkillGroup {
 @Component({
   selector: 'app-exams',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './exams.component.html',
   styleUrl: './exams.component.scss',
 })
 export class ExamsComponent {
   exams: ExamDTO[] = [];
   skillGroups: SkillGroup[] = [];
+  filteredSkillGroups: SkillGroup[] = [];
   isLoading = true;
+
+  // Filter properties
+  searchTerm: string = '';
+  selectedSkill: string = '';
+  sortBy: string = 'name';
 
   constructor(private examService: ExamService, private router: Router) {
     this.loadExams();
@@ -43,6 +50,7 @@ export class ExamsComponent {
           }))
         );
         this.categorizeExamsBySkill();
+        this.applyFilters();
         this.isLoading = false;
       },
       error: (error) => {
@@ -197,5 +205,76 @@ export class ExamsComponent {
 
     // Navigate to exam detail page
     this.router.navigate(['homepage/user-dashboard/exam', exam.examId]);
+  }
+
+  applyFilters(): void {
+    let filtered = [...this.skillGroups];
+
+    // Filter by skill
+    if (this.selectedSkill) {
+      filtered = filtered.filter(group =>
+        group.skillCode === this.selectedSkill ||
+        group.skillName.toUpperCase() === this.selectedSkill
+      );
+    }
+
+    // Filter by search term
+    if (this.searchTerm.trim()) {
+      const searchLower = this.searchTerm.toLowerCase();
+      filtered = filtered.map(group => ({
+        ...group,
+        exams: group.exams.filter(exam =>
+          exam.name?.toLowerCase().includes(searchLower) ||
+          exam.description?.toLowerCase().includes(searchLower) ||
+          exam.createdByName?.toLowerCase().includes(searchLower)
+        )
+      })).filter(group => group.exams.length > 0);
+    }
+
+    // Sort exams within each group
+    filtered = filtered.map(group => ({
+      ...group,
+      exams: this.sortExams([...group.exams])
+    }));
+
+    this.filteredSkillGroups = filtered;
+  }
+
+  private sortExams(exams: ExamDTO[]): ExamDTO[] {
+    switch (this.sortBy) {
+      case 'name':
+        return exams.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      case 'date':
+        return exams.sort((a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      case 'creator':
+        return exams.sort((a, b) =>
+          (a.createdByName || '').localeCompare(b.createdByName || '')
+        );
+      default:
+        return exams;
+    }
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.applyFilters();
+  }
+
+  clearSkillFilter(): void {
+    this.selectedSkill = '';
+    this.applyFilters();
+  }
+
+  clearAllFilters(): void {
+    this.searchTerm = '';
+    this.selectedSkill = '';
+    this.sortBy = 'name';
+    this.applyFilters();
+  }
+
+  getTotalExamsCount(): number {
+    return this.filteredSkillGroups.reduce((total, group) => total + group.exams.length, 0);
   }
 }

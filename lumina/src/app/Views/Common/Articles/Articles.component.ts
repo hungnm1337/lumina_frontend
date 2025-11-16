@@ -235,7 +235,7 @@ export class BlogArticlesComponent implements OnInit {
   }
 
   goToArticleDetail(articleId: number): void {
-    this.router.navigate(['homepage/user-dashboard/article', articleId]);
+    this.router.navigate(['/article', articleId]);
   }
 
   getAuthorAvatarColor(index: number): string {

@@ -85,8 +85,8 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
-  { path: 'blog', component: BlogArticlesComponent },
-  { path: 'blog/:id', component: BlogDetailComponent },
+  { path: 'articles', component: BlogArticlesComponent },
+  { path: 'article/:id', component: BlogDetailComponent },
   { path: 'tu-vung', component: UserVocabularyComponent },
   {
     path: 'tu-vung/list/:id',

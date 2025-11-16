@@ -12,103 +12,168 @@
     <p class="text-gray-600 text-lg">Loading exam list...</p>
   </div>
 
+  <!-- Search and Filter Section -->
+  <div *ngIf="!isLoading" class="mb-8">
+    <div class="bg-white rounded-2xl shadow-lg p-6">
+      <div class="flex flex-col md:flex-row gap-4">
+        <!-- Search Box -->
+        <div class="flex-1">
+          <div class="relative">
+            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            <input
+              type="text"
+              [(ngModel)]="searchTerm"
+              (ngModelChange)="applyFilters()"
+              placeholder="Search exams by name or description..."
+              class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+            />
+            <button
+              *ngIf="searchTerm"
+              (click)="clearSearch()"
+              class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Skill Filter -->
+        <div class="md:w-64">
+          <select
+            [(ngModel)]="selectedSkill"
+            (ngModelChange)="applyFilters()"
+            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+          >
+            <option value="">All Skills</option>
+            <option value="LISTENING">Listening</option>
+            <option value="READING">Reading</option>
+            <option value="SPEAKING">Speaking</option>
+            <option value="WRITING">Writing</option>
+          </select>
+        </div>
+
+        <!-- Sort By -->
+        <div class="md:w-64">
+          <select
+            [(ngModel)]="sortBy"
+            (ngModelChange)="applyFilters()"
+            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+          >
+            <option value="name">Sort by Name</option>
+            <option value="date">Sort by Date</option>
+            <option value="creator">Sort by Creator</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Active Filters Display -->
+      <div *ngIf="searchTerm || selectedSkill !== ''" class="mt-4 flex items-center gap-2 flex-wrap">
+        <span class="text-sm text-gray-600">Active filters:</span>
+        <span
+          *ngIf="searchTerm"
+          class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"
+        >
+          <i class="fas fa-search text-xs"></i>
+          {{ searchTerm }}
+          <button (click)="clearSearch()" class="ml-1 hover:text-blue-900">
+            <i class="fas fa-times text-xs"></i>
+          </button>
+        </span>
+        <span
+          *ngIf="selectedSkill"
+          class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm"
+        >
+          <i class="fas fa-filter text-xs"></i>
+          {{ selectedSkill }}
+          <button (click)="clearSkillFilter()" class="ml-1 hover:text-green-900">
+            <i class="fas fa-times text-xs"></i>
+          </button>
+        </span>
+        <button
+          (click)="clearAllFilters()"
+          class="text-sm text-red-600 hover:text-red-700 font-medium"
+        >
+          Clear all
+        </button>
+      </div>
+
+      <!-- Results Count -->
+      <div class="mt-4 text-sm text-gray-600">
+        Found {{ getTotalExamsCount() }} exam(s)
+      </div>
+    </div>
+  </div>
+
   <!-- Skills Grid -->
   <div *ngIf="!isLoading" class="space-y-8">
     <div
-      *ngFor="let skillGroup of skillGroups"
+      *ngFor="let skillGroup of filteredSkillGroups"
       class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
     >
       <!-- Skill Header -->
       <div
-        class="flex items-center p-6 text-white"
+        class="flex items-center p-4 text-white"
         [class]="'bg-gradient-to-r ' + getSkillGradient(skillGroup.color)"
       >
         <div
-          class="w-15 h-15 rounded-full bg-white bg-opacity-20 flex items-center justify-center mr-4"
+          class="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center mr-3"
         >
-          <i [class]="skillGroup.icon" class="text-2xl"></i>
+          <i [class]="skillGroup.icon" class="text-lg"></i>
         </div>
         <div class="flex-1">
-          <h2 class="text-2xl font-bold mb-1">{{ skillGroup.skillName }}</h2>
-          <p class="text-sm opacity-90">
+          <h2 class="text-lg font-bold">{{ skillGroup.skillName }}</h2>
+          <p class="text-xs opacity-90">
             {{ skillGroup.exams.length }} exams
           </p>
         </div>
       </div>
 
       <!-- Content Grid -->
-      <div class="p-6">
-        <!-- Exams Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <!-- Empty State -->
-          <div
-            *ngIf="skillGroup.exams.length === 0"
-            class="col-span-full text-center py-12"
-          >
-            <div
-              class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4"
-            >
-              <i [class]="skillGroup.icon" class="text-3xl text-gray-400"></i>
-            </div>
-            <p class="text-lg font-medium text-gray-500">
-              No exams available for
-              {{ skillGroup.skillName.toLowerCase() }} skill
-            </p>
-          </div>
+      <div class="p-4">
+        <!-- Empty State -->
+        <div *ngIf="skillGroup.exams.length === 0" class="text-center py-8">
+          <i [class]="skillGroup.icon" class="text-4xl text-gray-300 mb-2"></i>
+          <p class="text-sm text-gray-500">No exams available for {{ skillGroup.skillName.toLowerCase() }} skill</p>
+        </div>
 
-          <!-- Exam Cards -->
+        <!-- Exams Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div
             *ngFor="let exam of skillGroup.exams"
-            class="bg-white border border-gray-200 rounded-2xl p-5 transition-all duration-300 hover:border-blue-300 hover:shadow-xl hover:-translate-y-2 relative overflow-hidden group cursor-pointer"
+            (click)="startExam(exam)"
+            class="bg-white border border-gray-200 rounded-xl p-4 transition-all duration-200 hover:border-blue-400 hover:shadow-lg hover:-translate-y-1 cursor-pointer group"
           >
-            <!-- Top border accent -->
-            <div
-              class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
-            ></div>
+            <!-- Top accent -->
+            <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
-            <!-- Exam Header -->
-            <div class="flex justify-between items-start mb-4">
-              <div class="mb-5">
-                <h3
-                  class="text-lg font-bold text-gray-900 mb-3 line-clamp-2 leading-tight"
-                >
+            <!-- Header -->
+            <div class="flex items-start gap-3 mb-3">
+              <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center group-hover:bg-blue-50 transition-colors flex-shrink-0">
+                <i [class]="skillGroup.icon" class="text-gray-400 group-hover:text-blue-500 transition-colors"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-base font-bold text-gray-900 line-clamp-2 leading-snug mb-1">
                   {{ exam.name }}
                 </h3>
-                <p
-                  class="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4"
-                >
-                  {{ exam.description }}
-                </p>
-              </div>
-              <div
-                class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-blue-50 transition-colors duration-300"
-              >
-                <i
-                  [class]="skillGroup.icon"
-                  class="text-sm text-gray-400 group-hover:text-blue-500"
-                ></i>
+                <p class="text-xs text-gray-600 line-clamp-2">{{ exam.description }}</p>
               </div>
             </div>
-            <div class="flex items-center text-xs text-gray-500">
-              <i class="fas fa-user mr-2"></i>
-              <span class="truncate">{{ exam.createdByName }}</span>
-            </div>
-            <!-- Exam Content -->
-            <div
-              class="flex items-center text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-full"
-            >
-              <i class="fas fa-calendar-alt mr-1"></i>
-              Created: {{ formatDate(exam.createdAt) }}
-            </div>
-            <!-- Exam Footer -->
-            <div class="space-y-3">
-              <button
-                class="w-full flex items-center justify-center px-4 py-3 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
-                [class]="getButtonColor(skillGroup.color)"
-                (click)="startExam(exam)"
-              >
-                <i class="fas fa-play mr-2"></i>
-                Start exam
+
+            <!-- Footer -->
+            <div class="flex items-center justify-between text-xs text-gray-500 pt-3 border-t border-gray-100">
+              <div class="flex flex-col gap-1.5">
+                <span class="flex items-center gap-1">
+                  <i class="fas fa-user"></i>
+                  <span class="truncate max-w-32">{{ exam.createdByName }}</span>
+                </span>
+                <span class="flex items-center gap-1">
+                  <i class="fas fa-calendar-alt"></i>
+                  {{ formatDate(exam.createdAt) }}
+                </span>
+              </div>
+              <button class="flex items-center gap-1 px-2 py-1 rounded-lg text-white transition-all" [class]="getButtonColor(skillGroup.color)">
+                <i class="fas fa-play text-xs"></i>
+                <span class="text-xs font-medium">Start</span>
               </button>
             </div>
           </div>
