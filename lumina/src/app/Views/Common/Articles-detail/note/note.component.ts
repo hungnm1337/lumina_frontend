@@ -1,4 +1,4 @@
-import { Component, Input, ViewEncapsulation, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, ViewEncapsulation, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserNoteService } from '../../../../Services/UserNote/user-note.service';
@@ -13,7 +13,7 @@ import { ToastService } from '../../../../Services/Toast/toast.service';
   styleUrl: './note.component.scss',
   encapsulation: ViewEncapsulation.None
 })
-export class NoteComponent implements OnInit, OnDestroy {
+export class NoteComponent implements OnInit, OnDestroy, OnChanges {
   @Input() articleId: number = 0;
   @Input() sectionId: number = 0;
 
@@ -35,6 +35,14 @@ export class NoteComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // Load existing note if available
     this.loadExistingNote();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    // Reload note when sectionId changes
+    if (changes['sectionId'] && !changes['sectionId'].firstChange) {
+      console.log('Section changed from', changes['sectionId'].previousValue, 'to', changes['sectionId'].currentValue);
+      this.loadExistingNote();
+    }
   }
 
   ngOnDestroy() {
@@ -62,7 +70,8 @@ export class NoteComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.userNoteService.GetUserNoteByUserIDAndArticleId(
       userId,
-      this.articleId
+      this.articleId,
+      this.sectionId
     ).subscribe({
       next: (note: UserNoteResponseDTO) => {
         console.log('Loaded note:', note);
@@ -81,15 +90,17 @@ export class NoteComponent implements OnInit, OnDestroy {
           this.noteContent = '';
           this.lastSavedContent = '';
         }
+        this.isLoading = false;
       },
       error: (err) => {
-        console.error('Error loading note:', err);
-        // If error is 404 or no note found, reset to new note state
+        console.log('Note not found or error loading:', err);
+        // If error is 404 or no note found, reset to new note state - allow user to create new note
+        if (err.status === 404) {
+          console.log('No existing note found (404) - Ready for new note');
+        }
         this.currentNoteId = 0;
         this.noteContent = '';
         this.lastSavedContent = '';
-      },
-      complete: () => {
         this.isLoading = false;
       }
     });
@@ -137,7 +148,7 @@ export class NoteComponent implements OnInit, OnDestroy {
       noteId: this.currentNoteId, // Use existing note ID or 0 for new
       articleId: this.articleId,
       userId: userId,
-      sectionId: this.sectionId || 1,
+      sectionId: this.sectionId,
       noteContent: this.noteContent
     };
 

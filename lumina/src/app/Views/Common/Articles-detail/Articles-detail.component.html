@@ -62,15 +62,15 @@
     <div class="content-sections">
       <div *ngIf="article.sections && article.sections.length > 0; else noContent">
         <!-- Chỉ hiển thị section hiện tại -->
-        <div *ngIf="article.sections[currentSectionIndex]" 
+        <div *ngIf="article.sections[currentSectionIndex]"
              class="content-section"
              [class.active]="true"
              [class.completed]="isSectionCompleted(currentSectionIndex)">
-          
+
           <!-- Section Header -->
           <div class="section-header">
             <h2 class="section-title">
-              Section {{ currentSectionIndex + 1 }} / {{ article.sections.length }}: 
+              Section {{ currentSectionIndex + 1 }} / {{ article.sections.length }}:
               {{ article.sections[currentSectionIndex].sectionTitle }}
             </h2>
             <div class="section-status" *ngIf="isSectionCompleted(currentSectionIndex)">
@@ -78,12 +78,12 @@
               <span>Completed</span>
             </div>
           </div>
-          
+
           <!-- Section Content -->
-          <div class="section-content" 
+          <div class="section-content"
                [innerHTML]="article.sections[currentSectionIndex].sectionContent">
           </div>
-          
+
           <!-- Mark as Read Button -->
           <div class="section-actions" *ngIf="!isSectionCompleted(currentSectionIndex)">
             <button class="mark-read-btn" (click)="markSectionAsRead(currentSectionIndex)">
@@ -117,7 +117,7 @@
           <div class="navigator-container">
             <h4 class="navigator-title">Navigator</h4>
             <div class="section-buttons grid-cols-10">
-              <button 
+              <button
                 *ngFor="let section of article.sections; let i = index"
                 [class]="'section-btn ' + getSectionButtonClass(i)"
                 (click)="goToSection(i)"
@@ -200,5 +200,5 @@
 <!-- Floating Chat Box - Always visible at bottom right -->
 @if(isLogin){
 <app-chat-box [contentArticle]="contentArticle"></app-chat-box>
-<app-note *ngIf="article" [articleId]="article.articleId"></app-note>
+<app-note *ngIf="article" [articleId]="article.articleId" [sectionId]="currentSectionId"></app-note>
 }
