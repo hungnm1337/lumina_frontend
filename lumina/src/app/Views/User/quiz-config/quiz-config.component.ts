@@ -32,7 +32,7 @@ export class QuizConfigComponent implements OnInit {
     this.isLoading = true;
     this.vocabularyService.getMyAndStaffVocabularyLists(this.searchTerm).subscribe({
       next: (folders) => {
-        // Chỉ lấy các folder có từ vựng (vocabularyCount > 0)
+        // Only get folders with vocabulary (vocabularyCount > 0)
         this.folders = (folders || []).filter(f => f.vocabularyCount > 0);
         this.isLoading = false;
       },
@@ -45,7 +45,7 @@ export class QuizConfigComponent implements OnInit {
   }
 
   onSearchChange(): void {
-    // Có thể thêm debounce nếu cần
+    // Can add debounce if needed
     this.loadFolders();
   }
 
@@ -59,17 +59,17 @@ export class QuizConfigComponent implements OnInit {
 
   startQuiz(): void {
     if (!this.selectedFolder) {
-      alert('Vui lòng chọn một folder để làm quiz!');
+      alert('Please select a folder to take quiz!');
       return;
     }
 
     if (this.selectedFolder.vocabularyCount === 0) {
-      alert('Folder này chưa có từ vựng nào!');
+      alert('This folder has no vocabulary yet!');
       return;
     }
 
-    // Navigate đến trang quiz với folder đã chọn
-    // Bước tiếp theo sẽ là trang cấu hình quiz (mode, số câu, thời gian)
+    // Navigate to quiz page with selected folder
+    // Next step will be quiz configuration page (mode, number of questions, time)
     this.router.navigate(['/quiz/config-detail'], {
       queryParams: {
         folderId: this.selectedFolder.vocabularyListId,
@@ -80,7 +80,7 @@ export class QuizConfigComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/tu-vung']);
+    this.router.navigate(['/vocabulary']);
   }
 }
 

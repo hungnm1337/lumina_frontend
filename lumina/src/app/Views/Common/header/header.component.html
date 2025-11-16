@@ -65,7 +65,7 @@
         </a>
 
         <a
-          routerLink="/tu-vung"
+          routerLink="/vocabulary"
           class="px-2 xl:px-3 py-2 rounded-lg text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 font-medium relative group whitespace-nowrap"
         >
           <i class="fas fa-book mr-1"></i>Vocabulary
@@ -93,12 +93,25 @@
         @if (currentUser$ | async; as currentUser) {
         <!-- GIAO DIỆN KHI ĐÃ ĐĂNG NHẬP -->
         <div class="flex items-center space-x-2 lg:space-x-3">
+          <!-- Upgrade to Premium Button (Only show for non-premium users) -->
+          @if (!isPremium) {
+          <button
+            (click)="openUpgradeModal()"
+            class="flex items-center space-x-2 px-3 lg:px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-lg hover:from-amber-600 hover:to-orange-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 font-semibold text-xs lg:text-sm whitespace-nowrap"
+          >
+            <i class="fas fa-crown text-yellow-200"></i>
+            <span class="hidden sm:inline">Nâng cấp </span><span>Premium</span>
+          </button>
+          }
+
           <!-- Streak Counter -->
           <div
             class="hidden md:flex items-center bg-gradient-to-r from-orange-100 to-red-100 rounded-full px-3 py-1.5 border border-orange-200"
           >
             <div class="flex items-center space-x-1.5">
-              <i class="fas fa-fire text-orange-500 text-base animate-pulse"></i>
+              <i
+                class="fas fa-fire text-orange-500 text-base animate-pulse"
+              ></i>
               <span class="font-bold text-orange-700 text-sm">0</span>
               <!-- Will be updated later -->
               <span class="text-orange-600 font-medium text-xs">days</span>
@@ -132,7 +145,9 @@
                 <div class="font-semibold text-gray-800 text-sm truncate">
                   {{ currentUser.name }}
                 </div>
-                <div class="text-xs text-gray-500 truncate">{{ currentUser.email }}</div>
+                <div class="text-xs text-gray-500 truncate">
+                  {{ currentUser.email }}
+                </div>
               </div>
               <div class="py-1">
                 <!-- Profile Menu Item -->
@@ -193,3 +208,11 @@
     </div>
   </div>
 </header>
+
+<!-- Upgrade Modal -->
+@if (showUpgradeModal) {
+<app-upgrade-modal
+  [isVisible]="showUpgradeModal"
+  (close)="closeUpgradeModal()"
+></app-upgrade-modal>
+}

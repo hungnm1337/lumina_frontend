@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { HeaderComponent } from '../header/header.component';
 import { ArticleService } from '../../../Services/Article/article.service';
-import { ArticleResponse, ArticleCategory } from '../../../Interfaces/article.interfaces';
+import { ArticleResponse, ArticleCategory, ArticleProgress } from '../../../Interfaces/article.interfaces';
+import { filter } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 
 interface BlogArticle {
   id: number;
@@ -46,7 +48,7 @@ interface BlogAuthor {
   templateUrl: './Articles.component.html',
   styleUrls: ['./Articles.component.scss']
 })
-export class BlogArticlesComponent implements OnInit {
+export class BlogArticlesComponent implements OnInit, OnDestroy {
   searchQuery: string = '';
   selectedCategory: string = 'all';
   selectedSort: string = 'newest';
@@ -57,14 +59,20 @@ export class BlogArticlesComponent implements OnInit {
   isLoading: boolean = true;
   error: string = '';
 
+  // Article progress tracking
+  articleProgressMap: Map<number, ArticleProgress> = new Map();
+
+  // Router subscription for navigation events
+  private routerSubscription?: Subscription;
+
   // Filter categories for UI
   filterCategories = [
-    { id: 'all', name: 'Tất cả', icon: 'fas fa-th' },
-    { id: 'study-tips', name: 'Mẹo học tập', icon: 'fas fa-lightbulb' },
-    { id: 'grammar', name: 'Ngữ pháp', icon: 'fas fa-file-alt' },
-    { id: 'vocabulary', name: 'Từ vựng', icon: 'fas fa-font' },
-    { id: 'listening', name: 'Nghe', icon: 'fas fa-headphones' },
-    { id: 'reading', name: 'Đọc', icon: 'fas fa-book' }
+    { id: 'all', name: 'All', icon: 'fas fa-th' },
+    { id: 'study-tips', name: 'Study tips', icon: 'fas fa-lightbulb' },
+    { id: 'grammar', name: 'Grammar', icon: 'fas fa-file-alt' },
+    { id: 'vocabulary', name: 'Vocabulary', icon: 'fas fa-font' },
+    { id: 'listening', name: 'Listening', icon: 'fas fa-headphones' },
+    { id: 'reading', name: 'Reading', icon: 'fas fa-book' }
   ];
 
   // Pagination for latest articles
@@ -118,8 +126,6 @@ export class BlogArticlesComponent implements OnInit {
     return Array.from(authors.values()).slice(0, 4);
   }
 
-  newsletterEmail: string = '';
-
   constructor(
     private router: Router,
     private articleService: ArticleService
@@ -128,6 +134,30 @@ export class BlogArticlesComponent implements OnInit {
   ngOnInit(): void {
     this.loadPublishedArticles();
     this.loadCategories();
+
+    // Subscribe to router events to reload progress when navigating back from detail page
+    this.routerSubscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        // If we're on the articles list page and have articles loaded, reload progress
+        if (event.url === '/articles' && this.publishedArticles.length > 0) {
+          this.reloadArticleProgress();
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
+  }
+
+  // Reload progress for all current articles
+  reloadArticleProgress(): void {
+    if (this.publishedArticles.length > 0) {
+      const articleIds = this.publishedArticles.map(a => a.articleId);
+      this.loadArticleProgress(articleIds);
+    }
   }
 
   loadPublishedArticles(): void {
@@ -143,14 +173,59 @@ export class BlogArticlesComponent implements OnInit {
     }).subscribe({
       next: (response) => {
         this.publishedArticles = response.items;
+        this.loadArticleProgress(response.items.map(a => a.articleId));
         this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading articles:', error);
-        this.error = 'Không thể tải bài viết. Vui lòng thử lại sau.';
+        this.error = 'Unable to load articles. Please try again later.';
         this.isLoading = false;
       }
     });
+  }
+
+  // Load article progress for all articles
+  loadArticleProgress(articleIds: number[]): void {
+    if (articleIds.length === 0) return;
+
+    this.articleService.getUserArticleProgress(articleIds).subscribe({
+      next: (progressList) => {
+        progressList.forEach(progress => {
+          this.articleProgressMap.set(progress.articleId, progress);
+        });
+      },
+      error: (error) => {
+        console.error('Error loading article progress:', error);
+        // Don't show error to user, just log it
+      }
+    });
+  }
+
+  // Get progress for a specific article
+  getArticleProgress(articleId: number): ArticleProgress {
+    return this.articleProgressMap.get(articleId) || {
+      articleId,
+      progressPercent: 0,
+      status: 'not_started'
+    };
+  }
+
+  // Get status badge class
+  getStatusBadgeClass(status: string): string {
+    switch(status) {
+      case 'completed': return 'status-badge completed';
+      case 'in_progress': return 'status-badge in-progress';
+      default: return 'status-badge not-started';
+    }
+  }
+
+  // Get status text
+  getStatusText(status: string): string {
+    switch(status) {
+      case 'completed': return 'Completed';
+      case 'in_progress': return 'In Progress';
+      default: return 'Not Started';
+    }
   }
 
   loadCategories(): void {
@@ -202,22 +277,15 @@ export class BlogArticlesComponent implements OnInit {
     this.articleService.queryArticles(params).subscribe({
       next: (response) => {
         this.publishedArticles = response.items;
+        this.loadArticleProgress(response.items.map(a => a.articleId));
         this.isLoading = false;
       },
       error: (error) => {
         console.error('Error filtering articles:', error);
-        this.error = 'Không thể lọc bài viết. Vui lòng thử lại sau.';
+        this.error = 'Unable to filter articles. Please try again later.';
         this.isLoading = false;
       }
     });
-  }
-
-  onSubscribeNewsletter(): void {
-    if (this.newsletterEmail) {
-      console.log('Subscribing email:', this.newsletterEmail);
-      // Implement newsletter subscription logic
-      this.newsletterEmail = '';
-    }
   }
 
   onFollowAuthor(authorId: number): void {
@@ -235,7 +303,7 @@ export class BlogArticlesComponent implements OnInit {
   }
 
   goToArticleDetail(articleId: number): void {
-    this.router.navigate(['/article', articleId]);
+    this.router.navigate(['/articles', articleId]);
   }
 
   getAuthorAvatarColor(index: number): string {
@@ -277,7 +345,7 @@ export class BlogArticlesComponent implements OnInit {
     const wordsPerMinute = 200;
     const wordCount = content.split(' ').length;
     const minutes = Math.ceil(wordCount / wordsPerMinute);
-    return `${minutes} phút đọc`;
+    return `${minutes} min read`;
   }
 
   onViewMoreLatestArticles(): void {
