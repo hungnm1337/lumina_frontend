@@ -137,9 +137,33 @@
         </div>
         <!-- Pagination controls when viewing all and count > pageSize -->
         <div *ngIf="showAllLists && userLists.length > pageSize" class="flex items-center justify-center gap-2 mt-8">
-          <button class="btn-primary px-4 py-2 rounded-l shadow text-white bg-blue-400 hover:bg-blue-500 transition disabled:opacity-50" (click)="prevPage()" [disabled]="currentPage === 1">« Previous</button>
-          <span class="mx-2 text-base text-gray-700">Page {{ currentPage }}/{{ totalPages }}</span>
-          <button class="btn-primary px-4 py-2 rounded-r shadow text-white bg-blue-400 hover:bg-blue-500 transition disabled:opacity-50" (click)="nextPage()" [disabled]="currentPage === totalPages">Next »</button>
+          <button 
+            class="px-4 py-2 rounded-lg border border-gray-300 bg-blue-50 text-blue-400 hover:bg-blue-100 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium" 
+            (click)="prevPage()" 
+            [disabled]="currentPage === 1"
+          >
+            Previous
+          </button>
+          
+          <button
+            *ngFor="let page of getPageNumbers()"
+            type="button"
+            (click)="goToPage(page)"
+            [class]="'px-4 py-2 rounded-lg border transition font-medium ' +
+                     (currentPage === page 
+                       ? 'bg-blue-400 border-blue-400 text-blue-800' 
+                       : 'bg-white border-gray-300 text-blue-600 hover:bg-gray-50')"
+          >
+            {{ page }}
+          </button>
+          
+          <button 
+            class="px-4 py-2 rounded-lg border border-gray-300 bg-blue-50 text-blue-600 hover:bg-blue-100 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium" 
+            (click)="nextPage()" 
+            [disabled]="currentPage === totalPages"
+          >
+            Next
+          </button>
         </div>
         <div class="flex justify-center mt-8" *ngIf="userLists.length > 6">
           <button class="btn-primary px-6 py-2 rounded shadow text-white bg-blue-500 hover:bg-blue-600 transition" (click)="toggleShowAllLists()">
