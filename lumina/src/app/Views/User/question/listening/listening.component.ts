@@ -127,10 +127,11 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       error: (err) => {
         console.error('❌ Failed to increment quota:', err);
         if (err.status === 400 || err.status === 403) {
-          this.quotaMessage = 'Bạn đã hết lượt thi Listening miễn phí (20 lượt/tháng). Vui lòng nâng cấp Premium để tiếp tục!';
+          this.quotaMessage =
+            'Bạn đã hết lượt thi Listening miễn phí (20 lượt/tháng). Vui lòng nâng cấp Premium để tiếp tục!';
           this.showQuotaModal = true;
         }
-      }
+      },
     });
   }
 
