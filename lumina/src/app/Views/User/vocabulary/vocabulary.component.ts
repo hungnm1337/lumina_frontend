@@ -74,6 +74,20 @@ export class UserVocabularyComponent implements OnInit {
       this.currentPage--;
     }
   }
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    for (let i = 1; i <= this.totalPages; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
   
   constructor(
     private router: Router,
