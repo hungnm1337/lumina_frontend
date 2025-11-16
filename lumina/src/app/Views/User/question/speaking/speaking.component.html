@@ -1,3 +1,11 @@
+<!-- Quota Limit Modal -->
+<app-quota-limit-modal
+  [isVisible]="showQuotaModal"
+  [skill]="'speaking'"
+  [message]="quotaMessage"
+  (close)="closeQuotaModal()"
+></app-quota-limit-modal>
+
 @if (questions && questions.length > 0 && !finished) {
 <div class="w-full bg-white rounded-lg shadow-md p-6">
   <!-- Progress Header -->

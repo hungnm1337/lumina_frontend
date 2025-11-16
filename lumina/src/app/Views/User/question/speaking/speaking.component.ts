@@ -24,7 +24,9 @@ import {
 import { QuestionState } from '../../../../Services/Exam/Speaking/speaking-question-state.service';
 import { BaseQuestionService } from '../../../../Services/Question/base-question.service';
 import { SpeakingQuestionStateService } from '../../../../Services/Exam/Speaking/speaking-question-state.service';
-import { ExamAttemptService } from '../../../../Services/ExamAttempt/exam-attempt.service'; // ✅ THÊM
+import { ExamAttemptService } from '../../../../Services/ExamAttempt/exam-attempt.service';
+import { QuotaService } from '../../../../Services/Quota/quota.service';
+import { QuotaLimitModalComponent } from '../../quota-limit-modal/quota-limit-modal.component';
 
 interface QuestionResult {
   questionNumber: number;
@@ -41,6 +43,7 @@ interface QuestionResult {
     TimeComponent,
     SpeakingAnswerBoxComponent,
     SpeakingSummaryComponent,
+    QuotaLimitModalComponent,
   ],
   templateUrl: './speaking.component.html',
   styleUrl: './speaking.component.scss',
@@ -60,6 +63,10 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   private advanceTimer: any = null;
   attemptId: number | null = null;
 
+  // Quota modal
+  showQuotaModal = false;
+  quotaMessage = 'Kỹ năng Speaking chỉ dành cho tài khoản Premium. Vui lòng nâng cấp để sử dụng tính năng này!';
+
   // Speaking navigation and state management
   private stateSubscription: Subscription = new Subscription();
   scoringQueue: number[] = [];
@@ -70,7 +77,8 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     private router: Router,
     private baseQuestionService: BaseQuestionService,
     private speakingStateService: SpeakingQuestionStateService,
-    private examAttemptService: ExamAttemptService
+    private examAttemptService: ExamAttemptService,
+    private quotaService: QuotaService
   ) {
     // Subscribe to state changes
     this.stateSubscription = this.speakingStateService
@@ -102,6 +110,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   ngOnInit(): void {
     this.loadAttemptId();
+    this.checkQuotaAccess();
   }
 
   ngOnDestroy(): void {
@@ -189,6 +198,24 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         alert('Lỗi khi khởi tạo bài thi. Vui lòng thử lại.');
       },
     });
+  }
+
+  private checkQuotaAccess(): void {
+    this.quotaService.checkQuota('speaking').subscribe({
+      next: (result) => {
+        if (!result.isPremium) {
+          this.showQuotaModal = true;
+        }
+      },
+      error: (err) => {
+        console.error('❌ Failed to check quota:', err);
+      }
+    });
+  }
+
+  closeQuotaModal(): void {
+    this.showQuotaModal = false;
+    this.router.navigate(['/homepage/user-dashboard/exams']);
   }
 
   // Getters for base service properties

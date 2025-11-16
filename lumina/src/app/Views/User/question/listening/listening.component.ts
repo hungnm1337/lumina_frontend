@@ -23,6 +23,8 @@ import {
 import { ExamAttemptService } from '../../../../Services/ExamAttempt/exam-attempt.service';
 import { ExamAttemptDetailResponseDTO } from '../../../../Interfaces/ExamAttempt/ExamAttemptDetailResponseDTO.interface';
 import { ExamAttemptDetailComponent } from '../../ExamAttempt/exam-attempt-detail/exam-attempt-detail.component';
+import { QuotaService } from '../../../../Services/Quota/quota.service';
+import { QuotaLimitModalComponent } from '../../quota-limit-modal/quota-limit-modal.component';
 
 @Component({
   selector: 'app-listening',
@@ -32,6 +34,7 @@ import { ExamAttemptDetailComponent } from '../../ExamAttempt/exam-attempt-detai
     OptionsComponent,
     PromptComponent,
     ExamAttemptDetailComponent,
+    QuotaLimitModalComponent,
   ],
   templateUrl: './listening.component.html',
   styleUrl: './listening.component.scss',
@@ -70,14 +73,20 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   examAttemptDetails: ExamAttemptDetailResponseDTO | null = null;
   showExamAttemptDetailsFlag = false;
 
+  // Quota modal
+  showQuotaModal = false;
+  quotaMessage = '';
+
   constructor(
     private router: Router,
     private examAttemptService: ExamAttemptService,
-    private authService: AuthService
+    private authService: AuthService,
+    private quotaService: QuotaService
   ) {}
 
   ngOnInit(): void {
     this.loadAttemptId();
+    this.incrementQuotaOnStart();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -108,6 +117,26 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       console.error('Error loading attemptId:', error);
       this.router.navigate(['homepage/user-dashboard/exams']);
     }
+  }
+
+  private incrementQuotaOnStart(): void {
+    this.quotaService.incrementQuota('listening').subscribe({
+      next: () => {
+        console.log('✅ Listening quota incremented');
+      },
+      error: (err) => {
+        console.error('❌ Failed to increment quota:', err);
+        if (err.status === 400 || err.status === 403) {
+          this.quotaMessage = 'Bạn đã hết lượt thi Listening miễn phí (20 lượt/tháng). Vui lòng nâng cấp Premium để tiếp tục!';
+          this.showQuotaModal = true;
+        }
+      }
+    });
+  }
+
+  closeQuotaModal(): void {
+    this.showQuotaModal = false;
+    this.router.navigate(['/homepage/user-dashboard/exams']);
   }
 
   // ============= ANSWER SUBMISSION =============
