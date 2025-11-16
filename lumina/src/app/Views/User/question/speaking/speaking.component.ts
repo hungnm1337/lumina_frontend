@@ -91,9 +91,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       // Initialize speaking question states
       if (this.hasSpeakingQuestions()) {
         this.questions.forEach((q) => {
-          if (q.questionType && this.isSpeakingQuestion(q.questionType)) {
-            this.speakingStateService.initializeQuestion(q.questionId);
-          }
+          this.speakingStateService.initializeQuestion(q.questionId);
         });
       }
 
@@ -299,14 +297,8 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   onTimeout(): void {
-    const currentQuestion = this.questions[this.currentIndex];
-
     // For speaking questions: only show warning, don't trigger any action
-    if (
-      currentQuestion &&
-      currentQuestion.questionType &&
-      this.isSpeakingQuestion(currentQuestion.questionType)
-    ) {
+    if (this.isSpeakingPart()) {
       console.log(
         '[SpeakingComponent] Timer timeout for speaking question - no action taken'
       );
@@ -320,21 +312,21 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   // Speaking question type detection
   private hasSpeakingQuestions(): boolean {
-    return this.questions.some(
-      (q) => q.questionType && this.isSpeakingQuestion(q.questionType)
-    );
+    return this.isSpeakingPart();
   }
 
-  isSpeakingQuestion(questionType: string): boolean {
-    const speakingTypes = [
-      'READ_ALOUD',
-      'DESCRIBE_PICTURE',
-      'RESPOND_QUESTIONS',
-      'RESPOND_WITH_INFO',
-      'EXPRESS_OPINION',
-      'SPEAKING',
-    ];
-    return speakingTypes.includes(questionType);
+  // ✅ Kiểm tra theo partCode thay vì questionType
+  private isSpeakingPart(): boolean {
+    if (!this.partInfo || !this.partInfo.partCode) {
+      return false;
+    }
+    const partCodeUpper = this.partInfo.partCode.toUpperCase();
+    return partCodeUpper.includes('SPEAKING');
+  }
+
+  // ✅ DEPRECATED: Giữ lại cho backward compatibility nhưng dùng partCode
+  isSpeakingQuestion(questionType?: string): boolean {
+    return this.isSpeakingPart();
   }
 
   // Navigation methods for speaking questions
@@ -354,14 +346,9 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     if (index < 0 || index >= this.questions.length) return;
 
     const currentQuestion = this.questions[this.currentIndex];
-    const targetQuestion = this.questions[index];
 
     // For speaking questions: handle state preservation
-    if (
-      currentQuestion &&
-      currentQuestion.questionType &&
-      this.isSpeakingQuestion(currentQuestion.questionType)
-    ) {
+    if (this.isSpeakingPart() && currentQuestion) {
       this.handleSpeakingNavigation(currentQuestion.questionId);
     }
 
