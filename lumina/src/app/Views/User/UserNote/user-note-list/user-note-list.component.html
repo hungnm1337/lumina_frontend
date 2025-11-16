@@ -1,68 +1,140 @@
-<div class="container mx-auto px-4 py-8">
-  <!-- Search Bar -->
-  <div class="mb-6">
-    <div class="relative">
-      <input
-        type="text"
-        [(ngModel)]="searchTerm"
-        (ngModelChange)="filterNotes()"
-        placeholder="Search notes..."
-        class="w-full px-4 py-2 text-gray-900 border rounded-lg focus:outline-none focus:border-blue-500"
-      >
-      <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-        <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-        </svg>
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 mb-2">Notebook</h1>
+          <p class="text-gray-600">Manage and search through your learning notes</p>
+        </div>
+        <div class="bg-white rounded-xl px-4 py-3 shadow-md">
+          <div class="text-sm text-gray-500">Total Notes</div>
+          <div class="text-2xl font-bold text-blue-600">{{ userNotes.length }}</div>
+        </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Notes Grid -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <div *ngFor="let note of filteredNotes"
-         class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
-      <div class="p-6">
-        <div class="flex justify-between items-start mb-3">
-          <span class="text-sm text-gray-500">Note #{{note.noteId}}</span>
-          <span class="text-sm text-gray-500">{{note.createAt | date:'short'}}</span>
+      <!-- Enhanced Search Bar -->
+      <div class="bg-white rounded-2xl shadow-lg p-6">
+        <div class="flex flex-col md:flex-row gap-4">
+          <!-- Search Input -->
+          <div class="flex-1">
+            <div class="relative">
+              <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+              <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="filterNotes()"
+                placeholder="Search by content, article, section, or author..."
+                class="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+              <button *ngIf="searchTerm" (click)="clearSearch()"
+                class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Sort Options -->
+          <div class="md:w-64">
+            <select [(ngModel)]="sortBy" (ngModelChange)="applySorting()"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white">
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="updated">Recently Updated</option>
+              <option value="article">By Article</option>
+            </select>
+          </div>
         </div>
-        <h3 class="text-xl font-semibold text-gray-800 mb-3">{{note.article}}</h3>
 
-        <!-- Note Content Preview -->
-        <div class="mb-4 bg-gray-50 rounded-lg p-3 border border-gray-100">
-          <p class="text-sm text-gray-700 line-clamp-3">{{note.noteContent}}</p>
-        </div>
-
-        <div class="space-y-2 mb-4">
-          <p class="text-sm text-gray-600 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            <span>{{note.user}}</span>
-          </p>
-          <p class="text-sm text-gray-600 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-            <span>{{note.section}}</span>
-          </p>
-
-        </div>
-        <div class="flex justify-between items-center">
-          <span class="text-xs text-gray-400">Updated: {{note.updateAt | date:'short' }}</span>
-          <button (click)="MoveToDetail(note.noteId)" class="text-blue-600 hover:text-blue-800 flex items-center">
-            <span>View Details</span>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
+        <!-- Search Results Info -->
+        <div class="mt-4 flex items-center justify-between text-sm">
+          <span class="text-gray-600">
+            <span *ngIf="searchTerm" class="font-medium">{{ filteredNotes.length }}</span>
+            <span *ngIf="!searchTerm">Showing all</span>
+            <span *ngIf="searchTerm"> result(s) for "{{ searchTerm }}"</span>
+            <span *ngIf="!searchTerm"> {{ filteredNotes.length }} note(s)</span>
+          </span>
+          <button *ngIf="searchTerm" (click)="clearSearch()" class="text-red-600 hover:text-red-700 font-medium">
+            Clear search
           </button>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- No Results Message -->
-  <div *ngIf="filteredNotes.length === 0" class="text-center py-10">
-    <p class="text-gray-500 text-lg">No notes found</p>
+    <!-- Notes Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let note of filteredNotes" (click)="MoveToDetail(note.noteId)"
+        class="bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer group border border-gray-100 hover:border-blue-300 hover:-translate-y-2">
+
+        <!-- Card Header with Gradient -->
+        <div class="h-2  bg-blue-500"></div>
+
+        <div class="p-5">
+          <!-- Top Section -->
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <div
+                class="w-10 h-10 rounded-xl bg-blue-300 flex items-center justify-center text-white font-bold shadow-md">
+                <i class="fas fa-sticky-note"></i>
+              </div>
+              <div>
+                <div class="text-xs text-gray-500 font-medium">Note #{{note.noteId}}</div>
+                <div class="text-xs text-gray-400">
+                  <i class="far fa-clock mr-1"></i>{{note.createAt | date:'MMM d, y'}}
+                </div>
+              </div>
+            </div>
+            <div
+              class="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-blue-50 flex items-center justify-center transition-colors">
+              <i class="fas fa-arrow-right text-gray-400 group-hover:text-blue-600 text-sm transition-colors"></i>
+            </div>
+          </div>
+
+          <!-- Article Title -->
+          <h3
+            class="text-lg font-bold text-gray-900 mb-3 line-clamp-2 leading-tight group-hover:text-blue-600 transition-colors">
+            {{note.article}}
+          </h3>
+
+          <span class="truncate my-2">{{note.section}}</span>
+
+
+          <!-- Metadata Section -->
+          <div class="space-y-2 mt-4 mb-4 pb-4 border-b border-gray-100">
+            <div class="flex items-center gap-2 text-sm text-gray-600">
+              <div class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-user text-blue-600 text-xs"></i>
+              </div>
+              <span class="truncate">{{note.user}}</span>
+            </div>
+
+          </div>
+
+          <!-- Footer -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1 text-xs text-gray-500">
+              <i class="fas fa-edit"></i>
+              <span>Updated {{note.updateAt | date:'short'}}</span>
+            </div>
+            <button
+              class="px-3 py-1.5 bg-blue-500 text-white text-xs font-semibold rounded-lg hover:bg-blue-600 transition-all group-hover:shadow-md">
+              View <i class="fas fa-arrow-right ml-1"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Results Message -->
+    <div *ngIf="filteredNotes.length === 0" class="text-center py-16">
+      <div class="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-search text-4xl text-gray-400"></i>
+      </div>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">No notes found</h3>
+      <p class="text-gray-500 mb-6">
+        <span *ngIf="searchTerm">Try adjusting your search terms or clear the filter</span>
+        <span *ngIf="!searchTerm">Start creating your first note to see it here</span>
+      </p>
+      <button *ngIf="searchTerm" (click)="clearSearch()"
+        class="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors font-medium">
+        Clear Search
+      </button>
+    </div>
   </div>
 </div>

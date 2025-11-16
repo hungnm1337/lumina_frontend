@@ -5,6 +5,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { HeaderComponent } from '../header/header.component';
 import { ArticleService } from '../../../Services/Article/article.service';
 import { ArticleResponse, ArticleCategory, ArticleProgress } from '../../../Interfaces/article.interfaces';
+import { AuthService } from '../../../Services/Auth/auth.service';
 import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 
@@ -52,19 +53,19 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
   searchQuery: string = '';
   selectedCategory: string = 'all';
   selectedSort: string = 'newest';
-  
+
   // Real data from API
   publishedArticles: ArticleResponse[] = [];
   categories: ArticleCategory[] = [];
   isLoading: boolean = true;
   error: string = '';
-  
+
   // Article progress tracking
   articleProgressMap: Map<number, ArticleProgress> = new Map();
-  
+
   // Router subscription for navigation events
   private routerSubscription?: Subscription;
-  
+
   // Filter categories for UI
   filterCategories = [
     { id: 'all', name: 'All', icon: 'fas fa-th' },
@@ -88,7 +89,7 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
     if (!this.showAllLatestArticles) {
       return this.publishedArticles.slice(0, 3);
     }
-    
+
     // Show paginated articles
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
@@ -126,15 +127,20 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
     return Array.from(authors.values()).slice(0, 4);
   }
 
+  // Track login status
+  isLogin: boolean = false;
+
   constructor(
     private router: Router,
-    private articleService: ArticleService
+    private articleService: ArticleService,
+    private authService: AuthService
   ) { }
 
   ngOnInit(): void {
+    this.isLogin = this.authService.getCurrentUser() !== null;
     this.loadPublishedArticles();
     this.loadCategories();
-    
+
     // Subscribe to router events to reload progress when navigating back from detail page
     this.routerSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -145,16 +151,16 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
         }
       });
   }
-  
+
   ngOnDestroy(): void {
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
     }
   }
-  
+
   // Reload progress for all current articles
   reloadArticleProgress(): void {
-    if (this.publishedArticles.length > 0) {
+    if (this.isLogin && this.publishedArticles.length > 0) {
       const articleIds = this.publishedArticles.map(a => a.articleId);
       this.loadArticleProgress(articleIds);
     }
@@ -164,7 +170,7 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.error = '';
     this.currentPage = 1; // Reset to first page
-    
+
     this.articleService.queryArticles({
       isPublished: true,
       status: 'published',
@@ -173,7 +179,9 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
     }).subscribe({
       next: (response) => {
         this.publishedArticles = response.items;
-        this.loadArticleProgress(response.items.map(a => a.articleId));
+        if (this.isLogin) {
+          this.loadArticleProgress(response.items.map(a => a.articleId));
+        }
         this.isLoading = false;
       },
       error: (error) => {
@@ -183,11 +191,11 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
       }
     });
   }
-  
+
   // Load article progress for all articles
   loadArticleProgress(articleIds: number[]): void {
     if (articleIds.length === 0) return;
-    
+
     this.articleService.getUserArticleProgress(articleIds).subscribe({
       next: (progressList) => {
         progressList.forEach(progress => {
@@ -200,7 +208,7 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
       }
     });
   }
-  
+
   // Get progress for a specific article
   getArticleProgress(articleId: number): ArticleProgress {
     return this.articleProgressMap.get(articleId) || {
@@ -209,7 +217,7 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
       status: 'not_started'
     };
   }
-  
+
   // Get status badge class
   getStatusBadgeClass(status: string): string {
     switch(status) {
@@ -218,7 +226,7 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
       default: return 'status-badge not-started';
     }
   }
-  
+
   // Get status text
   getStatusText(status: string): string {
     switch(status) {
@@ -252,7 +260,7 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.currentPage = 1; // Reset to first page when filtering
     this.showAllLatestArticles = false; // Reset view state when filtering
-    
+
     const params: any = {
       isPublished: true,
       status: 'published',
@@ -266,7 +274,7 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
 
     if (this.selectedCategory !== 'all') {
       // Map UI category to backend category ID
-      const category = this.categories.find(c => 
+      const category = this.categories.find(c =>
         c.name.toLowerCase().includes(this.selectedCategory.toLowerCase())
       );
       if (category) {
@@ -277,7 +285,9 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
     this.articleService.queryArticles(params).subscribe({
       next: (response) => {
         this.publishedArticles = response.items;
-        this.loadArticleProgress(response.items.map(a => a.articleId));
+        if (this.isLogin) {
+          this.loadArticleProgress(response.items.map(a => a.articleId));
+        }
         this.isLoading = false;
       },
       error: (error) => {
@@ -385,15 +395,15 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
     const maxPagesToShow = 5;
     let startPage = Math.max(1, this.currentPage - Math.floor(maxPagesToShow / 2));
     let endPage = Math.min(this.totalPages, startPage + maxPagesToShow - 1);
-    
+
     if (endPage - startPage < maxPagesToShow - 1) {
       startPage = Math.max(1, endPage - maxPagesToShow + 1);
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
-    
+
     return pages;
   }
 }

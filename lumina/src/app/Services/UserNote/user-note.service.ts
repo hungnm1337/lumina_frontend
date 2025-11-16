@@ -137,9 +137,9 @@ export class UserNoteService {
     );
   }
 
-  public GetUserNoteByUserIDAndArticleId(userId: number, articleId: number): Observable<UserNoteResponseDTO> {
+  public GetUserNoteByUserIDAndArticleId(userId: number, articleId: number, sectionId: number): Observable<UserNoteResponseDTO> {
     return this.httpClient.get<UserNoteResponseDTO>(
-      `${this.apiUrlUserNote}/user/${userId}/article/${articleId}`,
+      `${this.apiUrlUserNote}/user/${userId}/article/${articleId}/section/${sectionId}`,
       { headers: this.getAuthHeaders() }
     );
   }

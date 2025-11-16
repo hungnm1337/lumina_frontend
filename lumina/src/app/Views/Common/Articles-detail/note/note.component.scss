@@ -112,6 +112,21 @@ app-note {
       font-size: 16px;
       font-weight: 600;
     }
+
+    .note-ids {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .note-id-badge {
+      font-size: 10px;
+      background: rgba(255, 255, 255, 0.25);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 500;
+      backdrop-filter: blur(10px);
+    }
   }
 
   .minimize-btn {
