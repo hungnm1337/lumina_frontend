@@ -10,7 +10,13 @@
       <header class="note-header">
         <div class="header-content">
           <i class="fas fa-sticky-note"></i>
-          <h3>My Notes</h3>
+          <div>
+            <h3>My Notes</h3>
+            <div class="note-ids">
+              <span class="note-id-badge">Article #{{ articleId }}</span>
+              <span class="note-id-badge">Section #{{ sectionId }}</span>
+            </div>
+          </div>
         </div>
         <button type="button" class="minimize-btn" (click)="toggleNote()">
           <i class="fas fa-minus"></i>

@@ -145,12 +145,12 @@ export class QuizResultsComponent implements OnInit {
   viewVocabulary(): void {
     // Navigate to vocabulary list detail
     if (this.folderId) {
-      this.router.navigate(['/tu-vung/list', this.folderId]);
+      this.router.navigate(['/vocabulary/list', this.folderId]);
     }
   }
 
   goBack(): void {
-    this.router.navigate(['/tu-vung']);
+    this.router.navigate(['/vocabulary']);
   }
 
   // Method phát âm - tương tự như vocabulary-list-detail

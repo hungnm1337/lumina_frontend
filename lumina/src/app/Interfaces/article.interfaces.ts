@@ -62,4 +62,13 @@ export interface ArticleSection {
   sectionTitle?: string; // Thêm sectionTitle để tương thích với backend
 }
 
+// Interface cho Article Progress
+export interface ArticleProgress {
+  articleId: number;
+  progressPercent: number;
+  status: 'not_started' | 'in_progress' | 'completed';
+  lastAccessedAt?: string;
+  completedAt?: string;
+}
+
 

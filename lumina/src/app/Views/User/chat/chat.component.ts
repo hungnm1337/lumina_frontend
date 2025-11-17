@@ -72,11 +72,10 @@ export class ChatComponent implements OnInit, OnDestroy {
     if (this.messages.length === 0) {
       this.messages.push({
         type: 'ai',
-        content: '**Xin chào! Tôi là AI Assistant**\n\nTôi có thể giúp bạn:\n\n**Tạo đề thi TOEIC:**\n• Tạo 5 câu Reading Part 5 về giới từ\n• Gen 10 câu Listening Part 1\n\n**Tư vấn & Hỗ trợ:**\n• Cách học TOEIC hiệu quả?\n• Giải thích cấu trúc câu này\n\n**Tips**: Mô tả càng chi tiết, kết quả càng tốt!\n\nBạn muốn tôi giúp gì nào? 😊',
+        content: '**Xin chào! Tôi là AI Assistant**\n\nTôi có thể giúp bạn:\n\n**Tư vấn & Hỗ trợ:**\n• Cách học TOEIC hiệu quả?\n• Giải thích cấu trúc câu này\n\n**Tips**: Mô tả càng chi tiết, kết quả càng tốt!\n\nBạn muốn tôi giúp gì nào? 😊',
         timestamp: new Date(),
         conversationType: 'general',
         suggestions: [
-          'Tạo đề thi TOEIC',
           'Tư vấn học TOEIC',
           'Giải thích ngữ pháp',
           'Chiến lược làm bài'
@@ -213,9 +212,9 @@ export class ChatComponent implements OnInit, OnDestroy {
         try {
           const listId = response.vocabularyListId;
           if (listId) {
-            this.router.navigate(['/tu-vung'], { queryParams: { highlight: listId } });
+            this.router.navigate(['/vocabulary'], { queryParams: { highlight: listId } });
           } else {
-            this.router.navigate(['/tu-vung']);
+            this.router.navigate(['/vocabulary']);
           }
         } catch {}
       }

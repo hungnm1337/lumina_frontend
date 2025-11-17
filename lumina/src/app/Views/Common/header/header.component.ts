@@ -6,17 +6,21 @@ import { Observable } from 'rxjs';
 import { AuthService } from '../../../Services/Auth/auth.service';
 import { AuthUserResponse } from '../../../Interfaces/auth.interfaces';
 import { StreakService } from '../../../Services/streak/streak.service';
+import { QuotaService } from '../../../Services/Quota/quota.service';
+import { UpgradeModalComponent } from '../../User/upgrade-modal/upgrade-modal.component';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, UpgradeModalComponent],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent implements OnInit {
   currentUser$!: Observable<AuthUserResponse | null>;
   isDropdownOpen = false;
+  isPremium = false;
+  showUpgradeModal = false;
 
   // Streak data
   currentStreak = 0;
@@ -27,6 +31,7 @@ export class HeaderComponent implements OnInit {
     private elementRef: ElementRef,
     private router: Router,
     private streakService: StreakService
+    private quotaService: QuotaService
   ) {}
 
   ngOnInit(): void {
@@ -86,6 +91,20 @@ export class HeaderComponent implements OnInit {
   // ✅ SỬA: Navigate to streak page (path mới)
   goToStreakPage(): void {
     this.router.navigate(['/homepage/streak']); // ✅ Thêm /homepage/
+    this.checkPremiumStatus();
+  }
+
+  checkPremiumStatus(): void {
+    this.quotaService.isPremiumUser().subscribe({
+      next: (isPremium) => {
+        this.isPremium = isPremium;
+        console.log('✅ Premium status checked:', isPremium);
+      },
+      error: (err) => {
+        console.error('❌ Error checking premium status:', err);
+        this.isPremium = false;
+      },
+    });
   }
 
   @HostListener('document:click', ['$event'])
@@ -112,5 +131,13 @@ export class HeaderComponent implements OnInit {
 
   moveToExams() {
     this.router.navigate(['homepage/user-dashboard']);
+  }
+}
+  openUpgradeModal(): void {
+    this.showUpgradeModal = true;
+  }
+
+  closeUpgradeModal(): void {
+    this.showUpgradeModal = false;
   }
 }

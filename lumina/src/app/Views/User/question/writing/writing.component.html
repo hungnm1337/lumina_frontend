@@ -1,3 +1,11 @@
+<!-- Quota Limit Modal -->
+<app-quota-limit-modal
+  [isVisible]="showQuotaModal"
+  [skill]="'writing'"
+  [message]="quotaMessage"
+  (close)="closeQuotaModal()"
+></app-quota-limit-modal>
+
 @if (questions && questions.length > 0 && !isFinished) {
 <div class="w-full bg-white rounded-lg shadow-md p-6">
   <!-- Header with Timer and Question Info -->
@@ -12,7 +20,6 @@
     </div>
   </div>
 
-
   <!-- Question Content -->
   @if (getCurrentQuestion()) {
   <div class="border border-gray-200 rounded-lg p-4 mb-4">
@@ -23,7 +30,9 @@
       @if (getCurrentQuestion()?.prompt?.contentText) {
       <div class="font-medium text-gray-600 mb-2">
         <strong>{{ getCurrentQuestion()?.prompt?.title }}</strong>
-        <p style="white-space: pre-wrap;">{{ getCurrentQuestion()?.prompt?.contentText }}</p>
+        <p style="white-space: pre-wrap">
+          {{ getCurrentQuestion()?.prompt?.contentText }}
+        </p>
       </div>
       }
     </div>
@@ -60,11 +69,10 @@
           stroke-linecap="round"
         />
       </svg>
-      }
-      @if (isShowHint && !isCurrentCaptionLoading()) {
-        <span class="ml-2 text-sm text-gray-600" *ngIf="getCurrentCaption()">
-          Caption: {{ getCurrentCaption() }}
-        </span>
+      } @if (isShowHint && !isCurrentCaptionLoading()) {
+      <span class="ml-2 text-sm text-gray-600" *ngIf="getCurrentCaption()">
+        Caption: {{ getCurrentCaption() }}
+      </span>
       }
     </div>
     }
@@ -106,7 +114,9 @@
 
       <button
         (click)="nextQuestion()"
-        [disabled]="currentIndex === questions.length - 1 || isAnyQuestionSubmitting()"
+        [disabled]="
+          currentIndex === questions.length - 1 || isAnyQuestionSubmitting()
+        "
         class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Câu sau<i class="fas fa-arrow-right ml-2"></i>
@@ -124,17 +134,16 @@
           [disabled]="isAnyQuestionSubmitting()"
           [class]="
             isAnyQuestionSubmitting()
-              ? 'w-10 h-10 rounded-lg opacity-50 cursor-not-allowed ' + (
-                  i === currentIndex
-                    ? 'bg-blue-600 text-white font-semibold'
-                    : isQuestionSubmitting(question.questionId)
-                    ? 'bg-yellow-500 text-white font-semibold animate-pulse'
-                    : isQuestionSubmitted(question.questionId)
-                    ? 'bg-purple-500 text-white font-semibold'
-                    : hasAnswer(question.questionId)
-                    ? 'bg-green-500 text-white'
-                    : 'bg-gray-200 text-gray-700'
-                )
+              ? 'w-10 h-10 rounded-lg opacity-50 cursor-not-allowed ' +
+                (i === currentIndex
+                  ? 'bg-blue-600 text-white font-semibold'
+                  : isQuestionSubmitting(question.questionId)
+                  ? 'bg-yellow-500 text-white font-semibold animate-pulse'
+                  : isQuestionSubmitted(question.questionId)
+                  ? 'bg-purple-500 text-white font-semibold'
+                  : hasAnswer(question.questionId)
+                  ? 'bg-green-500 text-white'
+                  : 'bg-gray-200 text-gray-700')
               : i === currentIndex
               ? 'w-10 h-10 rounded-lg bg-blue-600 text-white font-semibold'
               : isQuestionSubmitting(question.questionId)
@@ -193,7 +202,6 @@
 
   <!-- Score Statistics -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-
     <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6">
       <div class="text-4xl font-bold text-green-600 mb-2">
         {{ correctCount }}/{{ questions?.length || 0 }}

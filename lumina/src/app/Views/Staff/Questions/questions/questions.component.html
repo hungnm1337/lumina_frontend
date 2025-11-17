@@ -1,812 +1,1159 @@
 <div class="questions-container">
-    <!-- Toast Notification -->
-    <div *ngIf="message" class="toast-container" [ngClass]="messageType">
-        <div class="toast-content">
-            {{message}}
-            <button class="toast-close" (click)="message=''">&times;</button>
+  <!-- Toast Notification -->
+  <div *ngIf="message" class="toast-container" [ngClass]="messageType">
+    <div class="toast-content">
+      {{ message }}
+      <button class="toast-close" (click)="message = ''">&times;</button>
+    </div>
+    <div class="toast-progress" [style.animation-duration.ms]="3000"></div>
+  </div>
+
+  <!-- TOEIC Header Section -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="page-title">
+          <span class="toeic-badge">TOEIC</span>
+          Question Bank Management
+        </h1>
+        <p class="page-subtitle">
+          Create and manage comprehensive question database for TOEIC exams
+        </p>
+      </div>
+      <div class="header-stats">
+        <div class="stat-card">
+          <div class="stat-number">{{ questionStats.totalQuestions || 0 }}</div>
+          <div class="stat-label">Total Questions</div>
         </div>
-        <div class="toast-progress" [style.animation-duration.ms]="3000"></div>
+        <div class="stat-card">
+          <div class="stat-number">{{ questionStats.usedQuestions || 0 }}</div>
+          <div class="stat-label">In Use</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">
+            {{ questionStats.unusedQuestions || 0 }}
+          </div>
+          <div class="stat-label">Available</div>
+        </div>
+      </div>
     </div>
 
-    <!-- TOEIC Header Section -->
-    <div class="page-header">
-        <div class="header-content">
-            <div class="title-section">
-                <h1 class="page-title">
-                    <span class="toeic-badge">TOEIC</span>
-                    Question Bank Management
-                </h1>
-                <p class="page-subtitle">
-                    Create and manage comprehensive question database for TOEIC exams
-                </p>
-            </div>
-            <div class="header-stats">
-                <div class="stat-card">
-                    <div class="stat-number">{{questionStats.totalQuestions || 0}}</div>
-                    <div class="stat-label">Total Questions</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">{{questionStats.usedQuestions || 0}}</div>
-                    <div class="stat-label">In Use</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">{{questionStats.unusedQuestions || 0}}</div>
-                    <div class="stat-label">Available</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Action Buttons -->
-        <div class="header-actions">
-            <button class="btn-action-secondary" (click)="openUploadModal()">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <span class="btn-text">Upload Media</span>
-            </button>
-            <button class="btn-action-secondary" (click)="openImportModal()">
-                <i class="fas fa-file-excel"></i>
-                <span class="btn-text">Import Excel</span>
-            </button>
-            <button class="btn-create-question" (click)="openModal()">
-                <i class="fas fa-plus"></i>
-                <span class="btn-text">Create Question</span>
-            </button>
-        </div>
+    <!-- Action Buttons -->
+    <div class="header-actions">
+      <button class="btn-action-secondary" (click)="openUploadModal()">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <span class="btn-text">Upload Media</span>
+      </button>
+      <button class="btn-action-secondary" (click)="openImportModal()">
+        <i class="fas fa-file-excel"></i>
+        <span class="btn-text">Import Excel</span>
+      </button>
+      <button class="btn-create-question" (click)="openModal()">
+        <i class="fas fa-plus"></i>
+        <span class="btn-text">Create Question</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Skills Overview Cards -->
+  <div class="skills-overview">
+    <div class="skill-card listening">
+      <div class="skill-icon">
+        <i class="fas fa-headphones"></i>
+      </div>
+      <div class="skill-info">
+        <h4>Listening</h4>
+        <p>4 Parts</p>
+      </div>
+    </div>
+    <div class="skill-card reading">
+      <div class="skill-icon">
+        <i class="fas fa-book-open"></i>
+      </div>
+      <div class="skill-info">
+        <h4>Reading</h4>
+        <p>3 Parts</p>
+      </div>
+    </div>
+    <div class="skill-card speaking">
+      <div class="skill-icon">
+        <i class="fas fa-microphone"></i>
+      </div>
+      <div class="skill-info">
+        <h4>Speaking</h4>
+        <p>5 Parts</p>
+      </div>
+    </div>
+    <div class="skill-card writing">
+      <div class="skill-icon">
+        <i class="fas fa-pen"></i>
+      </div>
+      <div class="skill-info">
+        <h4>Writing</h4>
+        <p>3 Parts</p>
+      </div>
+    </div>
+  </div>
+  <!-- Advanced Search & Filter Panel -->
+  <div class="search-filter-panel">
+    <div class="filter-section">
+      <div class="filter-group">
+        <label>
+          <i class="fas fa-calendar-alt"></i>
+          Exam Set
+        </label>
+        <select
+          [(ngModel)]="selectedExamSetKey"
+          (change)="onExamSetKeyFilterChange()"
+          class="filter-select"
+        >
+          <option [value]="null">All Exam Sets</option>
+          <option *ngFor="let key of examSetKeys" [ngValue]="key">
+            {{ key }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>
+          <i class="fas fa-list-ol"></i>
+          Part
+        </label>
+        <select
+          [(ngModel)]="selectedPartId"
+          (change)="onPartFilterChange()"
+          [disabled]="!selectedExamSetKey"
+          class="filter-select"
+          [class.disabled]="!selectedExamSetKey"
+        >
+          <option value="">
+            {{ selectedExamSetKey ? "All Parts" : "Select Exam Set First" }}
+          </option>
+          <option
+            *ngFor="let part of filteredPartsForView"
+            [value]="part.partId"
+          >
+            {{ part.partCode }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-actions">
+        <button
+          (click)="
+            selectedExamSetKey = null;
+            selectedPartId = '';
+            onExamSetKeyFilterChange()
+          "
+          class="btn-clear-filters"
+        >
+          <i class="fas fa-eraser"></i>
+          Clear Filters
+        </button>
+        <button (click)="loadPrompts()" class="btn-refresh">
+          <i class="fas fa-sync-alt"></i>
+          Refresh
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Questions List Section -->
+  <div class="questions-list-section">
+    <div class="section-header">
+      <div class="header-left">
+        <h3 class="section-title">
+          <i class="fas fa-list"></i>
+          Question Prompts
+        </h3>
+        <p class="section-subtitle">
+          Showing {{ (page - 1) * size + 1 }}-{{ getMaxDisplayCount() }} of
+          {{ totalPages }} prompts
+        </p>
+      </div>
     </div>
 
-    <!-- Skills Overview Cards -->
-    <div class="skills-overview">
-        <div class="skill-card listening">
-            <div class="skill-icon">
-                <i class="fas fa-headphones"></i>
-            </div>
-            <div class="skill-info">
-                <h4>Listening</h4>
-                <p>4 Parts</p>
-            </div>
+    <!-- Prompts Grid -->
+    <div class="prompts-grid">
+      <div *ngFor="let prompt of prompts" class="prompt-card">
+        <!-- Card Header -->
+        <div class="card-header">
+          <div
+            class="skill-badge"
+            [ngClass]="{
+              listening: prompt.skill === 'Listening',
+              reading: prompt.skill === 'Reading',
+              speaking: prompt.skill === 'Speaking',
+              writing: prompt.skill === 'Writing'
+            }"
+          >
+            <i
+              class="fas"
+              [ngClass]="{
+                'fa-headphones': prompt.skill === 'Listening',
+                'fa-book-open': prompt.skill === 'Reading',
+                'fa-microphone': prompt.skill === 'Speaking',
+                'fa-pen': prompt.skill === 'Writing'
+              }"
+            ></i>
+            {{ prompt.skill || "Unknown" }}
+          </div>
+          <div class="card-actions">
+            <button
+              class="btn-icon edit"
+              (click)="editPrompt(prompt)"
+              title="Edit Prompt"
+            >
+              <i class="fas fa-edit"></i>
+            </button>
+            <button
+              class="btn-icon delete"
+              (click)="deletePrompt(prompt)"
+              title="Delete Prompt"
+            >
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </div>
         </div>
-        <div class="skill-card reading">
-            <div class="skill-icon">
-                <i class="fas fa-book-open"></i>
+
+        <!-- Card Content -->
+        <div class="card-content">
+          <h4 class="prompt-title">{{ prompt.title || "Untitled Prompt" }}</h4>
+          <div class="prompt-text">{{ prompt.contentText }}</div>
+
+          <!-- Media Section -->
+          <div
+            class="media-section"
+            *ngIf="prompt.referenceImageUrl || prompt.referenceAudioUrl"
+          >
+            <div class="media-item" *ngIf="prompt.referenceImageUrl">
+              <img [src]="prompt.referenceImageUrl" alt="Reference Image" />
             </div>
-            <div class="skill-info">
-                <h4>Reading</h4>
-                <p>3 Parts</p>
+            <div class="media-item" *ngIf="prompt.referenceAudioUrl">
+              <audio controls [src]="prompt.referenceAudioUrl"></audio>
             </div>
+          </div>
+
+          <!-- Questions Section -->
+          <div class="questions-section">
+            <div class="questions-header">
+              <span class="questions-count">
+                <i class="fas fa-question-circle"></i>
+                {{ prompt.questions?.length || 0 }} Questions
+              </span>
+              <button
+                *ngIf="prompt.questions?.length > 0"
+                class="btn-toggle"
+                (click)="prompt.showQuestions = !prompt.showQuestions"
+              >
+                <i
+                  class="fas"
+                  [ngClass]="
+                    prompt.showQuestions ? 'fa-chevron-up' : 'fa-chevron-down'
+                  "
+                ></i>
+                {{ prompt.showQuestions ? "Hide" : "Show" }}
+              </button>
+            </div>
+
+            <!-- Questions List -->
+            <div
+              *ngIf="prompt.showQuestions && prompt.questions?.length > 0"
+              class="questions-list"
+            >
+              <div
+                *ngFor="let q of prompt.questions; let qi = index"
+                class="question-item"
+              >
+                <div class="question-number">Q{{ qi + 1 }}</div>
+                <div class="question-content">
+                  <div class="question-text">{{ q.stemText }}</div>
+
+                  <!-- Options -->
+                  <div
+                    class="options-list"
+                    *ngIf="q.options && q.options.length > 0"
+                  >
+                    <div
+                      *ngFor="let opt of q.options"
+                      class="option-item"
+                      [class.correct]="opt.isCorrect"
+                    >
+                      <span class="option-label">{{ opt.content }}</span>
+                      <i *ngIf="opt.isCorrect" class="fas fa-check-circle"></i>
+                    </div>
+                  </div>
+
+                  <!-- Explanation -->
+                  <div *ngIf="q.questionExplain" class="explanation">
+                    <i class="fas fa-lightbulb"></i>
+                    {{ q.questionExplain }}
+                  </div>
+
+                  <!-- Question Actions -->
+                  <div class="question-actions">
+                    <button
+                      class="btn-edit-question"
+                      (click)="editQuestion(q, prompt)"
+                    >
+                      <i class="fas fa-edit"></i>
+                      Edit Question
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty State -->
+            <div
+              *ngIf="!prompt.questions || prompt.questions.length === 0"
+              class="empty-questions"
+            >
+              <i class="fas fa-inbox"></i>
+              <p>No questions yet</p>
+            </div>
+          </div>
         </div>
-        <div class="skill-card speaking">
-            <div class="skill-icon">
-                <i class="fas fa-microphone"></i>
-            </div>
-            <div class="skill-info">
-                <h4>Speaking</h4>
-                <p>5 Parts</p>
-            </div>
-        </div>
-        <div class="skill-card writing">
-            <div class="skill-icon">
-                <i class="fas fa-pen"></i>
-            </div>
-            <div class="skill-info">
-                <h4>Writing</h4>
-                <p>3 Parts</p>
-            </div>
-        </div>
+      </div>
     </div>
-    <!-- Advanced Search & Filter Panel -->
-    <div class="search-filter-panel">
-        <div class="filter-section">
-            <div class="filter-group">
-                <label>
-                    <i class="fas fa-calendar-alt"></i>
-                    Exam Set
+
+    <!-- Pagination -->
+    <div class="flex justify-end items-center gap-2 my-4">
+      <button
+        class="px-2 py-1 border rounded"
+        (click)="onPageChange(page - 1)"
+        [disabled]="page <= 1"
+      >
+        Trước
+      </button>
+      <span>Trang {{ page }}/{{ totalPages }}</span>
+      <button
+        class="px-2 py-1 border rounded"
+        (click)="onPageChange(page + 1)"
+        [disabled]="page >= totalPages"
+      >
+        Sau
+      </button>
+    </div>
+  </div>
+
+  <!-- Question Modal -->
+  <div
+    *ngIf="isModalOpen"
+    class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+  >
+    <div
+      class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[92vh] overflow-hidden flex flex-col"
+    >
+      <!-- Header -->
+      <div
+        class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50"
+      >
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div
+              class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center"
+            >
+              <i class="fas fa-file-alt text-white text-lg"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-gray-800">
+                Tạo Prompt & Câu hỏi mới
+              </h3>
+              <p class="text-xs text-gray-500 mt-0.5">
+                Điền đầy đủ thông tin để tạo prompt
+              </p>
+            </div>
+          </div>
+          <button
+            (click)="closeModal()"
+            class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all"
+          >
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Body - Scrollable -->
+      <div class="flex-1 overflow-y-auto px-6 py-6">
+        <form
+          [formGroup]="promptForm"
+          (ngSubmit)="savePrompt()"
+          class="space-y-6"
+        >
+          <!-- ✅ Gộp 4 ô thành 1 card thông tin Prompt -->
+          <div
+            class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-100 shadow-sm"
+          >
+            <div class="flex items-center mb-4">
+              <div
+                class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3"
+              >
+                <i class="fas fa-align-left text-white text-sm"></i>
+              </div>
+              <h4 class="text-lg font-semibold text-gray-800">
+                Thông tin Prompt
+              </h4>
+            </div>
+
+            <div class="space-y-4">
+              <!-- Tiêu đề Passage -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-heading text-blue-500 mr-2"></i>Tiêu đề
+                  Passage
                 </label>
-                <select [(ngModel)]="selectedExamSetKey" 
-                        (change)="onExamSetKeyFilterChange()"
-                        class="filter-select">
-                    <option [value]="null">All Exam Sets</option>
-                    <option *ngFor="let key of examSetKeys" [ngValue]="key">{{ key }}</option>
-                </select>
-            </div>
+                <input
+                  formControlName="title"
+                  type="text"
+                  placeholder="Nhập tiêu đề cho passage..."
+                  class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all bg-white"
+                />
+              </div>
 
-            <div class="filter-group">
-                <label>
-                    <i class="fas fa-list-ol"></i>
-                    Part
+              <!-- Nội dung Passage -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-paragraph text-blue-500 mr-2"></i>Nội dung
+                  Passage
                 </label>
-                <select [(ngModel)]="selectedPartId" 
-                        (change)="onPartFilterChange()"
-                        [disabled]="!selectedExamSetKey"
-                        class="filter-select"
-                        [class.disabled]="!selectedExamSetKey">
-                    <option value="">
-                        {{ selectedExamSetKey ? 'All Parts' : 'Select Exam Set First' }}
-                    </option>
-                    <option *ngFor="let part of filteredPartsForView" [value]="part.partId">
-                        {{ part.partCode }}
-                    </option>
+                <textarea
+                  formControlName="contentText"
+                  rows="4"
+                  placeholder="Nhập nội dung passage..."
+                  class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all resize-none bg-white"
+                ></textarea>
+              </div>
+
+              <!-- Link hình ảnh và Audio trên cùng 1 hàng -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Link hình ảnh -->
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-image text-blue-500 mr-2"></i>Hình ảnh tham
+                    khảo
+                  </label>
+                  <div class="relative">
+                    <input
+                      type="file"
+                      (change)="uploadMedia($event, 'referenceImageUrl')"
+                      accept="image/*"
+                      class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                  </div>
+                </div>
+
+                <!-- Link audio -->
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-music text-blue-500 mr-2"></i>Audio tham
+                    khảo
+                  </label>
+                  <div class="relative">
+                    <input
+                      type="file"
+                      (change)="uploadMedia($event, 'referenceAudioUrl')"
+                      accept="audio/*"
+                      class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Select Skill & Part -->
+          <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+            <div class="flex items-center mb-4">
+              <div
+                class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center mr-3"
+              >
+                <i class="fas fa-cog text-white text-sm"></i>
+              </div>
+              <h4 class="text-lg font-semibold text-gray-800">
+                Cấu hình câu hỏi
+              </h4>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Select Skill -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-graduation-cap text-indigo-500 mr-2"></i
+                  >Skill
+                </label>
+                <select
+                  formControlName="skill"
+                  (change)="onSkillChange($event)"
+                  class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all bg-white appearance-none cursor-pointer"
+                >
+                  <option value="">Chọn skill</option>
+                  <option *ngFor="let skill of skills" [value]="skill">
+                    {{ skill }}
+                  </option>
                 </select>
+              </div>
+
+              <!-- Select Part -->
+              <div *ngIf="selectedSkill">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-list-ol text-indigo-500 mr-2"></i>Part
+                </label>
+                <select
+                  formControlName="partId"
+                  (change)="onPartSelected()"
+                  class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all bg-white appearance-none cursor-pointer"
+                >
+                  <option value="">Chọn Part</option>
+                  <option
+                    *ngFor="let part of filteredParts"
+                    [value]="part.partId"
+                  >
+                    {{ part.partCode + " - KÌ: " + part.examSetKey }}
+                  </option>
+                </select>
+              </div>
             </div>
 
-            <div class="filter-actions">
-                <button (click)="selectedExamSetKey = null; selectedPartId = ''; onExamSetKeyFilterChange()" 
-                        class="btn-clear-filters">
-                    <i class="fas fa-eraser"></i>
-                    Clear Filters
-                </button>
-                <button (click)="loadPrompts()" class="btn-refresh">
-                    <i class="fas fa-sync-alt"></i>
-                    Refresh
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Questions List Section -->
-    <div class="questions-list-section">
-        <div class="section-header">
-            <div class="header-left">
-                <h3 class="section-title">
-                    <i class="fas fa-list"></i>
-                    Question Prompts
-                </h3>
-                <p class="section-subtitle">
-                    Showing {{ (page-1)*size+1 }}-{{ getMaxDisplayCount() }} of {{ totalPages }} prompts
+            <!-- Hiển thị thông báo số câu hỏi cần thiết -->
+            <div
+              *ngIf="selectedPartQuestionCount > 0"
+              class="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl flex items-center"
+            >
+              <div
+                class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-3 flex-shrink-0"
+              >
+                <i class="fas fa-info-circle text-white"></i>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-blue-900">
+                  Yêu cầu số câu hỏi
                 </p>
+                <p class="text-xs text-blue-700 mt-0.5">
+                  Part này cần
+                  <strong class="text-lg">{{
+                    selectedPartQuestionCount
+                  }}</strong>
+                  câu hỏi
+                </p>
+              </div>
             </div>
-        </div>
+          </div>
 
-        <!-- Prompts Grid -->
-        <div class="prompts-grid">
-            <div *ngFor="let prompt of prompts" class="prompt-card">
-                <!-- Card Header -->
-                <div class="card-header">
-                    <div class="skill-badge" [ngClass]="{
-                        'listening': prompt.skill === 'Listening',
-                        'reading': prompt.skill === 'Reading',
-                        'speaking': prompt.skill === 'Speaking',
-                        'writing': prompt.skill === 'Writing'
-                    }">
-                        <i class="fas" [ngClass]="{
-                            'fa-headphones': prompt.skill === 'Listening',
-                            'fa-book-open': prompt.skill === 'Reading',
-                            'fa-microphone': prompt.skill === 'Speaking',
-                            'fa-pen': prompt.skill === 'Writing'
-                        }"></i>
-                        {{ prompt.skill || 'Unknown' }}
-                    </div>
-                    <div class="card-actions">
-                        <button class="btn-icon edit" (click)="editPrompt(prompt)" title="Edit Prompt">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-icon delete" (click)="deletePrompt(prompt)" title="Delete Prompt">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Card Content -->
-                <div class="card-content">
-                    <h4 class="prompt-title">{{ prompt.title || 'Untitled Prompt' }}</h4>
-                    <div class="prompt-text">{{ prompt.contentText }}</div>
-
-                    <!-- Media Section -->
-                    <div class="media-section" *ngIf="prompt.referenceImageUrl || prompt.referenceAudioUrl">
-                        <div class="media-item" *ngIf="prompt.referenceImageUrl">
-                            <img [src]="prompt.referenceImageUrl" alt="Reference Image" />
-                        </div>
-                        <div class="media-item" *ngIf="prompt.referenceAudioUrl">
-                            <audio controls [src]="prompt.referenceAudioUrl"></audio>
-                        </div>
-                    </div>
-
-                    <!-- Questions Section -->
-                    <div class="questions-section">
-                        <div class="questions-header">
-                            <span class="questions-count">
-                                <i class="fas fa-question-circle"></i>
-                                {{ prompt.questions?.length || 0 }} Questions
-                            </span>
-                            <button 
-                                *ngIf="prompt.questions?.length > 0"
-                                class="btn-toggle"
-                                (click)="prompt.showQuestions = !prompt.showQuestions">
-                                <i class="fas" [ngClass]="prompt.showQuestions ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                                {{ prompt.showQuestions ? 'Hide' : 'Show' }}
-                            </button>
-                        </div>
-
-                        <!-- Questions List -->
-                        <div *ngIf="prompt.showQuestions && prompt.questions?.length > 0" class="questions-list">
-                            <div *ngFor="let q of prompt.questions; let qi=index" class="question-item">
-                                <div class="question-number">Q{{ qi + 1 }}</div>
-                                <div class="question-content">
-                                    <div class="question-text">{{ q.stemText }}</div>
-                                    
-                                    <!-- Options -->
-                                    <div class="options-list" *ngIf="q.options && q.options.length > 0">
-                                        <div *ngFor="let opt of q.options" 
-                                             class="option-item"
-                                             [class.correct]="opt.isCorrect">
-                                            <span class="option-label">{{ opt.content }}</span>
-                                            <i *ngIf="opt.isCorrect" class="fas fa-check-circle"></i>
-                                        </div>
-                                    </div>
-
-                                    <!-- Explanation -->
-                                    <div *ngIf="q.questionExplain" class="explanation">
-                                        <i class="fas fa-lightbulb"></i>
-                                        {{ q.questionExplain }}
-                                    </div>
-
-                                    <!-- Question Actions -->
-                                    <div class="question-actions">
-                                        <button class="btn-edit-question" (click)="editQuestion(q, prompt)">
-                                            <i class="fas fa-edit"></i>
-                                            Edit Question
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Empty State -->
-                        <div *ngIf="!prompt.questions || prompt.questions.length === 0" class="empty-questions">
-                            <i class="fas fa-inbox"></i>
-                            <p>No questions yet</p>
-                        </div>
-                    </div>
-                </div>
+          <!-- Multiple Questions (FormArray) -->
+          <div
+            *ngIf="selectedPartQuestionCount > 0"
+            formArrayName="questions"
+            class="space-y-4"
+          >
+            <div class="flex items-center mb-4">
+              <div
+                class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-3"
+              >
+                <i class="fas fa-question-circle text-white text-sm"></i>
+              </div>
+              <div>
+                <h4 class="text-lg font-semibold text-gray-800">
+                  Danh sách câu hỏi
+                </h4>
+                <p class="text-xs text-gray-500">
+                  Tổng:
+                  <strong class="text-blue-600">{{
+                    selectedPartQuestionCount
+                  }}</strong>
+                  câu hỏi
+                </p>
+              </div>
             </div>
-        </div>
 
-        <!-- Pagination -->
-        <div class="flex justify-end items-center gap-2 my-4">
-            <button class="px-2 py-1 border rounded" (click)="onPageChange(page-1)"
-                [disabled]="page<=1">Trước</button>
-            <span>Trang {{ page }}/{{ totalPages }}</span>
-            <button class="px-2 py-1 border rounded" (click)="onPageChange(page+1)"
-                [disabled]="page>=totalPages">Sau</button>
-        </div>
+            <div
+              *ngFor="let qGroup of questions.controls; let i = index"
+              [formGroupName]="i"
+              class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-all"
+            >
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center">
+                  <div
+                    class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center mr-3"
+                  >
+                    <span class="text-white font-bold text-sm">{{
+                      i + 1
+                    }}</span>
+                  </div>
+                  <span class="font-semibold text-gray-800"
+                    >Câu {{ i + 1 }}/{{ selectedPartQuestionCount }}</span
+                  >
+                </div>
+              </div>
+
+              <!-- Nội dung câu hỏi -->
+              <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-edit text-gray-500 mr-2"></i>Nội dung câu hỏi
+                </label>
+                <input
+                  type="text"
+                  formControlName="stemText"
+                  placeholder="Nhập nội dung câu hỏi..."
+                  class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all bg-white"
+                />
+              </div>
+
+              <!-- Giải thích -->
+              <div
+                *ngIf="
+                  selectedSkill !== 'Speaking' && selectedSkill !== 'Writing'
+                "
+                class="mb-4"
+              >
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Giải
+                  thích (nếu có)
+                </label>
+                <input
+                  type="text"
+                  formControlName="questionExplain"
+                  placeholder="Nhập giải thích cho câu hỏi..."
+                  class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all bg-white"
+                />
+              </div>
+
+              <!-- Điểm và Thời gian -->
+              <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-star text-yellow-500 mr-2"></i>Điểm
+                  </label>
+                  <input
+                    type="number"
+                    formControlName="scoreWeight"
+                    class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all bg-white"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-clock text-blue-500 mr-2"></i>Thời gian
+                    (giây)
+                  </label>
+                  <input
+                    type="number"
+                    formControlName="time"
+                    class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all bg-white"
+                  />
+                </div>
+              </div>
+
+              <!-- Đáp án -->
+              <div
+                *ngIf="
+                  selectedSkill !== 'Speaking' && selectedSkill !== 'Writing'
+                "
+                formArrayName="options"
+              >
+                <label class="block text-sm font-semibold text-gray-700 mb-3">
+                  <i class="fas fa-check-circle text-green-500 mr-2"></i>Đáp án
+                </label>
+                <div class="space-y-2">
+                  <div
+                    *ngFor="let opt of getOptions(i).controls; let oi = index"
+                    [formGroupName]="oi"
+                    class="flex items-center space-x-3 bg-white rounded-lg p-3 border border-gray-200"
+                  >
+                    <div
+                      class="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0"
+                    >
+                      <span class="text-blue-600 font-bold text-sm">{{
+                        "ABCD"[oi]
+                      }}</span>
+                    </div>
+                    <input
+                      type="text"
+                      formControlName="content"
+                      [placeholder]="'Nhập đáp án ' + 'ABCD'[oi]"
+                      class="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+                    />
+                    <label class="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        formControlName="isCorrect"
+                        class="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                      />
+                      <span class="ml-2 text-sm font-medium text-gray-700"
+                        >Đúng</span
+                      >
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Thông báo khi chưa chọn Part -->
+          <div
+            *ngIf="selectedSkill && selectedPartQuestionCount === 0"
+            class="p-5 bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-400 rounded-xl"
+          >
+            <div class="flex items-center">
+              <div
+                class="w-10 h-10 bg-yellow-400 rounded-lg flex items-center justify-center mr-3"
+              >
+                <i class="fas fa-exclamation-circle text-white"></i>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-yellow-900">
+                  Chưa chọn Part
+                </p>
+                <p class="text-xs text-yellow-700 mt-0.5">
+                  Vui lòng chọn Part để hiển thị form nhập câu hỏi
+                </p>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Footer -->
+      <div
+        class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-end space-x-3"
+      >
+        <button
+          type="button"
+          (click)="closeModal()"
+          class="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-medium"
+        >
+          <i class="fas fa-times mr-2"></i>Hủy
+        </button>
+        <button
+          type="submit"
+          (click)="savePrompt()"
+          class="px-5 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all font-medium shadow-md hover:shadow-lg"
+        >
+          <i class="fas fa-check mr-2"></i>Tạo prompt & câu hỏi
+        </button>
+      </div>
     </div>
+  </div>
+  <div
+    *ngIf="isImportModalOpen"
+    class="fixed inset-0 bg-gray-600 bg-opacity-40 z-50 flex items-center justify-center"
+  >
+    <div class="bg-white rounded-lg shadow-lg p-8 w-[400px]">
+      <h2 class="font-bold text-xl mb-4">Import Excel</h2>
+      <label class="block mb-2">Chọn ExamPart:</label>
+      <select
+        [(ngModel)]="importPartId"
+        class="border rounded px-2 py-1 w-full mb-4"
+      >
+        <option [ngValue]="null" disabled selected>-- Chọn phần --</option>
+        <option *ngFor="let part of parts" [ngValue]="part.partId">
+          {{
+            part.name ||
+              part.partName ||
+              part.partCode + " - KÌ: " + part.examSetKey
+          }}
+        </option>
+      </select>
 
-    <!-- Question Modal -->
-        <div *ngIf="isModalOpen" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[92vh] overflow-hidden flex flex-col">
-                <!-- Header -->
-                <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-file-alt text-white text-lg"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800">Tạo Prompt & Câu hỏi mới</h3>
-                                <p class="text-xs text-gray-500 mt-0.5">Điền đầy đủ thông tin để tạo prompt</p>
-                            </div>
-                        </div>
-                        <button (click)="closeModal()" 
-                                class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Body - Scrollable -->
-                <div class="flex-1 overflow-y-auto px-6 py-6">
-                    <form [formGroup]="promptForm" (ngSubmit)="savePrompt()" class="space-y-6">
-
-                        <!-- ✅ Gộp 4 ô thành 1 card thông tin Prompt -->
-                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-100 shadow-sm">
-                            <div class="flex items-center mb-4">
-                                <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
-                                    <i class="fas fa-align-left text-white text-sm"></i>
-                                </div>
-                                <h4 class="text-lg font-semibold text-gray-800">Thông tin Prompt</h4>
-                            </div>
-                            
-                            <div class="space-y-4">
-                                <!-- Tiêu đề Passage -->
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                        <i class="fas fa-heading text-blue-500 mr-2"></i>Tiêu đề Passage
-                                    </label>
-                                    <input formControlName="title" 
-                                           type="text" 
-                                           placeholder="Nhập tiêu đề cho passage..."
-                                           class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all bg-white" />
-                                </div>
-
-                                <!-- Nội dung Passage -->
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                        <i class="fas fa-paragraph text-blue-500 mr-2"></i>Nội dung Passage
-                                    </label>
-                                    <textarea formControlName="contentText" 
-                                              rows="4" 
-                                              placeholder="Nhập nội dung passage..."
-                                              class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all resize-none bg-white"></textarea>
-                                </div>
-
-                                <!-- Link hình ảnh và Audio trên cùng 1 hàng -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <!-- Link hình ảnh -->
-                                    <div>
-                                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                            <i class="fas fa-image text-blue-500 mr-2"></i>Hình ảnh tham khảo
-                                        </label>
-                                        <div class="relative">
-                                            <input type="file" 
-                                                   (change)="uploadMedia($event, 'referenceImageUrl')" 
-                                                   accept="image/*"
-                                                   class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-                                        </div>
-                                    </div>
-
-                                    <!-- Link audio -->
-                                    <div>
-                                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                            <i class="fas fa-music text-blue-500 mr-2"></i>Audio tham khảo
-                                        </label>
-                                        <div class="relative">
-                                            <input type="file" 
-                                                   (change)="uploadMedia($event, 'referenceAudioUrl')" 
-                                                   accept="audio/*"
-                                                   class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Select Skill & Part -->
-                        <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
-                            <div class="flex items-center mb-4">
-                                <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center mr-3">
-                                    <i class="fas fa-cog text-white text-sm"></i>
-                                </div>
-                                <h4 class="text-lg font-semibold text-gray-800">Cấu hình câu hỏi</h4>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <!-- Select Skill -->
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                        <i class="fas fa-graduation-cap text-indigo-500 mr-2"></i>Skill
-                                    </label>
-                                    <select formControlName="skill" 
-                                            (change)="onSkillChange($event)"
-                                            class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all bg-white appearance-none cursor-pointer">
-                                        <option value="">Chọn skill</option>
-                                        <option *ngFor="let skill of skills" [value]="skill">{{ skill }}</option>
-                                    </select>
-                                </div>
-
-                                <!-- Select Part -->
-                                <div *ngIf="selectedSkill">
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                        <i class="fas fa-list-ol text-indigo-500 mr-2"></i>Part
-                                    </label>
-                                    <select formControlName="partId" 
-                                            (change)="onPartSelected()"
-                                            class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all bg-white appearance-none cursor-pointer">
-                                        <option value="">Chọn Part</option>
-                                        <option *ngFor="let part of filteredParts" [value]="part.partId">
-                                            {{ part.partCode + " - KÌ: "+ part.examSetKey }}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <!-- Hiển thị thông báo số câu hỏi cần thiết -->
-                            <div *ngIf="selectedPartQuestionCount > 0" 
-                                 class="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl flex items-center">
-                                <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                                    <i class="fas fa-info-circle text-white"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-semibold text-blue-900">Yêu cầu số câu hỏi</p>
-                                    <p class="text-xs text-blue-700 mt-0.5">
-                                        Part này cần <strong class="text-lg">{{ selectedPartQuestionCount }}</strong> câu hỏi
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-
-                    <!-- Multiple Questions (FormArray) -->
-                    <div *ngIf="selectedPartQuestionCount > 0" formArrayName="questions" class="space-y-4">
-                        <div class="flex items-center mb-4">
-                            <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-3">
-                                <i class="fas fa-question-circle text-white text-sm"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-lg font-semibold text-gray-800">Danh sách câu hỏi</h4>
-                                <p class="text-xs text-gray-500">Tổng: <strong class="text-blue-600">{{ selectedPartQuestionCount }}</strong> câu hỏi</p>
-                            </div>
-                        </div>
-                        
-                        <div *ngFor="let qGroup of questions.controls; let i = index" 
-                             [formGroupName]="i"
-                             class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-all">
-                            
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex items-center">
-                                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center mr-3">
-                                        <span class="text-white font-bold text-sm">{{ i + 1 }}</span>
-                                    </div>
-                                    <span class="font-semibold text-gray-800">Câu {{ i + 1 }}/{{ selectedPartQuestionCount }}</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Nội dung câu hỏi -->
-                            <div class="mb-4">
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="fas fa-edit text-gray-500 mr-2"></i>Nội dung câu hỏi
-                                </label>
-                                <input type="text" 
-                                       formControlName="stemText"
-                                       placeholder="Nhập nội dung câu hỏi..."
-                                       class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all bg-white" />
-                            </div>
-
-                            <!-- Giải thích -->
-                            <div *ngIf="selectedSkill !== 'Speaking' && selectedSkill !== 'Writing'" class="mb-4">
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Giải thích (nếu có)
-                                </label>
-                                <input type="text" 
-                                       formControlName="questionExplain"
-                                       placeholder="Nhập giải thích cho câu hỏi..."
-                                       class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all bg-white" />
-                            </div>
-                            
-                            <!-- Điểm và Thời gian -->
-                            <div class="grid grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                        <i class="fas fa-star text-yellow-500 mr-2"></i>Điểm
-                                    </label>
-                                    <input type="number" 
-                                           formControlName="scoreWeight"
-                                           class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all bg-white">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                        <i class="fas fa-clock text-blue-500 mr-2"></i>Thời gian (giây)
-                                    </label>
-                                    <input type="number" 
-                                           formControlName="time"
-                                           class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all bg-white">
-                                </div>
-                            </div>
-
-                            <!-- Đáp án -->
-                            <div *ngIf="selectedSkill !== 'Speaking' && selectedSkill !== 'Writing'" formArrayName="options">
-                                <label class="block text-sm font-semibold text-gray-700 mb-3">
-                                    <i class="fas fa-check-circle text-green-500 mr-2"></i>Đáp án
-                                </label>
-                                <div class="space-y-2">
-                                    <div *ngFor="let opt of getOptions(i).controls; let oi=index" 
-                                         [formGroupName]="oi"
-                                         class="flex items-center space-x-3 bg-white rounded-lg p-3 border border-gray-200">
-                                        <div class="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                            <span class="text-blue-600 font-bold text-sm">{{ 'ABCD'[oi] }}</span>
-                                        </div>
-                                        <input type="text" 
-                                               formControlName="content"
-                                               [placeholder]="'Nhập đáp án ' + 'ABCD'[oi]"
-                                               class="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all" />
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="checkbox" 
-                                                   formControlName="isCorrect"
-                                                   class="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500" />
-                                            <span class="ml-2 text-sm font-medium text-gray-700">Đúng</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-<!-- Thông báo khi chưa chọn Part -->
-<div *ngIf="selectedSkill && selectedPartQuestionCount === 0" class="p-5 bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-400 rounded-xl">
-    <div class="flex items-center">
-        <div class="w-10 h-10 bg-yellow-400 rounded-lg flex items-center justify-center mr-3">
-            <i class="fas fa-exclamation-circle text-white"></i>
-        </div>
-        <div>
-            <p class="text-sm font-semibold text-yellow-900">Chưa chọn Part</p>
-            <p class="text-xs text-yellow-700 mt-0.5">Vui lòng chọn Part để hiển thị form nhập câu hỏi</p>
-        </div>
+      <label class="block mb-2">Chọn file Excel:</label>
+      <input
+        type="file"
+        (change)="onExcelFileSelected($event)"
+        accept=".xlsx,.xls"
+        class="mb-4"
+      />
+      <div class="flex justify-end gap-2 mt-4">
+        <button
+          (click)="importExcel()"
+          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          Upload
+        </button>
+        <button
+          (click)="closeImportModal()"
+          class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
+        >
+          Thoát
+        </button>
+      </div>
     </div>
-</div>
+  </div>
+  <!-- Modal upload -->
+  <div
+    *ngIf="isUploadModalOpen"
+    class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
+  >
+    <div class="bg-white rounded-lg shadow-lg p-6 w-[360px]">
+      <h2 class="font-bold text-lg mb-3">Upload Image hoặc Audio</h2>
+      <input
+        type="file"
+        (change)="onFileUpload($event)"
+        accept="image/*,audio/*"
+        class="mb-4"
+        [disabled]="uploading"
+      />
 
-                    </form>
-                </div>
+      <!-- Spinner loading -->
+      <div *ngIf="uploading" class="flex items-center justify-center my-3">
+        <span
+          class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"
+        ></span>
+        <span class="ml-3 text-blue-600">Đang upload, vui lòng đợi...</span>
+      </div>
 
-                <!-- Footer -->
-                <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-end space-x-3">
-                    <button type="button" 
-                            (click)="closeModal()"
-                            class="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-medium">
-                        <i class="fas fa-times mr-2"></i>Hủy
-                    </button>
-                    <button type="submit"
-                            (click)="savePrompt()"
-                            class="px-5 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all font-medium shadow-md hover:shadow-lg">
-                        <i class="fas fa-check mr-2"></i>Tạo prompt & câu hỏi
-                    </button>
-                </div>
+      <div *ngIf="uploadedUrl && !uploading" class="mt-3">
+        <label class="text-sm mb-1 block">URL vừa upload:</label>
+        <input
+          type="text"
+          [value]="uploadedUrl"
+          readonly
+          class="border px-2 py-1 rounded w-full"
+        />
+        <button
+          class="mt-2 bg-green-600 text-white px-3 py-1 rounded"
+          (click)="copyUrl(uploadedUrl)"
+        >
+          Copy URL
+        </button>
+      </div>
+      <div class="flex justify-end gap-2 mt-4">
+        <button
+          (click)="closeUploadModal()"
+          class="bg-gray-300 text-gray-800 px-3 py-1 rounded hover:bg-gray-400"
+        >
+          Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Edit Prompt -->
+  <div
+    *ngIf="isEditModalOpen"
+    class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+  >
+    <div
+      class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[92vh] overflow-hidden flex flex-col"
+    >
+      <!-- Header -->
+      <div
+        class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-purple-50"
+      >
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div
+              class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center"
+            >
+              <i class="fas fa-edit text-white text-lg"></i>
             </div>
-        </div>
-        <div *ngIf="isImportModalOpen"
-            class="fixed inset-0 bg-gray-600 bg-opacity-40 z-50 flex items-center justify-center">
-            <div class="bg-white rounded-lg shadow-lg p-8 w-[400px]">
-                <h2 class="font-bold text-xl mb-4">Import Excel</h2>
-                <label class="block mb-2">Chọn ExamPart:</label>
-                <select [(ngModel)]="importPartId" class="border rounded px-2 py-1 w-full mb-4">
-                    <option [ngValue]="null" disabled selected>-- Chọn phần --</option>
-                    <option *ngFor="let part of parts" [ngValue]="part.partId">
-                        {{ part.name || part.partName || ( part.partCode + " - KÌ: "+ part.examSetKey) }}
-                    </option>
-                </select>
-
-                <label class="block mb-2">Chọn file Excel:</label>
-                <input type="file" (change)="onExcelFileSelected($event)" accept=".xlsx,.xls" class="mb-4" />
-                <div class="flex justify-end gap-2 mt-4">
-                    <button (click)="importExcel()"
-                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Upload</button>
-                    <button (click)="closeImportModal()"
-                        class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">Thoát</button>
-                </div>
+            <div>
+              <h3 class="text-xl font-bold text-gray-800">Chỉnh sửa Prompt</h3>
+              <p class="text-xs text-gray-500 mt-0.5">
+                Cập nhật thông tin prompt
+              </p>
             </div>
+          </div>
+          <button
+            (click)="closeEditModal()"
+            class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all"
+          >
+            <i class="fas fa-times text-xl"></i>
+          </button>
         </div>
-        <!-- Modal upload -->
-        <div *ngIf="isUploadModalOpen"
-            class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-            <div class="bg-white rounded-lg shadow-lg p-6 w-[360px]">
-                <h2 class="font-bold text-lg mb-3">Upload Image hoặc Audio</h2>
-                <input type="file" (change)="onFileUpload($event)" accept="image/*,audio/*" class="mb-4"
-                    [disabled]="uploading" />
+      </div>
 
-                <!-- Spinner loading -->
-                <div *ngIf="uploading" class="flex items-center justify-center my-3">
-                    <span class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></span>
-                    <span class="ml-3 text-blue-600">Đang upload, vui lòng đợi...</span>
-                </div>
+      <!-- Body - Scrollable -->
+      <div class="flex-1 overflow-y-auto px-6 py-6">
+        <form
+          [formGroup]="editPromptForm"
+          (ngSubmit)="saveEditPrompt()"
+          class="space-y-5"
+        >
+          <!-- Tiêu đề Passage -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-heading text-indigo-500 mr-2"></i>Tiêu đề Passage
+            </label>
+            <input
+              formControlName="title"
+              type="text"
+              placeholder="Nhập tiêu đề..."
+              class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all bg-white"
+            />
+          </div>
 
-                <div *ngIf="uploadedUrl && !uploading" class="mt-3">
-                    <label class="text-sm mb-1 block">URL vừa upload:</label>
-                    <input type="text" [value]="uploadedUrl" readonly class="border px-2 py-1 rounded w-full" />
-                    <button class="mt-2 bg-green-600 text-white px-3 py-1 rounded" (click)="copyUrl(uploadedUrl)">
-                        Copy URL
-                    </button>
-                </div>
-                <div class="flex justify-end gap-2 mt-4">
-                    <button (click)="closeUploadModal()"
-                        class="bg-gray-300 text-gray-800 px-3 py-1 rounded hover:bg-gray-400">Đóng</button>
-                </div>
+          <!-- Nội dung Passage -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-paragraph text-indigo-500 mr-2"></i>Nội dung
+              Passage
+            </label>
+            <textarea
+              formControlName="contentText"
+              rows="4"
+              placeholder="Nhập nội dung..."
+              class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all resize-none bg-white"
+            ></textarea>
+          </div>
+
+          <!-- Skill (readonly) -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-graduation-cap text-indigo-500 mr-2"></i>Skill
+            </label>
+            <div
+              class="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 font-medium"
+            >
+              {{ editPromptForm.get("skill")?.value || "Chưa có thông tin" }}
             </div>
-        </div>
+          </div>
 
-        <!-- Modal Edit Prompt -->
-        <div *ngIf="isEditModalOpen" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[92vh] overflow-hidden flex flex-col">
-                <!-- Header -->
-                <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-purple-50">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-edit text-white text-lg"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800">Chỉnh sửa Prompt</h3>
-                                <p class="text-xs text-gray-500 mt-0.5">Cập nhật thông tin prompt</p>
-                            </div>
-                        </div>
-                        <button (click)="closeEditModal()" 
-                                class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Body - Scrollable -->
-                <div class="flex-1 overflow-y-auto px-6 py-6">
-                    <form [formGroup]="editPromptForm" (ngSubmit)="saveEditPrompt()" class="space-y-5">
-
-                        <!-- Tiêu đề Passage -->
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-heading text-indigo-500 mr-2"></i>Tiêu đề Passage
-                            </label>
-                            <input formControlName="title" 
-                                   type="text" 
-                                   placeholder="Nhập tiêu đề..."
-                                   class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all bg-white" />
-                        </div>
-
-                        <!-- Nội dung Passage -->
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-paragraph text-indigo-500 mr-2"></i>Nội dung Passage
-                            </label>
-                            <textarea formControlName="contentText" 
-                                      rows="4" 
-                                      placeholder="Nhập nội dung..."
-                                      class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all resize-none bg-white"></textarea>
-                        </div>
-
-                        <!-- Skill (readonly) -->
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-graduation-cap text-indigo-500 mr-2"></i>Skill
-                            </label>
-                            <div class="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 font-medium">
-                                {{ editPromptForm.get('skill')?.value || 'Chưa có thông tin' }}
-                            </div>
-                        </div>
-
-                        <!-- Links media trong grid 2 cột -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Link ảnh -->
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="fas fa-image text-indigo-500 mr-2"></i>Link ảnh tham khảo
-                                </label>
-                                <input formControlName="referenceImageUrl" 
-                                       type="text" 
-                                       placeholder="https://..."
-                                       class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all bg-white" />
-                                <p class="text-xs text-gray-500 mt-1">Link ảnh đã upload lên Cloudinary</p>
-                            </div>
-
-                            <!-- Link audio -->
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="fas fa-music text-indigo-500 mr-2"></i>Link audio tham khảo
-                                </label>
-                                <input formControlName="referenceAudioUrl" 
-                                       type="text" 
-                                       placeholder="https://..."
-                                       class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all bg-white" />
-                                <p class="text-xs text-gray-500 mt-1">Link audio đã upload lên Cloudinary</p>
-                            </div>
-                        </div>
-
-                    </form>
-                </div>
-
-                <!-- Footer -->
-                <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-end space-x-3">
-                    <button type="button" 
-                            (click)="closeEditModal()" 
-                            class="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-medium">
-                        <i class="fas fa-times mr-2"></i>Hủy
-                    </button>
-                    <button type="submit"
-                            (click)="saveEditPrompt()"
-                            [disabled]="editPromptForm.invalid"
-                            class="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all font-medium shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                        <i class="fas fa-save mr-2"></i>Lưu thay đổi
-                    </button>
-                </div>
+          <!-- Links media trong grid 2 cột -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Link ảnh -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-image text-indigo-500 mr-2"></i>Link ảnh tham
+                khảo
+              </label>
+              <input
+                formControlName="referenceImageUrl"
+                type="text"
+                placeholder="https://..."
+                class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all bg-white"
+              />
+              <p class="text-xs text-gray-500 mt-1">
+                Link ảnh đã upload lên Cloudinary
+              </p>
             </div>
-        </div>
 
-
-        <!-- Modal Thêm/Sửa câu hỏi -->
-        <div *ngIf="isQuestionModalOpen"
-            class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] overflow-hidden flex flex-col">
-                <!-- Header -->
-                <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-question-circle text-white text-lg"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800">{{ isEditQuestion ? 'Sửa câu hỏi' : 'Thêm câu hỏi mới' }}</h3>
-                                <p class="text-xs text-gray-500 mt-0.5">{{ isEditQuestion ? 'Cập nhật thông tin câu hỏi' : 'Tạo câu hỏi cho prompt' }}</p>
-                            </div>
-                        </div>
-                        <button (click)="closeQuestionModal()" 
-                                class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Body - Scrollable -->
-                <div class="flex-1 overflow-y-auto px-6 py-6">
-                    <form [formGroup]="questionForm" (ngSubmit)="saveQuestion()" class="space-y-5">
-                        
-                        <!-- Nội dung câu hỏi -->
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-edit text-green-500 mr-2"></i>Nội dung câu hỏi
-                            </label>
-                            <input formControlName="stemText" 
-                                   placeholder="Nhập nội dung câu hỏi..."
-                                   class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all bg-white" />
-                        </div>
-
-                        <!-- Giải thích -->
-                        <div *ngIf="currentSkill !== 'Speaking' && currentSkill !== 'Writing'">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Giải thích (nếu có)
-                            </label>
-                            <input formControlName="questionExplain"
-                                   placeholder="Nhập giải thích..."
-                                   class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all bg-white" />
-                        </div>
-
-                        <!-- Điểm và Thời gian trên 1 dòng -->
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="fas fa-star text-yellow-500 mr-2"></i>Điểm
-                                </label>
-                                <input formControlName="scoreWeight" 
-                                       type="number" 
-                                       min="0"
-                                       placeholder="0"
-                                       class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all bg-white" />
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="fas fa-clock text-blue-500 mr-2"></i>Thời gian (giây)
-                                </label>
-                                <input formControlName="time" 
-                                       type="number" 
-                                       min="0"
-                                       placeholder="0"
-                                       class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all bg-white" />
-                            </div>
-                        </div>
-
-                        <!-- Các đáp án -->
-                        <div *ngIf="currentSkill !== 'Speaking' && currentSkill !== 'Writing'" formArrayName="options">
-                            <label class="block text-sm font-semibold text-gray-700 mb-3">
-                                <i class="fas fa-check-circle text-green-500 mr-2"></i>Các đáp án
-                            </label>
-                            <div class="space-y-2">
-                                <div *ngFor="let opt of options.controls; let oi = index" 
-                                     [formGroupName]="oi"
-                                     class="flex items-center space-x-3 bg-gray-50 rounded-lg p-3 border border-gray-200 hover:border-green-300 transition-all">
-                                    <div class="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <span class="text-green-600 font-bold text-sm">{{ oi + 1 }}</span>
-                                    </div>
-                                    <input formControlName="content" 
-                                           [placeholder]="'Nhập đáp án ' + (oi+1)"
-                                           class="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all bg-white" />
-                                    <label class="flex items-center cursor-pointer">
-                                        <input type="checkbox" 
-                                               formControlName="isCorrect"
-                                               class="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500" />
-                                        <span class="ml-2 text-sm font-medium text-gray-700">Đúng</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                    </form>
-                </div>
-
-                <!-- Footer -->
-                <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-end space-x-3">
-                    <button type="button" 
-                            (click)="closeQuestionModal()"
-                            class="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-medium">
-                        <i class="fas fa-times mr-2"></i>Hủy
-                    </button>
-                    <button type="submit"
-                            (click)="saveQuestion()"
-                            class="px-5 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all font-medium shadow-md hover:shadow-lg">
-                        <i class="fas fa-{{ isEditQuestion ? 'save' : 'plus' }} mr-2"></i>{{ isEditQuestion ? 'Lưu sửa đổi' : 'Thêm mới' }}
-                    </button>
-                </div>
+            <!-- Link audio -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-music text-indigo-500 mr-2"></i>Link audio tham
+                khảo
+              </label>
+              <input
+                formControlName="referenceAudioUrl"
+                type="text"
+                placeholder="https://..."
+                class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all bg-white"
+              />
+              <p class="text-xs text-gray-500 mt-1">
+                Link audio đã upload lên Cloudinary
+              </p>
             </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Footer -->
+      <div
+        class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-end space-x-3"
+      >
+        <button
+          type="button"
+          (click)="closeEditModal()"
+          class="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-medium"
+        >
+          <i class="fas fa-times mr-2"></i>Hủy
+        </button>
+        <button
+          type="submit"
+          (click)="saveEditPrompt()"
+          [disabled]="editPromptForm.invalid"
+          class="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all font-medium shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <i class="fas fa-save mr-2"></i>Lưu thay đổi
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Thêm/Sửa câu hỏi -->
+  <div
+    *ngIf="isQuestionModalOpen"
+    class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4"
+  >
+    <div
+      class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] overflow-hidden flex flex-col"
+    >
+      <!-- Header -->
+      <div
+        class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50"
+      >
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div
+              class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center"
+            >
+              <i class="fas fa-question-circle text-white text-lg"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-gray-800">
+                {{ isEditQuestion ? "Sửa câu hỏi" : "Thêm câu hỏi mới" }}
+              </h3>
+              <p class="text-xs text-gray-500 mt-0.5">
+                {{
+                  isEditQuestion
+                    ? "Cập nhật thông tin câu hỏi"
+                    : "Tạo câu hỏi cho prompt"
+                }}
+              </p>
+            </div>
+          </div>
+          <button
+            (click)="closeQuestionModal()"
+            class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all"
+          >
+            <i class="fas fa-times text-xl"></i>
+          </button>
         </div>
+      </div>
+
+      <!-- Body - Scrollable -->
+      <div class="flex-1 overflow-y-auto px-6 py-6">
+        <form
+          [formGroup]="questionForm"
+          (ngSubmit)="saveQuestion()"
+          class="space-y-5"
+        >
+          <!-- Nội dung câu hỏi -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-edit text-green-500 mr-2"></i>Nội dung câu hỏi
+            </label>
+            <input
+              formControlName="stemText"
+              placeholder="Nhập nội dung câu hỏi..."
+              class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all bg-white"
+            />
+          </div>
+
+          <!-- Giải thích -->
+          <div
+            *ngIf="currentSkill !== 'Speaking' && currentSkill !== 'Writing'"
+          >
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Giải thích
+              (nếu có)
+            </label>
+            <input
+              formControlName="questionExplain"
+              placeholder="Nhập giải thích..."
+              class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all bg-white"
+            />
+          </div>
+
+          <!-- Sample Answer cho Speaking questions -->
+          <div
+            *ngIf="currentSkill === 'Speaking' || currentSkill === 'SPEAKING'"
+          >
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-microphone text-blue-500 mr-2"></i>Sample Answer
+              (Câu trả lời mẫu)
+            </label>
+            <textarea
+              formControlName="sampleAnswer"
+              rows="4"
+              placeholder="Nhập câu trả lời mẫu cho câu hỏi Speaking..."
+              class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all bg-white resize-none"
+            ></textarea>
+            <p class="text-xs text-gray-500 mt-1">
+              <i class="fas fa-info-circle mr-1"></i>Sample answer này sẽ được
+              sử dụng để đánh giá câu trả lời của học viên
+            </p>
+          </div>
+
+          <!-- Điểm và Thời gian trên 1 dòng -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-star text-yellow-500 mr-2"></i>Điểm
+              </label>
+              <input
+                formControlName="scoreWeight"
+                type="number"
+                min="0"
+                placeholder="0"
+                class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all bg-white"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-clock text-blue-500 mr-2"></i>Thời gian (giây)
+              </label>
+              <input
+                formControlName="time"
+                type="number"
+                min="0"
+                placeholder="0"
+                class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all bg-white"
+              />
+            </div>
+          </div>
+
+          <!-- Các đáp án -->
+          <div
+            *ngIf="currentSkill !== 'Speaking' && currentSkill !== 'Writing'"
+            formArrayName="options"
+          >
+            <label class="block text-sm font-semibold text-gray-700 mb-3">
+              <i class="fas fa-check-circle text-green-500 mr-2"></i>Các đáp án
+            </label>
+            <div class="space-y-2">
+              <div
+                *ngFor="let opt of options.controls; let oi = index"
+                [formGroupName]="oi"
+                class="flex items-center space-x-3 bg-gray-50 rounded-lg p-3 border border-gray-200 hover:border-green-300 transition-all"
+              >
+                <div
+                  class="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0"
+                >
+                  <span class="text-green-600 font-bold text-sm">{{
+                    oi + 1
+                  }}</span>
+                </div>
+                <input
+                  formControlName="content"
+                  [placeholder]="'Nhập đáp án ' + (oi + 1)"
+                  class="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all bg-white"
+                />
+                <label class="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    formControlName="isCorrect"
+                    class="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                  />
+                  <span class="ml-2 text-sm font-medium text-gray-700"
+                    >Đúng</span
+                  >
+                </label>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Footer -->
+      <div
+        class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-end space-x-3"
+      >
+        <button
+          type="button"
+          (click)="closeQuestionModal()"
+          class="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all font-medium"
+        >
+          <i class="fas fa-times mr-2"></i>Hủy
+        </button>
+        <button
+          type="submit"
+          (click)="saveQuestion()"
+          class="px-5 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all font-medium shadow-md hover:shadow-lg"
+        >
+          <i class="fas fa-{{ isEditQuestion ? 'save' : 'plus' }} mr-2"></i
+          >{{ isEditQuestion ? "Lưu sửa đổi" : "Thêm mới" }}
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

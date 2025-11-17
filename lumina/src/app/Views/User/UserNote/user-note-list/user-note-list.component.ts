@@ -18,6 +18,7 @@ export class UserNoteListComponent {
   userNotes: UserNoteResponseDTO[] = [];
   searchTerm: string = '';
   filteredNotes: UserNoteResponseDTO[] = [];
+  sortBy: string = 'newest';
 
   constructor(
     private router: Router,
@@ -44,13 +45,45 @@ export class UserNoteListComponent {
     if (!this.searchTerm) {
       this.filteredNotes = [...this.userNotes];
     } else {
+      const searchLower = this.searchTerm.toLowerCase();
       this.filteredNotes = this.userNotes.filter(note =>
-        note.noteContent.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        note.user.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        note.section.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        note.article.toLowerCase().includes(this.searchTerm.toLowerCase())
+        note.noteContent?.toLowerCase().includes(searchLower) ||
+        note.user?.toLowerCase().includes(searchLower) ||
+        note.section?.toLowerCase().includes(searchLower) ||
+        note.article?.toLowerCase().includes(searchLower)
       );
     }
+    this.applySorting();
+  }
+
+  applySorting(): void {
+    switch (this.sortBy) {
+      case 'newest':
+        this.filteredNotes.sort((a, b) =>
+          new Date(b.createAt).getTime() - new Date(a.createAt).getTime()
+        );
+        break;
+      case 'oldest':
+        this.filteredNotes.sort((a, b) =>
+          new Date(a.createAt).getTime() - new Date(b.createAt).getTime()
+        );
+        break;
+      case 'updated':
+        this.filteredNotes.sort((a, b) =>
+          new Date(b.updateAt).getTime() - new Date(a.updateAt).getTime()
+        );
+        break;
+      case 'article':
+        this.filteredNotes.sort((a, b) =>
+          a.article.localeCompare(b.article)
+        );
+        break;
+    }
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.filterNotes();
   }
 
   MoveToDetail(noteId: number) {

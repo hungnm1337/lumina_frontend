@@ -28,6 +28,7 @@ import { UserNoteListComponent } from './Views/User/UserNote/user-note-list/user
 import { UserNoteDetailComponent } from './Views/User/UserNote/user-note-detail/user-note-detail.component';
 import { StreakComponent } from './Views/Common/streak/streak.component';
 
+import { QuotaGuard } from './guards/quota.guard';
 export const routes: Routes = [
   {
     path: 'admin',
@@ -75,7 +76,11 @@ export const routes: Routes = [
       { path: 'streak', component: StreakComponent },
     ],
   },
-
+  // {
+  //   path: 'speaking-exam',
+  //   canActivate: [QuotaGuard],
+  //   data: { skill: 'speaking' },
+  // },
   {
     path: 'profile',
     loadComponent: () =>
@@ -87,15 +92,15 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
-  { path: 'blog', component: BlogArticlesComponent },
-  { path: 'blog/:id', component: BlogDetailComponent },
-  { path: 'tu-vung', component: UserVocabularyComponent },
+  { path: 'articles', component: BlogArticlesComponent },
+  { path: 'articles/:id', component: BlogDetailComponent },
+  { path: 'vocabulary', component: UserVocabularyComponent },
   {
-    path: 'tu-vung/list/:id',
+    path: 'vocabulary/list/:id',
     loadComponent: () =>
-      import('./Views/User/vocabulary-list-detail/vocabulary-list-detail.component').then(
-        (m) => m.VocabularyListDetailComponent
-      )
+      import(
+        './Views/User/vocabulary-list-detail/vocabulary-list-detail.component'
+      ).then((m) => m.VocabularyListDetailComponent),
   },
 
   // Quiz routes
@@ -104,28 +109,28 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./Views/User/quiz-config/quiz-config.component').then(
         (m) => m.QuizConfigComponent
-      )
+      ),
   },
   {
     path: 'quiz/config-detail',
     loadComponent: () =>
-      import('./Views/User/quiz-config-detail/quiz-config-detail.component').then(
-        (m) => m.QuizConfigDetailComponent
-      )
+      import(
+        './Views/User/quiz-config-detail/quiz-config-detail.component'
+      ).then((m) => m.QuizConfigDetailComponent),
   },
   {
     path: 'quiz/do',
     loadComponent: () =>
       import('./Views/User/quiz-do/quiz-do.component').then(
         (m) => m.QuizDoComponent
-      )
+      ),
   },
   {
     path: 'quiz/results',
     loadComponent: () =>
       import('./Views/User/quiz-results/quiz-results.component').then(
         (m) => m.QuizResultsComponent
-      )
+      ),
   },
 
   // <-- DI CHUYỂN 2 ROUTE FLASHCARDS RA ĐÂY, ĐẶT Ở CẤP CAO NHẤT
@@ -133,7 +138,26 @@ export const routes: Routes = [
   { path: 'flashcards/:id', component: DeckDetailComponent },
 
   // Spaced Repetition Dashboard
-  { path: 'spaced-repetition/dashboard', component: SpacedRepetitionDashboardComponent },
+  {
+    path: 'spaced-repetition/dashboard',
+    component: SpacedRepetitionDashboardComponent,
+  },
+
+  // Payment Success/Cancel Pages
+  {
+    path: 'payment/success',
+    loadComponent: () =>
+      import('./Views/User/payment-success/payment-success.component').then(
+        (m) => m.PaymentSuccessComponent
+      ),
+  },
+  {
+    path: 'payment/cancel',
+    loadComponent: () =>
+      import('./Views/User/payment-cancel/payment-cancel.component').then(
+        (m) => m.PaymentCancelComponent
+      ),
+  },
 
   { path: '', redirectTo: '/homepage', pathMatch: 'full' },
   { path: '**', component: ErrorComponent },

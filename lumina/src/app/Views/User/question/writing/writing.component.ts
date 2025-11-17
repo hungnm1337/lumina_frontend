@@ -23,6 +23,8 @@ import { PictureCaptioningService } from '../../../../Services/PictureCaptioning
 import { ExamAttemptService } from '../../../../Services/ExamAttempt/exam-attempt.service';
 import { ExamAttemptRequestDTO } from '../../../../Interfaces/ExamAttempt/ExamAttemptRequestDTO.interface';
 import { ToastService } from '../../../../Services/Toast/toast.service';
+import { QuotaService } from '../../../../Services/Quota/quota.service';
+import { QuotaLimitModalComponent } from '../../quota-limit-modal/quota-limit-modal.component';
 
 @Component({
   selector: 'app-writing',
@@ -32,6 +34,7 @@ import { ToastService } from '../../../../Services/Toast/toast.service';
     FormsModule,
     WritingAnswerBoxComponent,
     TimeComponent,
+    QuotaLimitModalComponent,
   ],
   templateUrl: './writing.component.html',
   styleUrl: './writing.component.scss',
@@ -58,6 +61,11 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   attemptId: number | null = null;
   submittingQuestions: Set<number> = new Set();
 
+  // Quota modal
+  showQuotaModal = false;
+  quotaMessage =
+    'Kỹ năng Writing chỉ dành cho tài khoản Premium. Vui lòng nâng cấp để sử dụng tính năng này!';
+
   constructor(
     private router: Router,
     private authService: AuthService,
@@ -65,7 +73,8 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     private pictureCaptioningService: PictureCaptioningService,
     private examAttemptService: ExamAttemptService,
     private writingService: WritingExamPartOneService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private quotaService: QuotaService
   ) {
     this.startAutoSave();
   }
@@ -77,6 +86,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     this.clearPreviousWritingAnswers();
     this.loadSavedData();
     this.loadAttemptId();
+    this.checkQuotaAccess();
     if (this.questions && this.questions.length > 0) {
       this.preloadAllCaptions();
     }
@@ -124,6 +134,24 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     } catch (error) {
       console.error('Error loading attemptId:', error);
     }
+  }
+
+  private checkQuotaAccess(): void {
+    this.quotaService.checkQuota('writing').subscribe({
+      next: (result) => {
+        if (!result.isPremium) {
+          this.showQuotaModal = true;
+        }
+      },
+      error: (err) => {
+        console.error('❌ Failed to check quota:', err);
+      },
+    });
+  }
+
+  closeQuotaModal(): void {
+    this.showQuotaModal = false;
+    this.router.navigate(['/homepage/user-dashboard/exams']);
   }
 
   private getStorageKey(): string | null {

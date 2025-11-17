@@ -4,35 +4,35 @@
   <div class="max-w-5xl mx-auto px-4 py-6">
     <!-- Header -->
     <div class="flex flex-col items-center mb-6 text-center relative">
-      <!-- Nút quay lại -->
+      <!-- Back Button -->
       <button
         type="button"
         (click)="goBack()"
         class="absolute left-0 top-1/2 -translate-y-1/2 inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700"
-        aria-label="Quay lại"
+        aria-label="Back"
       >
         <span class="material-icons text-[18px]">arrow_back</span>
-        <span class="font-medium">Quay lại</span>
+        <span class="font-medium">Back</span>
       </button>
 
-      <!-- Tiêu đề + mô tả -->
+      <!-- Title + Description -->
       <div>
         <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-gray-900">
-          Danh sách từ vựng
+          Vocabulary List
         </h1>
         <p class="text-gray-500 leading-6">
-          Duyệt và tìm kiếm từ vựng TOEIC
+          Browse and search TOEIC vocabulary
         </p>
       </div>
     </div>
 
-    <!-- Ô tìm kiếm và Nút thêm từ mới -->
+    <!-- Search Box and Add New Word Button -->
     <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
       <input
         type="text"
         [(ngModel)]="searchTerm"
         class="w-full sm:w-[400px] rounded-xl px-4 py-2.5 border shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-200 text-center"
-        placeholder="Tìm kiếm từ vựng..."
+        placeholder="Search vocabulary..."
       />
       <button
         type="button"
@@ -42,11 +42,11 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M12 5v14M5 12h14"/>
         </svg>
-        <span>Thêm từ mới</span>
+        <span>Add New Word</span>
       </button>
     </div>
 
-    <!-- Grid danh sách từ vựng -->
+    <!-- Vocabulary List Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
       <div
         *ngFor="let w of paginatedWords; let i = index"
@@ -61,12 +61,12 @@
             <div class="text-gray-500 mt-1">{{ w.answer }}</div>
           </div>
 
-          <!-- Icon loa -->
+          <!-- Audio Icon -->
           <button
             type="button"
             class="btn-audio ml-2 mt-1 inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 hover:bg-blue-100"
             (click)="$event.stopPropagation(); playAudio(w.audioUrl, w.question)"
-            [attr.aria-label]="'Phát âm: ' + w.question"
+            [attr.aria-label]="'Pronounce: ' + w.question"
           >
             <span class="material-icons text-blue-600 text-2xl">volume_up</span>
           </button>
@@ -77,9 +77,9 @@
             *ngIf="w.level"
             class="badge-level"
             [ngClass]="{
-              'level-intermediate': w.level === 'Trung cấp',
-              'level-advanced': w.level === 'Nâng cao',
-              'level-basic': w.level === 'Cơ bản'
+              'level-intermediate': w.level === 'Intermediate' || w.level === 'Trung cấp',
+              'level-advanced': w.level === 'Advanced' || w.level === 'Nâng cao',
+              'level-basic': w.level === 'Basic' || w.level === 'Cơ bản'
             }"
           >
             {{ w.level }}
@@ -92,16 +92,16 @@
     <!-- Pagination -->
     <div class="pagination-section" *ngIf="filteredWords.length > 0 && totalPages > 1">
       <div class="pagination-controls">
-        <button class="btn-page" [disabled]="currentPage === 1" (click)="prevPage()">Trước</button>
+        <button class="btn-page" [disabled]="currentPage === 1" (click)="prevPage()">Previous</button>
         <div class="page-numbers">
           <button *ngFor="let p of getPageNumbers()" class="page-number" [class.active]="p === currentPage" (click)="goToPage(p)">{{ p }}</button>
         </div>
-        <button class="btn-page" [disabled]="currentPage === totalPages" (click)="nextPage()">Tiếp</button>
+        <button class="btn-page" [disabled]="currentPage === totalPages" (click)="nextPage()">Next</button>
       </div>
     </div>
   </div>
 
-  <!-- Modal Thêm Từ Mới -->
+  <!-- Add New Word Modal -->
   <div *ngIf="isAddWordModalOpen" class="modal-overlay" (click)="closeAddWordModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
@@ -112,8 +112,8 @@
             </svg>
           </div>
           <div class="modal-title-section">
-            <h2>Thêm từ vựng mới</h2>
-            <p>Tạo từ vựng cho danh sách của bạn</p>
+            <h2>Add New Vocabulary</h2>
+            <p>Create vocabulary for your list</p>
           </div>
         </div>
         <button class="btn-close" (click)="closeAddWordModal()" type="button">
@@ -125,72 +125,72 @@
 
       <form [formGroup]="addWordForm" (ngSubmit)="saveNewWord()" class="modal-form">
         <div class="form-group">
-          <label for="word">Từ tiếng Anh <span class="required">*</span></label>
+          <label for="word">English Word <span class="required">*</span></label>
           <input
             id="word"
             type="text"
             formControlName="word"
             class="form-input"
-            placeholder="Nhập từ tiếng Anh"
+            placeholder="Enter English word"
             maxlength="100"
           />
           <div *ngIf="addWordForm.get('word')?.invalid && addWordForm.get('word')?.touched" class="error-message">
-            Từ tiếng Anh là bắt buộc.
+            English word is required.
           </div>
         </div>
 
         <div class="form-group">
-          <label for="definition">Định nghĩa <span class="required">*</span></label>
+          <label for="definition">Definition <span class="required">*</span></label>
           <textarea
             id="definition"
             formControlName="definition"
             class="form-input form-textarea"
-            placeholder="Nhập định nghĩa của từ"
+            placeholder="Enter word definition"
             rows="3"
             maxlength="500"
           ></textarea>
           <div *ngIf="addWordForm.get('definition')?.invalid && addWordForm.get('definition')?.touched" class="error-message">
-            Định nghĩa là bắt buộc.
+            Definition is required.
           </div>
         </div>
 
         <div class="form-group">
-          <label for="category">Loại từ (tùy chọn)</label>
+          <label for="category">Category (optional)</label>
           <input
             id="category"
             type="text"
             formControlName="category"
             class="form-input"
-            placeholder="Nhập loại từ (ví dụ: Business, Education, Technology...)"
+            placeholder="Enter category (e.g., Business, Education, Technology...)"
             maxlength="100"
           />
         </div>
 
         <div class="form-group">
-          <label for="example">Ví dụ (tùy chọn)</label>
+          <label for="example">Example (optional)</label>
           <textarea
             id="example"
             formControlName="example"
             class="form-input form-textarea"
-            placeholder="Nhập ví dụ sử dụng từ này"
+            placeholder="Enter example usage of this word"
             rows="2"
           ></textarea>
         </div>
 
         <div class="modal-actions">
           <button type="button" class="btn-secondary" (click)="closeAddWordModal()" [disabled]="isSubmitting">
-            Hủy
+            Cancel
           </button>
           <button type="submit" class="btn-primary" [disabled]="addWordForm.invalid || isSubmitting">
             <span *ngIf="isSubmitting" class="spinner-small"></span>
-            <span *ngIf="!isSubmitting">Thêm từ</span>
+            <span *ngIf="!isSubmitting">Add Word</span>
           </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal Chi Tiết Từ Vựng -->
+  <!-- Vocabulary Detail Modal -->
   <div *ngIf="isDetailModalOpen" class="modal-overlay" (click)="closeDetailModal()">
     <div class="modal-detail-content" (click)="$event.stopPropagation()">
       <!-- Header -->
@@ -203,7 +203,7 @@
             </svg>
           </div>
           <div>
-            <h2 class="modal-detail-title">Chi tiết từ vựng</h2>
+            <h2 class="modal-detail-title">Vocabulary Detail</h2>
           </div>
         </div>
         <button class="btn-close" (click)="closeDetailModal()" type="button">
@@ -217,20 +217,20 @@
       <div class="modal-detail-body" *ngIf="selectedWord && !isEditMode">
         <!-- Word -->
         <div class="detail-section">
-          <div class="detail-label">TỪ VỰNG</div>
+          <div class="detail-label">VOCABULARY</div>
           <div class="detail-value-word">{{ selectedWord.question }}</div>
         </div>
 
         <!-- Definition -->
         <div class="detail-section">
-          <div class="detail-label">ĐỊNH NGHĨA</div>
-          <div class="detail-value">{{ selectedWord.answer || 'Chưa có định nghĩa' }}</div>
+          <div class="detail-label">DEFINITION</div>
+          <div class="detail-value">{{ selectedWord.answer || 'No definition available' }}</div>
         </div>
 
         <!-- Example -->
         <div class="detail-section">
-          <div class="detail-label">VÍ DỤ</div>
-          <div class="detail-value">{{ selectedWord.example || 'Chưa có ví dụ' }}</div>
+          <div class="detail-label">EXAMPLE</div>
+          <div class="detail-value">{{ selectedWord.example || 'No example available' }}</div>
         </div>
       </div>
 
@@ -239,57 +239,57 @@
         <form [formGroup]="editWordForm" (ngSubmit)="saveEditedWord()">
           <!-- Word -->
           <div class="form-group">
-            <label for="edit-word">Từ vựng <span class="required">*</span></label>
+            <label for="edit-word">Vocabulary <span class="required">*</span></label>
             <input
               id="edit-word"
               type="text"
               formControlName="word"
               class="form-input"
-              placeholder="Nhập từ tiếng Anh"
+              placeholder="Enter English word"
               maxlength="100"
             />
             <div *ngIf="editWordForm.get('word')?.invalid && editWordForm.get('word')?.touched" class="error-message">
-              Từ tiếng Anh là bắt buộc.
+              English word is required.
             </div>
           </div>
 
           <!-- Definition -->
           <div class="form-group">
-            <label for="edit-definition">Định nghĩa <span class="required">*</span></label>
+            <label for="edit-definition">Definition <span class="required">*</span></label>
             <textarea
               id="edit-definition"
               formControlName="definition"
               class="form-input form-textarea"
-              placeholder="Nhập định nghĩa của từ"
+              placeholder="Enter word definition"
               rows="3"
               maxlength="500"
             ></textarea>
             <div *ngIf="editWordForm.get('definition')?.invalid && editWordForm.get('definition')?.touched" class="error-message">
-              Định nghĩa là bắt buộc.
+              Definition is required.
             </div>
           </div>
 
           <!-- Category -->
           <div class="form-group">
-            <label for="edit-category">Loại từ (tùy chọn)</label>
+            <label for="edit-category">Category (optional)</label>
             <input
               id="edit-category"
               type="text"
               formControlName="category"
               class="form-input"
-              placeholder="Nhập loại từ"
+              placeholder="Enter category"
               maxlength="100"
             />
           </div>
 
           <!-- Example -->
           <div class="form-group">
-            <label for="edit-example">Ví dụ (tùy chọn)</label>
+            <label for="edit-example">Example (optional)</label>
             <textarea
               id="edit-example"
               formControlName="example"
               class="form-input form-textarea"
-              placeholder="Nhập ví dụ sử dụng từ này"
+              placeholder="Enter example usage of this word"
               rows="2"
             ></textarea>
           </div>
@@ -297,11 +297,11 @@
           <!-- Edit Actions -->
           <div class="modal-actions">
             <button type="button" class="btn-secondary" (click)="cancelEdit()" [disabled]="isSubmitting">
-              Hủy
+              Cancel
             </button>
             <button type="submit" class="btn-primary" [disabled]="editWordForm.invalid || isSubmitting">
               <span *ngIf="isSubmitting" class="spinner-small"></span>
-              <span *ngIf="!isSubmitting">Lưu</span>
+              <span *ngIf="!isSubmitting">Save</span>
             </button>
           </div>
         </form>
@@ -309,14 +309,14 @@
 
       <!-- Actions -->
       <div class="modal-detail-actions" *ngIf="selectedWord && !isEditMode">
-        <!-- Thông báo nếu không có ID -->
+        <!-- Warning message if no ID -->
         <div *ngIf="!selectedWordId" class="warning-message">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/>
             <line x1="12" y1="8" x2="12" y2="12"/>
             <line x1="12" y1="16" x2="12.01" y2="16"/>
           </svg>
-          <span>Không thể chỉnh sửa hoặc xóa từ này (thiếu ID)</span>
+          <span>Cannot edit or delete this word (missing ID)</span>
         </div>
         
         <div class="action-buttons-row">
@@ -325,27 +325,27 @@
             class="btn-edit"
             (click)="openEditMode()"
             [disabled]="isSubmitting || !selectedWordId"
-            [attr.title]="!selectedWordId ? 'Không thể chỉnh sửa do thiếu ID' : 'Chỉnh sửa từ vựng này'"
+            [attr.title]="!selectedWordId ? 'Cannot edit due to missing ID' : 'Edit this vocabulary'"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
             </svg>
-            Chỉnh sửa
+            Edit
           </button>
           <button
             type="button"
             class="btn-delete"
             (click)="deleteWord()"
             [disabled]="isSubmitting || !selectedWordId"
-            [attr.title]="!selectedWordId ? 'Không thể xóa do thiếu ID' : 'Xóa từ vựng này'"
+            [attr.title]="!selectedWordId ? 'Cannot delete due to missing ID' : 'Delete this vocabulary'"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
               <line x1="10" y1="11" x2="10" y2="17"/>
               <line x1="14" y1="11" x2="14" y2="17"/>
             </svg>
-            Xóa
+            Delete
           </button>
         </div>
       </div>

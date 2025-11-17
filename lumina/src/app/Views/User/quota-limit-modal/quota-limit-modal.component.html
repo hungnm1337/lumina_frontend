@@ -1,0 +1,158 @@
+<div
+  *ngIf="isVisible"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn p-4"
+>
+  <div
+    class="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl transform transition-all animate-slideUp"
+  >
+    <!-- Close Button -->
+    <button
+      (click)="closeModal()"
+      class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors z-10"
+      aria-label="Close modal"
+    >
+      <svg
+        class="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M6 18L18 6M6 6l12 12"
+        />
+      </svg>
+    </button>
+
+    <!-- Modal Content - Horizontal Layout -->
+    <div class="flex flex-col md:flex-row">
+      <!-- Left Section: Icon & Title -->
+      <div
+        class="bg-gradient-to-br from-amber-400 to-orange-500 p-6 md:w-2/5 flex flex-col items-center justify-center text-white rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none"
+      >
+        <div class="mb-4">
+          <svg
+            class="w-16 h-16"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+            />
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold mb-2 text-center">
+          Đã hết lượt thi {{ getSkillName() }}
+        </h2>
+        <p class="text-sm text-white/90 text-center px-2">
+          {{ message || "Vui lòng nâng cấp Premium để tiếp tục" }}
+        </p>
+      </div>
+
+      <!-- Right Section: Content & Actions -->
+      <div class="p-6 md:w-3/5">
+        <!-- Premium Benefits -->
+        <div class="mb-5">
+          <h3 class="text-base font-semibold text-gray-900 mb-3">
+            🎁 Ưu đãi Premium:
+          </h3>
+          <div class="space-y-2">
+            <div
+              *ngFor="let feature of premiumPackage.features"
+              class="flex items-start gap-2"
+            >
+              <svg
+                class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <span class="text-sm text-gray-700">{{ feature }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Price -->
+        <div class="text-center mb-5 py-3 bg-gray-50 rounded-lg">
+          <div class="text-2xl font-bold text-gray-900">
+            {{ formatPrice(premiumPackage.price) }}
+            <span class="text-sm text-gray-500 font-normal">/ tháng</span>
+          </div>
+        </div>
+
+        <!-- Error Message -->
+        <div
+          *ngIf="errorMessage"
+          class="mb-4 p-2.5 bg-red-50 border border-red-200 rounded-lg"
+        >
+          <p class="text-xs text-red-600 text-center">{{ errorMessage }}</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-3">
+          <button
+            (click)="handleUpgrade()"
+            [disabled]="isLoading"
+            class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+          >
+            <svg
+              *ngIf="isLoading"
+              class="animate-spin h-4 w-4 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            <svg
+              *ngIf="!isLoading"
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
+            </svg>
+            <span>{{ isLoading ? "Đang xử lý..." : "Nâng cấp ngay" }}</span>
+          </button>
+
+          <button
+            (click)="closeModal()"
+            [disabled]="isLoading"
+            class="px-6 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 rounded-lg transition-all duration-200 disabled:opacity-50 text-sm"
+          >
+            Để sau
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

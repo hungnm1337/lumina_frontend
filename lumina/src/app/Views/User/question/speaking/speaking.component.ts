@@ -24,7 +24,9 @@ import {
 import { QuestionState } from '../../../../Services/Exam/Speaking/speaking-question-state.service';
 import { BaseQuestionService } from '../../../../Services/Question/base-question.service';
 import { SpeakingQuestionStateService } from '../../../../Services/Exam/Speaking/speaking-question-state.service';
-import { ExamAttemptService } from '../../../../Services/ExamAttempt/exam-attempt.service'; // ✅ THÊM
+import { ExamAttemptService } from '../../../../Services/ExamAttempt/exam-attempt.service';
+import { QuotaService } from '../../../../Services/Quota/quota.service';
+import { QuotaLimitModalComponent } from '../../quota-limit-modal/quota-limit-modal.component';
 
 interface QuestionResult {
   questionNumber: number;
@@ -41,6 +43,7 @@ interface QuestionResult {
     TimeComponent,
     SpeakingAnswerBoxComponent,
     SpeakingSummaryComponent,
+    QuotaLimitModalComponent,
   ],
   templateUrl: './speaking.component.html',
   styleUrl: './speaking.component.scss',
@@ -60,6 +63,11 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   private advanceTimer: any = null;
   attemptId: number | null = null;
 
+  // Quota modal
+  showQuotaModal = false;
+  quotaMessage =
+    'Kỹ năng Speaking chỉ dành cho tài khoản Premium. Vui lòng nâng cấp để sử dụng tính năng này!';
+
   // Speaking navigation and state management
   private stateSubscription: Subscription = new Subscription();
   scoringQueue: number[] = [];
@@ -70,7 +78,8 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     private router: Router,
     private baseQuestionService: BaseQuestionService,
     private speakingStateService: SpeakingQuestionStateService,
-    private examAttemptService: ExamAttemptService
+    private examAttemptService: ExamAttemptService,
+    private quotaService: QuotaService
   ) {
     // Subscribe to state changes
     this.stateSubscription = this.speakingStateService
@@ -91,9 +100,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       // Initialize speaking question states
       if (this.hasSpeakingQuestions()) {
         this.questions.forEach((q) => {
-          if (q.questionType && this.isSpeakingQuestion(q.questionType)) {
-            this.speakingStateService.initializeQuestion(q.questionId);
-          }
+          this.speakingStateService.initializeQuestion(q.questionId);
         });
       }
 
@@ -104,6 +111,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   ngOnInit(): void {
     this.loadAttemptId();
+    this.checkQuotaAccess();
   }
 
   ngOnDestroy(): void {
@@ -191,6 +199,24 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         alert('Lỗi khi khởi tạo bài thi. Vui lòng thử lại.');
       },
     });
+  }
+
+  private checkQuotaAccess(): void {
+    this.quotaService.checkQuota('speaking').subscribe({
+      next: (result) => {
+        if (!result.isPremium) {
+          this.showQuotaModal = true;
+        }
+      },
+      error: (err) => {
+        console.error('❌ Failed to check quota:', err);
+      },
+    });
+  }
+
+  closeQuotaModal(): void {
+    this.showQuotaModal = false;
+    this.router.navigate(['/homepage/user-dashboard/exams']);
   }
 
   // Getters for base service properties
@@ -299,14 +325,8 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   onTimeout(): void {
-    const currentQuestion = this.questions[this.currentIndex];
-
     // For speaking questions: only show warning, don't trigger any action
-    if (
-      currentQuestion &&
-      currentQuestion.questionType &&
-      this.isSpeakingQuestion(currentQuestion.questionType)
-    ) {
+    if (this.isSpeakingPart()) {
       console.log(
         '[SpeakingComponent] Timer timeout for speaking question - no action taken'
       );
@@ -320,21 +340,21 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   // Speaking question type detection
   private hasSpeakingQuestions(): boolean {
-    return this.questions.some(
-      (q) => q.questionType && this.isSpeakingQuestion(q.questionType)
-    );
+    return this.isSpeakingPart();
   }
 
-  isSpeakingQuestion(questionType: string): boolean {
-    const speakingTypes = [
-      'READ_ALOUD',
-      'DESCRIBE_PICTURE',
-      'RESPOND_QUESTIONS',
-      'RESPOND_WITH_INFO',
-      'EXPRESS_OPINION',
-      'SPEAKING',
-    ];
-    return speakingTypes.includes(questionType);
+  // ✅ Kiểm tra theo partCode thay vì questionType
+  private isSpeakingPart(): boolean {
+    if (!this.partInfo || !this.partInfo.partCode) {
+      return false;
+    }
+    const partCodeUpper = this.partInfo.partCode.toUpperCase();
+    return partCodeUpper.includes('SPEAKING');
+  }
+
+  // ✅ DEPRECATED: Giữ lại cho backward compatibility nhưng dùng partCode
+  isSpeakingQuestion(questionType?: string): boolean {
+    return this.isSpeakingPart();
   }
 
   // Navigation methods for speaking questions
@@ -354,14 +374,9 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     if (index < 0 || index >= this.questions.length) return;
 
     const currentQuestion = this.questions[this.currentIndex];
-    const targetQuestion = this.questions[index];
 
     // For speaking questions: handle state preservation
-    if (
-      currentQuestion &&
-      currentQuestion.questionType &&
-      this.isSpeakingQuestion(currentQuestion.questionType)
-    ) {
+    if (this.isSpeakingPart() && currentQuestion) {
       this.handleSpeakingNavigation(currentQuestion.questionId);
     }
 
