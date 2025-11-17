@@ -1,0 +1,314 @@
+<div class="streak-page">
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p class="loading-text">Đang tải dữ liệu...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @else if (error) {
+    <div class="error-container">
+      <div class="error-icon">❌</div>
+      <h2>Không thể tải dữ liệu</h2>
+      <p>Vui lòng thử lại sau hoặc đăng nhập lại.</p>
+      <button (click)="goBack()" class="btn-primary">Quay lại</button>
+    </div>
+  }
+
+  <!-- Main Content -->
+  @else {
+    <div class="streak-container">
+      <!-- Header -->
+      <div class="streak-header">
+        <button (click)="goBack()" class="btn-back">
+          <i class="fas fa-arrow-left"></i>
+          Quay lại
+        </button>
+        <h1 class="page-title">
+          <span class="fire-icon">🔥</span>
+          Chuỗi Học Tập
+        </h1>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <!-- Current Streak -->
+        <div class="stat-card current-streak" [style.border-color]="getStreakColor()">
+          <!-- ✅ THAY ĐỔI: Thêm fire animation -->
+          <div 
+            class="stat-icon fire-emoji"
+            [class.seed]="getFireIntensity() === 'seed'"
+            [class.gentle]="getFireIntensity() === 'gentle'"
+            [class.strong]="getFireIntensity() === 'strong'"
+            [class.intense]="getFireIntensity() === 'intense'"
+          >
+            {{ getFireEmoji() }}
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Chuỗi hiện tại</div>
+            <div class="stat-value" [style.color]="getStreakColor()">
+              {{ currentStreak }}
+              <span class="stat-unit">ngày</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Longest Streak -->
+        <div class="stat-card">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-content">
+            <div class="stat-label">Kỷ lục cá nhân</div>
+            <div class="stat-value">
+              {{ longestStreak }}
+              <span class="stat-unit">ngày</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Freeze Tokens -->
+        <div class="stat-card">
+          <div class="stat-icon">💎</div>
+          <div class="stat-content">
+            <div class="stat-label">Freeze Tokens</div>
+            <div class="stat-value">
+              {{ freezeTokens }}
+              <span class="stat-unit">token</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Last Practice -->
+        <div class="stat-card">
+          <div class="stat-icon">📅</div>
+          <div class="stat-content">
+            <div class="stat-label">Học lần cuối</div>
+            <div class="stat-value small">
+              {{ formatDate(lastPracticeDate) }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Next Milestone Progress -->
+      @if (nextMilestone) {
+        <div class="next-milestone-card">
+          <!-- Header Section -->
+          <div class="milestone-header">
+            <div class="milestone-title-section">
+              <h3>🎯 Mốc tiếp theo</h3>
+              <p class="milestone-subtitle">{{ nextMilestone.reward }}</p>
+            </div>
+            <div class="milestone-target">
+              <span class="milestone-icon">{{ nextMilestone.icon }}</span>
+              <span class="milestone-days">{{ nextMilestone.days }} ngày</span>
+            </div>
+          </div>
+
+          <!-- Progress Stats -->
+          <div class="progress-stats">
+            <div class="progress-stat">
+              <div class="stat-number">{{ currentStreak }}</div>
+              <div class="stat-label">Hiện tại</div>
+            </div>
+            <div class="progress-stat">
+              <div class="stat-number">{{ getDaysCompletedFromPrevious() }}/{{ getTotalDaysToNextMilestone() }}</div>
+              <div class="stat-label">Đã hoàn thành</div>
+            </div>
+            <div class="progress-stat">
+              <div class="stat-number">{{ getDaysUntilNextMilestone() }}</div>
+              <div class="stat-label">Còn lại</div>
+            </div>
+          </div>
+
+          <!-- Progress Bar Container -->
+          <div class="progress-bar-container">
+            <!-- Labels on top of progress bar -->
+            <div class="progress-labels">
+              <span class="progress-label-start">{{ getPreviousMilestoneDays() }} ngày</span>
+              <span class="progress-label-current">
+                <div class="current-indicator">
+                  <span class="current-emoji">🔥</span>
+                  <span class="current-value">{{ currentStreak }}</span>
+                </div>
+              </span>
+              <span class="progress-label-end">{{ nextMilestone.days }} ngày</span>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-bar">
+              <div 
+                class="progress-fill" 
+                [style.width.%]="progressPercent"
+                [style.background]="'linear-gradient(90deg, ' + nextMilestone.color + ' 0%, ' + nextMilestone.color + 'dd 100%)'"
+              >
+                <span class="progress-percent">{{ progressPercent }}%</span>
+              </div>
+            </div>
+
+            <!-- Progress Info -->
+            <div class="progress-info">
+              <span class="progress-text">
+                Bạn đã hoàn thành <strong>{{ progressPercent }}%</strong> hành trình đến mốc tiếp theo
+              </span>
+            </div>
+          </div>
+
+          <!-- ✅ UPDATE: Reward Section với chi tiết -->
+          <div class="milestone-rewards-grid">
+            <!-- Freeze Tokens -->
+            @if (nextMilestone.freezeTokens > 0) {
+              <div class="reward-item freeze-token">
+                <div class="reward-icon">💎</div>
+                <div class="reward-content">
+                  <div class="reward-amount">+{{ nextMilestone.freezeTokens }}</div>
+                  <div class="reward-label">Freeze Token{{ nextMilestone.freezeTokens > 1 ? 's' : '' }}</div>
+                </div>
+              </div>
+            }
+
+            <!-- Listening Tests -->
+            @if (nextMilestone.listeningTests > 0) {
+              <div class="reward-item listening-test">
+                <div class="reward-icon">🎧</div>
+                <div class="reward-content">
+                  <div class="reward-amount">+{{ nextMilestone.listeningTests }}</div>
+                  <div class="reward-label">Listening Test{{ nextMilestone.listeningTests > 1 ? 's' : '' }}</div>
+                </div>
+              </div>
+            }
+
+            <!-- Reading Tests -->
+            @if (nextMilestone.readingTests > 0) {
+              <div class="reward-item reading-test">
+                <div class="reward-icon">📖</div>
+                <div class="reward-content">
+                  <div class="reward-amount">+{{ nextMilestone.readingTests }}</div>
+                  <div class="reward-label">Reading Test{{ nextMilestone.readingTests > 1 ? 's' : '' }}</div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Motivation Message -->
+          <div class="motivation-message">
+            <span class="motivation-icon">💪</span>
+            <span class="motivation-text">
+              Chỉ còn <strong>{{ getDaysUntilNextMilestone() }} ngày</strong> nữa thôi!
+            </span>
+          </div>
+        </div>
+      }
+
+      @else {
+        <div class="max-milestone-card">
+          <div class="celebration-icon">🎉</div>
+          <h3>Chúc mừng!</h3>
+          <p>Bạn đã đạt tất cả các mốc milestone!</p>
+          <div class="keep-going">Hãy tiếp tục duy trì chuỗi học tập nhé! 💪</div>
+        </div>
+      }
+
+      <!-- Milestones Timeline -->
+      <div class="milestones-section">
+        <h2 class="section-title">
+          <i class="fas fa-trophy"></i>
+          Cột mốc phần thưởng
+        </h2>
+
+        <div class="milestones-timeline">
+          @for (milestone of milestones; track milestone.days) {
+            <div 
+              class="milestone-item"
+              [class.reached]="milestone.reached"
+              [class.current]="nextMilestone?.days === milestone.days"
+            >
+              <!-- Connector Line -->
+              @if ($index < milestones.length - 1) {
+                <div 
+                  class="milestone-connector"
+                  [class.active]="milestone.reached"
+                ></div>
+              }
+
+              <!-- Milestone Node -->
+              <div class="milestone-node" [style.background]="milestone.reached ? milestone.color : '#E5E7EB'">
+                <div class="milestone-icon">{{ milestone.icon }}</div>
+                
+                @if (milestone.reached) {
+                  <div class="milestone-check">
+                    <i class="fas fa-check"></i>
+                  </div>
+                }
+              </div>
+
+              <!-- Milestone Info -->
+              <div class="milestone-info">
+                <div class="milestone-days" [style.color]="milestone.reached ? milestone.color : '#6B7280'">
+                  {{ milestone.days }} ngày
+                </div>
+                <div class="milestone-reward-text">
+                  {{ milestone.reward }}
+                </div>
+
+                @if (nextMilestone?.days === milestone.days) {
+                  <div class="milestone-badge current-badge">
+                    Mục tiêu tiếp theo
+                  </div>
+                }
+
+                @if (milestone.reached) {
+                  <div class="milestone-badge reached-badge">
+                    ✓ Đã đạt
+                  </div>
+                }
+              </div>
+
+              <!-- Progress Bar for Current Milestone -->
+              @if (nextMilestone?.days === milestone.days) {
+                <div class="milestone-progress">
+                  <div class="mini-progress-bar">
+                    <div 
+                      class="mini-progress-fill"
+                      [style.width.%]="progressPercent"
+                      [style.background]="milestone.color"
+                    ></div>
+                  </div>
+                  <div class="mini-progress-text">{{ progressPercent }}%</div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Freeze Tokens Info -->
+      <div class="info-card">
+        <div class="info-header">
+          <i class="fas fa-info-circle"></i>
+          <h3>Freeze Token là gì?</h3>
+        </div>
+        <div class="info-content">
+          <p>
+            💎 <strong>Freeze Token</strong> giúp bảo vệ chuỗi học tập của bạn khi bạn bỏ lỡ một ngày.
+          </p>
+          <ul>
+            <li>Tự động sử dụng khi bạn lỡ ngày học</li>
+            <li>Chuỗi học tập sẽ được giữ nguyên</li>
+            <li>Nhận thêm token khi đạt các mốc milestone</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Motivational Quote -->
+      <div class="motivation-card">
+        <div class="quote-icon">"</div>
+        <p class="quote-text">
+          Thành công là tổng hợp của những nỗ lực nhỏ lặp đi lặp lại mỗi ngày
+        </p>
+        <div class="quote-author">- Robert Collier</div>
+      </div>
+    </div>
+  }
+</div>

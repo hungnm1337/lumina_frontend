@@ -26,6 +26,8 @@ import { ExamAttemptDetailComponent } from './Views/User/ExamAttempt/exam-attemp
 import { UserLeaderboardComponent } from './Views/User/Leaderboard/user-leaderboard.component';
 import { UserNoteListComponent } from './Views/User/UserNote/user-note-list/user-note-list.component';
 import { UserNoteDetailComponent } from './Views/User/UserNote/user-note-detail/user-note-detail.component';
+import { StreakComponent } from './Views/Common/streak/streak.component';
+
 import { QuotaGuard } from './guards/quota.guard';
 export const routes: Routes = [
   {
@@ -71,6 +73,7 @@ export const routes: Routes = [
           { path: '', redirectTo: 'exams', pathMatch: 'full' },
         ],
       },
+      { path: 'streak', component: StreakComponent },
     ],
   },
   // {

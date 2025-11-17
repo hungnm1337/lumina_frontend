@@ -9,16 +9,30 @@ declare let gtag: Function;
 })
 export class GoogleAnalyticsService {
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   // ✅ 1. Track Page Views tự động khi route thay đổi
+  // public initializePageTracking(): void {
+  //   this.router.events.pipe(
+  //     filter(event => event instanceof NavigationEnd)
+  //   ).subscribe((event: any) => {
+  //     gtag('config', 'G-Q7N0ZLNL1H', {
+  //       page_path: event.urlAfterRedirects
+  //     });
+  //     console.log('📊 GA4 Page View:', event.urlAfterRedirects);
+  //   });
+  // }
   public initializePageTracking(): void {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
-      gtag('config', 'G-Q7N0ZLNL1H', {
-        page_path: event.urlAfterRedirects
+
+      gtag('event', 'page_view', {
+        page_path: event.urlAfterRedirects,
+        page_location: window.location.href,
+        page_title: document.title
       });
+
       console.log('📊 GA4 Page View:', event.urlAfterRedirects);
     });
   }

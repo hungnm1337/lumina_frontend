@@ -1,0 +1,1186 @@
+.streak-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem 1rem;
+}
+
+.streak-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ============================ */
+/* 📋 HEADER */
+/* ============================ */
+
+.streak-header {
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.btn-back {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateX(-4px);
+  }
+}
+
+.page-title {
+  flex: 1;
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+
+  .fire-icon {
+    font-size: 2.5rem;
+    animation: fireFlicker 1.5s ease-in-out infinite;
+  }
+}
+
+/* ============================ */
+/* 📊 STATS GRID */
+/* ============================ */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 20px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 3px solid transparent;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  }
+
+  &.current-streak {
+    border-width: 3px;
+    animation: cardGlow 2s ease-in-out infinite;
+  }
+}
+
+.stat-icon {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #6B7280;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1F2937;
+  line-height: 1;
+
+  &.small {
+    font-size: 1.5rem;
+  }
+
+  .stat-unit {
+    font-size: 1rem;
+    color: #9CA3AF;
+    font-weight: 500;
+    margin-left: 0.25rem;
+  }
+}
+
+/* ============================ */
+/* 🔥 FIRE EMOJI ANIMATIONS */
+/* ============================ */
+
+.fire-emoji {
+  display: inline-block;
+  line-height: 1;
+  transform-origin: center bottom;
+  transition: all 0.3s ease;
+  position: relative;
+  
+  &.seed {
+    filter: grayscale(0.3);
+    animation: none;
+  }
+  
+  &.gentle {
+    animation: 
+      fireFlickerGentle 2s ease-in-out infinite,
+      fireGlowGentle 3s ease-in-out infinite,
+      fireBreathe 3s ease-in-out infinite;
+  }
+  
+  &.strong {
+    animation: 
+      fireFlickerStrong 1s ease-in-out infinite,
+      fireGlowStrong 1.5s ease-in-out infinite,
+      fireScale 2s ease-in-out infinite,
+      fireWave 2s ease-in-out infinite;
+      
+    &::before {
+      content: '💥';
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      font-size: 0.6rem;
+      animation: particleBurst 2s ease-in-out infinite;
+      opacity: 0;
+    }
+  }
+  
+  &.intense {
+    animation: 
+      fireFlickerIntense 0.5s ease-in-out infinite,
+      fireGlowIntense 1s ease-in-out infinite,
+      fireShakeExtreme 0.2s ease-in-out infinite,
+      fireScale 1.5s ease-in-out infinite,
+      fireExplosion 2s ease-in-out infinite,
+      fireRotateWild 3s linear infinite;
+      
+    &::before {
+      content: '⚡';
+      position: absolute;
+      top: -12px;
+      right: -10px;
+      font-size: 0.7rem;
+      animation: 
+        particleExplode1 1.5s ease-out infinite,
+        particleRotate 2s linear infinite;
+      opacity: 0;
+    }
+    
+    &::after {
+      content: '✨';
+      position: absolute;
+      bottom: -10px;
+      left: -8px;
+      font-size: 0.6rem;
+      animation: 
+        particleExplode2 1.8s ease-out infinite,
+        particleSpin 2.5s linear infinite;
+      opacity: 0;
+    }
+  }
+}
+
+/* ============================ */
+/* 🎯 NEXT MILESTONE CARD */
+/* ============================ */
+
+.next-milestone-card {
+  background: white;
+  border-radius: 24px;
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 
+      0 24px 48px rgba(0, 0, 0, 0.12),
+      0 0 0 1px rgba(0, 0, 0, 0.03);
+  }
+}
+
+.milestone-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+
+.milestone-title-section {
+  flex: 1;
+
+  h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .milestone-subtitle {
+    font-size: 0.95rem;
+    color: #6B7280;
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+.milestone-target {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  color: white;
+  font-weight: 700;
+  font-size: 1.125rem;
+  box-shadow: 
+    0 8px 16px rgba(102, 126, 234, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4);
+  }
+
+  .milestone-icon {
+    font-size: 2rem;
+    animation: bounce 2s ease-in-out infinite;
+  }
+
+  .milestone-days {
+    white-space: nowrap;
+  }
+}
+
+.progress-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.progress-stat {
+  text-align: center;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+  border-radius: 16px;
+  border: 2px solid #E5E7EB;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  }
+
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.875rem;
+    color: #6B7280;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+.progress-bar-container {
+  margin-bottom: 1.5rem;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.progress-label-start,
+.progress-label-end {
+  font-size: 0.875rem;
+  color: #6B7280;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  background: #F3F4F6;
+  border-radius: 8px;
+}
+
+.progress-label-current {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.current-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 2px solid #667eea;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+
+  .current-emoji {
+    font-size: 1.5rem;
+    animation: fireFlicker 1.5s ease-in-out infinite;
+  }
+
+  .current-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #667eea;
+  }
+}
+
+.progress-bar {
+  height: 32px;
+  background: #E5E7EB;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 16px;
+  transition: width 1s ease-out;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 1rem;
+  box-shadow: 
+    0 2px 8px rgba(102, 126, 234, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    animation: shimmer 2s infinite;
+  }
+}
+
+.progress-percent {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: white;
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.progress-info {
+  text-align: center;
+  margin-top: 1rem;
+
+  .progress-text {
+    font-size: 0.95rem;
+    color: #4B5563;
+
+    strong {
+      color: #667eea;
+      font-weight: 700;
+    }
+  }
+}
+
+/* ============================ */
+/* 🎁 MILESTONE REWARDS GRID */
+/* ============================ */
+
+.milestone-rewards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.reward-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  border: 2px solid;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  &.freeze-token {
+    background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+    border-color: #60A5FA;
+
+    .reward-icon {
+      color: #3B82F6;
+    }
+
+    .reward-amount {
+      color: #1E40AF;
+    }
+  }
+
+  &.listening-test {
+    background: linear-gradient(135deg, #FCE7F3 0%, #FBCFE8 100%);
+    border-color: #F472B6;
+
+    .reward-icon {
+      color: #EC4899;
+    }
+
+    .reward-amount {
+      color: #BE185D;
+    }
+  }
+
+  &.reading-test {
+    background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+    border-color: #34D399;
+
+    .reward-icon {
+      color: #10B981;
+    }
+
+    .reward-amount {
+      color: #065F46;
+    }
+  }
+}
+
+.reward-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.reward-content {
+  flex: 1;
+}
+
+.reward-amount {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.reward-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4B5563;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.motivation-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+  border-radius: 12px;
+  border: 2px solid #93C5FD;
+
+  .motivation-icon {
+    font-size: 1.5rem;
+  }
+
+  .motivation-text {
+    font-size: 1rem;
+    color: #1E40AF;
+    font-weight: 600;
+
+    strong {
+      color: #1E3A8A;
+      font-weight: 700;
+      font-size: 1.125rem;
+    }
+  }
+}
+
+/* ============================ */
+/* 🏆 MAX MILESTONE CARD */
+/* ============================ */
+
+.max-milestone-card {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  border-radius: 20px;
+  padding: 3rem;
+  text-align: center;
+  color: white;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+
+  .celebration-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: celebrationBounce 0.6s ease-in-out infinite;
+  }
+
+  h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+  }
+
+  p {
+    font-size: 1.125rem;
+    opacity: 0.9;
+    margin-bottom: 1rem;
+  }
+
+  .keep-going {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 1rem;
+  }
+}
+
+/* ============================ */
+/* 🎯 MILESTONES TIMELINE */
+/* ============================ */
+
+.milestones-section {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1F2937;
+  margin: 0 0 2rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  i {
+    color: #F59E0B;
+  }
+}
+
+.milestones-timeline {
+  position: relative;
+}
+
+.milestone-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  transition: all 0.3s ease;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &.current {
+    .milestone-info {
+      background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+      border-left: 4px solid #667eea;
+      padding-left: 1.5rem;
+    }
+  }
+
+  &.reached {
+    .milestone-node {
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+    }
+  }
+}
+
+.milestone-connector {
+  position: absolute;
+  left: 40px;
+  top: 80px;
+  bottom: -2rem;
+  width: 3px;
+  background: #E5E7EB;
+  transition: all 0.6s ease;
+
+  &.active {
+    background: linear-gradient(180deg, #10B981 0%, #059669 100%);
+  }
+}
+
+.milestone-node {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #E5E7EB;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+  .milestone-icon {
+    font-size: 2rem;
+  }
+
+  .milestone-check {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    width: 30px;
+    height: 30px;
+    background: #10B981;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.875rem;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+  }
+}
+
+.milestone-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.milestone-days {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1F2937;
+}
+
+.milestone-reward-text {
+  font-size: 0.875rem;
+  color: #6B7280;
+  font-weight: 500;
+}
+
+.milestone-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  width: fit-content;
+
+  &.current-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+
+  &.reached-badge {
+    background: #D1FAE5;
+    color: #065F46;
+  }
+}
+
+.milestone-progress {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.mini-progress-bar {
+  flex: 1;
+  height: 8px;
+  background: #E5E7EB;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.mini-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+.mini-progress-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #667eea;
+  min-width: 40px;
+}
+
+/* ============================ */
+/* ℹ️ INFO CARD */
+/* ============================ */
+
+.info-card {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+
+  .info-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+
+    i {
+      color: #3B82F6;
+      font-size: 1.5rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1F2937;
+      margin: 0;
+    }
+  }
+
+  .info-content {
+    color: #4B5563;
+    line-height: 1.6;
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    ul {
+      list-style: none;
+      padding-left: 0;
+
+      li {
+        padding-left: 1.5rem;
+        margin-bottom: 0.75rem;
+        position: relative;
+
+        &::before {
+          content: '•';
+          position: absolute;
+          left: 0;
+          color: #667eea;
+          font-weight: 700;
+          font-size: 1.25rem;
+        }
+      }
+    }
+  }
+}
+
+/* ============================ */
+/* 💬 MOTIVATION CARD */
+/* ============================ */
+
+.motivation-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: rotate 20s linear infinite;
+  }
+}
+
+.quote-icon {
+  font-size: 4rem;
+  font-family: Georgia, serif;
+  opacity: 0.3;
+  line-height: 0.5;
+  margin-bottom: 1rem;
+}
+
+.quote-text {
+  font-size: 1.25rem;
+  font-weight: 500;
+  font-style: italic;
+  margin: 1rem 0;
+  position: relative;
+  z-index: 1;
+}
+
+.quote-author {
+  font-size: 1rem;
+  opacity: 0.8;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================ */
+/* 🔄 LOADING & ERROR */
+/* ============================ */
+
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: white;
+  text-align: center;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.loading-text {
+  font-size: 1.125rem;
+  opacity: 0.9;
+}
+
+.error-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.error-container {
+  h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    font-size: 1.125rem;
+    opacity: 0.9;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.btn-primary {
+  padding: 0.75rem 2rem;
+  background: white;
+  color: #667eea;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* ============================ */
+/* 🎬 KEYFRAME ANIMATIONS */
+/* ============================ */
+
+@keyframes fireFlicker {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.1) rotate(5deg); }
+  75% { transform: scale(1.1) rotate(-5deg); }
+}
+
+@keyframes fireFlickerGentle {
+  0%, 100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+  50% { transform: scale(1.05) rotate(2deg); filter: brightness(1.1); }
+}
+
+@keyframes fireGlowGentle {
+  0%, 100% { text-shadow: 0 0 8px rgba(255, 140, 0, 0.4), 0 0 12px rgba(255, 69, 0, 0.2); }
+  50% { text-shadow: 0 0 12px rgba(255, 140, 0, 0.6), 0 0 18px rgba(255, 69, 0, 0.3); }
+}
+
+@keyframes fireBreathe {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.08); }
+}
+
+@keyframes fireFlickerStrong {
+  0%, 100% { transform: scale(1) rotate(0deg); filter: brightness(1) hue-rotate(0deg); }
+  25% { transform: scale(1.15) rotate(-5deg); filter: brightness(1.3) hue-rotate(10deg); }
+  50% { transform: scale(1.1) rotate(5deg); filter: brightness(1.4) hue-rotate(-10deg); }
+  75% { transform: scale(1.18) rotate(-3deg); filter: brightness(1.35) hue-rotate(8deg); }
+}
+
+@keyframes fireGlowStrong {
+  0%, 100% { text-shadow: 0 0 15px rgba(255, 107, 0, 0.7), 0 0 25px rgba(255, 69, 0, 0.5), 0 0 35px rgba(255, 140, 0, 0.3); }
+  50% { text-shadow: 0 0 30px rgba(255, 107, 0, 1), 0 0 40px rgba(255, 69, 0, 0.8), 0 0 50px rgba(255, 140, 0, 0.6); }
+}
+
+@keyframes fireWave {
+  0%, 100% { transform: skewX(0deg); }
+  25% { transform: skewX(-3deg); }
+  75% { transform: skewX(3deg); }
+}
+
+@keyframes fireFlickerIntense {
+  0%, 100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+  50% { transform: scale(1.2) rotate(-5deg); filter: brightness(1.5); }
+}
+
+@keyframes fireGlowIntense {
+  0%, 100% { text-shadow: 0 0 25px rgba(255, 107, 0, 1), 0 0 40px rgba(255, 69, 0, 1), 0 0 55px rgba(255, 140, 0, 0.9); }
+  50% { text-shadow: 0 0 40px rgba(255, 107, 0, 1), 0 0 60px rgba(255, 69, 0, 1), 0 0 80px rgba(255, 140, 0, 1); }
+}
+
+@keyframes fireShakeExtreme {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(-2px, 2px); }
+  75% { transform: translate(2px, -2px); }
+}
+
+@keyframes fireScale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+@keyframes fireExplosion {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.8); }
+}
+
+@keyframes fireRotateWild {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(5deg); }
+}
+
+@keyframes particleBurst {
+  0% { opacity: 0; transform: translate(0, 0) scale(0); }
+  50% { opacity: 1; transform: translate(5px, -10px) scale(1); }
+  100% { opacity: 0; transform: translate(10px, -20px) scale(0.5); }
+}
+
+@keyframes particleExplode1 {
+  0% { opacity: 0; transform: translate(0, 0) scale(0); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: translate(15px, -25px) scale(1.5); }
+}
+
+@keyframes particleExplode2 {
+  0% { opacity: 0; transform: translate(0, 0) scale(0); }
+  40% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-20px, 15px) scale(1.3); }
+}
+
+@keyframes particleRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes particleSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes cardGlow {
+  0%, 100% { box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); }
+  50% { box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4); }
+}
+
+@keyframes celebrationBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ============================ */
+/* 📱 RESPONSIVE */
+/* ============================ */
+
+@media (max-width: 768px) {
+  .streak-page {
+    padding: 1rem 0.5rem;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+    .fire-icon {
+      font-size: 2rem;
+    }
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+  }
+
+  .next-milestone-card {
+    padding: 1.5rem;
+  }
+
+  .milestone-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .milestone-target {
+    justify-content: center;
+  }
+
+  .progress-stats {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .progress-stat .stat-number {
+    font-size: 1.75rem;
+  }
+
+  .current-indicator {
+    .current-emoji {
+      font-size: 1.25rem;
+    }
+    .current-value {
+      font-size: 1rem;
+    }
+  }
+
+  .progress-labels {
+    font-size: 0.75rem;
+  }
+
+  .progress-bar {
+    height: 24px;
+  }
+
+  .motivation-message {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .milestone-item {
+    grid-template-columns: 60px 1fr;
+    gap: 1rem;
+  }
+
+  .milestone-node {
+    width: 60px;
+    height: 60px;
+    .milestone-icon {
+      font-size: 1.5rem;
+    }
+  }
+
+  .milestone-connector {
+    left: 30px;
+  }
+
+  .milestone-rewards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reward-item {
+    padding: 1rem;
+  }
+
+  .reward-icon {
+    font-size: 2rem;
+  }
+
+  .reward-amount {
+    font-size: 1.5rem;
+  }
+
+  .quote-text {
+    font-size: 1rem;
+  }
+
+  .fire-emoji {
+    font-size: 2.5rem !important;
+    
+    &.intense {
+      font-size: 3rem !important;
+      animation: 
+        fireFlickerIntense 0.7s ease-in-out infinite,
+        fireGlowIntense 1.2s ease-in-out infinite,
+        fireScale 2s ease-in-out infinite !important;
+    }
+  }
+}
