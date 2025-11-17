@@ -30,7 +30,7 @@ export class HeaderComponent implements OnInit {
     private authService: AuthService,
     private elementRef: ElementRef,
     private router: Router,
-    private streakService: StreakService
+    private streakService: StreakService,
     private quotaService: QuotaService
   ) {}
 
@@ -132,7 +132,7 @@ export class HeaderComponent implements OnInit {
   moveToExams() {
     this.router.navigate(['homepage/user-dashboard']);
   }
-}
+
   openUpgradeModal(): void {
     this.showUpgradeModal = true;
   }
