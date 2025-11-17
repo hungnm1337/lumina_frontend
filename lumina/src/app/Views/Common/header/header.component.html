@@ -102,14 +102,54 @@
         <!-- GIAO DIỆN KHI ĐÃ ĐĂNG NHẬP -->
         <div class="flex items-center space-x-2 lg:space-x-3">
           <!-- Streak Counter -->
+          <!-- ✅ Streak Counter - Clickable -->
           <div
-            class="hidden md:flex items-center bg-gradient-to-r from-orange-100 to-red-100 rounded-full px-3 py-1.5 border border-orange-200"
+            (click)="goToStreakPage()"
+            class="hidden md:flex items-center bg-gradient-to-r from-orange-100 to-red-100 rounded-full px-3 py-1.5 border border-orange-200 hover:shadow-lg transition-all duration-200 cursor-pointer streak-badge hover:scale-105 active:scale-95"
+            [class.high-streak]="currentStreak >= 30"
+            [title]="'Click để xem chi tiết chuỗi học tập'"
           >
             <div class="flex items-center space-x-1.5">
-              <i class="fas fa-fire text-orange-500 text-base animate-pulse"></i>
-              <span class="font-bold text-orange-700 text-sm">0</span>
-              <!-- Sẽ cập nhật sau -->
-              <span class="text-orange-600 font-medium text-xs">ngày</span>
+              @if (streakLoading) {
+                <i class="fas fa-spinner fa-spin text-orange-500 text-base"></i>
+                <span class="font-bold text-orange-700 text-sm">...</span>
+              } @else {
+                <!-- ✅ Fire emoji với EXTREME animation -->
+                <span
+                  class="fire-emoji"
+                  [class.seed]="getFireIntensity() === 'seed'"
+                  [class.gentle]="getFireIntensity() === 'gentle'"
+                  [class.strong]="getFireIntensity() === 'strong'"
+                  [class.intense]="getFireIntensity() === 'intense'"
+                  [style.font-size]="getFireSize()"
+                >
+                  {{ getFireEmoji() }}
+                </span>
+
+                <!-- ✅ Số ngày với glow effect khi streak cao -->
+                <span
+                  class="font-bold transition-all duration-300"
+                  [class.text-gray-600]="currentStreak === 0"
+                  [class.text-orange-600]="currentStreak > 0 && currentStreak < 7"
+                  [class.text-orange-700]="currentStreak >= 7 && currentStreak < 30"
+                  [class.text-red-600]="currentStreak >= 30"
+                  [class.streak-number-glow]="currentStreak >= 30"
+                  [style.font-size]="currentStreak >= 30 ? '1rem' : '0.875rem'"
+                >
+                  {{ getStreakDisplayText() }}
+                </span>
+
+                <span
+                  class="font-medium text-xs transition-colors duration-300"
+                  [class.text-gray-500]="currentStreak === 0"
+                  [class.text-orange-600]="currentStreak > 0"
+                >
+                  ngày
+                </span>
+
+                <!-- ✅ THÊM: Icon arrow để hint user có thể click -->
+                <i class="fas fa-chevron-right text-orange-500 text-xs ml-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></i>
+              }
             </div>
           </div>
 
