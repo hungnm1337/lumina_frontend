@@ -1,11 +1,14 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { ExamService } from '../../../Services/Exam/exam.service';
 import { ExamDTO } from '../../../Interfaces/exam.interfaces';
 import { ExamAttemptRequestDTO } from '../../../Interfaces/ExamAttempt/ExamAttemptRequestDTO.interface';
 import { AuthService } from '../../../Services/Auth/auth.service';
 import { ExamAttemptService } from '../../../Services/ExamAttempt/exam-attempt.service';
+
 @Component({
   selector: 'app-exam-part',
   standalone: true,
@@ -31,16 +34,63 @@ export class ExamPartComponent {
   }
 
   private loadExamDetail(): void {
-    if (this.examId) {
+    if (!this.examId) return;
+
+    this.isLoading = true;
+
+    // Check if user is logged in
+    const token = localStorage.getItem('lumina_token');
+    const isAuthenticated = !!token;
+
+    if (isAuthenticated) {
+      // Load exam detail with completion status
+      forkJoin({
+        examDetail: this.examService.GetExamDetailAndPart(this.examId),
+        partStatuses: this.examService
+          .getPartCompletionStatus(this.examId)
+          .pipe(
+            catchError((error) => {
+              console.warn(
+                '⚠️ Could not load part completion statuses:',
+                error
+              );
+              return of([]);
+            })
+          ),
+      }).subscribe({
+        next: ({ examDetail, partStatuses }) => {
+          // Merge completion status into parts
+          if (examDetail.examParts) {
+            examDetail.examParts = examDetail.examParts.map((part) => ({
+              ...part,
+              completionStatus: partStatuses.find(
+                (s) => s.partId === part.partId
+              ),
+            }));
+          }
+
+          this.examDetail = examDetail;
+          console.log(
+            '✅ Exam detail loaded with completion:',
+            this.examDetail
+          );
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('❌ Error loading exam detail:', error);
+          this.isLoading = false;
+        },
+      });
+    } else {
+      // Load exam detail without completion status for guests
       this.examService.GetExamDetailAndPart(this.examId).subscribe({
         next: (data) => {
           this.examDetail = data;
-          console.log('Exam detail data:', data);
+          console.log('✅ Exam detail loaded (guest mode):', this.examDetail);
           this.isLoading = false;
-          console.log('Exam detail loaded:', this.examDetail);
         },
         error: (error) => {
-          console.error('Error loading exam detail:', error);
+          console.error('❌ Error loading exam detail:', error);
           this.isLoading = false;
         },
       });
@@ -101,7 +151,7 @@ export class ExamPartComponent {
       startTime: new Date().toISOString(),
       endTime: null,
       score: null,
-      status: 'Doing'
+      status: 'Doing',
     };
 
     this.examAttemptService.startExam(this.examattemptRequestDTO).subscribe({
@@ -112,7 +162,7 @@ export class ExamPartComponent {
       },
       error: (error) => {
         console.error('Error starting exam attempt:', error);
-      }
+      },
     });
 
     this.router.navigate(['/homepage/user-dashboard/part', partId]);
