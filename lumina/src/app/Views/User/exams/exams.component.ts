@@ -2,8 +2,13 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { ExamService } from '../../../Services/Exam/exam.service';
+import { QuotaService } from '../../../Services/Quota/quota.service';
 import { ExamDTO } from '../../../Interfaces/exam.interfaces';
+import { QuotaRemainingDto } from '../../../Interfaces/quota.interfaces';
 
 interface SkillGroup {
   skillName: string;
@@ -25,39 +30,77 @@ export class ExamsComponent {
   skillGroups: SkillGroup[] = [];
   filteredSkillGroups: SkillGroup[] = [];
   isLoading = true;
+  quotaInfo: QuotaRemainingDto | null = null;
 
   // Filter properties
   searchTerm: string = '';
   selectedSkill: string = '';
   sortBy: string = 'name';
 
-  constructor(private examService: ExamService, private router: Router) {
+  constructor(
+    private examService: ExamService,
+    private quotaService: QuotaService,
+    private router: Router
+  ) {
     this.loadExams();
+    this.loadQuotaInfo();
   }
 
   private loadExams(): void {
-    this.examService.GetAllExams().subscribe({
-      next: (data) => {
-        this.exams = data;
-        console.log('✅ All exams loaded:', this.exams);
-        console.log('✅ Total exams:', this.exams.length);
-        console.log(
-          '✅ Exam types:',
-          this.exams.map((e) => ({
-            id: e.examId,
-            type: e.examType,
-            active: e.isActive,
-          }))
-        );
-        this.categorizeExamsBySkill();
-        this.applyFilters();
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('❌ Error loading exams:', error);
-        this.isLoading = false;
-      },
-    });
+    this.isLoading = true;
+
+    // Check if user is logged in
+    const token = localStorage.getItem('lumina_token');
+    const isAuthenticated = !!token;
+
+    if (isAuthenticated) {
+      // Load exams with completion status for authenticated users
+      forkJoin({
+        exams: this.examService.GetAllExams(),
+        completionStatuses: this.examService
+          .getUserExamCompletionStatuses()
+          .pipe(
+            catchError((error) => {
+              console.warn('⚠️ Could not load completion statuses:', error);
+              return of([]); // Return empty array if error
+            })
+          ),
+      }).subscribe({
+        next: ({ exams, completionStatuses }) => {
+          // Merge completion status into exams
+          this.exams = exams.map((exam) => ({
+            ...exam,
+            completionStatus: completionStatuses.find(
+              (s) => s.examId === exam.examId
+            ),
+          }));
+
+          console.log('✅ Exams loaded with completion status:', this.exams);
+          this.categorizeExamsBySkill();
+          this.applyFilters();
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('❌ Error loading exams:', error);
+          this.isLoading = false;
+        },
+      });
+    } else {
+      // Load exams without completion status for guests
+      this.examService.GetAllExams().subscribe({
+        next: (data) => {
+          this.exams = data;
+          console.log('✅ Exams loaded (guest mode):', this.exams);
+          this.categorizeExamsBySkill();
+          this.applyFilters();
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('❌ Error loading exams:', error);
+          this.isLoading = false;
+        },
+      });
+    }
   }
 
   private categorizeExamsBySkill(): void {
@@ -157,6 +200,49 @@ export class ExamsComponent {
     console.log('Skill groups:', this.skillGroups);
   }
 
+  private loadQuotaInfo(): void {
+    const token = localStorage.getItem('lumina_token');
+    if (!token) {
+      // Guest user, skip loading quota
+      return;
+    }
+
+    this.quotaService.getRemainingQuota().subscribe({
+      next: (data) => {
+        this.quotaInfo = data;
+        console.log('✅ Quota info loaded:', data);
+      },
+      error: (err) => {
+        console.warn('⚠️ Failed to load quota:', err);
+        // Don't block the UI if quota fails to load
+      },
+    });
+  }
+
+  getRemainingAttempts(skillName: string): number | null {
+    if (!this.quotaInfo) return null;
+
+    if (this.quotaInfo.isPremium) return -1; // Unlimited
+
+    const skill = skillName.toLowerCase();
+    if (skill === 'listening') {
+      return this.quotaInfo.listeningRemaining;
+    } else if (skill === 'reading') {
+      return this.quotaInfo.readingRemaining;
+    }
+
+    return null; // Speaking/Writing don't show quota badge
+  }
+
+  getRemainingText(skillName: string): string {
+    const remaining = this.getRemainingAttempts(skillName);
+
+    if (remaining === null) return '';
+    if (remaining === -1) return 'Unlimited';
+
+    return `${remaining}/20 lượt`;
+  }
+
   formatDate(date: Date): string {
     return new Date(date).toLocaleDateString('vi-VN', {
       year: 'numeric',
@@ -212,29 +298,33 @@ export class ExamsComponent {
 
     // Filter by skill
     if (this.selectedSkill) {
-      filtered = filtered.filter(group =>
-        group.skillCode === this.selectedSkill ||
-        group.skillName.toUpperCase() === this.selectedSkill
+      filtered = filtered.filter(
+        (group) =>
+          group.skillCode === this.selectedSkill ||
+          group.skillName.toUpperCase() === this.selectedSkill
       );
     }
 
     // Filter by search term
     if (this.searchTerm.trim()) {
       const searchLower = this.searchTerm.toLowerCase();
-      filtered = filtered.map(group => ({
-        ...group,
-        exams: group.exams.filter(exam =>
-          exam.name?.toLowerCase().includes(searchLower) ||
-          exam.description?.toLowerCase().includes(searchLower) ||
-          exam.createdByName?.toLowerCase().includes(searchLower)
-        )
-      })).filter(group => group.exams.length > 0);
+      filtered = filtered
+        .map((group) => ({
+          ...group,
+          exams: group.exams.filter(
+            (exam) =>
+              exam.name?.toLowerCase().includes(searchLower) ||
+              exam.description?.toLowerCase().includes(searchLower) ||
+              exam.createdByName?.toLowerCase().includes(searchLower)
+          ),
+        }))
+        .filter((group) => group.exams.length > 0);
     }
 
     // Sort exams within each group
-    filtered = filtered.map(group => ({
+    filtered = filtered.map((group) => ({
       ...group,
-      exams: this.sortExams([...group.exams])
+      exams: this.sortExams([...group.exams]),
     }));
 
     this.filteredSkillGroups = filtered;
@@ -245,8 +335,9 @@ export class ExamsComponent {
       case 'name':
         return exams.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
       case 'date':
-        return exams.sort((a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        return exams.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
       case 'creator':
         return exams.sort((a, b) =>
@@ -275,6 +366,9 @@ export class ExamsComponent {
   }
 
   getTotalExamsCount(): number {
-    return this.filteredSkillGroups.reduce((total, group) => total + group.exams.length, 0);
+    return this.filteredSkillGroups.reduce(
+      (total, group) => total + group.exams.length,
+      0
+    );
   }
 }
