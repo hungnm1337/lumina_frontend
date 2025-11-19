@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HeaderComponent } from '../../Common/header/header.component';
 import { QuizQuestion, QuizAnswer } from '../quiz-do/quiz-do.component';
+import { VocabularyService } from '../../../Services/Vocabulary/vocabulary.service';
 
 @Component({
   selector: 'app-quiz-results',
@@ -31,7 +32,8 @@ export class QuizResultsComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private vocabularyService: VocabularyService
   ) {}
 
   ngOnInit(): void {
@@ -65,6 +67,37 @@ export class QuizResultsComponent implements OnInit {
         alert('Dữ liệu kết quả không hợp lệ!');
         this.goBack();
         return;
+      }
+
+      // Lưu quiz result sau khi load xong
+      setTimeout(() => {
+        this.saveQuizResult();
+      }, 500);
+    });
+  }
+
+  // Lưu quiz result
+  saveQuizResult(): void {
+    if (!this.folderId || this.score === undefined) {
+      return;
+    }
+
+    const quizResult = {
+      vocabularyListId: this.folderId,
+      score: this.score,
+      totalQuestions: this.totalQuestions,
+      correctCount: this.correctCount,
+      totalTimeSpent: this.totalTimeSpent,
+      mode: this.mode
+    };
+
+    this.vocabularyService.saveQuizResult(quizResult).subscribe({
+      next: () => {
+        console.log('Quiz result saved successfully');
+      },
+      error: (error) => {
+        console.error('Error saving quiz result:', error);
+        // Không hiển thị lỗi cho user vì đây là background operation
       }
     });
   }

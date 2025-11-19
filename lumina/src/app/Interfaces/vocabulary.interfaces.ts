@@ -25,6 +25,21 @@ export interface VocabularyListResponse {
   vocabularyCount: number;
   status?: string;
   rejectionReason?: string;
+  // Quiz score fields
+  bestScore?: number;
+  lastScore?: number;
+  lastCompletedAt?: string;
+  totalAttempts?: number;
+}
+
+// Interface for quiz result request
+export interface QuizResultRequest {
+  vocabularyListId: number;
+  score: number;
+  totalQuestions: number;
+  correctCount: number;
+  totalTimeSpent: number;
+  mode: string;
 }
 
 export interface VocabularyStats {

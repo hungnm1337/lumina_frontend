@@ -110,6 +110,22 @@
             <span><strong>{{ folder.vocabularyCount }}</strong> vocabulary words</span>
           </div>
           
+          <!-- Hiển thị quiz scores nếu có -->
+          <div *ngIf="folder.bestScore !== undefined || folder.lastScore !== undefined" 
+               class="flex items-center gap-3 text-sm pt-1 border-t border-gray-200">
+            <div *ngIf="folder.bestScore !== undefined" class="flex items-center gap-1">
+              <i class="fas fa-trophy text-yellow-500"></i>
+              <span class="font-semibold text-yellow-600">Best: {{ folder.bestScore }}%</span>
+            </div>
+            <div *ngIf="folder.lastScore !== undefined" class="flex items-center gap-1">
+              <i class="fas fa-chart-line text-blue-500"></i>
+              <span class="text-blue-600">Last: {{ folder.lastScore }}%</span>
+            </div>
+            <div *ngIf="folder.totalAttempts && folder.totalAttempts > 0" class="text-gray-500 text-xs">
+              ({{ folder.totalAttempts }} attempts)
+            </div>
+          </div>
+          
           <div class="flex items-center gap-2 text-sm text-gray-600">
             <i class="fas fa-calendar text-green-600"></i>
             <span>{{ folder.createAt | date:'dd/MM/yyyy' }}</span>
