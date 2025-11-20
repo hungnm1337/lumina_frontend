@@ -104,19 +104,70 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   private loadAttemptId(): void {
     try {
       const stored = localStorage.getItem('currentExamAttempt');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        this.attemptId = parsed.attemptID || parsed.attemptId;
+
+      if (!stored) {
+        console.warn('[Listening] ⚠️ No currentExamAttempt in localStorage');
+        this.createNewAttempt();
+        return;
       }
 
-      if (!this.attemptId) {
-        console.error('No attemptId found');
-        this.router.navigate(['homepage/user-dashboard/exams']);
+      const parsed = JSON.parse(stored);
+      this.attemptId = parsed.attemptID || parsed.attemptId || null;
+
+      if (this.attemptId === null || this.attemptId <= 0) {
+        console.error('[Listening] ❌ Invalid attemptId:', this.attemptId);
+        this.createNewAttempt();
+      } else {
+        console.log('[Listening] ✅ Loaded attemptId:', this.attemptId);
       }
     } catch (error) {
-      console.error('Error loading attemptId:', error);
-      this.router.navigate(['homepage/user-dashboard/exams']);
+      console.error('[Listening] ❌ Error loading attemptId:', error);
+      this.createNewAttempt();
     }
+  }
+
+  private createNewAttempt(): void {
+    console.log('[Listening] 🆕 Creating new exam attempt...');
+
+    if (!this.partInfo || !this.partInfo.examId || !this.partInfo.partId) {
+      console.error('[Listening] ❌ Cannot create attempt: Missing partInfo');
+      alert('Lỗi: Không thể khởi tạo bài thi. Vui lòng quay lại và thử lại.');
+      return;
+    }
+
+    // Get current user from AuthService
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser?.id) {
+      console.error('[Listening] ❌ No user ID found');
+      alert('Vui lòng đăng nhập để làm bài thi.');
+      this.router.navigate(['/auth/login']);
+      return;
+    }
+
+    const attemptRequest = {
+      attemptID: 0,
+      userID: Number(currentUser.id),
+      examID: this.partInfo.examId,
+      examPartId: this.partInfo.partId,
+      startTime: new Date().toISOString(),
+      endTime: null,
+      score: null,
+      status: 'In Progress',
+    };
+
+    this.examAttemptService.startExam(attemptRequest).subscribe({
+      next: (response) => {
+        console.log('[Listening] ✅ New attempt created:', response);
+        this.attemptId = response.attemptID;
+
+        // Lưu vào localStorage
+        localStorage.setItem('currentExamAttempt', JSON.stringify(response));
+      },
+      error: (error) => {
+        console.error('[Listening] ❌ Error creating attempt:', error);
+        alert('Lỗi khi khởi tạo bài thi. Vui lòng thử lại.');
+      },
+    });
   }
 
   private incrementQuotaOnStart(): void {
