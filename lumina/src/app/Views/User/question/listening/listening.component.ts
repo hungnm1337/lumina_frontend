@@ -68,6 +68,9 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   currentAudioUrl = '';
   playbackSpeed = 1.0;
   isMuted = false;
+  audioCurrentTime = 0;
+  audioDuration = 0;
+  audioProgress = 0;
 
   // Exam history
   examAttemptDetails: ExamAttemptDetailResponseDTO | null = null;
@@ -287,18 +290,72 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     }
 
     if (this.audioPlayer) {
-      this.audioPlayer.nativeElement.play();
+      const audio = this.audioPlayer.nativeElement;
+
+      // ✅ Pause audio hiện tại nếu đang phát
+      if (!audio.paused) {
+        audio.pause();
+      }
+
+      // ✅ Reset về đầu
+      audio.currentTime = 0;
+
+      // ✅ Tăng counter trước khi phát
       this.audioPlayCount++;
       this.isAudioPlaying = true;
+
+      // ✅ Phát audio từ đầu
+      audio
+        .play()
+        .then(() => {
+          console.log(
+            `[Listening] Audio playing (${this.audioPlayCount}/${this.maxPlays})`
+          );
+        })
+        .catch((error) => {
+          console.error('[Listening] Error playing audio:', error);
+          // ✅ Nếu lỗi, giảm counter lại
+          this.audioPlayCount--;
+          this.isAudioPlaying = false;
+          alert('Không thể phát audio. Vui lòng thử lại.');
+        });
     }
   }
 
   onAudioPlay(): void {
     this.isAudioPlaying = true;
+    console.log('[Listening] Audio started playing');
   }
 
   onAudioEnded(): void {
     this.isAudioPlaying = false;
+    this.audioProgress = 100;
+    console.log('[Listening] Audio playback ended');
+  }
+
+  onTimeUpdate(): void {
+    if (this.audioPlayer?.nativeElement) {
+      const audio = this.audioPlayer.nativeElement;
+      this.audioCurrentTime = audio.currentTime;
+      this.audioDuration = audio.duration || 0;
+
+      if (this.audioDuration > 0) {
+        this.audioProgress = (this.audioCurrentTime / this.audioDuration) * 100;
+      }
+    }
+  }
+
+  onLoadedMetadata(): void {
+    if (this.audioPlayer?.nativeElement) {
+      this.audioDuration = this.audioPlayer.nativeElement.duration;
+    }
+  }
+
+  formatAudioTime(seconds: number): string {
+    if (!seconds || isNaN(seconds)) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
 
   changePlaybackSpeed(): void {
@@ -322,12 +379,16 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   private resetAudioState(): void {
     this.audioPlayCount = 0;
     this.isAudioPlaying = false;
+    this.audioCurrentTime = 0;
+    this.audioDuration = 0;
+    this.audioProgress = 0;
 
     if (this.audioPlayer?.nativeElement) {
       const audio = this.audioPlayer.nativeElement;
       audio.pause();
       audio.currentTime = 0;
       audio.load();
+      console.log('[Listening] Audio state reset');
     }
   }
 
