@@ -17,6 +17,11 @@ import { UpgradeModalComponent } from '../../User/upgrade-modal/upgrade-modal.co
 })
 export class HeaderComponent implements OnInit {
   currentUser$!: Observable<AuthUserResponse | null>;
+
+  moveToMocktest() {
+    console.log('Navigating to Mock Test Exams');
+    this.router.navigate(['homepage/mocktest/exams']);
+  }
   isDropdownOpen = false;
   isPremium = false;
   showUpgradeModal = false;

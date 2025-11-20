@@ -27,6 +27,9 @@ import { UserLeaderboardComponent } from './Views/User/Leaderboard/user-leaderbo
 import { UserNoteListComponent } from './Views/User/UserNote/user-note-list/user-note-list.component';
 import { UserNoteDetailComponent } from './Views/User/UserNote/user-note-detail/user-note-detail.component';
 import { QuotaGuard } from './guards/quota.guard';
+import { ExamComponent as MockTestExamComponent } from './Views/User/MockTest/mocktest-exam/exam.component';
+import { ResultComponent as MockTestResultComponent } from './Views/User/MockTest/mocktest-result/result.component';
+
 export const routes: Routes = [
   {
     path: 'admin',
@@ -54,6 +57,8 @@ export const routes: Routes = [
     component: HomepageComponent,
     children: [
       { path: '', component: ContentHomepageComponent },
+      { path: 'mocktest/exams', component: MockTestExamComponent },
+      { path: 'mocktest/result/:attemptId', component: MockTestResultComponent },
       { path: 'events', component: UserEventsDashboardComponent },
       { path: 'slides', component: DashboardSlideComponent },
       { path: 'leaderboard', component: UserLeaderboardComponent },
@@ -92,6 +97,7 @@ export const routes: Routes = [
   { path: 'articles', component: BlogArticlesComponent },
   { path: 'articles/:id', component: BlogDetailComponent },
   { path: 'vocabulary', component: UserVocabularyComponent },
+
   {
     path: 'vocabulary/list/:id',
     loadComponent: () =>
