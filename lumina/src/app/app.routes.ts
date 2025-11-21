@@ -29,6 +29,7 @@ import { UserNoteDetailComponent } from './Views/User/UserNote/user-note-detail/
 import { StreakComponent } from './Views/Common/streak/streak.component';
 
 import { QuotaGuard } from './guards/quota.guard';
+import { RankingsComponent } from './Views/Common/Rankings/rankings/rankings.component';
 export const routes: Routes = [
   {
     path: 'admin',
@@ -73,7 +74,7 @@ export const routes: Routes = [
           { path: '', redirectTo: 'exams', pathMatch: 'full' },
         ],
       },
-      { path: 'streak', component: StreakComponent },
+      
     ],
   },
   // {
@@ -158,7 +159,8 @@ export const routes: Routes = [
         (m) => m.PaymentCancelComponent
       ),
   },
-
+{path: 'rankings', component: RankingsComponent},
+{ path: 'streak', component: StreakComponent },
   { path: '', redirectTo: '/homepage', pathMatch: 'full' },
   { path: '**', component: ErrorComponent },
 ];

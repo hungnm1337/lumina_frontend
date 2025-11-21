@@ -78,6 +78,13 @@ export class StreakService {
     );
   }
 
+  getTopStreakUsers(): Observable<any> {
+    return this.http.get<any>(
+      `${this.baseUrl}/top`,
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
   // ============================
   // 🎨 UTILITY METHODS
   // ============================

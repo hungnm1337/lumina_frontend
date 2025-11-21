@@ -752,8 +752,7 @@ export class QuestionsComponent implements OnInit {
       error: (err) => {
         const errorMsg =
           err.error?.message ||
-          err.error?.error ||
-          'Part đã đủ số lượng câu hỏi!';
+          err.error?.error;
         this.showMessage(errorMsg, 'error');
       },
     });

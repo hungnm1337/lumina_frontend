@@ -62,12 +62,12 @@ export class HeaderComponent implements OnInit {
     });
   }
 
-  // ✅ Lấy emoji (chỉ 1 loại)
+  // Lấy emoji (chỉ 1 loại)
   getFireEmoji(): string {
     return this.currentStreak === 0 ? '🌱' : '🔥';
   }
 
-  // ✅ Lấy intensity level cho animation
+  //  Lấy intensity level cho animation
   getFireIntensity(): string {
     if (this.currentStreak === 0) return 'seed';
     if (this.currentStreak < 7) return 'gentle'; // 1-6 ngày: nhẹ nhàng
@@ -75,7 +75,7 @@ export class HeaderComponent implements OnInit {
     return 'intense'; // 30+ ngày: dữ dội
   }
 
-  // ✅ Lấy size emoji
+  // Lấy size emoji
   getFireSize(): string {
     if (this.currentStreak === 0) return '1.25rem';
     if (this.currentStreak < 7) return '1.25rem';
@@ -88,9 +88,9 @@ export class HeaderComponent implements OnInit {
     return this.currentStreak.toString();
   }
 
-  // ✅ SỬA: Navigate to streak page (path mới)
+  
   goToStreakPage(): void {
-    this.router.navigate(['/homepage/streak']); // ✅ Thêm /homepage/
+    this.router.navigate(['/streak']);
     this.checkPremiumStatus();
   }
 

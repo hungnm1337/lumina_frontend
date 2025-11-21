@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { StreakService } from '../../../Services/streak/streak.service';
 import { AuthService } from '../../../Services/Auth/auth.service';
 import { Router } from '@angular/router';
+import { HeaderComponent } from '../header/header.component';
 
 interface MilestoneReward {
   days: number;
@@ -18,7 +19,7 @@ interface MilestoneReward {
 @Component({
   selector: 'app-streak',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule,HeaderComponent],
   templateUrl: './streak.component.html',
   styleUrl: './streak.component.scss'
 })
