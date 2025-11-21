@@ -31,16 +31,32 @@
       [src]="getCurrentAudioUrl()"
       (play)="onAudioPlay()"
       (ended)="onAudioEnded()"
+      (timeupdate)="onTimeUpdate()"
+      (loadedmetadata)="onLoadedMetadata()"
     ></audio>
 
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between mb-3">
       <button
         (click)="playAudio()"
         [disabled]="audioPlayCount >= maxPlays"
-        class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="px-4 py-2 rounded transition-colors"
+        [ngClass]="{
+          'bg-red-600 text-white hover:bg-red-700':
+            !isAudioPlaying && audioPlayCount < maxPlays,
+          'bg-green-600 text-white':
+            isAudioPlaying && audioPlayCount < maxPlays,
+          'bg-gray-400 text-gray-700 cursor-not-allowed':
+            audioPlayCount >= maxPlays
+        }"
       >
-        <i class="fas fa-play mr-2"></i>
-        Nghe ({{ audioPlayCount }}/{{ maxPlays }})
+        <i
+          [class]="
+            isAudioPlaying ? 'fas fa-spinner fa-spin mr-2' : 'fas fa-play mr-2'
+          "
+        ></i>
+        {{ isAudioPlaying ? "Đang phát..." : "Nghe" }} ({{ audioPlayCount }}/{{
+          maxPlays
+        }})
       </button>
 
       <div class="flex gap-2">
@@ -56,6 +72,24 @@
         >
           <i [class]="isMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up'"></i>
         </button>
+      </div>
+    </div>
+
+    <!-- Audio Progress Bar -->
+    <div class="mt-3">
+      <div class="flex items-center justify-between text-xs text-gray-600 mb-1">
+        <span>{{ formatAudioTime(audioCurrentTime) }}</span>
+        <span>{{ formatAudioTime(audioDuration) }}</span>
+      </div>
+      <div class="w-full bg-gray-300 rounded-full h-2 overflow-hidden">
+        <div
+          class="h-full rounded-full transition-all duration-200"
+          [ngClass]="{
+            'bg-red-500': !isAudioPlaying,
+            'bg-green-500': isAudioPlaying
+          }"
+          [style.width.%]="audioProgress"
+        ></div>
       </div>
     </div>
   </div>

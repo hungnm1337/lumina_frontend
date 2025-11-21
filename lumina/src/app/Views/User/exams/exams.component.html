@@ -19,7 +19,9 @@
         <!-- Search Box -->
         <div class="flex-1">
           <div class="relative">
-            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            <i
+              class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+            ></i>
             <input
               type="text"
               [(ngModel)]="searchTerm"
@@ -67,7 +69,10 @@
       </div>
 
       <!-- Active Filters Display -->
-      <div *ngIf="searchTerm || selectedSkill !== ''" class="mt-4 flex items-center gap-2 flex-wrap">
+      <div
+        *ngIf="searchTerm || selectedSkill !== ''"
+        class="mt-4 flex items-center gap-2 flex-wrap"
+      >
         <span class="text-sm text-gray-600">Active filters:</span>
         <span
           *ngIf="searchTerm"
@@ -85,7 +90,10 @@
         >
           <i class="fas fa-filter text-xs"></i>
           {{ selectedSkill }}
-          <button (click)="clearSkillFilter()" class="ml-1 hover:text-green-900">
+          <button
+            (click)="clearSkillFilter()"
+            class="ml-1 hover:text-green-900"
+          >
             <i class="fas fa-times text-xs"></i>
           </button>
         </span>
@@ -121,10 +129,22 @@
           <i [class]="skillGroup.icon" class="text-lg"></i>
         </div>
         <div class="flex-1">
-          <h2 class="text-lg font-bold">{{ skillGroup.skillName }}</h2>
-          <p class="text-xs opacity-90">
-            {{ skillGroup.exams.length }} exams
-          </p>
+          <div class="flex items-center gap-2">
+            <h2 class="text-lg font-bold">{{ skillGroup.skillName }}</h2>
+
+            <!-- ✅ Quota Badge for Reading/Listening -->
+            <span
+              *ngIf="
+                (skillGroup.skillName === 'Listening' ||
+                  skillGroup.skillName === 'Reading') &&
+                quotaInfo
+              "
+              class="text-sm px-2 py-0.5 rounded-md bg-white bg-opacity-20 backdrop-blur-sm"
+            >
+              {{ getRemainingText(skillGroup.skillName) }}
+            </span>
+          </div>
+          <p class="text-xs opacity-90">{{ skillGroup.exams.length }} exams</p>
         </div>
       </div>
 
@@ -133,7 +153,10 @@
         <!-- Empty State -->
         <div *ngIf="skillGroup.exams.length === 0" class="text-center py-8">
           <i [class]="skillGroup.icon" class="text-4xl text-gray-300 mb-2"></i>
-          <p class="text-sm text-gray-500">No exams available for {{ skillGroup.skillName.toLowerCase() }} skill</p>
+          <p class="text-sm text-gray-500">
+            No exams available for
+            {{ skillGroup.skillName.toLowerCase() }} skill
+          </p>
         </div>
 
         <!-- Exams Grid -->
@@ -141,39 +164,150 @@
           <div
             *ngFor="let exam of skillGroup.exams"
             (click)="startExam(exam)"
-            class="bg-white border border-gray-200 rounded-xl p-4 transition-all duration-200 hover:border-blue-400 hover:shadow-lg hover:-translate-y-1 cursor-pointer group"
+            class="relative bg-white border rounded-xl p-4 transition-all duration-200 cursor-pointer group"
+            [ngClass]="{
+              'border-gray-200 hover:border-blue-400 hover:shadow-lg hover:-translate-y-1':
+                !exam.completionStatus?.isCompleted,
+              'border-green-300 bg-green-50 hover:border-green-500 hover:shadow-green-200 opacity-90':
+                exam.completionStatus?.isCompleted
+            }"
           >
-            <!-- Top accent -->
-            <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <!-- ✅ Completed Badge -->
+            <div
+              *ngIf="exam.completionStatus?.isCompleted"
+              class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10 animate-slideInRight"
+            >
+              <i class="fas fa-check-circle"></i>
+              <span class="font-medium">Completed</span>
+            </div>
+
+            <!-- ✅ Progress Indicator (for in-progress exams) -->
+            <div
+              *ngIf="
+                exam.completionStatus &&
+                !exam.completionStatus.isCompleted &&
+                exam.completionStatus.completedPartsCount > 0
+              "
+              class="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium z-10"
+            >
+              {{ exam.completionStatus.completedPartsCount }}/{{
+                exam.completionStatus.totalPartsCount
+              }}
+            </div>
 
             <!-- Header -->
             <div class="flex items-start gap-3 mb-3">
-              <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center group-hover:bg-blue-50 transition-colors flex-shrink-0">
-                <i [class]="skillGroup.icon" class="text-gray-400 group-hover:text-blue-500 transition-colors"></i>
+              <div
+                class="w-10 h-10 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
+                [ngClass]="{
+                  'bg-gray-100 group-hover:bg-blue-50':
+                    !exam.completionStatus?.isCompleted,
+                  'bg-green-200 group-hover:bg-green-300':
+                    exam.completionStatus?.isCompleted
+                }"
+              >
+                <i
+                  [class]="skillGroup.icon"
+                  [ngClass]="{
+                    'text-gray-400 group-hover:text-blue-500':
+                      !exam.completionStatus?.isCompleted,
+                    'text-green-600': exam.completionStatus?.isCompleted
+                  }"
+                  class="transition-colors"
+                ></i>
               </div>
               <div class="flex-1 min-w-0">
-                <h3 class="text-base font-bold text-gray-900 line-clamp-2 leading-snug mb-1">
+                <h3
+                  class="text-base font-bold line-clamp-2 leading-snug mb-1"
+                  [ngClass]="{
+                    'text-gray-900': !exam.completionStatus?.isCompleted,
+                    'text-green-800': exam.completionStatus?.isCompleted
+                  }"
+                >
                   {{ exam.name }}
                 </h3>
-                <p class="text-xs text-gray-600 line-clamp-2">{{ exam.description }}</p>
+                <p class="text-xs text-gray-600 line-clamp-2">
+                  {{ exam.description }}
+                </p>
+              </div>
+            </div>
+
+            <!-- ✅ Progress Bar -->
+            <div
+              *ngIf="
+                exam.completionStatus &&
+                exam.completionStatus.totalPartsCount > 0
+              "
+              class="mb-3"
+            >
+              <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div
+                  class="h-2 transition-all duration-500 ease-out rounded-full"
+                  [ngClass]="{
+                    'bg-gradient-to-r from-blue-400 to-blue-600':
+                      !exam.completionStatus.isCompleted,
+                    'bg-gradient-to-r from-green-400 to-green-600':
+                      exam.completionStatus.isCompleted
+                  }"
+                  [style.width.%]="
+                    (exam.completionStatus.completedPartsCount /
+                      exam.completionStatus.totalPartsCount) *
+                    100
+                  "
+                ></div>
+              </div>
+              <div class="flex justify-between items-center mt-1">
+                <span class="text-xs text-gray-500">
+                  {{ exam.completionStatus.completedPartsCount }} of
+                  {{ exam.completionStatus.totalPartsCount }} parts
+                </span>
+                <span
+                  class="text-xs font-medium"
+                  [ngClass]="{
+                    'text-blue-600': !exam.completionStatus.isCompleted,
+                    'text-green-600': exam.completionStatus.isCompleted
+                  }"
+                >
+                  {{ exam.completionStatus.completionPercentage }}%
+                </span>
               </div>
             </div>
 
             <!-- Footer -->
-            <div class="flex items-center justify-between text-xs text-gray-500 pt-3 border-t border-gray-100">
+            <div
+              class="flex items-center justify-between text-xs text-gray-500 pt-3 border-t border-gray-100"
+            >
               <div class="flex flex-col gap-1.5">
                 <span class="flex items-center gap-1">
                   <i class="fas fa-user"></i>
-                  <span class="truncate max-w-32">{{ exam.createdByName }}</span>
+                  <span class="truncate max-w-32">{{
+                    exam.createdByName
+                  }}</span>
                 </span>
                 <span class="flex items-center gap-1">
                   <i class="fas fa-calendar-alt"></i>
                   {{ formatDate(exam.createdAt) }}
                 </span>
               </div>
-              <button class="flex items-center gap-1 px-2 py-1 rounded-lg text-white transition-all" [class]="getButtonColor(skillGroup.color)">
-                <i class="fas fa-play text-xs"></i>
-                <span class="text-xs font-medium">Start</span>
+              <button
+                class="flex items-center gap-1 px-2 py-1 rounded-lg text-white transition-all"
+                [ngClass]="
+                  exam.completionStatus?.isCompleted
+                    ? 'bg-green-500 hover:bg-green-600'
+                    : getButtonColor(skillGroup.color)
+                "
+              >
+                <i
+                  [ngClass]="
+                    exam.completionStatus?.isCompleted
+                      ? 'fas fa-redo'
+                      : 'fas fa-play'
+                  "
+                  class="text-xs"
+                ></i>
+                <span class="text-xs font-medium">
+                  {{ exam.completionStatus?.isCompleted ? "Retry" : "Start" }}
+                </span>
               </button>
             </div>
           </div>

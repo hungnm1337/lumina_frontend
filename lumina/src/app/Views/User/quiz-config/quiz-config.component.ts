@@ -43,6 +43,9 @@ export class QuizConfigComponent implements OnInit {
         this.currentPage = 1; // Reset to first page when loading/searching
         this.updateDisplayedFolders();
         this.isLoading = false;
+        
+        // Load quiz scores sau khi load folders xong
+        this.loadQuizScores();
       },
       error: (error) => {
         console.error('Error loading folders:', error);
@@ -50,6 +53,37 @@ export class QuizConfigComponent implements OnInit {
         this.folders = [];
         this.displayedFolders = [];
         this.totalPages = 1;
+      }
+    });
+  }
+
+  // Load quiz scores và map vào folders
+  loadQuizScores(): void {
+    this.vocabularyService.getQuizScores().subscribe({
+      next: (scores) => {
+        // Map scores vào folders
+        const scoreMap = new Map<number, any>();
+        scores.forEach(score => {
+          scoreMap.set(score.vocabularyListId, score);
+        });
+
+        // Cập nhật folders với scores
+        this.folders.forEach(folder => {
+          const score = scoreMap.get(folder.vocabularyListId);
+          if (score) {
+            folder.bestScore = score.bestScore;
+            folder.lastScore = score.lastScore;
+            folder.lastCompletedAt = score.lastCompletedAt;
+            folder.totalAttempts = score.totalAttempts;
+          }
+        });
+
+        // Cập nhật displayed folders
+        this.updateDisplayedFolders();
+      },
+      error: (error) => {
+        console.error('Error loading quiz scores:', error);
+        // Không hiển thị lỗi, chỉ log
       }
     });
   }

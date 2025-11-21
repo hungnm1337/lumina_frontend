@@ -9,7 +9,8 @@ import {
   VocabularyListResponse,
   VocabularyStats,
   Vocabulary,
-  VocabularyCategory
+  VocabularyCategory,
+  QuizResultRequest
 } from '../../Interfaces/vocabulary.interfaces';
 
 @Injectable({
@@ -322,5 +323,34 @@ export class VocabularyService {
   // Lấy vocabulary words từ một published list cho Flashcards
   getPublicVocabularyByList(listId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/public/${listId}`);
+  }
+
+  // === QUIZ SCORES ===
+  
+  // Lưu quiz result
+  saveQuizResult(result: QuizResultRequest): Observable<any> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+    
+    return this.http.post(`${environment.apiUrl}/spaced-repetition/quiz/save-result`, result, { headers });
+  }
+
+  // Lấy quiz scores
+  getQuizScores(vocabularyListId?: number): Observable<any[]> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+    
+    let params: any = {};
+    if (vocabularyListId) {
+      params.vocabularyListId = vocabularyListId.toString();
+    }
+    
+    return this.http.get<any[]>(`${environment.apiUrl}/spaced-repetition/quiz/scores`, { headers, params });
   }
 }

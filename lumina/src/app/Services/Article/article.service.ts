@@ -40,17 +40,22 @@ export class ArticleService {
     return this.http.get<ArticleResponse>(`${this.apiUrl}/${id}`);
   }
 
-  // Lấy danh sách tất cả articles
+  // Lấy danh sách tất cả articles (không cần đăng nhập)
   getAllArticles(): Observable<ArticleResponse[]> {
     const token = localStorage.getItem('lumina_token');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
+    let headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
+    
+    // Chỉ thêm token nếu có (khi đã đăng nhập)
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    
     return this.http.get<ArticleResponse[]>(this.apiUrl, { headers });
   }
 
-  // Query articles with pagination/sorting/search
+  // Query articles with pagination/sorting/search (không cần đăng nhập)
   queryArticles(params: {
     page?: number;
     pageSize?: number;
@@ -62,10 +67,14 @@ export class ArticleService {
     status?: 'draft' | 'pending' | 'published'; 
     }): Observable<{ items: ArticleResponse[]; total: number; page: number; pageSize: number; }> {
     const token = localStorage.getItem('lumina_token');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
+    let headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
+    
+    // Chỉ thêm token nếu có (khi đã đăng nhập)
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
     
     const httpParams: any = {};
     if (params.page) httpParams.page = params.page;

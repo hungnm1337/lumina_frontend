@@ -84,8 +84,8 @@
                [innerHTML]="article.sections[currentSectionIndex].sectionContent">
           </div>
 
-          <!-- Mark as Read Button -->
-          <div class="section-actions" *ngIf="!isSectionCompleted(currentSectionIndex)">
+          <!-- Mark as Read Button - chỉ hiển thị khi đã đăng nhập -->
+          <div class="section-actions" *ngIf="!isSectionCompleted(currentSectionIndex) && isLogin">
             <button class="mark-read-btn" (click)="markSectionAsRead(currentSectionIndex)">
               <i class="fas fa-check"></i>
               Mark as Read
