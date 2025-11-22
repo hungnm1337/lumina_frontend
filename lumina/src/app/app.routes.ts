@@ -29,6 +29,9 @@ import { UserNoteDetailComponent } from './Views/User/UserNote/user-note-detail/
 import { StreakComponent } from './Views/Common/streak/streak.component';
 
 import { QuotaGuard } from './guards/quota.guard';
+import { ExamComponent as MockTestExamComponent } from './Views/User/MockTest/mocktest-exam/exam.component';
+import { ResultComponent as MockTestResultComponent } from './Views/User/MockTest/mocktest-result/result.component';
+
 import { RankingsComponent } from './Views/Common/Rankings/rankings/rankings.component';
 export const routes: Routes = [
   {
@@ -57,6 +60,8 @@ export const routes: Routes = [
     component: HomepageComponent,
     children: [
       { path: '', component: ContentHomepageComponent },
+      { path: 'mocktest/exams', component: MockTestExamComponent },
+      { path: 'mocktest/result/:attemptId', component: MockTestResultComponent },
       { path: 'events', component: UserEventsDashboardComponent },
       { path: 'slides', component: DashboardSlideComponent },
       { path: 'leaderboard', component: UserLeaderboardComponent },
@@ -65,9 +70,9 @@ export const routes: Routes = [
         component: UserDashboardComponent,
         children: [
           { path: 'exams', component: ExamsComponent },
-          { 
-            path: 'upgrade', 
-            loadComponent: () => 
+          {
+            path: 'upgrade',
+            loadComponent: () =>
               import('./Views/User/upgrade-page/upgrade-page.component').then(
                 (m) => m.UpgradePageComponent
               ),
@@ -81,7 +86,7 @@ export const routes: Routes = [
           { path: '', redirectTo: 'exams', pathMatch: 'full' },
         ],
       },
-      
+
     ],
   },
   // {
@@ -103,6 +108,7 @@ export const routes: Routes = [
   { path: 'articles', component: BlogArticlesComponent },
   { path: 'articles/:id', component: BlogDetailComponent },
   { path: 'vocabulary', component: UserVocabularyComponent },
+
   {
     path: 'vocabulary/list/:id',
     loadComponent: () =>

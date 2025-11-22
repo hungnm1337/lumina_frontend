@@ -30,6 +30,7 @@ export interface QuestionDTO {
   questionId: number;
   partId: number;
   questionType?: string;
+  partCode:string;
   stemText: string;
   promptId?: number;
   scoreWeight: number;

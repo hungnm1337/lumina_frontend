@@ -50,6 +50,7 @@ export class ExamAttemptListComponent implements OnInit {
         this.extractUniqueValues();
         this.applyFilters();
         this.isLoading = false;
+        console.log('Exam attempts loaded:', attempts);
       },
       error: (error) => {
         console.error('Error fetching exam attempts:', error);
