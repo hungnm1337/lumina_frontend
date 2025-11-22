@@ -25,6 +25,7 @@ export class HeaderComponent implements OnInit {
   // Streak data
   currentStreak = 0;
   streakLoading = true;
+  
 
   constructor(
     private authService: AuthService,
