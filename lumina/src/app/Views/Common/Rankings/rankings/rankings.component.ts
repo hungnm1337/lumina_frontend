@@ -7,8 +7,7 @@ interface User {
   id: number;
   name: string;
   avatar: string;
-  streak?: number; // Cho phép undefined vì list Points ko có streak
-  points?: number; // Cho phép undefined vì list Streak ko có points
+  streak: number;
   isPro: boolean;
 }
 
@@ -20,27 +19,12 @@ interface User {
   styleUrl: './rankings.component.scss'
 })
 export class RankingsComponent implements OnInit {
-  // Dữ liệu từ API (Streak)
-  streakUsers = signal<User[]>([]);
-  
-  // Dữ liệu Hardcode (Points)
-  pointsUsers = signal<User[]>([
-    { id: 101, name: "Lê Văn Luyện", avatar: "https://i.pravatar.cc/150?u=10", points: 9850, isPro: true },
-    { id: 102, name: "Trần Dần", avatar: "https://i.pravatar.cc/150?u=20", points: 8720, isPro: false },
-    { id: 103, name: "Ngô Bá Khá", avatar: "https://i.pravatar.cc/150?u=30", points: 7690, isPro: true },
-    { id: 104, name: "Huấn Rose", avatar: "https://i.pravatar.cc/150?u=40", points: 6400, isPro: false },
-    { id: 105, name: "User 05", avatar: "https://i.pravatar.cc/150?u=50", points: 5100, isPro: false },
-    { id: 106, name: "User 06", avatar: "https://i.pravatar.cc/150?u=60", points: 4950, isPro: true },
-    { id: 107, name: "User 07", avatar: "https://i.pravatar.cc/150?u=70", points: 3200, isPro: false },
-  ]);
-
+  users = signal<User[]>([]);
   loading = signal<boolean>(true);
-  activeTab = signal<'streak' | 'points'>('streak'); // Mặc định là streak hoặc points tuỳ bạn
 
   constructor(private streakService: StreakService) {}
 
   ngOnInit() {
-    // Giữ nguyên logic gọi API của bạn
     this.streakService.getTopStreakUsers().subscribe({
       next: res => {
         if (Array.isArray(res)) {
@@ -51,7 +35,7 @@ export class RankingsComponent implements OnInit {
             streak: u.currentStreak ?? 0,
             isPro: !!u.isPro
           }));
-          this.streakUsers.set(mapped);
+          this.users.set(mapped);
         }
         this.loading.set(false);
       },
@@ -59,19 +43,9 @@ export class RankingsComponent implements OnInit {
     });
   }
 
-  // Computed value tự động thay đổi dựa trên activeTab
-  sortedUsers = computed(() => {
-    if (this.activeTab() === 'streak') {
-      return [...this.streakUsers()].sort((a, b) => (b.streak || 0) - (a.streak || 0));
-    } else {
-      return [...this.pointsUsers()].sort((a, b) => (b.points || 0) - (a.points || 0));
-    }
-  });
-
+  // Sắp xếp user theo streak cao nhất
+  sortedUsers = computed(() => [...this.users()].sort((a, b) => b.streak - a.streak));
+  
   top3 = computed(() => this.sortedUsers().slice(0, 3));
   restOfList = computed(() => this.sortedUsers().slice(3));
-
-  setTab(tab: 'streak' | 'points') {
-    this.activeTab.set(tab);
-  }
 }
