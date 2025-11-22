@@ -65,6 +65,13 @@ export const routes: Routes = [
         component: UserDashboardComponent,
         children: [
           { path: 'exams', component: ExamsComponent },
+          { 
+            path: 'upgrade', 
+            loadComponent: () => 
+              import('./Views/User/upgrade-page/upgrade-page.component').then(
+                (m) => m.UpgradePageComponent
+              ),
+          },
           { path: 'exam-attempts', component: ExamAttemptListComponent },
           { path: 'exam-attempts/:id', component: ExamAttemptDetailComponent },
           { path: 'exam/:id', component: ExamPartComponent },

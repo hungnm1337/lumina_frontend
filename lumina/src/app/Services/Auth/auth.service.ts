@@ -139,6 +139,15 @@ export class AuthService {
     return this.currentUserSource.value;
   }
 
+  updateCurrentUser(user: Partial<AuthUserResponse>): void {
+    const currentUser = this.getCurrentUser();
+    if (currentUser) {
+      const updatedUser = { ...currentUser, ...user };
+      localStorage.setItem('lumina_user', JSON.stringify(updatedUser));
+      this.currentUserSource.next(updatedUser);
+    }
+  }
+
   // getDecodedToken(): any | null {
   //   const token = localStorage.getItem('lumina_token');
   //   if (!token) return null;
@@ -159,32 +168,31 @@ export class AuthService {
   //     null
   //   );
   // }
-getDecodedToken(): any | null {
-  const token = localStorage.getItem('lumina_token');
-  if (!token) return null;
-  try {
-    return jwtDecode(token);
-  } catch (error) {
-    console.error('Error decoding token:', error);
-    return null;
+  getDecodedToken(): any | null {
+    const token = localStorage.getItem('lumina_token');
+    if (!token) return null;
+    try {
+      return jwtDecode(token);
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return null;
+    }
   }
-}
-getCurrentUserId(): number {
+  getCurrentUserId(): number {
     const user = this.getCurrentUser();
     return user?.id ?? 0;
   }
 
   getRoleClaim(): string | null {
-  const payload = this.getDecodedToken();
-  if (!payload) return null;
-  return (
-    payload['role'] ||
-    payload['roles'] ||
-    payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
-    null
-  );
-}
-
+    const payload = this.getDecodedToken();
+    if (!payload) return null;
+    return (
+      payload['role'] ||
+      payload['roles'] ||
+      payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
+      null
+    );
+  }
 
   getRoleId(): number | null {
     const payload = this.getDecodedToken();
@@ -224,31 +232,30 @@ getCurrentUserId(): number {
     }
 
     const request: RefreshTokenRequest = { refreshToken };
-    return this.http.post<LoginResponse>(`${this.apiUrl}/refresh`, request).pipe(
-      tap((response) => this.setSession(response))
-    );
+    return this.http
+      .post<LoginResponse>(`${this.apiUrl}/refresh`, request)
+      .pipe(tap((response) => this.setSession(response)));
   }
- 
-navigateByRole(): void {
-  console.log('Role claim:', this.getRoleClaim());
-  console.log('Role ID:', this.getRoleId());
 
-  const roleId = this.getRoleId();
-  switch (roleId) {
-    case 1:
-      this.router.navigate(['/admin']);
-      break;
-    case 2:
-      this.router.navigate(['/manager']);
-      break;
-    case 3:
-      this.router.navigate(['/staff/dashboard']);
-      break;
-    case 4:
-    default:
-      this.router.navigate(['/homepage']);
-      break;
+  navigateByRole(): void {
+    console.log('Role claim:', this.getRoleClaim());
+    console.log('Role ID:', this.getRoleId());
+
+    const roleId = this.getRoleId();
+    switch (roleId) {
+      case 1:
+        this.router.navigate(['/admin']);
+        break;
+      case 2:
+        this.router.navigate(['/manager']);
+        break;
+      case 3:
+        this.router.navigate(['/staff/dashboard']);
+        break;
+      case 4:
+      default:
+        this.router.navigate(['/homepage']);
+        break;
+    }
   }
-}
-
 }

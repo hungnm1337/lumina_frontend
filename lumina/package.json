@@ -26,6 +26,7 @@
     "google-one-tap": "^1.0.6",
     "jwt-decode": "^4.0.0",
     "lottie-web": "^5.13.0",
+    "ngx-image-cropper": "^8.0.0",
     "ngx-quill": "^26.0.10",
     "ngx-toastr": "^19.1.0",
     "quill": "^2.0.3",

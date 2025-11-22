@@ -74,23 +74,23 @@
                 <!-- TOP 2 -->
                 <div class="flex flex-col items-center w-1/3 max-w-[110px]">
                     <div class="mb-2 text-center w-full">
-                        <span class="text-purple-200 font-bold text-sm truncate block w-full">{{ top3()[1]?.name }}</span>
+                        <span class="text-purple-200 font-bold text-sm truncate block w-full">{{ top3()[1].name }}</span>
                         <div class="flex items-center justify-center text-purple-100 text-xs font-medium bg-purple-800/40 px-2 py-0.5 rounded-full mt-1">
                             <ng-container *ngIf="activeTab() === 'points'; else streakIcon2">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                {{ top3()[1]?.points | number }} XP
+                                {{ top3()[1].points | number }} XP
                             </ng-container>
                             <ng-template #streakIcon2>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" /></svg>
-                                {{ top3()[1]?.streak }} Ngày
+                                {{ top3()[1].streak }} Ngày
                             </ng-template>
                         </div>
                     </div>
                     <div class="relative">
-                        <img [src]="top3()[1]?.avatar ? top3()[1]?.avatar : 'https://www.svgrepo.com/show/452030/avatar-default.svg'"
+                        <img [src]="top3()[1].avatar ? top3()[1].avatar : 'https://www.svgrepo.com/show/452030/avatar-default.svg'"
                             alt="avatar" class="w-20 h-20 rounded-full object-cover shadow-lg bg-white"
-                            [ngClass]="top3()[1]?.isPro ? 'ring-4 ring-yellow-400' : 'ring-2 ring-purple-200'">
-                        <div *ngIf="top3()[1]?.isPro" class="absolute -bottom-1 -right-1 bg-yellow-400 text-white text-[10px] px-1.5 rounded-full font-bold border border-white">PRO</div>
+                            [ngClass]="top3()[1].isPro ? 'ring-4 ring-yellow-400' : 'ring-2 ring-purple-200'">
+                        <div *ngIf="top3()[1].isPro" class="absolute -bottom-1 -right-1 bg-yellow-400 text-white text-[10px] px-1.5 rounded-full font-bold border border-white">PRO</div>
                         <div class="absolute -top-2 -left-2 w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold text-white shadow-md bg-gray-400">2</div>
                     </div>
                     <div class="w-full h-24 bg-purple-500/40 mt-3 rounded-t-lg relative border-t-4 border-gray-300 shadow-inner flex items-center justify-center">
@@ -101,15 +101,15 @@
                 <!-- TOP 1 -->
                 <div class="flex flex-col items-center w-1/3 max-w-[130px] -mt-8 z-10">
                     <div class="mb-2 text-center w-full">
-                        <span class="text-white font-bold text-lg truncate block w-full drop-shadow-md">{{ top3()[0]?.name }}</span>
+                        <span class="text-white font-bold text-lg truncate block w-full drop-shadow-md">{{ top3()[0].name }}</span>
                         <div class="flex items-center justify-center text-yellow-300 text-sm font-bold bg-purple-900/60 px-3 py-1 rounded-full mt-1 border border-yellow-500/30">
                             <ng-container *ngIf="activeTab() === 'points'; else streakIcon1">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                {{ top3()[0]?.points | number }} XP
+                                {{ top3()[0].points | number }} XP
                             </ng-container>
                             <ng-template #streakIcon1>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" /></svg>
-                                {{ top3()[0]?.streak }} Ngày
+                                {{ top3()[0].streak }} Ngày
                             </ng-template>
                         </div>
                     </div>
@@ -120,10 +120,10 @@
                             <circle cx="12" cy="8" r="7" />
                             <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
                         </svg>
-                        <img [src]="top3()[0]?.avatar ? top3()[0]?.avatar : 'https://www.svgrepo.com/show/452030/avatar-default.svg'"
+                        <img [src]="top3()[0].avatar ? top3()[0].avatar : 'https://www.svgrepo.com/show/452030/avatar-default.svg'"
                             alt="avatar" class="w-24 h-24 rounded-full object-cover shadow-lg bg-white"
-                            [ngClass]="top3()[0]?.isPro ? 'ring-4 ring-yellow-400' : 'ring-2 ring-purple-200'">
-                        <div *ngIf="top3()[0]?.isPro" class="absolute -bottom-1 -right-1 bg-yellow-400 text-white text-[10px] px-1.5 rounded-full font-bold border border-white">PRO</div>
+                            [ngClass]="top3()[0].isPro ? 'ring-4 ring-yellow-400' : 'ring-2 ring-purple-200'">
+                        <div *ngIf="top3()[0].isPro" class="absolute -bottom-1 -right-1 bg-yellow-400 text-white text-[10px] px-1.5 rounded-full font-bold border border-white">PRO</div>
                         <div class="absolute -top-2 -left-2 w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold text-white shadow-md bg-yellow-500">1</div>
                     </div>
                     <div class="w-full h-32 bg-gradient-to-b from-purple-500 to-purple-600 mt-3 rounded-t-lg relative border-t-4 border-yellow-400 shadow-lg flex items-center justify-center">
@@ -134,23 +134,23 @@
                 <!-- TOP 3 -->
                 <div class="flex flex-col items-center w-1/3 max-w-[110px]">
                     <div class="mb-2 text-center w-full">
-                        <span class="text-purple-200 font-bold text-sm truncate block w-full">{{ top3()[2]?.name }}</span>
+                        <span class="text-purple-200 font-bold text-sm truncate block w-full">{{ top3()[2].name }}</span>
                         <div class="flex items-center justify-center text-purple-100 text-xs font-medium bg-purple-800/40 px-2 py-0.5 rounded-full mt-1">
                             <ng-container *ngIf="activeTab() === 'points'; else streakIcon3">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                {{ top3()[2]?.points | number }} XP
+                                {{ top3()[2].points | number }} XP
                             </ng-container>
                             <ng-template #streakIcon3>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" /></svg>
-                                {{ top3()[2]?.streak }} Ngày
+                                {{ top3()[2].streak }} Ngày
                             </ng-template>
                         </div>
                     </div>
                     <div class="relative">
-                        <img [src]="top3()[2]?.avatar ? top3()[2]?.avatar : 'https://www.svgrepo.com/show/452030/avatar-default.svg'"
+                        <img [src]="top3()[2].avatar ? top3()[2].avatar : 'https://www.svgrepo.com/show/452030/avatar-default.svg'"
                             alt="avatar" class="w-20 h-20 rounded-full object-cover shadow-lg bg-white"
-                            [ngClass]="top3()[2]?.isPro ? 'ring-4 ring-yellow-400' : 'ring-2 ring-purple-200'">
-                        <div *ngIf="top3()[2]?.isPro" class="absolute -bottom-1 -right-1 bg-yellow-400 text-white text-[10px] px-1.5 rounded-full font-bold border border-white">PRO</div>
+                            [ngClass]="top3()[2].isPro ? 'ring-4 ring-yellow-400' : 'ring-2 ring-purple-200'">
+                        <div *ngIf="top3()[2].isPro" class="absolute -bottom-1 -right-1 bg-yellow-400 text-white text-[10px] px-1.5 rounded-full font-bold border border-white">PRO</div>
                         <div class="absolute -top-2 -left-2 w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold text-white shadow-md bg-orange-600">3</div>
                     </div>
                     <div class="w-full h-16 bg-purple-500/30 mt-3 rounded-t-lg relative border-t-4 border-orange-600 shadow-inner flex items-center justify-center">

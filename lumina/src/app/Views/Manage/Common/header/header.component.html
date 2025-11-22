@@ -11,20 +11,57 @@
           <div class="relative">
               <button class="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
                   <i class="fas fa-bell text-lg"></i>
-                  <!-- Dấu chấm thông báo mới -->
                   <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center border-2 border-white">3</span>
               </button>
           </div>
 
-          <!-- Thông tin người dùng -->
-          <div class="flex items-center space-x-3 cursor-pointer">
-              <img src="https://ui-avatars.com/api/?name=Staff&background=667eea&color=fff" alt="Staff Avatar" class="w-9 h-9 rounded-full">
+          <!-- User Profile Dropdown -->
+          @if (currentUser$ | async; as currentUser) {
+          <div class="relative">
+            <button 
+              (click)="toggleDropdown($event)"
+              class="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-all">
+              <div class="w-9 h-9 rounded-full overflow-hidden ring-2 ring-gray-200">
+                @if (currentUser.avatarUrl) {
+                  <img [src]="currentUser.avatarUrl" [alt]="currentUser.name" class="w-full h-full object-cover" />
+                } @else {
+                  <div class="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <span class="text-white font-bold text-sm">{{ currentUser.name.charAt(0).toUpperCase() }}</span>
+                  </div>
+                }
+              </div>
               <div>
-                <span class="text-sm font-medium text-gray-800">Manager User</span>
+                <span class="text-sm font-medium text-gray-800">{{ currentUser.name }}</span>
                 <p class="text-xs text-gray-500">Content Manager</p>
               </div>
               <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+            </button>
+
+            <!-- Dropdown Menu -->
+            @if (isDropdownOpen) {
+            <div class="absolute right-0 top-full mt-2 w-52 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+              <div class="p-3 border-b border-gray-100">
+                <div class="font-semibold text-gray-800 text-sm truncate">{{ currentUser.name }}</div>
+                <div class="text-xs text-gray-500 truncate">{{ currentUser.email }}</div>
+              </div>
+              <div class="py-1">
+                <a 
+                  (click)="goToProfile()"
+                  class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                  <i class="fas fa-user-circle mr-2 w-4"></i>
+                  <span>Profile</span>
+                </a>
+                <a 
+                  (click)="logout()"
+                  class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer">
+                  <i class="fas fa-sign-out-alt mr-2 w-4"></i>
+                  <span>Đăng xuất</span>
+                </a>
+              </div>
+            </div>
+            }
           </div>
+          }
       </div>
   </div>
 </header>

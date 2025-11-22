@@ -8,6 +8,7 @@ import { AuthUserResponse } from '../../../Interfaces/auth.interfaces';
 import { StreakService } from '../../../Services/streak/streak.service';
 import { QuotaService } from '../../../Services/Quota/quota.service';
 import { UpgradeModalComponent } from '../../User/upgrade-modal/upgrade-modal.component';
+import { UserService } from '../../../Services/User/user.service';
 
 @Component({
   selector: 'app-header',
@@ -31,12 +32,33 @@ export class HeaderComponent implements OnInit {
     private elementRef: ElementRef,
     private router: Router,
     private streakService: StreakService,
-    private quotaService: QuotaService
+    private quotaService: QuotaService,
+    private userService: UserService
   ) {}
 
   ngOnInit(): void {
     this.currentUser$ = this.authService.currentUser$;
     this.loadStreakData();
+    this.loadUserProfile();
+  }
+
+  loadUserProfile(): void {
+    const userId = this.authService.getCurrentUserId();
+    if (!userId || userId === 0) return;
+
+    this.userService.getProfile().subscribe({
+      next: (profile) => {
+        if (profile.avatarUrl) {
+          this.authService.updateCurrentUser({
+            avatarUrl: profile.avatarUrl,
+            name: profile.fullName,
+          });
+        }
+      },
+      error: (err) => {
+        console.error('Error loading profile for header:', err);
+      },
+    });
   }
 
   loadStreakData(): void {
@@ -58,7 +80,7 @@ export class HeaderComponent implements OnInit {
         console.error('Error loading streak:', err);
         this.currentStreak = 0;
         this.streakLoading = false;
-      }
+      },
     });
   }
 
@@ -88,7 +110,6 @@ export class HeaderComponent implements OnInit {
     return this.currentStreak.toString();
   }
 
-  
   goToStreakPage(): void {
     this.router.navigate(['/streak']);
     this.checkPremiumStatus();
