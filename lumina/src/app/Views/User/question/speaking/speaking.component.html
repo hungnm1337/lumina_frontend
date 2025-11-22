@@ -71,20 +71,28 @@
         </button>
 
         <div class="flex gap-2">
-          <!-- <button
-            (click)="confirmExit()"
-            class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600"
-          >
-            Lưu & Thoát
-          </button> -->
+          <!-- Chỉ hiển thị nút Nộp bài khi KHÔNG trong mock test -->
+          @if (!isInMockTest) {
           <button
             (click)="finishSpeakingExam()"
             class="px-4 py-2 rounded bg-orange-600 text-white hover:bg-orange-700"
           >
             Nộp bài
           </button>
+          }
         </div>
 
+        <!-- Nút Câu sau/Hoàn thành Part -->
+        @if (isInMockTest && currentIndex === questions.length - 1) {
+        <!-- Nếu đang trong mock test và ở câu cuối -->
+        <button
+          (click)="finishSpeakingExam()"
+          class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
+        >
+          Hoàn thành Part<i class="fas fa-check ml-2"></i>
+        </button>
+        } @else {
+        <!-- Nút Câu sau bình thường -->
         <button
           (click)="nextQuestionManual()"
           [disabled]="currentIndex === questions.length - 1"
@@ -92,6 +100,7 @@
         >
           Câu sau<i class="fas fa-arrow-right ml-2"></i>
         </button>
+        }
       </div>
 
       <!-- Question Navigator -->

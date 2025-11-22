@@ -19,6 +19,11 @@ import { UserService } from '../../../Services/User/user.service';
 })
 export class HeaderComponent implements OnInit {
   currentUser$!: Observable<AuthUserResponse | null>;
+
+  moveToMocktest() {
+    console.log('Navigating to Mock Test Exams');
+    this.router.navigate(['homepage/mocktest/exams']);
+  }
   isDropdownOpen = false;
   isPremium = false;
   showUpgradeModal = false;
@@ -26,6 +31,7 @@ export class HeaderComponent implements OnInit {
   // Streak data
   currentStreak = 0;
   streakLoading = true;
+  
 
   constructor(
     private authService: AuthService,

@@ -41,7 +41,9 @@ import { QuotaLimitModalComponent } from '../../quota-limit-modal/quota-limit-mo
 })
 export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   @Input() questions: QuestionDTO[] | null = null;
+  @Input() isInMockTest: boolean = false; // Để biết đang thi trong mock test hay standalone
   @Output() finished = new EventEmitter<void>();
+  @Output() writingPartCompleted = new EventEmitter<void>(); // Phát sự kiện khi hoàn thành part
 
   isShowHint: boolean = false;
   currentIndex = 0;
@@ -129,10 +131,17 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       }
 
       if (!this.attemptId) {
-        console.error('No attemptId found for Writing');
+        console.error('[Writing] No attemptId found');
+
+        // ✅ Nếu trong mock test, chỉ cảnh báo (mock test sẽ tạo)
+        if (this.isInMockTest) {
+          console.warn('[Writing] ⚠️ In mock test mode - waiting for mock test to create attempt');
+        }
+      } else {
+        console.log('[Writing] ✅ Loaded attemptId:', this.attemptId);
       }
     } catch (error) {
-      console.error('Error loading attemptId:', error);
+      console.error('[Writing] Error loading attemptId:', error);
     }
   }
 
@@ -413,9 +422,18 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   finishExam(): void {
-    this.showExplain = true;
     this.saveCurrentState();
 
+    // ✅ Nếu đang trong mock test, chỉ phát sự kiện và KHÔNG hiển thị kết quả
+    if (this.isInMockTest) {
+      console.log('[Writing] ✅ Writing part completed in mock test - emitting event');
+      this.isFinished = true;
+      this.writingPartCompleted.emit();
+      return;
+    }
+
+    // ✅ Nếu thi standalone, hiển thị kết quả như cũ
+    this.showExplain = true;
     this.callEndExamAPI();
 
     // After submit, fetch feedback for all questions and save to localStorage
@@ -669,6 +687,13 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   finishWritingExam(): void {
     const totalQuestions = this.questions?.length || 0;
 
+    // ✅ Nếu trong mock test, trực tiếp finish mà KHÔNG check
+    if (this.isInMockTest) {
+      this.finishExam();
+      return;
+    }
+
+    // ✅ Chỉ check questions in progress khi thi standalone
     const questionsInProgress =
       this.questions?.filter((q) => {
         const hasAnswer = this.hasAnswer(q.questionId);
@@ -692,6 +717,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       this.questions?.filter((q) => this.isQuestionSubmitted(q.questionId))
         .length || 0;
 
+    // ✅ Nếu thi standalone, hiển thị confirm như cũ
     const confirmFinish = confirm(
       'Bạn có chắc chắn muốn nộp bài thi Writing không?\n\n' +
         `Số câu đã nộp: ${submittedCount}/${totalQuestions}`
