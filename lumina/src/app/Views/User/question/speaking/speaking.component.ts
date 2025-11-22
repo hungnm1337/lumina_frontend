@@ -51,7 +51,9 @@ interface QuestionResult {
 export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   @Input() questions: QuestionDTO[] = [];
   @Input() partInfo: ExamPartDTO | null = null;
+  @Input() isInMockTest: boolean = false; // Để biết đang thi trong mock test hay standalone
   @Output() speakingAnswered = new EventEmitter<boolean>();
+  @Output() speakingPartCompleted = new EventEmitter<void>(); // Phát sự kiện khi hoàn thành part
 
   // Speaking-specific state
   showExplain = false;
@@ -131,7 +133,13 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       if (!stored) {
         console.warn('[Speaking] ⚠️ No currentExamAttempt in localStorage');
 
-        // ✅ FIX Bug #12: Tự động tạo attempt nếu chưa có
+        // ✅ Nếu trong mock test, KHÔNG tạo attempt mới (mock test sẽ tạo)
+        if (this.isInMockTest) {
+          console.warn('[Speaking] ⚠️ In mock test mode - waiting for mock test to create attempt');
+          return;
+        }
+
+        // ✅ Chỉ tạo attempt mới khi thi standalone
         this.createNewAttempt();
         return;
       }
@@ -142,14 +150,24 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       if (this.attemptId === null || this.attemptId <= 0) {
         console.error('[Speaking] ❌ Invalid attemptId:', this.attemptId);
 
-        // ✅ FIX: Tạo attempt mới nếu invalid
+        // ✅ Nếu trong mock test, KHÔNG tạo attempt mới
+        if (this.isInMockTest) {
+          console.warn('[Speaking] ⚠️ In mock test mode - invalid attempt, waiting for mock test');
+          return;
+        }
+
+        // ✅ Chỉ tạo attempt mới khi thi standalone
         this.createNewAttempt();
       } else {
         console.log('[Speaking] ✅ Loaded attemptId:', this.attemptId);
       }
     } catch (error) {
       console.error('[Speaking] ❌ Error loading attemptId:', error);
-      this.createNewAttempt();
+
+      // ✅ Nếu trong mock test, KHÔNG tạo attempt mới
+      if (!this.isInMockTest) {
+        this.createNewAttempt();
+      }
     }
   }
 
@@ -513,7 +531,15 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       return;
     }
 
-    // Check if all questions are completed
+    // ✅ Nếu đang trong mock test, chỉ phát sự kiện và KHÔNG hiển thị summary, KHÔNG check làm hết câu
+    if (this.isInMockTest) {
+      console.log('[Speaking] ✅ Speaking part completed in mock test - emitting event');
+      this.baseQuestionService.finishQuiz();
+      this.speakingPartCompleted.emit();
+      return;
+    }
+
+    // ✅ Chỉ check all questions completed khi thi standalone
     const allCompleted = this.speakingStateService.areAllQuestionsCompleted();
 
     if (!allCompleted) {
@@ -534,11 +560,12 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     }
 
     if (this.attemptId === null || this.attemptId <= 0) {
-      // ✅ FIX
       console.error('[Speaking] ❌ Invalid attemptId:', this.attemptId);
       alert('Lỗi hệ thống: Không tìm thấy ID bài thi. Vui lòng thử lại.');
       return;
     }
+
+    // ✅ Nếu thi standalone, gọi API và hiển thị summary như cũ
     this.callEndExamAPI();
     this.examAttemptService.finalizeAttempt(this.attemptId).subscribe({
       next: (summary) => {

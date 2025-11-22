@@ -83,10 +83,15 @@ export class ExamComponent implements OnInit, OnDestroy {
     // Get examId from route params
     this.route.params.subscribe(params => {
       this.examId = +params['examId'] || null;
+      console.log('📋 ExamId from route:', this.examId);
+
+      // Create attempt after getting examId
+      if (this.examId) {
+        this.createExamAttempt();
+      }
     });
 
     this.loadMocktestQuestions();
-    this.createExamAttempt();
   }
 
   ngOnDestroy(): void {
@@ -108,18 +113,9 @@ export class ExamComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Check if there's an existing attempt
-    const storedAttempt = localStorage.getItem('currentExamAttempt');
-    if (storedAttempt) {
-      try {
-        const parsed = JSON.parse(storedAttempt);
-        this.attemptId = parsed.attemptID || parsed.attemptId;
-        console.log('✅ Loaded existing attemptId:', this.attemptId);
-        return;
-      } catch (error) {
-        console.error('Error parsing stored attempt:', error);
-      }
-    }
+    // Clear any existing attempt - always create new for mock test
+    localStorage.removeItem('currentExamAttempt');
+    console.log('🗑️ Cleared old exam attempt - creating new mock test attempt');
 
     // Create new attempt
     if (!this.examId) {
@@ -131,7 +127,7 @@ export class ExamComponent implements OnInit, OnDestroy {
       attemptID: 0,
       userID: Number(user.id),
       examID: this.examId,
-      examPartId: null,
+      examPartId: null, // Mock test covers all parts
       startTime: new Date().toISOString(),
       endTime: null,
       score: null,
@@ -141,8 +137,9 @@ export class ExamComponent implements OnInit, OnDestroy {
     this.examAttemptService.startExam(attemptRequest).subscribe({
       next: (response) => {
         this.attemptId = response.attemptID;
+        // Save to localStorage
         localStorage.setItem('currentExamAttempt', JSON.stringify(response));
-        console.log('✅ Created new attemptId:', this.attemptId);
+        console.log('✅ Created new mock test attemptId and saved to localStorage:', this.attemptId);
       },
       error: (error) => {
         console.error('❌ Failed to create exam attempt:', error);
@@ -157,9 +154,13 @@ export class ExamComponent implements OnInit, OnDestroy {
         this.exampartDetailsAndQustions = data;
         console.log('Mocktest questions loaded:', data);
 
-        // Set examId from first part if not set
+        // Set examId from first part if not set from route
         if (!this.examId && data.length > 0) {
           this.examId = data[0].examId;
+          console.log('📋 ExamId from mocktest data:', this.examId);
+
+          // Create attempt after getting examId from data
+          this.createExamAttempt();
         }
 
         // Initialize at first part and first question
@@ -266,7 +267,28 @@ export class ExamComponent implements OnInit, OnDestroy {
   onSpeakingAnswered(isCorrect: boolean): void {
     console.log('Speaking answer submitted:', isCorrect);
     // Speaking component handles its own scoring and navigation
-    // When speaking finishes all questions, it will show its own summary
+  }
+
+  onSpeakingPartCompleted(): void {
+    console.log('Speaking part completed in mock test');
+    // Speaking finished all questions in mock test
+    // Auto-advance to next part or finish exam
+    if (this.isLastQuestionInExam()) {
+      this.finishExam();
+    } else {
+      this.showPartCompletionMessage = true;
+    }
+  }
+
+  onWritingPartCompleted(): void {
+    console.log('Writing part completed in mock test');
+    // Writing finished all questions in mock test
+    // Auto-advance to next part or finish exam
+    if (this.isLastQuestionInExam()) {
+      this.finishExam();
+    } else {
+      this.showPartCompletionMessage = true;
+    }
   }
 
   onWritingFinished(): void {
@@ -390,9 +412,9 @@ export class ExamComponent implements OnInit, OnDestroy {
                 `Exam completed! Score: ${finalizeResponse.totalScore}/${finalizeResponse.totalQuestions}`
               );
 
-              // Navigate to results page
+              // Navigate to mocktest results page
               setTimeout(() => {
-                this.router.navigate(['/homepage/user-dashboard/exam-attempts', this.attemptId]);
+                this.router.navigate(['/homepage/user-dashboard/mocktest/result', this.attemptId]);
               }, 1500);
             },
             error: (error) => {

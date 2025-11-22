@@ -106,7 +106,9 @@
         <app-speaking
           [questions]="currentPart.questions"
           [partInfo]="currentPart"
-          (speakingAnswered)="onSpeakingAnswered($event)">
+          [isInMockTest]="true"
+          (speakingAnswered)="onSpeakingAnswered($event)"
+          (speakingPartCompleted)="onSpeakingPartCompleted()">
         </app-speaking>
       </div>
 
@@ -114,7 +116,9 @@
       <div *ngIf="isWritingPart" class="skill-component-container">
         <app-writing
           [questions]="currentPart.questions"
-          (finished)="onWritingFinished()">
+          [isInMockTest]="true"
+          (finished)="onWritingFinished()"
+          (writingPartCompleted)="onWritingPartCompleted()">
         </app-writing>
       </div>
 
