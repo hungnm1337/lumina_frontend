@@ -103,6 +103,8 @@
       </button>
 
       <div class="flex gap-2">
+        <!-- Chỉ hiển thị nút Nộp bài khi KHÔNG trong mock test -->
+        @if (!isInMockTest) {
         <button
           (click)="finishWritingExam()"
           [disabled]="isAnyQuestionSubmitting()"
@@ -110,8 +112,21 @@
         >
           Nộp bài
         </button>
+        }
       </div>
 
+      <!-- Nút Câu sau/Hoàn thành Part -->
+      @if (isInMockTest && currentIndex === questions.length - 1) {
+      <!-- Nếu đang trong mock test và ở câu cuối -->
+      <button
+        (click)="finishWritingExam()"
+        [disabled]="isAnyQuestionSubmitting()"
+        class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Hoàn thành Part<i class="fas fa-check ml-2"></i>
+      </button>
+      } @else {
+      <!-- Nút Câu sau bình thường -->
       <button
         (click)="nextQuestion()"
         [disabled]="
@@ -121,6 +136,7 @@
       >
         Câu sau<i class="fas fa-arrow-right ml-2"></i>
       </button>
+      }
     </div>
 
     <!-- Question Navigator -->

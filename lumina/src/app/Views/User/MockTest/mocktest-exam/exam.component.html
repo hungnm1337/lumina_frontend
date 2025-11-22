@@ -1,0 +1,170 @@
+<div class="exam-container">
+  <h1>Mock Test Exam</h1>
+
+  <!-- Loading State -->
+  <div *ngIf="exampartDetailsAndQustions.length === 0" class="loading">
+    <p>Loading exam questions...</p>
+  </div>
+
+  <!-- Exam Navigation Display -->
+  <div *ngIf="exampartDetailsAndQustions.length > 0 && currentPart && currentQuestion" class="exam-content">
+
+    <!-- Progress Header -->
+    <div class="progress-header">
+      <div class="part-navigation">
+        <h2>{{ currentPart.title }} ({{ currentPart.partCode }})</h2>
+        <p>Part {{ currentPartIndex + 1 }} of {{ exampartDetailsAndQustions.length }}</p>
+        <button class="btn-exit" (click)="confirmExit()" title="Save & Exit">
+          🚪 Exit
+        </button>
+      </div>
+      <div class="question-progress" *ngIf="isMultipleChoicePart">
+        <span>Question {{ currentQuestionIndex + 1 }} of {{ currentPart.questions.length }}</span>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="getPartProgress()"></div>
+        </div>
+      </div>
+      <div class="question-progress" *ngIf="!isMultipleChoicePart">
+        <span>{{ currentPart.questions.length }} Questions</span>
+        <p class="skill-note">Navigate using the component controls below</p>
+      </div>
+    </div>
+
+    <!-- Question Navigation Pills (Only for Listening/Reading) -->
+    <div *ngIf="isMultipleChoicePart" class="question-pills">
+      <button
+        *ngFor="let q of currentPart.questions; let idx = index"
+        class="question-pill"
+        [class.active]="idx === currentQuestionIndex"
+        [class.answered]="isQuestionAnswered(q.questionId)"
+        (click)="goToQuestion(idx)">
+        {{ idx + 1 }}
+      </button>
+    </div>
+
+    <!-- Current Question Display -->
+    <div class="current-question-container">
+
+      <!-- LISTENING/READING: Multiple Choice Questions -->
+      <div *ngIf="isMultipleChoicePart">
+        <!-- Prompt Section -->
+        <div *ngIf="currentQuestion.prompt" class="prompt-section">
+          <h3>{{ currentQuestion.prompt.title }}</h3>
+          <p class="prompt-content">{{ currentQuestion.prompt.contentText }}</p>
+          <div class="prompt-media">
+            <img *ngIf="currentQuestion.prompt.referenceImageUrl"
+                 [src]="currentQuestion.prompt.referenceImageUrl"
+                 alt="Reference Image"
+                 class="reference-image">
+            <audio *ngIf="currentQuestion.prompt.referenceAudioUrl"
+                   [src]="currentQuestion.prompt.referenceAudioUrl"
+                   controls
+                   class="reference-audio"></audio>
+          </div>
+        </div>
+
+        <!-- Question Content -->
+        <div class="question-content">
+          <div class="question-header">
+            <h3>Question {{ currentQuestion.questionNumber }}</h3>
+            <div class="question-meta">
+              <span class="badge question-type">{{ currentQuestion.questionType || 'Multiple Choice' }}</span>
+              <span class="badge score">Score: {{ currentQuestion.scoreWeight }}</span>
+              <span class="badge time">{{ currentQuestion.time }}s</span>
+            </div>
+          </div>
+
+          <div class="question-stem">
+            <p>{{ currentQuestion.stemText }}</p>
+          </div>
+
+          <!-- Answer Options -->
+          <div class="options-container">
+            <div
+              *ngFor="let option of currentQuestion.options; let oIdx = index"
+              class="option"
+              [class.selected]="selectedAnswers[currentQuestion.questionId] === option.optionId"
+              (click)="selectAnswer(option.optionId)">
+              <div class="option-radio">
+                <input
+                  type="radio"
+                  [name]="'question-' + currentQuestion.questionId"
+                  [value]="option.optionId"
+                  [checked]="selectedAnswers[currentQuestion.questionId] === option.optionId">
+              </div>
+              <div class="option-content">
+                <span class="option-label">{{ getOptionLabel(oIdx) }}.</span>
+                <span class="option-text">{{ option.content }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SPEAKING: Use Speaking Component -->
+      <div *ngIf="isSpeakingPart" class="skill-component-container">
+        <app-speaking
+          [questions]="currentPart.questions"
+          [partInfo]="currentPart"
+          [isInMockTest]="true"
+          (speakingAnswered)="onSpeakingAnswered($event)"
+          (speakingPartCompleted)="onSpeakingPartCompleted()">
+        </app-speaking>
+      </div>
+
+      <!-- WRITING: Use Writing Component -->
+      <div *ngIf="isWritingPart" class="skill-component-container">
+        <app-writing
+          [questions]="currentPart.questions"
+          [isInMockTest]="true"
+          (finished)="onWritingFinished()"
+          (writingPartCompleted)="onWritingPartCompleted()">
+        </app-writing>
+      </div>
+
+    </div>
+
+    <!-- Navigation Buttons (Only for Listening/Reading) -->
+    <div *ngIf="isMultipleChoicePart" class="navigation-buttons">
+      <button
+        class="btn btn-secondary"
+        [disabled]="currentQuestionIndex === 0 && currentPartIndex === 0"
+        (click)="previousQuestion()">
+        ← Previous
+      </button>
+
+      <button
+        class="btn btn-primary"
+        [disabled]="!selectedAnswers[currentQuestion.questionId]"
+        (click)="nextQuestion()">
+        {{ isLastQuestionInExam() ? 'Finish Exam' : (isLastQuestionInPart() ? 'Next Part' : 'Next') }} →
+      </button>
+    </div>
+
+    <!-- Part Completion Message -->
+    <div *ngIf="showPartCompletionMessage" class="completion-message">
+      <div class="message-content">
+        <h3>✓ Part {{ currentPartIndex + 1 }} Completed!</h3>
+        <p>You have completed all questions in {{ currentPart.title }}</p>
+        <button class="btn btn-success" (click)="moveToNextPart()">
+          Continue to Next Part →
+        </button>
+      </div>
+    </div>
+
+    <!-- Overall Progress Summary -->
+    <div class="overall-progress">
+      <div class="progress-stats">
+        <div class="stat">
+          <span class="stat-label">Total Progress</span>
+          <span class="stat-value">{{ getAnsweredCount() }} / {{ getTotalQuestions() }}</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Current Part</span>
+          <span class="stat-value">{{ currentPartIndex + 1 }} / {{ exampartDetailsAndQustions.length }}</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

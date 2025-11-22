@@ -1,0 +1,65 @@
+<div class="mocktest-progress-container bg-white rounded-lg shadow-sm p-4 mb-6">
+  <!-- Overall Progress Bar -->
+  <div class="mb-4">
+    <div class="flex justify-between items-center mb-2">
+      <h3 class="text-lg font-semibold text-gray-800">Mock Test Progress</h3>
+      <span class="text-sm text-gray-600">
+        {{ getProgressPercentage() | number:'1.0-0' }}% Complete
+      </span>
+    </div>
+    <div class="w-full bg-gray-200 rounded-full h-3">
+      <div
+        class="bg-blue-600 h-3 rounded-full transition-all duration-500"
+        [style.width.%]="getProgressPercentage()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Parts Grid -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+    @for (part of parts; track part.examId; let i = $index) {
+      <div
+        class="part-card rounded-lg p-3 border-2 transition-all"
+        [ngClass]="{
+          'border-green-500 bg-green-50': getPartStatus(i) === 'completed',
+          'border-blue-500 bg-blue-50': getPartStatus(i) === 'current',
+          'border-gray-300 bg-gray-50': getPartStatus(i) === 'upcoming'
+        }">
+
+        <!-- Icon -->
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            @if (getPartStatus(i) === 'completed') {
+              <span class="i-mdi-check-circle text-green-600 text-xl"></span>
+            }
+            @if (getPartStatus(i) === 'current') {
+              <span class="i-mdi-play-circle text-blue-600 text-xl"></span>
+            }
+            @if (getPartStatus(i) === 'upcoming') {
+              <span class="i-mdi-circle-outline text-gray-400 text-xl"></span>
+            }
+
+            <span class="font-semibold text-sm">Part {{ i + 1 }}</span>
+          </div>
+        </div>
+
+        <!-- Part Info -->
+        <div>
+          <p class="text-sm font-medium capitalize"
+            [ngClass]="{
+              'text-green-700': getPartStatus(i) === 'completed',
+              'text-blue-700': getPartStatus(i) === 'current',
+              'text-gray-600': getPartStatus(i) === 'upcoming'
+            }">
+            {{ part.skillType }}
+          </p>
+          @if (part.timeLimit) {
+            <p class="text-xs text-gray-500 mt-1">
+              {{ part.timeLimit }} min
+            </p>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>
