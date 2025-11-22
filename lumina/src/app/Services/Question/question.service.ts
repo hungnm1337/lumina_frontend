@@ -38,7 +38,7 @@ export class QuestionService {
       .map(([key, val]) =>
         `${encodeURIComponent(key)}=${encodeURIComponent(val !== undefined && val !== null ? String(val) : '')}`)
       .join('&');
-    const url = `${this.apiUrl}/passage-question-tree-paged?${query}`;
+    const url = `${this.apiUrl}/prompt-question-tree-paged?${query}`;
     return this.http.get(url, {
       headers: this.getAuthHeaders()
     });

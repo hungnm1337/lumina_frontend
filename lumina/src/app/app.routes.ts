@@ -26,10 +26,13 @@ import { ExamAttemptDetailComponent } from './Views/User/ExamAttempt/exam-attemp
 import { UserLeaderboardComponent } from './Views/User/Leaderboard/user-leaderboard.component';
 import { UserNoteListComponent } from './Views/User/UserNote/user-note-list/user-note-list.component';
 import { UserNoteDetailComponent } from './Views/User/UserNote/user-note-detail/user-note-detail.component';
+import { StreakComponent } from './Views/Common/streak/streak.component';
+
 import { QuotaGuard } from './guards/quota.guard';
 import { ExamComponent as MockTestExamComponent } from './Views/User/MockTest/mocktest-exam/exam.component';
 import { ResultComponent as MockTestResultComponent } from './Views/User/MockTest/mocktest-result/result.component';
 
+import { RankingsComponent } from './Views/Common/Rankings/rankings/rankings.component';
 export const routes: Routes = [
   {
     path: 'admin',
@@ -67,6 +70,13 @@ export const routes: Routes = [
         component: UserDashboardComponent,
         children: [
           { path: 'exams', component: ExamsComponent },
+          {
+            path: 'upgrade',
+            loadComponent: () =>
+              import('./Views/User/upgrade-page/upgrade-page.component').then(
+                (m) => m.UpgradePageComponent
+              ),
+          },
           { path: 'exam-attempts', component: ExamAttemptListComponent },
           { path: 'exam-attempts/:id', component: ExamAttemptDetailComponent },
           { path: 'exam/:id', component: ExamPartComponent },
@@ -76,6 +86,7 @@ export const routes: Routes = [
           { path: '', redirectTo: 'exams', pathMatch: 'full' },
         ],
       },
+
     ],
   },
   // {
@@ -161,7 +172,8 @@ export const routes: Routes = [
         (m) => m.PaymentCancelComponent
       ),
   },
-
+{path: 'rankings', component: RankingsComponent},
+{ path: 'streak', component: StreakComponent },
   { path: '', redirectTo: '/homepage', pathMatch: 'full' },
   { path: '**', component: ErrorComponent },
 ];

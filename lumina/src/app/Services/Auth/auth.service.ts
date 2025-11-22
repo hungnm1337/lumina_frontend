@@ -16,6 +16,7 @@ import {
   ResendRegistrationOtpRequest,
   ResendOtpResponse,
   ResetPasswordRequest,
+  RefreshTokenRequest,
 } from '../../Interfaces/auth.interfaces';
 import { Router } from '@angular/router';
 import { GoogleLoginRequest } from '../../Interfaces/auth.interfaces';
@@ -82,7 +83,9 @@ export class AuthService {
           // Auto login after successful verification
           this.setSession({
             token: response.token,
+            refreshToken: response.refreshToken,
             expiresIn: response.expiresIn,
+            refreshExpiresIn: response.refreshExpiresIn,
             user: response.user,
           });
         })
@@ -118,6 +121,7 @@ export class AuthService {
 
   logout() {
     localStorage.removeItem('lumina_token');
+    localStorage.removeItem('lumina_refresh_token');
     localStorage.removeItem('lumina_user');
     // sessionStorage.clear();
     this.currentUserSource.next(null);
@@ -126,12 +130,22 @@ export class AuthService {
 
   private setSession(authResponse: LoginResponse) {
     localStorage.setItem('lumina_token', authResponse.token);
+    localStorage.setItem('lumina_refresh_token', authResponse.refreshToken);
     localStorage.setItem('lumina_user', JSON.stringify(authResponse.user));
     this.currentUserSource.next(authResponse.user);
   }
 
   getCurrentUser(): AuthUserResponse | null {
     return this.currentUserSource.value;
+  }
+
+  updateCurrentUser(user: Partial<AuthUserResponse>): void {
+    const currentUser = this.getCurrentUser();
+    if (currentUser) {
+      const updatedUser = { ...currentUser, ...user };
+      localStorage.setItem('lumina_user', JSON.stringify(updatedUser));
+      this.currentUserSource.next(updatedUser);
+    }
   }
 
   // getDecodedToken(): any | null {
@@ -154,32 +168,31 @@ export class AuthService {
   //     null
   //   );
   // }
-getDecodedToken(): any | null {
-  const token = localStorage.getItem('lumina_token');
-  if (!token) return null;
-  try {
-    return jwtDecode(token);
-  } catch (error) {
-    console.error('Error decoding token:', error);
-    return null;
+  getDecodedToken(): any | null {
+    const token = localStorage.getItem('lumina_token');
+    if (!token) return null;
+    try {
+      return jwtDecode(token);
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return null;
+    }
   }
-}
-getCurrentUserId(): number {
+  getCurrentUserId(): number {
     const user = this.getCurrentUser();
-    return user?.id ? parseInt(user.id.toString()) : 0;
+    return user?.id ?? 0;
   }
 
   getRoleClaim(): string | null {
-  const payload = this.getDecodedToken();
-  if (!payload) return null;
-  return (
-    payload['role'] ||
-    payload['roles'] ||
-    payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
-    null
-  );
-}
-
+    const payload = this.getDecodedToken();
+    if (!payload) return null;
+    return (
+      payload['role'] ||
+      payload['roles'] ||
+      payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
+      null
+    );
+  }
 
   getRoleId(): number | null {
     const payload = this.getDecodedToken();
@@ -196,27 +209,53 @@ getCurrentUserId(): number {
     if (role.includes('user')) return 4;
     return null;
   }
- 
-navigateByRole(): void {
-  console.log('Role claim:', this.getRoleClaim());
-  console.log('Role ID:', this.getRoleId());
 
-  const roleId = this.getRoleId();
-  switch (roleId) {
-    case 1:
-      this.router.navigate(['/admin']);
-      break;
-    case 2:
-      this.router.navigate(['/manager']);
-      break;
-    case 3:
-      this.router.navigate(['/staff/dashboard']);
-      break;
-    case 4:
-    default:
-      this.router.navigate(['/homepage']);
-      break;
+  // Check if token is expired
+  isTokenExpired(): boolean {
+    const token = localStorage.getItem('lumina_token');
+    if (!token) return true;
+
+    try {
+      const payload: any = jwtDecode(token);
+      const exp = payload.exp * 1000; // Convert to milliseconds
+      return Date.now() >= exp;
+    } catch {
+      return true;
+    }
   }
-}
 
+  // Refresh the access token
+  refreshToken(): Observable<LoginResponse> {
+    const refreshToken = localStorage.getItem('lumina_refresh_token');
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
+    }
+
+    const request: RefreshTokenRequest = { refreshToken };
+    return this.http
+      .post<LoginResponse>(`${this.apiUrl}/refresh`, request)
+      .pipe(tap((response) => this.setSession(response)));
+  }
+
+  navigateByRole(): void {
+    console.log('Role claim:', this.getRoleClaim());
+    console.log('Role ID:', this.getRoleId());
+
+    const roleId = this.getRoleId();
+    switch (roleId) {
+      case 1:
+        this.router.navigate(['/admin']);
+        break;
+      case 2:
+        this.router.navigate(['/manager']);
+        break;
+      case 3:
+        this.router.navigate(['/staff/dashboard']);
+        break;
+      case 4:
+      default:
+        this.router.navigate(['/homepage']);
+        break;
+    }
+  }
 }

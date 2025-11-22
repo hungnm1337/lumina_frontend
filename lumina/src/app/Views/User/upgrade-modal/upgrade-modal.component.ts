@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PaymentService } from '../../../Services/Payment/payment.service';
+import { PackagesService, Package } from '../../../Services/Packages/packages.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -10,29 +11,62 @@ import { Router } from '@angular/router';
   templateUrl: './upgrade-modal.component.html',
   styleUrl: './upgrade-modal.component.scss',
 })
-export class UpgradeModalComponent {
+export class UpgradeModalComponent implements OnChanges {
   @Input() isVisible = false;
   @Input() skill: string = '';
   @Output() close = new EventEmitter<void>();
 
   isLoading = false;
   errorMessage = '';
+  
+  // Package selection
+  packages: Package[] = [];
+  selectedPackage: Package | null = null;
+  isLoadingPackages = false;
 
-  // Package details - should match your database Package table
-  premiumPackage = {
-    id: 1, // Update this with actual package ID from database
-    name: 'Premium Monthly',
-    price: 3000, // 299,000 VND
-    features: [
-      'Unlimited bài thi 4 kĩ năng',
-      'AI Scoring Speaking/Writing',
-      'AI Generate từ vựng theo chủ đề',
-      'Không giới hạn số lượng bài thi',
-      'Truy cập toàn bộ tài liệu',
-    ],
-  };
+  // Premium features list
+  premiumFeatures = [
+    'Unlimited bài thi 4 kĩ năng',
+    'AI Scoring Speaking/Writing'
+    
+  ];
 
-  constructor(private paymentService: PaymentService, private router: Router) {}
+  constructor(
+    private paymentService: PaymentService, 
+    private packagesService: PackagesService,
+    private router: Router
+  ) {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['isVisible'] && this.isVisible && this.packages.length === 0) {
+      this.loadPackages();
+    }
+  }
+
+  loadPackages(): void {
+    this.isLoadingPackages = true;
+    this.errorMessage = '';
+    
+    this.packagesService.getActivePackages().subscribe({
+      next: (packages) => {
+        this.packages = packages;
+        // Set first package as default selected
+        if (packages.length > 0) {
+          this.selectedPackage = packages[0];
+        }
+        this.isLoadingPackages = false;
+      },
+      error: (error) => {
+        console.error('Error loading packages:', error);
+        this.errorMessage = 'Không thể tải danh sách gói. Vui lòng thử lại.';
+        this.isLoadingPackages = false;
+      }
+    });
+  }
+
+  selectPackage(pkg: Package): void {
+    this.selectedPackage = pkg;
+  }
 
   closeModal(): void {
     this.close.emit();
@@ -40,6 +74,12 @@ export class UpgradeModalComponent {
   }
 
   async handleUpgrade(): Promise<void> {
+    // Check if a package is selected
+    if (!this.selectedPackage) {
+      this.errorMessage = 'Vui lòng chọn một gói Premium.';
+      return;
+    }
+
     // Check if user is logged in
     const token = localStorage.getItem('lumina_token');
     if (!token) {
@@ -56,7 +96,10 @@ export class UpgradeModalComponent {
 
     try {
       const response = await this.paymentService
-        .createPaymentLink(this.premiumPackage.id, this.premiumPackage.price)
+        .createPaymentLink(
+          this.selectedPackage.packageId!, 
+          this.selectedPackage.price!
+        )
         .toPromise();
 
       if (response?.checkoutUrl) {

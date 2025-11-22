@@ -138,3 +138,489 @@
     }
   }
 }
+
+/* ============================ */
+/* 🔥 FIRE EMOJI ANIMATIONS - EXTREME VERSION */
+/* ============================ */
+
+.fire-emoji {
+  display: inline-block;
+  line-height: 1;
+  transform-origin: center bottom;
+  transition: all 0.3s ease;
+  position: relative;
+  
+  // 🌱 Seed (0 ngày) - Không animation
+  &.seed {
+    filter: grayscale(0.3);
+  }
+  
+  // 🔥 Gentle (1-6 ngày) - Nhấp nháy nhẹ
+  &.gentle {
+    animation: 
+      fireFlickerGentle 2s ease-in-out infinite,
+      fireGlowGentle 3s ease-in-out infinite,
+      fireBreathe 3s ease-in-out infinite;
+  }
+  
+  // 🔥 Strong (7-29 ngày) - Cháy mạnh
+  &.strong {
+    animation: 
+      fireFlickerStrong 1s ease-in-out infinite,
+      fireGlowStrong 1.5s ease-in-out infinite,
+      fireScale 2s ease-in-out infinite,
+      fireWave 2s ease-in-out infinite;
+      
+    // Thêm particles xung quanh
+    &::before {
+      content: '💥';
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      font-size: 0.6rem;
+      animation: particleBurst 2s ease-in-out infinite;
+      opacity: 0;
+    }
+  }
+  
+  // 🔥 Intense (30+ ngày) - EXTREME DỮ DỘI
+  &.intense {
+    animation: 
+      fireFlickerIntense 0.5s ease-in-out infinite,
+      fireGlowIntense 1s ease-in-out infinite,
+      fireShakeExtreme 0.2s ease-in-out infinite,
+      fireScale 1.5s ease-in-out infinite,
+      fireExplosion 2s ease-in-out infinite,
+      fireRotateWild 3s linear infinite;
+      
+    // Particles nổ tung
+    &::before {
+      content: '⚡';
+      position: absolute;
+      top: -12px;
+      right: -10px;
+      font-size: 0.7rem;
+      animation: 
+        particleExplode1 1.5s ease-out infinite,
+        particleRotate 2s linear infinite;
+      opacity: 0;
+    }
+    
+    &::after {
+      content: '✨';
+      position: absolute;
+      bottom: -10px;
+      left: -8px;
+      font-size: 0.6rem;
+      animation: 
+        particleExplode2 1.8s ease-out infinite,
+        particleSpin 2.5s linear infinite;
+      opacity: 0;
+    }
+  }
+}
+
+/* ============================ */
+/* 🎭 EXTREME KEYFRAME ANIMATIONS */
+/* ============================ */
+
+/* 🔥 Gentle Animations */
+@keyframes fireFlickerGentle {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.05) rotate(2deg);
+    filter: brightness(1.1);
+  }
+}
+
+@keyframes fireGlowGentle {
+  0%, 100% {
+    text-shadow: 
+      0 0 8px rgba(255, 140, 0, 0.4),
+      0 0 12px rgba(255, 69, 0, 0.2);
+  }
+  50% {
+    text-shadow: 
+      0 0 12px rgba(255, 140, 0, 0.6),
+      0 0 18px rgba(255, 69, 0, 0.3);
+  }
+}
+
+@keyframes fireBreathe {
+  0%, 100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.08);
+  }
+}
+
+/* 🔥 Strong Animations */
+@keyframes fireFlickerStrong {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    filter: brightness(1) hue-rotate(0deg);
+  }
+  25% {
+    transform: scale(1.15) rotate(-5deg);
+    filter: brightness(1.3) hue-rotate(10deg);
+  }
+  50% {
+    transform: scale(1.1) rotate(5deg);
+    filter: brightness(1.4) hue-rotate(-10deg);
+  }
+  75% {
+    transform: scale(1.18) rotate(-3deg);
+    filter: brightness(1.35) hue-rotate(8deg);
+  }
+}
+
+@keyframes fireGlowStrong {
+  0%, 100% {
+    text-shadow: 
+      0 0 15px rgba(255, 107, 0, 0.7),
+      0 0 25px rgba(255, 69, 0, 0.5),
+      0 0 35px rgba(255, 140, 0, 0.3);
+  }
+  50% {
+    text-shadow: 
+      0 0 30px rgba(255, 107, 0, 1),
+      0 0 40px rgba(255, 69, 0, 0.8),
+      0 0 50px rgba(255, 140, 0, 0.6);
+  }
+}
+
+@keyframes fireWave {
+  0%, 100% {
+    transform: skewX(0deg);
+  }
+  25% {
+    transform: skewX(-3deg);
+  }
+  75% {
+    transform: skewX(3deg);
+  }
+}
+
+/* 🔥🔥🔥 INTENSE - EXTREME ANIMATIONS */
+@keyframes fireFlickerIntense {
+  0% {
+    transform: scale(1) rotate(0deg);
+    filter: brightness(1) hue-rotate(0deg) saturate(1);
+  }
+  10% {
+    transform: scale(1.2) rotate(-8deg);
+    filter: brightness(1.5) hue-rotate(15deg) saturate(1.4);
+  }
+  20% {
+    transform: scale(1.15) rotate(8deg);
+    filter: brightness(1.6) hue-rotate(-15deg) saturate(1.5);
+  }
+  30% {
+    transform: scale(1.25) rotate(-6deg);
+    filter: brightness(1.55) hue-rotate(12deg) saturate(1.45);
+  }
+  40% {
+    transform: scale(1.18) rotate(7deg);
+    filter: brightness(1.65) hue-rotate(-12deg) saturate(1.55);
+  }
+  50% {
+    transform: scale(1.22) rotate(-5deg);
+    filter: brightness(1.7) hue-rotate(10deg) saturate(1.6);
+  }
+  60% {
+    transform: scale(1.16) rotate(6deg);
+    filter: brightness(1.6) hue-rotate(-10deg) saturate(1.5);
+  }
+  70% {
+    transform: scale(1.24) rotate(-7deg);
+    filter: brightness(1.58) hue-rotate(13deg) saturate(1.48);
+  }
+  80% {
+    transform: scale(1.19) rotate(8deg);
+    filter: brightness(1.63) hue-rotate(-13deg) saturate(1.53);
+  }
+  90% {
+    transform: scale(1.21) rotate(-4deg);
+    filter: brightness(1.68) hue-rotate(11deg) saturate(1.58);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    filter: brightness(1) hue-rotate(0deg) saturate(1);
+  }
+}
+
+@keyframes fireGlowIntense {
+  0%, 100% {
+    text-shadow: 
+      0 0 25px rgba(255, 107, 0, 1),
+      0 0 40px rgba(255, 69, 0, 1),
+      0 0 55px rgba(255, 140, 0, 0.9),
+      0 0 70px rgba(220, 20, 60, 0.7),
+      0 0 85px rgba(255, 0, 0, 0.5);
+  }
+  33% {
+    text-shadow: 
+      0 0 35px rgba(255, 107, 0, 1),
+      0 0 55px rgba(255, 69, 0, 1),
+      0 0 75px rgba(255, 140, 0, 1),
+      0 0 95px rgba(220, 20, 60, 0.9),
+      0 0 115px rgba(255, 0, 0, 0.7);
+  }
+  66% {
+    text-shadow: 
+      0 0 40px rgba(255, 107, 0, 1),
+      0 0 60px rgba(255, 69, 0, 1),
+      0 0 80px rgba(255, 140, 0, 1),
+      0 0 100px rgba(220, 20, 60, 1),
+      0 0 120px rgba(255, 0, 0, 0.8);
+  }
+}
+
+@keyframes fireShakeExtreme {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  10% { transform: translate(-3px, -2px) rotate(-3deg); }
+  20% { transform: translate(3px, 2px) rotate(3deg); }
+  30% { transform: translate(-2px, 3px) rotate(-2deg); }
+  40% { transform: translate(2px, -3px) rotate(2deg); }
+  50% { transform: translate(-3px, 2px) rotate(-3deg); }
+  60% { transform: translate(3px, -2px) rotate(3deg); }
+  70% { transform: translate(-2px, -3px) rotate(-2deg); }
+  80% { transform: translate(2px, 3px) rotate(2deg); }
+  90% { transform: translate(-3px, -2px) rotate(-3deg); }
+}
+
+@keyframes fireScale {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+@keyframes fireExplosion {
+  0%, 100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.8) contrast(1.3);
+  }
+}
+
+@keyframes fireRotateWild {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+  75% { transform: rotate(-3deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* 🎆 Particle Animations */
+@keyframes particleBurst {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(5px, -10px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(10px, -20px) scale(0.5);
+  }
+}
+
+@keyframes particleExplode1 {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0) rotate(0deg);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(15px, -25px) scale(1.5) rotate(360deg);
+  }
+}
+
+@keyframes particleExplode2 {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0) rotate(0deg);
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-20px, 15px) scale(1.3) rotate(-360deg);
+  }
+}
+
+@keyframes particleRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes particleSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+/* ============================ */
+/* 🎨 BADGE EFFECTS - EXTREME */
+/* ============================ */
+
+.streak-badge {
+  position: relative;
+  overflow: visible;
+  transition: all 0.3s ease;
+  
+  // Hover effect
+  &:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 107, 35, 0.5);
+    
+    // Thêm shadow mạnh hơn khi hover
+    box-shadow: 
+      0 4px 6px -1px rgba(255, 107, 35, 0.3),
+      0 2px 4px -1px rgba(255, 69, 0, 0.2);
+  }
+  
+  // Active (click) effect
+  &:active {
+    transform: translateY(0) scale(0.98);
+  }
+  
+  // Glow effect cho badge khi streak cao (30+)
+  &.high-streak {
+    position: relative;
+    animation: badgeShake 0.3s ease-in-out infinite;
+    
+    // Outer glow layer 1
+    &::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 9999px;
+      background: linear-gradient(
+        135deg, 
+        rgba(255, 107, 53, 0.5), 
+        rgba(255, 69, 0, 0.5), 
+        rgba(220, 20, 60, 0.5)
+      );
+      animation: badgeGlowPulse 1.5s ease-in-out infinite;
+      z-index: -1;
+      filter: blur(15px);
+    }
+    
+    // Outer glow layer 2
+    &::after {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border-radius: 9999px;
+      background: radial-gradient(
+        circle,
+        rgba(255, 69, 0, 0.3),
+        rgba(220, 20, 60, 0.2),
+        transparent
+      );
+      animation: badgeGlowExpand 2s ease-in-out infinite;
+      z-index: -2;
+      filter: blur(20px);
+    }
+    
+    // Hover effect cho high streak
+    &:hover {
+      &::before {
+        filter: blur(20px);
+        opacity: 1;
+      }
+      
+      &::after {
+        filter: blur(25px);
+        opacity: 0.8;
+      }
+    }
+  }
+}
+
+// Cursor pointer hint
+.streak-badge {
+  cursor: pointer;
+  user-select: none;
+  
+  // Thêm ripple effect khi click
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background: radial-gradient(circle, rgba(255, 107, 35, 0.3) 0%, transparent 70%);
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.6s ease-out;
+  }
+  
+  &:active::after {
+    opacity: 1;
+    transform: scale(1.5);
+    transition: all 0s;
+  }
+}
+
+/* ============================ */
+/* 📱 RESPONSIVE */
+/* ============================ */
+
+@media (max-width: 768px) {
+  .fire-emoji {
+    font-size: 1.1rem !important;
+    
+    &.intense {
+      font-size: 1.4rem !important;
+    }
+  }
+  
+  // Giảm intensity trên mobile để không lag
+  .fire-emoji.intense {
+    animation: 
+      fireFlickerIntense 0.7s ease-in-out infinite,
+      fireGlowIntense 1.2s ease-in-out infinite,
+      fireScale 2s ease-in-out infinite !important;
+  }
+}
+
+/* ============================ */
+/* 🎇 THÊM: Halo Effect cho số ngày khi streak cao */
+/* ============================ */
+
+.streak-number-glow {
+  text-shadow: 
+    0 0 10px rgba(220, 20, 60, 0.8),
+    0 0 20px rgba(255, 69, 0, 0.6),
+    0 0 30px rgba(255, 140, 0, 0.4);
+  animation: numberPulse 2s ease-in-out infinite;
+}
+
+@keyframes numberPulse {
+  0%, 100% {
+    text-shadow: 
+      0 0 10px rgba(220, 20, 60, 0.8),
+      0 0 20px rgba(255, 69, 0, 0.6),
+      0 0 30px rgba(255, 140, 0, 0.4);
+  }
+  50% {
+    text-shadow: 
+      0 0 20px rgba(220, 20, 60, 1),
+      0 0 30px rgba(255, 69, 0, 0.8),
+      0 0 40px rgba(255, 140, 0, 0.6);
+  }
+}

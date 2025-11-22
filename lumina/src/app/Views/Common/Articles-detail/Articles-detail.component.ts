@@ -150,6 +150,9 @@ export class BlogDetailComponent implements OnInit {
 
   // Check if section can be accessed
   canAccessSection(sectionIndex: number): boolean {
+    // Nếu chưa đăng nhập, cho phép xem tất cả sections
+    if (!this.isLogin) return true;
+    
     if (sectionIndex === 0) return true; // First section is always accessible
     return this.completedSections.has(sectionIndex - 1); // Can access if previous is completed
   }
@@ -159,9 +162,9 @@ export class BlogDetailComponent implements OnInit {
     return this.completedSections.has(sectionIndex);
   }
 
-  // Mark section as read
+  // Mark section as read (chỉ cho phép khi đã đăng nhập)
   markSectionAsRead(sectionIndex: number): void {
-    if (!this.article) return;
+    if (!this.article || !this.isLogin) return;
 
     this.completedSections.add(sectionIndex);
     this.updateProgress();

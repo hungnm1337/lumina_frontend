@@ -11,6 +11,8 @@ export interface ExamDTO {
   createdAt: Date;
   updateAt?: Date;
   examParts?: ExamPartDTO[];
+  // ✅ Add completion status
+  completionStatus?: ExamCompletionStatusDTO;
 }
 
 export interface ExamPartDTO {
@@ -20,6 +22,8 @@ export interface ExamPartDTO {
   title: string;
   orderIndex: number;
   questions: QuestionDTO[];
+  // ✅ Add completion status
+  completionStatus?: PartCompletionStatusDTO;
 }
 
 export interface QuestionDTO {
@@ -80,4 +84,24 @@ export interface SpeakingScoringResult {
   grammarScore: number;
   vocabularyScore: number;
   contentScore: number;
+}
+
+// ============ COMPLETION STATUS INTERFACES ============
+
+export interface PartCompletionStatusDTO {
+  partId: number;
+  partCode: string;
+  isCompleted: boolean;
+  completedAt?: Date;
+  score?: number;
+  attemptCount?: number;
+}
+
+export interface ExamCompletionStatusDTO {
+  examId: number;
+  isCompleted: boolean;
+  completedPartsCount: number;
+  totalPartsCount: number;
+  parts: PartCompletionStatusDTO[];
+  completionPercentage?: number;
 }

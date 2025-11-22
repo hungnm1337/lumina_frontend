@@ -34,17 +34,20 @@ export interface ResetPasswordRequest {
 }
 
 export interface AuthUserResponse {
-  id: string | 999;
+  id: number;
   username: string;
   email: string;
   name: string;
+  avatarUrl?: string;
 }
 export interface GoogleLoginRequest {
   token: string;
 }
 export interface LoginResponse {
   token: string;
+  refreshToken: string;
   expiresIn: number;
+  refreshExpiresIn: number;
   user: AuthUserResponse;
 }
 
@@ -55,7 +58,9 @@ export interface SendOtpResponse {
 export interface VerifyRegistrationResponse {
   message: string;
   token: string;
+  refreshToken: string;
   expiresIn: number;
+  refreshExpiresIn: number;
   user: AuthUserResponse;
 }
 
@@ -65,4 +70,8 @@ export interface ResendOtpResponse {
 
 export interface GenericAuthResponse {
   message: string;
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string;
 }

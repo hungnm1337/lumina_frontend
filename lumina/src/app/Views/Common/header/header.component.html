@@ -38,7 +38,7 @@
           routerLink="/homepage"
           class="px-2 xl:px-3 py-2 rounded-lg text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 font-medium relative group whitespace-nowrap"
         >
-          <i class="fas fa-home mr-1"></i>Home
+          <i class="fas fa-home mr-1 text-blue-500"></i>Home
           <div
             class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-200"
           ></div>
@@ -48,7 +48,7 @@
           (click)="moveToExams()"
           class="px-2 xl:px-3 py-2 rounded-lg hover: cursor-pointer text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 font-medium relative group whitespace-nowrap"
         >
-          <i class="fas fa-dumbbell mr-1"></i>Practice
+          <i class="fas fa-dumbbell mr-1 text-orange-500"></i>Practice
           <div
             class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-200"
           ></div>
@@ -58,7 +58,7 @@
           (click)="moveToMocktest()"
           class="px-2 xl:px-3 py-2 rounded-lg cursor-pointer text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 font-medium relative group whitespace-nowrap"
         >
-          <i class="fas fa-clipboard-check mr-1"></i>Mock Test
+          <i class="fas fa-clipboard-check mr-1 text-green-500"></i>Mock Test
           <div
             class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-200"
           ></div>
@@ -68,7 +68,7 @@
           routerLink="/vocabulary"
           class="px-2 xl:px-3 py-2 rounded-lg text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 font-medium relative group whitespace-nowrap"
         >
-          <i class="fas fa-book mr-1"></i>Vocabulary
+          <i class="fas fa-book mr-1 text-purple-500"></i>Vocabulary
           <div
             class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-200"
           ></div>
@@ -78,9 +78,18 @@
           routerLink="/articles"
           class="px-2 xl:px-3 py-2 rounded-lg text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 font-medium relative group whitespace-nowrap"
         >
-          <i class="fas fa-blog mr-1"></i>Articles
+          <i class="fas fa-blog mr-1 text-pink-500"></i>Articles
           <div
             class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-200"
+          ></div>
+        </a>
+        <a
+          routerLink="/rankings"
+          class="px-2 xl:px-3 py-2 rounded-lg text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200 font-medium relative group whitespace-nowrap"
+        >
+          <i class="fas fa-trophy mr-1 text-yellow-400"></i>Rankings
+          <div
+            class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-200"
           ></div>
         </a>
       </nav>
@@ -103,16 +112,58 @@
           }
 
           <!-- Streak Counter -->
+          <!-- ✅ Streak Counter - Clickable -->
           <div
-            class="hidden md:flex items-center bg-gradient-to-r from-orange-100 to-red-100 rounded-full px-3 py-1.5 border border-orange-200"
+            (click)="goToStreakPage()"
+            class="hidden md:flex items-center bg-gradient-to-r from-orange-100 to-red-100 rounded-full px-3 py-1.5 border border-orange-200 hover:shadow-lg transition-all duration-200 cursor-pointer streak-badge hover:scale-105 active:scale-95"
+            [class.high-streak]="currentStreak >= 30"
+            [title]="'Click để xem chi tiết chuỗi học tập'"
           >
             <div class="flex items-center space-x-1.5">
+              @if (streakLoading) {
+              <i class="fas fa-spinner fa-spin text-orange-500 text-base"></i>
+              <span class="font-bold text-orange-700 text-sm">...</span>
+              } @else {
+              <!-- ✅ Fire emoji với EXTREME animation -->
+              <span
+                class="fire-emoji"
+                [class.seed]="getFireIntensity() === 'seed'"
+                [class.gentle]="getFireIntensity() === 'gentle'"
+                [class.strong]="getFireIntensity() === 'strong'"
+                [class.intense]="getFireIntensity() === 'intense'"
+                [style.font-size]="getFireSize()"
+              >
+                {{ getFireEmoji() }}
+              </span>
+
+              <!-- ✅ Số ngày với glow effect khi streak cao -->
+              <span
+                class="font-bold transition-all duration-300"
+                [class.text-gray-600]="currentStreak === 0"
+                [class.text-orange-600]="currentStreak > 0 && currentStreak < 7"
+                [class.text-orange-700]="
+                  currentStreak >= 7 && currentStreak < 30
+                "
+                [class.text-red-600]="currentStreak >= 30"
+                [class.streak-number-glow]="currentStreak >= 30"
+                [style.font-size]="currentStreak >= 30 ? '1rem' : '0.875rem'"
+              >
+                {{ getStreakDisplayText() }}
+              </span>
+
+              <span
+                class="font-medium text-xs transition-colors duration-300"
+                [class.text-gray-500]="currentStreak === 0"
+                [class.text-orange-600]="currentStreak > 0"
+              >
+                ngày
+              </span>
+
+              <!-- ✅ THÊM: Icon arrow để hint user có thể click -->
               <i
-                class="fas fa-fire text-orange-500 text-base animate-pulse"
+                class="fas fa-chevron-right text-orange-500 text-xs ml-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
               ></i>
-              <span class="font-bold text-orange-700 text-sm">0</span>
-              <!-- Will be updated later -->
-              <span class="text-orange-600 font-medium text-xs">days</span>
+              }
             </div>
           </div>
 
@@ -128,10 +179,21 @@
           <div class="relative">
             <div
               (click)="toggleDropdown($event)"
-              class="w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold shadow-md cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105 text-sm"
+              class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold shadow-md cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105 text-sm overflow-hidden border-2 border-white"
             >
-              <!-- Hiển thị chữ cái đầu của tên người dùng -->
-              <span>{{ currentUser.name.charAt(0).toUpperCase() }}</span>
+              @if (currentUser.avatarUrl) {
+              <img
+                [src]="currentUser.avatarUrl"
+                [alt]="currentUser.name"
+                class="w-full h-full object-cover"
+              />
+              } @else {
+              <div
+                class="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center"
+              >
+                <span>{{ currentUser.name.charAt(0).toUpperCase() }}</span>
+              </div>
+              }
             </div>
 
             <!-- Dropdown Menu -->
