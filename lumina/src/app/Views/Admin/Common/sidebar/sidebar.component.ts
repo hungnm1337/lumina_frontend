@@ -18,29 +18,28 @@ import { RouterLink } from '@angular/router';
 export class SidebarComponent {
   @Input() isOpen = true;
 
-  // Cấu trúc menu đầy đủ giống như ảnh
   navGroups = [
     {
-      title: 'Quản lý người dùng',
+      title: 'User Management',
       items: [
-        { path: '/admin/users-list', name: 'Danh sách người dùng', icon: 'fas fa-users' }
-        // { path: '/admin/user-details', name: 'Chi tiết người dùng', icon: 'fas fa-user-edit' },
-        // { path: '/admin/roles-permissions', name: 'Vai trò & Quyền hạn', icon: 'fas fa-user-shield' },
+        { path: '/admin/users-list', name: 'User List', icon: 'fas fa-users' }
+        // { path: '/admin/user-details', name: 'User Details', icon: 'fas fa-user-edit' },
+        // { path: '/admin/roles-permissions', name: 'Roles & Permissions', icon: 'fas fa-user-shield' },
       ],
     },
     {
-      title: 'Cấu hình hệ thống',
+      title: 'System Configuration',
       items: [
-        { path: '/admin/system-plans', name: 'Gói & Hạn mức', icon: 'fas fa-layer-group' },
-        { path: '/admin/system-integrations', name: 'AI/Email/Thanh toán', icon: 'fas fa-plug' },
-        { path: '/admin/system-srs', name: 'SRS & Bảng xếp hạng', icon: 'fas fa-cogs' },
+        { path: '/admin/system-plans', name: 'Plans & Limits', icon: 'fas fa-layer-group' },
+        // { path: '/admin/system-integrations', name: 'AI/Email/Payment', icon: 'fas fa-plug' },
+        // { path: '/admin/system-srs', name: 'SRS & Leaderboard', icon: 'fas fa-cogs' },
       ],
     },
     {
-      title: 'Giám sát & Báo cáo',
+      title: 'Monitoring & Reports',
       items: [
-        { path: '/admin/system-stats', name: 'Thống kê & Biểu đồ', icon: 'fas fa-chart-bar' },
-        { path: '/admin/user-activity', name: 'Hành vi người dùng', icon: 'fas fa-user-clock' },
+        { path: '/admin/system-stats', name: 'Statistics & Charts', icon: 'fas fa-chart-bar' },
+        { path: '/admin/user-activity', name: 'User Activity', icon: 'fas fa-user-clock' },
       ],
     }
   ];
