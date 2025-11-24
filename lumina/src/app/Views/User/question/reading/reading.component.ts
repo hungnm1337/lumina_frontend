@@ -24,6 +24,7 @@ import { ExamAttemptService } from '../../../../Services/ExamAttempt/exam-attemp
 import { ExamAttemptDetailComponent } from '../../ExamAttempt/exam-attempt-detail/exam-attempt-detail.component';
 import { QuotaService } from '../../../../Services/Quota/quota.service';
 import { QuotaLimitModalComponent } from '../../quota-limit-modal/quota-limit-modal.component';
+import { LeaderboardService } from '../../../../Services/Leaderboard/leaderboard.service';
 
 @Component({
   selector: 'app-reading',
@@ -52,6 +53,9 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
   attemptId: number | null = null;
   isSubmitting = false;
 
+  // Tracking time for leaderboard calculation
+  examStartTime: Date | null = null;
+
   // Answer tracking (from backend responses)
   answeredQuestions: Map<
     number,
@@ -70,12 +74,14 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
     private router: Router,
     private authService: AuthService,
     private examAttemptService: ExamAttemptService,
-    private quotaService: QuotaService
+    private quotaService: QuotaService,
+    private leaderboardService: LeaderboardService
   ) {}
 
   ngOnInit(): void {
     this.loadAttemptId();
     this.incrementQuotaOnStart();
+    this.examStartTime = new Date(); // Track start time for leaderboard
   }
 
   ngOnDestroy(): void {
@@ -256,12 +262,96 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
 
         this.finished = true;
         localStorage.removeItem('currentExamAttempt');
+
+        // 🎯 CALCULATE LEADERBOARD SCORE (CHỈ READING)
+        this.calculateLeaderboardScore();
       },
       error: (error) => {
         console.error('Error finalizing reading exam:', error);
         this.finished = true;
       },
     });
+  }
+
+  // ============= LEADERBOARD INTEGRATION =============
+
+  private calculateLeaderboardScore(): void {
+    if (!this.attemptId || !this.partInfo) {
+      console.log('⚠️ Missing attemptId or partInfo for leaderboard calculation');
+      return;
+    }
+
+    // Chỉ tính điểm cho Reading (ExamPartId = 2)
+    // Sử dụng partId từ partInfo
+    const examPartId = 2; // Reading
+
+    const timeSpentSeconds = this.calculateTimeSpent();
+    const expectedTimeSeconds = 60 * 60; // 60 phút cho Reading
+
+    const request = {
+      examAttemptId: this.attemptId,
+      examPartId: examPartId,
+      correctAnswers: this.correctCount,
+      totalQuestions: this.questions.length,
+      timeSpentSeconds: timeSpentSeconds,
+      expectedTimeSeconds: expectedTimeSeconds
+    };
+
+    console.log('📊 Calculating leaderboard score for Reading:', request);
+
+    this.leaderboardService.calculateScore(request).subscribe({
+      next: (response) => {
+        console.log('✅ Leaderboard score calculated:', response);
+
+        // Hiển thị thông báo TOEIC
+        if (response.toeicMessage) {
+          this.showTOEICNotification(response);
+        }
+
+        // Thông báo nếu làm lần đầu
+        if (response.isFirstAttempt) {
+          console.log('🎯 Lần đầu làm đề này! TOEIC đã được cập nhật:', response.estimatedTOEIC);
+        } else {
+          console.log('🔄 Làm lại đề cũ. Điểm tích lũy tăng, TOEIC giữ nguyên');
+        }
+      },
+      error: (error) => {
+        console.error('❌ Error calculating leaderboard score:', error);
+        // Không block user flow nếu API lỗi
+      }
+    });
+  }
+
+  private calculateTimeSpent(): number {
+    if (!this.examStartTime) return 0;
+    const now = new Date();
+    return Math.floor((now.getTime() - this.examStartTime.getTime()) / 1000);
+  }
+
+  private showTOEICNotification(response: any): void {
+    const message = `
+${response.toeicMessage}
+
+📊 Thông tin chi tiết:
+• Điểm lần này: ${response.seasonScore}
+• Tổng điểm tích lũy: ${response.totalAccumulatedScore}
+• TOEIC ước tính: ${response.estimatedTOEIC}
+• Trình độ: ${response.toeicLevel}
+${response.isFirstAttempt ? '\n🎯 Lần đầu làm đề này!' : '\n🔄 Làm lại đề - TOEIC giữ nguyên'}
+    `.trim();
+
+    alert(message);
+  }
+
+  private showLevelUpNotification(newLevel: string, previousLevel?: string): void {
+    const levelText = this.leaderboardService.getTOEICLevelText(newLevel);
+    const icon = this.leaderboardService.getTOEICLevelIcon(newLevel);
+    
+    alert(`${icon} CHÚC MỪNG!\n\nBạn đã lên cấp độ: ${levelText}\n${previousLevel ? `Từ: ${this.leaderboardService.getTOEICLevelText(previousLevel)}` : ''}\n\nHãy tiếp tục phát huy!`);
+  }
+
+  private showMilestoneNotification(milestone: number): void {
+    alert(`🎯 THÀNH TÍCH MỚI!\n\nBạn đã đạt mốc ${milestone} điểm TOEIC ước tính!\n\nChúc mừng bạn!`);
   }
 
   // ============= EXAM HISTORY =============
