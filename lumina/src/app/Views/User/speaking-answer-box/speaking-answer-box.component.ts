@@ -17,6 +17,8 @@ import {
 } from '../../../Services/Exam/Speaking/speaking.service';
 import { ToastService } from '../../../Services/Toast/toast.service';
 import { SpeakingQuestionStateService } from '../../../Services/Exam/Speaking/speaking-question-state.service';
+import { OfflineStorageService } from '../../../Services/offline-storage.service';
+import { OfflineSyncService } from '../../../Services/offline-sync.service';
 type RecordingState =
   | 'idle'
   | 'recording'
@@ -78,7 +80,9 @@ export class SpeakingAnswerBoxComponent
     private speakingService: SpeakingService,
     private toastService: ToastService,
     private speakingStateService: SpeakingQuestionStateService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private offlineStorage: OfflineStorageService,
+    private offlineSync: OfflineSyncService
   ) {
     // Initialize with idle state
     this.state = 'idle';
@@ -91,7 +95,7 @@ export class SpeakingAnswerBoxComponent
     this.setupVisibilityHandler();
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     console.log('[SpeakingAnswerBox] 🎬 ngOnInit called:', {
       questionId: this.questionId,
       initialState: this.state,
@@ -103,6 +107,32 @@ export class SpeakingAnswerBoxComponent
     // ✅ Initialize state service and restore state for this question
     if (this.questionId) {
       this.speakingStateService.initializeQuestion(this.questionId);
+
+      // ✅ FIX: Try to restore from IndexedDB first (for page refresh recovery)
+      try {
+        const draft = await this.offlineStorage.getAudioDraft(this.questionId);
+        if (draft && !this.audioBlob) {
+          console.log('[SpeakingAnswerBox] ✅ Restored audio draft from IndexedDB:', {
+            questionId: this.questionId,
+            recordingTime: draft.recordingTime,
+            blobSize: draft.audioBlob.size
+          });
+
+          this.audioBlob = draft.audioBlob;
+          this.recordingTime = draft.recordingTime;
+          this.state = 'idle';
+
+          // Save to state service as well
+          this.speakingStateService.saveRecording(
+            this.questionId,
+            draft.audioBlob,
+            draft.recordingTime
+          );
+        }
+      } catch (error) {
+        console.error('[SpeakingAnswerBox] ❌ Failed to restore audio draft from IndexedDB:', error);
+      }
+
       this.restoreStateFromService();
       // ✅ FIX: Force change detection với OnPush strategy
       this.cdr.markForCheck();
@@ -427,15 +457,27 @@ export class SpeakingAnswerBoxComponent
         })),
       });
 
-      // Listen to track ended events
+      // ✅ FIX: Enhanced track.onended handler for device disconnection
       stream.getTracks().forEach((track) => {
         track.onended = () => {
-          console.error('[SpeakingAnswerBox] 🔴 TRACK ENDED:', {
+          console.error('[SpeakingAnswerBox] 🔴 TRACK ENDED unexpectedly:', {
             questionId: this.questionId,
             trackKind: track.kind,
             trackState: track.readyState,
             streamActive: stream.active,
+            mediaRecorderState: this.mediaRecorder?.state
           });
+
+          // ✅ FIX: Auto-stop recording and show error
+          if (this.state === 'recording') {
+            this.stopRecording();
+
+            this.state = 'error';
+            this.errorMessage = 'Microphone bị ngắt kết nối. Bản ghi âm đã được lưu. Vui lòng ghi lại nếu cần.';
+            this.toastService.error('Microphone bị ngắt kết nối!');
+
+            this.cdr.markForCheck();
+          }
         };
       });
 
@@ -458,7 +500,7 @@ export class SpeakingAnswerBoxComponent
         this.recordingStatusChange.emit(false);
       };
 
-      this.mediaRecorder.onstop = () => {
+      this.mediaRecorder.onstop = async () => {
         console.log('[SpeakingAnswerBox] 📽️ mediaRecorder.onstop fired:', {
           questionId: this.questionId,
           currentState: this.state,
@@ -492,6 +534,19 @@ export class SpeakingAnswerBoxComponent
             this.audioBlob,
             this.recordingTime
           );
+
+          // ✅ FIX: Also save to IndexedDB for persistence across page refresh
+          try {
+            await this.offlineStorage.saveAudioDraft(
+              this.questionId,
+              this.attemptId,
+              this.audioBlob,
+              this.recordingTime
+            );
+            console.log('[SpeakingAnswerBox] ✅ Saved draft to IndexedDB');
+          } catch (error) {
+            console.error('[SpeakingAnswerBox] ❌ Failed to save draft to IndexedDB:', error);
+          }
 
           // ✅ FIX: Trigger change detection after saving
           this.cdr.markForCheck();
@@ -570,10 +625,8 @@ export class SpeakingAnswerBoxComponent
     }
 
     // ✅ FIX Bug #17: Capture questionId at submission time
-    // This prevents emitting wrong questionId if user navigates during async scoring
     const submittedQuestionId = this.questionId;
 
-    // ✅ DEBUG: Kiểm tra attemptId trước khi submit
     console.log('[SpeakingAnswerBox] 🔍 DEBUG attemptId:', {
       attemptId: this.attemptId,
       type: typeof this.attemptId,
@@ -582,91 +635,138 @@ export class SpeakingAnswerBoxComponent
     });
 
     if (!this.attemptId || this.attemptId <= 0) {
-      console.error(
-        '[SpeakingAnswerBox] ❌ Invalid attemptId before submit:',
-        this.attemptId
-      );
-      this.toastService.error(
-        'Lỗi: Không tìm thấy ID bài thi. Vui lòng refresh trang và thử lại.'
-      );
+      console.error('[SpeakingAnswerBox] ❌ Invalid attemptId:', this.attemptId);
+      this.toastService.error('Lỗi: Không tìm thấy ID bài thi. Vui lòng refresh trang và thử lại.');
       this.state = 'error';
       return;
     }
 
+    // ✅ FIX: Check if offline
+    if (!navigator.onLine) {
+      console.log('[SpeakingAnswerBox] 🔌 Offline detected - saving to IndexedDB');
+
+      try {
+        await this.offlineStorage.savePendingSubmission({
+          questionId: submittedQuestionId,
+          attemptId: this.attemptId,
+          audioBlob: this.audioBlob,
+          recordingTime: this.recordingTime,
+          timestamp: Date.now(),
+          mimeType: this.audioBlob.type
+        });
+
+        this.toastService.info('Đã lưu bài làm offline. Sẽ tự động đồng bộ khi có mạng.');
+
+        // Mark as pending in state service
+        this.speakingStateService.updateQuestionState(submittedQuestionId, {
+          state: 'has_recording',
+          audioBlob: this.audioBlob,
+          recordingTime: this.recordingTime
+        });
+
+        this.state = 'idle';
+        return;
+      } catch (error) {
+        console.error('[SpeakingAnswerBox] ❌ Failed to save offline:', error);
+        this.toastService.error('Lỗi lưu bài làm offline. Vui lòng thử lại.');
+        this.state = 'error';
+        return;
+      }
+    }
+
+    // ✅ FIX: Check SessionStorage to prevent duplicate submission from multiple tabs
+    const submissionKey = `speaking_submitting_${submittedQuestionId}_${this.attemptId}`;
+    const isSubmitting = sessionStorage.getItem(submissionKey);
+
+    if (isSubmitting) {
+      console.warn('[SpeakingAnswerBox] ⚠️ Already submitting in another tab/process');
+      this.toastService.warning('Bài này đang được nộp. Vui lòng đợi...');
+      return;
+    }
+
+    // Mark as submitting
+    sessionStorage.setItem(submissionKey, 'true');
+
     this.state = 'processing';
-    this.isActivelyProcessing = true; // ✅ FIX: Mark as actively processing
+    this.isActivelyProcessing = true;
     this.errorMessage = '';
     this.submitting.emit(true);
     this.speakingStateService.markAsScoring(submittedQuestionId);
 
     try {
-      // Submit via service-level method to ensure continuity across navigation
-      console.log(
-        `[SpeakingAnswerBox] Submitting answer for question ${submittedQuestionId} with attemptId: ${this.attemptId}`
-      );
-      if (!navigator.onLine) {
-        this.errorMessage = 'Mất kết nối mạng. Vui lòng kiểm tra và thử lại.';
-        this.state = 'error';
-        this.submitting.emit(false);
-        return;
-      }
+      console.log(`[SpeakingAnswerBox] Submitting answer for question ${submittedQuestionId}`);
+
       const result = await this.speakingStateService.submitAnswerAndStore(
-        submittedQuestionId,  // ✅ Use captured questionId
+        submittedQuestionId,
         this.audioBlob,
-        this.attemptId // ✅ Truyền attemptId
+        this.attemptId
       );
 
       if (result) {
         this.result = result;
         this.state = 'submitted';
-        this.isActivelyProcessing = false; // ✅ FIX: Clear flag
-        // Remove toast notification - chấm điểm ngầm, không thông báo
-        // this.toastService.success('Đã nộp bài thành công!');
+        this.isActivelyProcessing = false;
 
-        // State already saved by service method
+        // ✅ FIX: Delete offline draft if exists
+        try {
+          await this.offlineStorage.deleteAudioDraft(submittedQuestionId);
+          console.log('[SpeakingAnswerBox] ✅ Deleted audio draft from IndexedDB');
+        } catch (error) {
+          console.error('[SpeakingAnswerBox] ⚠️ Failed to delete audio draft:', error);
+        }
 
-        // ✅ FIX Bug #17: Emit with CAPTURED questionId, not current this.questionId
-        // This ensures correct questionId even if user navigated during scoring
-        console.log(
-          '[SpeakingAnswerBox] 📤 Emitting result for submittedQuestionId:',
-          submittedQuestionId,
-          '(current questionId:', this.questionId, ')'
-        );
+        console.log('[SpeakingAnswerBox] 📤 Emitting result for:', submittedQuestionId);
         this.scoringResult.emit({ questionId: submittedQuestionId, result });
         this.answered.emit(true);
 
-        // ✅ FIX: Trigger change detection khi có result
         this.cdr.markForCheck();
       }
     } catch (error: any) {
-      this.isActivelyProcessing = false; // ✅ FIX: Clear flag on error
-      if (error.status === 0 || error.message?.includes('NetworkError')) {
-        this.errorMessage =
-          'Lỗi kết nối mạng. Bản ghi âm đã được lưu tạm thời.';
-        // TODO: Implement offline storage
-      } else {
-        this.errorMessage = error.message || 'Có lỗi xảy ra';
-      }
-      console.error('Error submitting recording:', error);
-      this.errorMessage =
-        error?.error?.message ||
-        'Đã xảy ra lỗi khi chấm điểm. Vui lòng thử lại.';
-      this.state = 'error';
-      this.toastService.error(this.errorMessage);
+      this.isActivelyProcessing = false;
 
-      // ✅ FIX: Trigger change detection on error
+      // ✅ FIX: Better error handling for network errors
+      if (error.status === 0 || error.message?.includes('NetworkError')) {
+        console.log('[SpeakingAnswerBox] 🔌 Network error during submit - saving offline');
+
+        try {
+          await this.offlineStorage.savePendingSubmission({
+            questionId: submittedQuestionId,
+            attemptId: this.attemptId,
+            audioBlob: this.audioBlob,
+            recordingTime: this.recordingTime,
+            timestamp: Date.now(),
+            mimeType: this.audioBlob.type
+          });
+
+          this.errorMessage = 'Mất kết nối mạng. Bài làm đã được lưu và sẽ tự động đồng bộ khi có mạng.';
+          this.toastService.warning(this.errorMessage);
+          this.state = 'idle';
+        } catch (offlineError) {
+          console.error('[SpeakingAnswerBox] ❌ Failed to save offline after network error:', offlineError);
+          this.errorMessage = 'Lỗi kết nối mạng và không thể lưu offline.';
+          this.state = 'error';
+          this.toastService.error(this.errorMessage);
+        }
+      } else {
+        this.errorMessage = error?.error?.message || 'Đã xảy ra lỗi khi chấm điểm. Vui lòng thử lại.';
+        this.state = 'error';
+        this.toastService.error(this.errorMessage);
+      }
+
       this.cdr.markForCheck();
     } finally {
-      this.submitting.emit(false); // ← Notify parent: Submit xong (thành công hoặc lỗi)
+      // Clear submission lock
+      sessionStorage.removeItem(submissionKey);
+      this.submitting.emit(false);
     }
   }
 
-  cancelRecording(): void {
+  async cancelRecording(): Promise<void> {
     this.stopRecording();
     this.audioBlob = null;
     this.audioChunks = [];
 
-    // Clear audio URL cache
+    // ✅ FIX: Clear audio URL cache to prevent memory leak
     if (this.audioUrl) {
       URL.revokeObjectURL(this.audioUrl);
       this.audioUrl = null;
@@ -676,6 +776,14 @@ export class SpeakingAnswerBoxComponent
 
     // Clear from state service
     this.speakingStateService.clearRecording(this.questionId);
+
+    // ✅ FIX: Clear from IndexedDB
+    try {
+      await this.offlineStorage.deleteAudioDraft(this.questionId);
+      console.log('[SpeakingAnswerBox] ✅ Cleared audio draft from IndexedDB');
+    } catch (error) {
+      console.error('[SpeakingAnswerBox] ⚠️ Failed to clear audio draft from IndexedDB:', error);
+    }
   }
 
   private resetComponent(): void {
@@ -736,17 +844,44 @@ export class SpeakingAnswerBoxComponent
 
   // ✅ FIX Bug #9: Setup Page Visibility API để handle khi user chuyển tab
   private setupVisibilityHandler(): void {
+    let hiddenStartTime = 0;
+
     this.visibilityChangeHandler = () => {
       if (document.hidden && this.state === 'recording') {
-        // User chuyển tab/minimize → pause timer
-        console.log('[SpeakingAnswerBox] ⚠️ Page hidden, pausing timer');
-        const currentElapsed =
-          Date.now() - this.recordingStartTime - this.pausedTime;
+        // User chuyển tab/minimize → track pause start
+        hiddenStartTime = Date.now();
+        console.log('[SpeakingAnswerBox] ⚠️ Page hidden, tracking pause time');
+
+        const currentElapsed = Date.now() - this.recordingStartTime - this.pausedTime;
         this.pausedTime += currentElapsed;
+
       } else if (!document.hidden && this.state === 'recording') {
-        // User quay lại tab → resume timer
-        console.log('[SpeakingAnswerBox] ✅ Page visible, resuming timer');
-        this.recordingStartTime = Date.now(); // Reset start time
+        // User quay lại tab → check how long was hidden
+        const hiddenDuration = Date.now() - hiddenStartTime;
+        console.log('[SpeakingAnswerBox] ✅ Page visible, was hidden for:', hiddenDuration, 'ms');
+
+        // ✅ FIX: Warning nếu hidden > 2 phút
+        if (hiddenDuration > 120000) {
+          this.toastService.warning(
+            'Tab đã bị ẩn quá lâu (> 2 phút). Bản ghi có thể không chính xác. Khuyến nghị dừng và ghi lại.'
+          );
+        }
+
+        // ✅ FIX: Check if MediaRecorder still active
+        if (this.mediaRecorder?.state !== 'recording') {
+          console.error('[SpeakingAnswerBox] ❌ MediaRecorder suspended by browser!');
+
+          this.stopRecording();
+          this.state = 'error';
+          this.errorMessage = 'Ghi âm bị gián đoạn do tab bị ẩn quá lâu. Vui lòng ghi lại.';
+          this.toastService.error(this.errorMessage);
+
+          this.cdr.markForCheck();
+          return;
+        }
+
+        // Resume timer
+        this.recordingStartTime = Date.now();
       }
     };
 
