@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, map } from 'rxjs';
+import { Observable, catchError, map, BehaviorSubject, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   QuotaCheckResponse,
   SubscriptionStatus,
+  QuotaRemainingDto,
 } from '../../Interfaces/quota.interfaces';
 
 @Injectable({
@@ -12,6 +13,7 @@ import {
 })
 export class QuotaService {
   private apiUrl = `${environment.apiUrl}/Quota`;
+  private quotaCache$ = new BehaviorSubject<QuotaRemainingDto | null>(null);
 
   constructor(private http: HttpClient) {}
 
@@ -28,7 +30,35 @@ export class QuotaService {
    * @param skill - 'reading', 'listening', 'speaking', or 'writing'
    */
   incrementQuota(skill: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/increment/${skill}`, {});
+    return this.http.post(`${this.apiUrl}/increment/${skill}`, {}).pipe(
+      tap(() => {
+        // Refresh quota after increment
+        this.getRemainingQuota().subscribe();
+      })
+    );
+  }
+
+  /**
+   * Get remaining quota for current user
+   */
+  getRemainingQuota(): Observable<QuotaRemainingDto> {
+    return this.http
+      .get<QuotaRemainingDto>(`${this.apiUrl}/remaining`)
+      .pipe(tap((data) => this.quotaCache$.next(data)));
+  }
+
+  /**
+   * Get cached quota (for immediate access)
+   */
+  getCachedQuota(): QuotaRemainingDto | null {
+    return this.quotaCache$.value;
+  }
+
+  /**
+   * Observable for quota changes
+   */
+  getQuotaObservable(): Observable<QuotaRemainingDto | null> {
+    return this.quotaCache$.asObservable();
   }
 
   /**

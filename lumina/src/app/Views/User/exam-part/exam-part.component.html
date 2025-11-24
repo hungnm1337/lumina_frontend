@@ -1,7 +1,14 @@
-<div class="max-w-6xl mx-auto p-8 min-h-screen bg-gradient-to-br from-slate-50 to-blue-100">
+<div
+  class="max-w-6xl mx-auto p-8 min-h-screen bg-gradient-to-br from-slate-50 to-blue-100"
+>
   <!-- Loading State -->
-  <div *ngIf="isLoading" class="flex flex-col items-center justify-center py-16">
-    <div class="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+  <div
+    *ngIf="isLoading"
+    class="flex flex-col items-center justify-center py-16"
+  >
+    <div
+      class="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-4"
+    ></div>
     <p class="text-gray-600 text-lg">Loading exam information...</p>
   </div>
 
@@ -9,14 +16,16 @@
   <div *ngIf="!isLoading && examDetail" class="space-y-8">
     <!-- Back Button -->
     <div class="flex items-center">
-      <button (click)="goBack()"
-              class="flex items-center px-4 py-2 border-solid border border-gray-300 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">
+      <button
+        (click)="goBack()"
+        class="flex items-center px-4 py-2 border-solid border border-gray-300 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
+      >
         <i class="fas fa-arrow-left mr-2"></i>
         Back to list
       </button>
     </div>
 
- <!-- Exam Info -->
+    <!-- Exam Info -->
     <div class="bg-white rounded-2xl shadow-lg p-8">
       <h2 class="text-2xl font-bold text-gray-900 mb-6">Exam Information</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -34,8 +43,11 @@
           <div class="flex items-center">
             <i class="fas fa-toggle-on text-purple-500 w-6"></i>
             <span class="ml-3 text-gray-600">Status:</span>
-            <span class="ml-2 font-semibold" [class]="examDetail.isActive ? 'text-green-600' : 'text-red-600'">
-              {{ examDetail.isActive ? 'Active' : 'Paused' }}
+            <span
+              class="ml-2 font-semibold"
+              [class]="examDetail.isActive ? 'text-green-600' : 'text-red-600'"
+            >
+              {{ examDetail.isActive ? "Active" : "Paused" }}
             </span>
           </div>
         </div>
@@ -43,17 +55,23 @@
           <div class="flex items-center">
             <i class="fas fa-user text-orange-500 w-6"></i>
             <span class="ml-3 text-gray-600">Created by:</span>
-            <span class="ml-2 font-semibold">{{ examDetail.createdByName }}</span>
+            <span class="ml-2 font-semibold">{{
+              examDetail.createdByName
+            }}</span>
           </div>
           <div class="flex items-center">
             <i class="fas fa-calendar-alt text-red-500 w-6"></i>
             <span class="ml-3 text-gray-600">Created date:</span>
-            <span class="ml-2 font-semibold">{{ formatDate(examDetail.createdAt) }}</span>
+            <span class="ml-2 font-semibold">{{
+              formatDate(examDetail.createdAt)
+            }}</span>
           </div>
           <div class="flex items-center">
             <i class="fas fa-list text-indigo-500 w-6"></i>
             <span class="ml-3 text-gray-600">Number of parts:</span>
-            <span class="ml-2 font-semibold">{{ examDetail.examParts?.length || 0 }} parts</span>
+            <span class="ml-2 font-semibold"
+              >{{ examDetail.examParts?.length || 0 }} parts</span
+            >
           </div>
         </div>
       </div>
@@ -62,73 +80,185 @@
     <div class="bg-white rounded-2xl shadow-lg p-8">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-gray-900">Exam Parts</h2>
-        <span class="text-sm text-gray-500">{{ examDetail.examParts?.length || 0 }} parts</span>
+        <span class="text-sm text-gray-500"
+          >{{ examDetail.examParts?.length || 0 }} parts</span
+        >
       </div>
 
       <!-- Parts Grid -->
-      <div *ngIf="examDetail.examParts && examDetail.examParts.length > 0"
-           class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div *ngFor="let part of examDetail.examParts"
-             class="border border-gray-200 rounded-xl p-6 hover:border-blue-300 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group "
-             (click)="startPart(part.partId)">
+      <div
+        *ngIf="examDetail.examParts && examDetail.examParts.length > 0"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
+        <div
+          *ngFor="let part of examDetail.examParts"
+          class="relative border rounded-xl p-6 transition-all duration-300 group cursor-pointer"
+          [ngClass]="{
+            'border-gray-200 hover:border-blue-300 hover:shadow-lg hover:-translate-y-1':
+              !part.completionStatus?.isCompleted,
+            'border-green-300 bg-green-50 hover:border-green-400':
+              part.completionStatus?.isCompleted
+          }"
+          (click)="startPart(part.partId)"
+        >
+          <!-- ✅ Attempt Count Badge (for completed parts) -->
+          <div
+            *ngIf="
+              part.completionStatus &&
+              part.completionStatus.attemptCount &&
+              part.completionStatus.attemptCount > 1
+            "
+            class="absolute top-3 right-3 bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium z-10"
+          >
+            x{{ part.completionStatus.attemptCount }}
+          </div>
 
           <!-- Part Header -->
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center">
-              <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-3 group-hover:bg-blue-200 transition-colors duration-300">
-                <span class="text-blue-600 font-bold text-lg">{{ part.orderIndex }}</span>
+              <div
+                class="w-12 h-12 rounded-full flex items-center justify-center mr-3 transition-colors duration-300"
+                [ngClass]="{
+                  'bg-blue-100 group-hover:bg-blue-200':
+                    !part.completionStatus?.isCompleted,
+                  'bg-green-200 group-hover:bg-green-300':
+                    part.completionStatus?.isCompleted
+                }"
+              >
+                <!-- Show checkmark if completed, otherwise show lock/pending icon -->
+                <i
+                  *ngIf="part.completionStatus?.isCompleted"
+                  class="fas fa-check-circle text-green-600 text-2xl"
+                ></i>
+                <span
+                  *ngIf="!part.completionStatus?.isCompleted"
+                  class="text-blue-600 font-bold text-lg"
+                >
+                  {{ part.orderIndex }}
+                </span>
               </div>
               <div>
-                <h3 class="font-semibold text-gray-900 text-lg">{{ part.partCode }}</h3>
+                <h3
+                  class="font-semibold text-lg"
+                  [ngClass]="{
+                    'text-gray-900': !part.completionStatus?.isCompleted,
+                    'text-green-700': part.completionStatus?.isCompleted
+                  }"
+                >
+                  {{ part.partCode }}
+                </h3>
                 <p class="text-sm text-gray-500">Part {{ part.orderIndex }}</p>
               </div>
             </div>
-            <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-blue-50 transition-colors duration-300">
-              <i class="fas fa-play text-gray-400 group-hover:text-blue-500 text-sm"></i>
-            </div>
+            <!-- <div
+              class="w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-300"
+              [ngClass]="{
+                'bg-gray-100 group-hover:bg-blue-50':
+                  !part.completionStatus?.isCompleted,
+                'bg-green-100 group-hover:bg-green-200':
+                  part.completionStatus?.isCompleted
+              }"
+            >
+              <i
+                class="text-sm"
+                [ngClass]="{
+                  'fas fa-play text-gray-400 group-hover:text-blue-500':
+                    !part.completionStatus?.isCompleted,
+                  'fas fa-redo text-green-600':
+                    part.completionStatus?.isCompleted
+                }"
+              ></i>
+            </div> -->
           </div>
 
           <!-- Part Content -->
           <div class="mb-4">
             <h4 class="font-medium text-gray-900 mb-2">{{ part.title }}</h4>
-            <p class="text-sm text-gray-600">Click to start the test</p>
+            <p class="text-sm text-gray-600">
+              {{
+                part.completionStatus?.isCompleted
+                  ? "Click to retry"
+                  : "Click to start the test"
+              }}
+            </p>
+
+            <!-- ✅ Show score if completed -->
+            <div
+              *ngIf="
+                part.completionStatus &&
+                part.completionStatus.isCompleted &&
+                part.completionStatus.score !== null &&
+                part.completionStatus.score !== undefined
+              "
+              class="mt-2 flex items-center gap-2"
+            >
+              <span class="text-sm text-gray-600">Last score:</span>
+              <span class="text-lg font-bold text-green-600">
+                {{ part.completionStatus.score }}
+              </span>
+            </div>
+
+            <div
+              *ngIf="part.completionStatus && part.completionStatus.completedAt"
+              class="mt-1 flex items-center gap-1 text-xs text-gray-500"
+            >
+              <i class="fas fa-clock"></i>
+              <span>{{ formatDate(part.completionStatus.completedAt) }}</span>
+            </div>
           </div>
 
           <!-- Part Footer -->
           <div class="flex items-center justify-between">
-            <div class="flex items-center text-xs text-gray-500">
+            <!-- <div class="flex items-center text-xs text-gray-500">
               <i class="fas fa-clock mr-1"></i>
               <span>Time: -- minutes</span>
-            </div>
-            <button (click)="startPart(part.partId)" class="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-medium">
-              Start
-            </button>
+            </div> -->
+            <!-- <button
+              (click)="startPart(part.partId); $event.stopPropagation()"
+              class="px-3 py-1 rounded-full text-xs font-medium transition-colors"
+              [ngClass]="{
+                'bg-blue-50 text-blue-600 hover:bg-blue-100':
+                  !part.completionStatus?.isCompleted,
+                'bg-green-50 text-green-600 hover:bg-green-100':
+                  part.completionStatus?.isCompleted
+              }"
+            >
+              {{ part.completionStatus?.isCompleted ? "Retry" : "Start" }}
+            </button> -->
           </div>
         </div>
       </div>
 
       <!-- Empty State -->
-      <div *ngIf="!examDetail.examParts || examDetail.examParts.length === 0"
-           class="text-center py-12">
-        <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+      <div
+        *ngIf="!examDetail.examParts || examDetail.examParts.length === 0"
+        class="text-center py-12"
+      >
+        <div
+          class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4"
+        >
           <i class="fas fa-clipboard-list text-3xl text-gray-400"></i>
         </div>
         <p class="text-lg font-medium text-gray-500">No exam parts available</p>
       </div>
     </div>
-
-
   </div>
 
   <!-- Error State -->
   <div *ngIf="!isLoading && !examDetail" class="text-center py-16">
-    <div class="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+    <div
+      class="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4"
+    >
       <i class="fas fa-exclamation-triangle text-3xl text-red-500"></i>
     </div>
     <h2 class="text-2xl font-bold text-gray-900 mb-2">Exam not found</h2>
-    <p class="text-gray-600 mb-6">Exam with ID {{ examId }} does not exist or has been deleted.</p>
-    <button (click)="goBack()"
-            class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200">
+    <p class="text-gray-600 mb-6">
+      Exam with ID {{ examId }} does not exist or has been deleted.
+    </p>
+    <button
+      (click)="goBack()"
+      class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
+    >
       Back to list
     </button>
   </div>

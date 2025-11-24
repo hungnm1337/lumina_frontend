@@ -8,6 +8,7 @@ import { AuthUserResponse } from '../../../Interfaces/auth.interfaces';
 import { StreakService } from '../../../Services/streak/streak.service';
 import { QuotaService } from '../../../Services/Quota/quota.service';
 import { UpgradeModalComponent } from '../../User/upgrade-modal/upgrade-modal.component';
+import { UserService } from '../../../Services/User/user.service';
 
 @Component({
   selector: 'app-header',
@@ -18,6 +19,11 @@ import { UpgradeModalComponent } from '../../User/upgrade-modal/upgrade-modal.co
 })
 export class HeaderComponent implements OnInit {
   currentUser$!: Observable<AuthUserResponse | null>;
+
+  moveToMocktest() {
+    console.log('Navigating to Mock Test Exams');
+    this.router.navigate(['homepage/mocktest/exams']);
+  }
   isDropdownOpen = false;
   isPremium = false;
   showUpgradeModal = false;
@@ -31,12 +37,34 @@ export class HeaderComponent implements OnInit {
     private elementRef: ElementRef,
     private router: Router,
     private streakService: StreakService,
-    private quotaService: QuotaService
+    private quotaService: QuotaService,
+    private userService: UserService
   ) {}
 
   ngOnInit(): void {
     this.currentUser$ = this.authService.currentUser$;
     this.loadStreakData();
+    this.loadUserProfile();
+    this.checkPremiumStatus();
+  }
+
+  loadUserProfile(): void {
+    const userId = this.authService.getCurrentUserId();
+    if (!userId || userId === 0) return;
+
+    this.userService.getProfile().subscribe({
+      next: (profile) => {
+        if (profile.avatarUrl) {
+          this.authService.updateCurrentUser({
+            avatarUrl: profile.avatarUrl,
+            name: profile.fullName,
+          });
+        }
+      },
+      error: (err) => {
+        console.error('Error loading profile for header:', err);
+      },
+    });
   }
 
   loadStreakData(): void {
@@ -58,16 +86,16 @@ export class HeaderComponent implements OnInit {
         console.error('Error loading streak:', err);
         this.currentStreak = 0;
         this.streakLoading = false;
-      }
+      },
     });
   }
 
-  // ✅ Lấy emoji (chỉ 1 loại)
+  // Lấy emoji (chỉ 1 loại)
   getFireEmoji(): string {
     return this.currentStreak === 0 ? '🌱' : '🔥';
   }
 
-  // ✅ Lấy intensity level cho animation
+  //  Lấy intensity level cho animation
   getFireIntensity(): string {
     if (this.currentStreak === 0) return 'seed';
     if (this.currentStreak < 7) return 'gentle'; // 1-6 ngày: nhẹ nhàng
@@ -75,7 +103,7 @@ export class HeaderComponent implements OnInit {
     return 'intense'; // 30+ ngày: dữ dội
   }
 
-  // ✅ Lấy size emoji
+  // Lấy size emoji
   getFireSize(): string {
     if (this.currentStreak === 0) return '1.25rem';
     if (this.currentStreak < 7) return '1.25rem';
@@ -88,9 +116,8 @@ export class HeaderComponent implements OnInit {
     return this.currentStreak.toString();
   }
 
-  // ✅ SỬA: Navigate to streak page (path mới)
   goToStreakPage(): void {
-    this.router.navigate(['/homepage/streak']); // ✅ Thêm /homepage/
+    this.router.navigate(['/streak']);
     this.checkPremiumStatus();
   }
 

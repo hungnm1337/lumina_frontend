@@ -251,20 +251,20 @@ export class QuestionsComponent implements OnInit {
 
   // Hard code số lượng câu hỏi theo Part
   private readonly partQuestionCounts: { [key: string]: number } = {
-    LISTENING_PART1: 1,
-    LISTENING_PART2: 1,
-    LISTENING_PART3: 3,
-    LISTENING_PART4: 3,
-    READING_PART6: 4,
-    READING_PART7: 3,
-    SPEAKING_PART1: 1,
-    SPEAKING_PART2: 1,
-    SPEAKING_PART3: 3,
-    SPEAKING_PART4: 4,
-    SPEAKING_PART5: 1,
-    WRITING_PART1: 1,
-    WRITING_PART2: 1,
-    WRITING_PART3: 1,
+    LISTENING_PART_1: 1,
+    LISTENING_PART_2: 1,
+    LISTENING_PART_3: 3,
+    LISTENING_PART_4: 3,
+    READING_PART_6: 4,
+    READING_PART_7: 3,
+    SPEAKING_PART_1: 1,
+    SPEAKING_PART_2: 1,
+    SPEAKING_PART_3: 3,
+    SPEAKING_PART_4: 4,
+    SPEAKING_PART_5: 1,
+    WRITING_PART_1: 1,
+    WRITING_PART_2: 1,
+    WRITING_PART_3: 1,
   };
 
   // XÓA hàm onSkillChange cũ này (từ dòng ~220)
@@ -416,6 +416,17 @@ export class QuestionsComponent implements OnInit {
     }
 
     const f = this.promptForm.value;
+
+    // Validate: mỗi câu hỏi phải có ít nhất 1 option đúng
+    for (const q of f.questions) {
+      if (Array.isArray(q.options) && q.options.length > 0) {
+        const hasCorrect = q.options.some((opt: any) => !!opt.isCorrect);
+        if (!hasCorrect) {
+          alert('Mỗi câu hỏi phải có ít nhất 1 đáp án đúng!');
+          return;
+        }
+      }
+    }
 
     const dto = {
       title: f.title,
@@ -683,8 +694,13 @@ export class QuestionsComponent implements OnInit {
     }
     const value = this.questionForm.value;
 
-    if (!this.currentPartId) {
-      this.showMessage('Vui lòng chọn PartId hợp lệ!', 'error');
+    // Validate: phải có ít nhất 1 option đúng nếu có options
+    if (
+      Array.isArray(value.options) &&
+      value.options.length > 0 &&
+      !value.options.some((opt: any) => !!opt.isCorrect)
+    ) {
+      this.showMessage('Câu hỏi phải có ít nhất 1 đáp án đúng!', 'error');
       return;
     }
 
@@ -752,8 +768,7 @@ export class QuestionsComponent implements OnInit {
       error: (err) => {
         const errorMsg =
           err.error?.message ||
-          err.error?.error ||
-          'Part đã đủ số lượng câu hỏi!';
+          err.error?.error;
         this.showMessage(errorMsg, 'error');
       },
     });

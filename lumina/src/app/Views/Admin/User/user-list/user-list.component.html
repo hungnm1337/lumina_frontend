@@ -1,62 +1,56 @@
 <div class="bg-white rounded-xl shadow-sm">
-    <!-- Phần Header và Bộ lọc -->
+    <!-- Header & Filter -->
     <div class="p-6 border-b border-gray-200">
         <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-800">Danh sách người dùng</h3>
+            <h3 class="text-lg font-semibold text-gray-800">User List</h3>
             <!-- <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
-        <i class="fas fa-plus mr-2"></i>Thêm người dùng
+        <i class="fas fa-plus mr-2"></i>Add User
       </button> -->
         </div>
         <div class="mt-4 flex items-center space-x-4">
             <div class="flex-1">
-                <input type="text" placeholder="Tìm kiếm theo tên hoặc email..."
+                <input type="text" placeholder="Search by name or email..."
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     [(ngModel)]="searchTerm" (ngModelChange)="filterUsers()">
             </div>
             <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 [(ngModel)]="selectedRole" (ngModelChange)="filterUsers()">
-                <option>Tất cả vai trò</option>
+                <option>All</option>
                 <option *ngFor="let role of roles" [value]="role.name">{{ role.name }}</option>
             </select>
         </div>
 
     </div>
 
-    <!-- Bảng dữ liệu -->
+    <!-- Data Table -->
     <div class="overflow-x-auto">
         <table class="w-full">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Người
-                        dùng</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vai trò
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng
-                        thái</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày tham
-                        gia</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác
-                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Join Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-                <!-- Hiển thị khi đang tải -->
+                <!-- Loading -->
                 <tr *ngIf="isLoading">
                     <td colspan="6" class="text-center py-10 text-gray-500">
-                        <i class="fas fa-spinner fa-spin mr-2"></i> Đang tải dữ liệu...
+                        <i class="fas fa-spinner fa-spin mr-2"></i> Loading data...
                     </td>
                 </tr>
 
-                <!-- Hiển thị khi có lỗi -->
+                <!-- Error -->
                 <tr *ngIf="errorMessage">
                     <td colspan="6" class="text-center py-10 text-red-500">
                         {{ errorMessage }}
                     </td>
                 </tr>
 
-                <!-- Hiển thị dữ liệu người dùng -->
+                <!-- User Data -->
                 <tr *ngFor="let user of filteredUsers" class="hover:bg-gray-50">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
@@ -81,47 +75,47 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <!-- Hiển thị trạng thái dựa trên 'isActive' -->
+                        <!-- Status based on 'isActive' -->
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" [ngClass]="{
                     'bg-green-100 text-green-800': user.isActive,
                     'bg-red-100 text-red-800': !user.isActive
                   }">
-                            {{ user.isActive ? 'Hoạt động' : 'Bị khóa' }}
+                            {{ user.isActive ? 'Active' : 'Locked' }}
                         </span>
                     </td>
-                    <!-- Định dạng ngày tháng cho dễ đọc -->
+                    <!-- Date format for readability -->
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ user.joinDate | date: 'dd/MM/yyyy'
                         }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button class="text-blue-600 hover:text-blue-900 mr-3"
                             [routerLink]="['../user-detail', user.userId]">
-                            Chi Tiết
+                            Details
                         </button>
 
                         <button class="text-red-600 hover:text-red-900" *ngIf="user.isActive"
                             (click)="toggleStatus(user)">
-                            Khóa
+                            Lock
                         </button>
                         <button class="text-green-600 hover:text-green-900" *ngIf="!user.isActive"
                             (click)="toggleStatus(user)">
-                            Mở khóa
+                            Unlock
                         </button>
                     </td>
 
                 </tr>
 
-                <!-- Hiển thị thông báo nếu không có kết quả sau khi tải xong -->
+                <!-- No results after loading -->
                 <tr *ngIf="!isLoading && filteredUsers.length === 0 && !errorMessage">
                     <td colspan="6" class="text-center py-10 text-gray-500">
-                        Không tìm thấy người dùng nào.
+                        No users found.
                     </td>
                 </tr>
             </tbody>
         </table>
-        <!-- Thanh phân trang -->
-        <div *ngIf="selectedRole === 'Tất cả vai trò'" class="pagination-container flex justify-center mt-4 space-x-1">
+        <!-- Pagination -->
+        <div *ngIf="selectedRole === 'All roles'" class="pagination-container flex justify-center mt-4 space-x-1">
             <button (click)="goToPage(pageNumber - 1)" [disabled]="pageNumber === 1"
-                class="px-3 py-1 border rounded disabled:opacity-50">Trước</button>
+                class="px-3 py-1 border rounded disabled:opacity-50">Previous</button>
 
             <button *ngFor="let _ of [].constructor(totalPages); let i = index" (click)="goToPage(i + 1)"
                 [class.bg-blue-500]="pageNumber === (i + 1)" [class.text-white]="pageNumber === (i + 1)"
@@ -130,7 +124,7 @@
             </button>
 
             <button (click)="goToPage(pageNumber + 1)" [disabled]="pageNumber === totalPages"
-                class="px-3 py-1 border rounded disabled:opacity-50">Tiếp</button>
+                class="px-3 py-1 border rounded disabled:opacity-50">Next</button>
         </div>
 
     </div>

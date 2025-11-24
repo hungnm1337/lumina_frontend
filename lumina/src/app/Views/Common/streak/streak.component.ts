@@ -3,13 +3,12 @@ import { CommonModule } from '@angular/common';
 import { StreakService } from '../../../Services/streak/streak.service';
 import { AuthService } from '../../../Services/Auth/auth.service';
 import { Router } from '@angular/router';
+import { HeaderComponent } from '../header/header.component';
 
 interface MilestoneReward {
   days: number;
   reward: string;
-  listeningTests: number;  // ✅ THÊM
-  readingTests: number;    // ✅ THÊM
-  freezeTokens: number;    // ✅ THÊM
+  freezeTokens: number;
   icon: string;
   color: string;
   reached: boolean;
@@ -18,7 +17,7 @@ interface MilestoneReward {
 @Component({
   selector: 'app-streak',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule,HeaderComponent],
   templateUrl: './streak.component.html',
   styleUrl: './streak.component.scss'
 })
@@ -32,80 +31,64 @@ export class StreakComponent implements OnInit {
   milestones: MilestoneReward[] = [
     { 
       days: 3, 
-      reward: 'Milestone đầu tiên', 
+      reward: 'First milestone', 
       freezeTokens: 1,
-      listeningTests: 1,
-      readingTests: 1,
       icon: '💎', 
       color: '#3B82F6', 
       reached: false 
     },
     { 
       days: 7, 
-      reward: 'Một tuần kiên trì', 
+      reward: 'One week of persistence', 
       freezeTokens: 1,
-      listeningTests: 1,
-      readingTests: 1,
       icon: '🔥', 
       color: '#F59E0B', 
       reached: false 
     },
     { 
       days: 14, 
-      reward: 'Hai tuần nỗ lực', 
+      reward: 'Two weeks of effort', 
       freezeTokens: 1,
-      listeningTests: 1,
-      readingTests: 1,
       icon: '⚡', 
       color: '#EF4444', 
       reached: false 
     },
     { 
       days: 30, 
-      reward: 'Một tháng hoàn hảo', 
+      reward: 'Perfect month', 
       freezeTokens: 1,
-      listeningTests: 1,
-      readingTests: 1,
       icon: '🏆', 
       color: '#8B5CF6', 
       reached: false 
     },
     { 
       days: 60, 
-      reward: 'Hai tháng phi thường', 
+      reward: 'Two extraordinary months', 
       freezeTokens: 2,
-      listeningTests: 1,
-      readingTests: 1,
       icon: '👑', 
       color: '#EC4899', 
       reached: false 
     },
     { 
       days: 100, 
-      reward: 'Đỉnh cao kỷ luật', 
+      reward: 'Peak discipline', 
       freezeTokens: 3,
-      listeningTests: 1,
-      readingTests: 1,
       icon: '🌟', 
       color: '#10B981', 
       reached: false 
     },
     { 
       days: 180, 
-      reward: 'Nửa năm vượt trội', 
+      reward: 'Half a year outstanding', 
       freezeTokens: 5,
-      listeningTests: 1,
-      readingTests: 1,
       icon: '💫', 
       color: '#6366F1', 
       reached: false 
     },
     { 
       days: 365, 
-      reward: 'Một năm huyền thoại', 
+      reward: 'Legendary year', 
       freezeTokens: 5,
-      listeningTests: 1,
-      readingTests: 1,
       icon: '🎖️', 
       color: '#F59E0B', 
       reached: false 
@@ -244,21 +227,10 @@ export class StreakComponent implements OnInit {
 
   // ✅ THÊM: Helper method format rewards
   getRewardSummary(milestone: MilestoneReward): string {
-    const parts: string[] = [];
-    
     if (milestone.freezeTokens > 0) {
-      parts.push(`${milestone.freezeTokens} Freeze Token${milestone.freezeTokens > 1 ? 's' : ''}`);
+      return `${milestone.freezeTokens} Freeze Token${milestone.freezeTokens > 1 ? 's' : ''}`;
     }
-    
-    if (milestone.listeningTests > 0) {
-      parts.push(`${milestone.listeningTests} Listening Test${milestone.listeningTests > 1 ? 's' : ''}`);
-    }
-    
-    if (milestone.readingTests > 0) {
-      parts.push(`${milestone.readingTests} Reading Test${milestone.readingTests > 1 ? 's' : ''}`);
-    }
-    
-    return parts.join(' + ');
+    return '';
   }
 
   // ✅ THÊM: Methods cho fire animation

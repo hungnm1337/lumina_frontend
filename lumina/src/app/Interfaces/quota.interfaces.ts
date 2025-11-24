@@ -14,3 +14,13 @@ export interface SubscriptionStatus {
   endDate?: string;
   packageId?: number;
 }
+
+export interface QuotaRemainingDto {
+  isPremium: boolean;
+  readingRemaining: number;
+  listeningRemaining: number;
+  readingUsed: number;
+  listeningUsed: number;
+  readingLimit: number;
+  listeningLimit: number;
+}

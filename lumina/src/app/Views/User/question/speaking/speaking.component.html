@@ -46,16 +46,21 @@
 
   <div class="mt-2">
     @if (isSpeakingQuestion()) {
+    <!-- ✅ FIX Bug #18: Force component recreation on questionId change -->
+    <!-- Using @for with single item to leverage trackBy and force Angular to destroy/recreate component -->
+    @for (question of [questions[currentIndex]]; track question.questionId) {
     <app-speaking-answer-box
-      [questionId]="questions[currentIndex].questionId"
+      [questionId]="question.questionId"
       [disabled]="showExplain"
       [resetAt]="resetCounter"
-      [questionTime]="questions[currentIndex].time"
+      [questionTime]="question.time"
       [attemptId]="attemptId ?? 0"
       (answered)="onSpeakingAnswered($event)"
       (scoringResult)="onSpeakingResult($event)"
       (submitting)="onSpeakingSubmitting($event)"
+      (recordingStatusChange)="onRecordingStatusChange($event)"
     ></app-speaking-answer-box>
+    }
     }
 
     <!-- Navigation for Speaking Questions -->
@@ -71,20 +76,28 @@
         </button>
 
         <div class="flex gap-2">
-          <!-- <button
-            (click)="confirmExit()"
-            class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600"
-          >
-            Lưu & Thoát
-          </button> -->
+          <!-- Chỉ hiển thị nút Nộp bài khi KHÔNG trong mock test -->
+          @if (!isInMockTest) {
           <button
             (click)="finishSpeakingExam()"
             class="px-4 py-2 rounded bg-orange-600 text-white hover:bg-orange-700"
           >
             Nộp bài
           </button>
+          }
         </div>
 
+        <!-- Nút Câu sau/Hoàn thành Part -->
+        @if (isInMockTest && currentIndex === questions.length - 1) {
+        <!-- Nếu đang trong mock test và ở câu cuối -->
+        <button
+          (click)="finishSpeakingExam()"
+          class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
+        >
+          Hoàn thành Part<i class="fas fa-check ml-2"></i>
+        </button>
+        } @else {
+        <!-- Nút Câu sau bình thường -->
         <button
           (click)="nextQuestionManual()"
           [disabled]="currentIndex === questions.length - 1"
@@ -92,6 +105,7 @@
         >
           Câu sau<i class="fas fa-arrow-right ml-2"></i>
         </button>
+        }
       </div>
 
       <!-- Question Navigator -->
@@ -103,10 +117,18 @@
           <button
             (click)="navigateToQuestion(i)"
             [class]="
-              i === currentIndex
+              getQuestionState(question.questionId) === 'scored'
+                ? 'w-10 h-10 rounded-lg bg-green-600 text-white font-semibold' +
+                  (i === currentIndex ? ' ring-4 ring-blue-400' : '')
+                : getQuestionState(question.questionId) === 'scoring' ||
+                  getQuestionState(question.questionId) === 'submitted'
+                ? 'w-10 h-10 rounded-lg bg-yellow-500 text-white font-semibold animate-pulse' +
+                  (i === currentIndex ? ' ring-4 ring-blue-400' : '')
+                : getQuestionState(question.questionId) === 'has_recording'
+                ? 'w-10 h-10 rounded-lg bg-purple-500 text-white' +
+                  (i === currentIndex ? ' ring-4 ring-blue-400' : '')
+                : i === currentIndex
                 ? 'w-10 h-10 rounded-lg bg-blue-600 text-white font-semibold'
-                : getQuestionState(question.questionId) !== 'not_started'
-                ? 'w-10 h-10 rounded-lg bg-green-500 text-white'
                 : 'w-10 h-10 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300'
             "
             [title]="getQuestionStateText(question.questionId)"
@@ -123,8 +145,16 @@
             <span>Chưa làm</span>
           </div>
           <div class="flex items-center gap-1">
-            <div class="w-4 h-4 bg-green-500 rounded"></div>
-            <span>Đã làm</span>
+            <div class="w-4 h-4 bg-purple-500 rounded"></div>
+            <span>Đã ghi âm</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <div class="w-4 h-4 bg-yellow-500 rounded animate-pulse"></div>
+            <span>Đang chấm</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <div class="w-4 h-4 bg-green-600 rounded"></div>
+            <span>Đã chấm xong</span>
           </div>
           <div class="flex items-center gap-1">
             <div class="w-4 h-4 bg-blue-600 rounded"></div>

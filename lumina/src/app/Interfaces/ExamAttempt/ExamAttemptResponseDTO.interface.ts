@@ -7,4 +7,5 @@ export interface ExamAttemptResponseDTO {
   endTime: string | Date | null;
   score: number | null;
   status: string;
+  isMocktest: boolean;
 }

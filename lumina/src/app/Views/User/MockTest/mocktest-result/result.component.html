@@ -1,0 +1,159 @@
+<div class="mocktest-result-container">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Đang tải kết quả...</p>
+  </div>
+
+  <!-- Results Display -->
+  <div *ngIf="!isLoading && attemptDetails" class="results-content">
+    <!-- Header -->
+    <div class="result-header">
+      <div class="header-icon">
+        <i class="fas fa-trophy"></i>
+      </div>
+      <h1>Kết quả Mock Test TOEIC</h1>
+      <p class="exam-title">{{ examInfo?.examName || 'TOEIC Mock Test' }}</p>
+    </div>
+
+    <!-- Score Overview -->
+    <div class="score-overview">
+      <div class="score-card main-score">
+        <div class="score-label">Tổng điểm</div>
+        <div class="score-value">{{ totalScore }}</div>
+        <div class="score-subtitle">/ {{ totalQuestions }} câu</div>
+      </div>
+
+      <div class="score-card">
+        <div class="score-label">Đúng</div>
+        <div class="score-value success">{{ correctAnswers }}</div>
+      </div>
+
+      <div class="score-card">
+        <div class="score-label">Tỉ lệ</div>
+        <div class="score-value">{{ percentCorrect }}%</div>
+      </div>
+
+      <div class="score-card">
+        <div class="score-label">Thời gian</div>
+        <div class="score-value time">{{ duration }}</div>
+      </div>
+    </div>
+
+    <!-- Skill Breakdown -->
+    <div class="skills-breakdown">
+      <h2>Chi tiết theo kỹ năng</h2>
+      <div class="skills-grid">
+        <div class="skill-card">
+          <div class="skill-icon listening">
+            <i class="fas fa-headphones"></i>
+          </div>
+          <h3>Listening</h3>
+          <div class="skill-score">
+            {{ getSkillScore('listening') }} / {{ getSkillTotal('listening') }}
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill"
+                 [style.width.%]="getSkillTotal('listening') > 0 ? (getSkillScore('listening') / getSkillTotal('listening') * 100) : 0">
+            </div>
+          </div>
+        </div>
+
+        <div class="skill-card">
+          <div class="skill-icon reading">
+            <i class="fas fa-book-open"></i>
+          </div>
+          <h3>Reading</h3>
+          <div class="skill-score">
+            {{ getSkillScore('reading') }} / {{ getSkillTotal('reading') }}
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill"
+                 [style.width.%]="getSkillTotal('reading') > 0 ? (getSkillScore('reading') / getSkillTotal('reading') * 100) : 0">
+            </div>
+          </div>
+        </div>
+
+        <div class="skill-card">
+          <div class="skill-icon speaking">
+            <i class="fas fa-microphone"></i>
+          </div>
+          <h3>Speaking</h3>
+          <div class="skill-score">
+            {{ getSkillScore('speaking') }} / {{ getSkillTotal('speaking') }}
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill"
+                 [style.width.%]="getSkillTotal('speaking') > 0 ? (getSkillScore('speaking') / getSkillTotal('speaking') * 100) : 0">
+            </div>
+          </div>
+        </div>
+
+        <div class="skill-card">
+          <div class="skill-icon writing">
+            <i class="fas fa-pen"></i>
+          </div>
+          <h3>Writing</h3>
+          <div class="skill-score">
+            {{ getSkillScore('writing') }} / {{ getSkillTotal('writing') }}
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill"
+                 [style.width.%]="getSkillTotal('writing') > 0 ? (getSkillScore('writing') / getSkillTotal('writing') * 100) : 0">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="feedback-section">
+      <div class="feedback-card" [class.excellent]="percentCorrect >= 80"
+                                   [class.good]="percentCorrect >= 60 && percentCorrect < 80"
+                                   [class.need-improvement]="percentCorrect < 60">
+        <i class="fas" [class.fa-star]="percentCorrect >= 80"
+                        [class.fa-thumbs-up]="percentCorrect >= 60 && percentCorrect < 80"
+                        [class.fa-info-circle]="percentCorrect < 60"></i>
+        <h3 *ngIf="percentCorrect >= 80">Xuất sắc!</h3>
+        <h3 *ngIf="percentCorrect >= 60 && percentCorrect < 80">Tốt!</h3>
+        <h3 *ngIf="percentCorrect < 60">Cần cố gắng hơn!</h3>
+
+        <p *ngIf="percentCorrect >= 80">
+          Bạn đã hoàn thành xuất sắc bài thi mock test. Hãy tiếp tục duy trì phong độ này!
+        </p>
+        <p *ngIf="percentCorrect >= 60 && percentCorrect < 80">
+          Kết quả tốt! Bạn đang tiến bộ rõ rệt. Hãy tiếp tục luyện tập thêm!
+        </p>
+        <p *ngIf="percentCorrect < 60">
+          Đừng nản chí! Hãy xem lại các phần chưa tốt và tiếp tục luyện tập.
+        </p>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button class="btn btn-secondary" (click)="goToExams()">
+        <i class="fas fa-list"></i>
+        Danh sách bài thi
+      </button>
+      <button class="btn btn-primary" (click)="viewDetailedResults()">
+        <i class="fas fa-chart-bar"></i>
+        Xem chi tiết
+      </button>
+      <button class="btn btn-success" (click)="retryExam()">
+        <i class="fas fa-redo"></i>
+        Làm lại
+      </button>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && !attemptDetails" class="error-container">
+    <i class="fas fa-exclamation-circle"></i>
+    <h2>Không tìm thấy kết quả</h2>
+    <p>Không thể tải kết quả bài thi. Vui lòng thử lại.</p>
+    <button class="btn btn-primary" (click)="goToExams()">
+      Quay lại danh sách bài thi
+    </button>
+  </div>
+</div>

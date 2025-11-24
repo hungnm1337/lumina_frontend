@@ -70,7 +70,23 @@ export class SpeakingQuestionStateService {
     if (currentState) {
       const updatedState = { ...currentState, ...updates };
       this.questionStates.set(questionId, updatedState);
+
+      // ✅ Log state changes for debugging
+      console.log(
+        `[SpeakingStateService] 🔄 State updated for Q${questionId}:`,
+        {
+          oldState: currentState.state,
+          newState: updatedState.state,
+          hasAudio: !!updatedState.audioBlob,
+          hasResult: !!updatedState.result,
+        }
+      );
+
       this.emitStates();
+    } else {
+      console.warn(
+        `[SpeakingStateService] ⚠️ Question ${questionId} not initialized`
+      );
     }
   }
 
@@ -246,6 +262,16 @@ export class SpeakingQuestionStateService {
   }
 
   private emitStates(): void {
-    this.statesSubject.next(new Map(this.questionStates));
+    const statesMap = new Map(this.questionStates);
+    this.statesSubject.next(statesMap);
+
+    // ✅ Log emit for debugging
+    console.log('[SpeakingStateService] 📡 States emitted:', {
+      totalStates: statesMap.size,
+      states: Array.from(statesMap.entries()).map(([qId, state]) => ({
+        questionId: qId,
+        state: state.state,
+      })),
+    });
   }
 }
