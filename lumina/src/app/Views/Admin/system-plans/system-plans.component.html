@@ -1,28 +1,26 @@
 <div class="space-y-6" *ngIf="planStats">
 
     <div *ngIf="message" class="toast-container" [ngClass]="messageType">
-  <div class="toast-content">
-    {{message}}
-    <button class="toast-close" (click)="message=''">&times;</button>
-  </div>
-  <div class="toast-progress" [style.animation-duration.ms]="3000"></div>
-</div>
-
+      <div class="toast-content">
+        {{message}}
+        <button class="toast-close" (click)="message=''">&times;</button>
+      </div>
+      <div class="toast-progress" [style.animation-duration.ms]="3000"></div>
+    </div>
 
     <!-- Header with Stats -->
     <div class="bg-white rounded-xl shadow-sm p-6">
         <div class="flex items-center justify-between mb-6">
             <div>
-                <h3 class="text-2xl font-bold text-gray-800">Quản lý Gói & Hạn mức</h3>
-                <p class="text-gray-600 mt-1">Cấu hình và theo dõi các gói dịch vụ</p>
+                <h3 class="text-2xl font-bold text-gray-800">Plan & Limit Management</h3>
+                <p class="text-gray-600 mt-1">Configure and monitor service plans</p>
             </div>
             <div class="flex items-center space-x-3">
                 <button (click)="openCreatePlanModal()"
                     class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
-                    <i class="fas fa-plus mr-2"></i>Tạo gói mới
+                    <i class="fas fa-plus mr-2"></i>Create new plan
                 </button>
             </div>
-
         </div>
 
         <!-- Plan Management Dashboard -->
@@ -31,8 +29,8 @@
                 class="lg:col-span-2 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-xl p-6 text-white">
                 <div class="flex items-center justify-between mb-6">
                     <div>
-                        <h4 class="text-lg font-semibold">Tổng quan gói Pro</h4>
-                        <p class="text-sm opacity-90">Thống kê tổng hợp các gói Pro</p>
+                        <h4 class="text-lg font-semibold">Pro Plan Overview</h4>
+                        <p class="text-sm opacity-90">Summary statistics of Pro plans</p>
                     </div>
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-crown text-yellow-300 text-xl"></i>
@@ -52,19 +50,19 @@
                                     class="fas fa-calendar-check text-purple-300"></i>
                             </div>
                             <div class="text-2xl font-bold">{{pkg.userCount | number}}</div>
-                            <div class="text-xs opacity-80">người dùng</div>
+                            <div class="text-xs opacity-80">users</div>
                         </div>
                     </ng-container>
                 </div>
 
                 <div class="mt-6 pt-4 border-t border-white border-opacity-20 flex justify-between">
                     <div>
-                        <div class="text-sm opacity-90">Tổng doanh thu tháng này</div>
+                        <div class="text-sm opacity-90">Total revenue this month</div>
                         <div class="text-2xl font-bold">{{planStats.totalRevenue | currency:'VND':'symbol':'1.0-0'}}
                         </div>
                     </div>
                     <div class="text-right">
-                        <div class="text-sm opacity-90">Tổng người dùng Pro</div>
+                        <div class="text-sm opacity-90">Total Pro users</div>
                         <div class="text-2xl font-bold">{{planStats.totalProUsers | number}}</div>
                     </div>
                 </div>
@@ -76,21 +74,21 @@
                 <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                     <h5 class="font-semibold text-gray-800 mb-3 flex items-center">
                         <i class="fas fa-calculator text-green-500 mr-2"></i>
-                        Tính toán giá
+                        Price Calculator
                     </h5>
                     <div class="space-y-3">
                         <div>
-                            <label class="text-xs text-gray-500">Giá gốc (1 tháng)</label>
+                            <label class="text-xs text-gray-500">Base price (1 month)</label>
                             <input type="number" [(ngModel)]="basePrice"
                                 class="w-full text-sm border border-gray-200 rounded px-2 py-1 mt-1" />
                         </div>
                         <div class="text-xs text-gray-600">
                             <div class="flex justify-between">
-                                <span>6 tháng (-15%):</span>
+                                <span>6 months (-15%):</span>
                                 <span class="font-medium">{{ calculatePrice(6) }}</span>
                             </div>
                             <div class="flex justify-between">
-                                <span>12 tháng (-30%):</span>
+                                <span>12 months (-30%):</span>
                                 <span class="font-medium">{{ calculatePrice(12) }}</span>
                             </div>
                         </div>
@@ -101,18 +99,18 @@
                 <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100" *ngIf="planStats">
                     <h5 class="font-semibold text-gray-800 mb-3 flex items-center">
                         <i class="fas fa-chart-line text-green-500 mr-2"></i>
-                        Tăng trưởng tháng này
+                        Growth this month
                     </h5>
                     <div class="space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="text-sm text-gray-600">Người dùng mới</span>
+                            <span class="text-sm text-gray-600">New users</span>
                             <div class="flex items-center space-x-1">
                                 <span class="text-sm font-medium text-green-600">+{{planStats.newUsers | number}}</span>
                                 <i class="fas fa-arrow-up text-xs text-green-500"></i>
                             </div>
                         </div>
                         <div class="flex items-center justify-between">
-                            <span class="text-sm text-gray-600">Nâng cấp Pro</span>
+                            <span class="text-sm text-gray-600">Upgraded to Pro</span>
                             <div class="flex items-center space-x-1">
                                 <span class="text-sm font-medium text-blue-600">+{{planStats.upgradedPro |
                                     number}}</span>
@@ -120,7 +118,7 @@
                             </div>
                         </div>
                         <div class="flex items-center justify-between">
-                            <span class="text-sm text-gray-600">Doanh thu</span>
+                            <span class="text-sm text-gray-600">Revenue</span>
                             <div class="flex items-center space-x-1">
                                 <span class="text-sm font-medium text-purple-600">+{{planStats.monthlyRevenue |
                                     currency:'VND':'symbol':'1.0-0'}}</span>
@@ -134,20 +132,20 @@
                 <!-- <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                     <h5 class="font-semibold text-gray-800 mb-3 flex items-center">
                         <i class="fas fa-server text-orange-500 mr-2"></i>
-                        Trạng thái hệ thống
+                        System Status
                     </h5>
                     <div class="space-y-2">
                         <div class="flex items-center justify-between">
                             <span class="text-sm text-gray-600">API Server</span>
-                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Hoạt động</span>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Active</span>
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-sm text-gray-600">Payment Gateway</span>
-                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Hoạt động</span>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Active</span>
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-sm text-gray-600">Email Service</span>
-                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Chậm</span>
+                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Slow</span>
                         </div>
                     </div>
                 </div> -->
@@ -156,67 +154,53 @@
         </div>
     </div>
 
-    <!-- Danh sách gói dịch vụ -->
+    <!-- Service Plan List -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8" *ngIf="packageList">
         <div class="bg-white rounded-xl shadow-sm p-6 lg:col-span-2">
             <div class="flex items-center justify-between mb-4">
-                <h4 class="text-lg font-semibold text-gray-800">Danh sách gói dịch vụ</h4>
+                <h4 class="text-lg font-semibold text-gray-800">Service Plan List</h4>
                 <!-- <div class="flex items-center space-x-3">
                     <div class="relative">
-                        <input type="text" placeholder="Tìm kiếm gói..."
+                        <input type="text" placeholder="Search plan..."
                             class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     </div>
                     <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <option>Tất cả trạng thái</option>
-                        <option>Đang hoạt động</option>
-                        <option>Tạm dừng</option>
-                        <option>Ngừng bán</option>
+                        <option>All status</option>
+                        <option>Active</option>
+                        <option>Paused</option>
+                        <option>Stopped</option>
                     </select>
                 </div> -->
             </div>
 
-            <!-- Bảng gói dịch vụ -->
+            <!-- Plan Table -->
             <div class="overflow-x-auto">
                 <table class="w-full">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gói dịch vụ</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Giá</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thao tác</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Plan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         <tr *ngFor="let pkg of packageList" class="hover:bg-gray-50"
                             [ngClass]="{'bg-blue-50': pkg.packageId === 1}">
                             <td class="px-6 py-4 whitespace-nowrap flex items-center">
-                                <!-- <div [ngClass]="{
-                      'bg-blue-100': pkg.packageId === 1,
-                      'bg-green-100': pkg.packageId === 2,
-                      'bg-purple-100': pkg.packageId === 3
-                    }" class="w-10 h-10 rounded-lg flex items-center justify-center mr-4">
-                                    <i [ngClass]="{
-                      'fas fa-crown text-blue-600': pkg.packageId === 1,
-                      'fas fa-crown text-green-600': pkg.packageId === 2,
-                      'fas fa-crown text-purple-600': pkg.packageId === 3
-                    }"></i>
-                                </div> -->
                                 <div>
                                     <div class="flex items-center">
                                         <span class="text-sm font-medium text-gray-900">{{pkg.packageName}}</span>
                                         <span *ngIf="pkg.packageId === 1"
-                                            class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Phổ
-                                            biến</span>
+                                            class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Popular</span>
                                         <span *ngIf="pkg.packageId === 2"
-                                            class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Tiết
-                                            kiệm 15%</span>
+                                            class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Save 15%</span>
                                         <span *ngIf="pkg.packageId === 3"
-                                            class="ml-2 px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Tiết
-                                            kiệm 30%</span>
+                                            class="ml-2 px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Save 30%</span>
                                     </div>
-                                    <div class="text-sm text-gray-500">Tất cả tính năng Pro • Thanh toán
-                                        {{pkg.durationInDays}} ngày</div>
+                                    <div class="text-sm text-gray-500">All Pro features • Payment for
+                                        {{pkg.durationInDays}} days</div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" [ngClass]="{
@@ -226,32 +210,30 @@
                   }">{{pkg.price | currency: 'VND':'symbol':'1.0-0'}}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span *ngIf="pkg.isActive"
-                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Hoạt
-                                    động</span>
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
                                 <span *ngIf="!pkg.isActive"
-                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Ngừng</span>
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactive</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <button class="text-blue-600 hover:text-blue-900 mr-3"
-                                    (click)="openEditPlanModal(pkg)">Chỉnh sửa</button>
+                                    (click)="openEditPlanModal(pkg)">Edit</button>
                                 <button class="text-yellow-600 hover:text-yellow-900 mr-3"
                                     (click)="togglePackageStatus(pkg)">
-                                    {{ pkg.isActive ? 'Khóa' : 'Mở khóa' }}
+                                    {{ pkg.isActive ? 'Lock' : 'Unlock' }}
                                 </button>
-
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-        <!-- Doanh thu theo gói (30 ngày) -->
+        <!-- Revenue by Plan (30 days) -->
         <div class="bg-white rounded-xl shadow-sm p-6 mt-8">
-            <h4 class="text-lg font-semibold text-gray-800 mb-4">Doanh thu theo gói (30 ngày)</h4>
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">Revenue by Plan (30 days)</h4>
             
-            <!-- ✅ DEBUG: Hiển thị tổng doanh thu -->
+            <!-- ✅ DEBUG: Show total revenue -->
             <div class="text-sm text-gray-500 mb-2">
-                Tổng: {{planStats.totalRevenue | currency:'VND':'symbol':'1.0-0'}}
+                Total: {{planStats.totalRevenue | currency:'VND':'symbol':'1.0-0'}}
             </div>
             
             <div class="space-y-4" *ngIf="planStats">
@@ -272,7 +254,6 @@
                                 </div>
                                 <div class="text-xs text-gray-500">
                                     {{pkg.revenuePercent | number:'1.1-1'}}%
-                                   
                                 </div>
                             </div>
                         </div>
@@ -292,13 +273,13 @@
             </div>
         </div>
 
-        <!-- Phân bổ người dùng Pro -->
+        <!-- Pro User Distribution -->
         <div class="bg-white rounded-xl shadow-sm p-6 mt-8">
-            <h4 class="text-lg font-semibold text-gray-800 mb-4">Phân bổ người dùng Pro</h4>
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">Pro User Distribution</h4>
             
-            <!-- ✅ DEBUG: Hiển thị tổng users -->
+            <!-- ✅ DEBUG: Show total users -->
             <div class="text-sm text-gray-500 mb-2">
-                Tổng: {{planStats.totalProUsers | number}} users
+                Total: {{planStats.totalProUsers | number}} users
             </div>
             
             <div class="space-y-4" *ngIf="planStats">
@@ -317,7 +298,6 @@
                                 <div class="text-sm font-medium text-gray-900">{{pkg.userCount | number}}</div>
                                 <div class="text-xs text-gray-500">
                                     {{pkg.userPercent | number:'1.1-1'}}%
-                                  
                                 </div>
                             </div>
                         </div>
@@ -338,44 +318,42 @@
                 <div class="mt-4 pt-4 border-t border-gray-200">
                     <div class="text-center">
                         <div class="text-lg font-semibold text-gray-800">{{planStats.totalProUsers | number}}</div>
-                        <div class="text-sm text-gray-500">Tổng người dùng Pro</div>
+                        <div class="text-sm text-gray-500">Total Pro users</div>
                     </div>
                 </div>
             </div>
         </div>
-
-
     </div>
 
-    <!-- Modal tạo gói -->
+    <!-- Create Plan Modal -->
     <div id="planModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
         <div class="bg-white rounded-lg p-6 w-96 relative">
-            <h3 class="text-lg font-bold mb-4">Tạo gói mới</h3>
+            <h3 class="text-lg font-bold mb-4">Create new plan</h3>
 
             <form (ngSubmit)="createOrUpdatePlan()" #planForm="ngForm" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Tên gói</label>
+                    <label class="block text-sm font-medium text-gray-700">Plan name</label>
                     <input type="text" name="name" [(ngModel)]="newPlan.name" required
                         class="mt-1 block w-full border border-gray-300 rounded px-3 py-2" />
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Giá (VNĐ)</label>
+                    <label class="block text-sm font-medium text-gray-700">Price (VND)</label>
                     <input type="number" name="price" [(ngModel)]="newPlan.price" required min="0"
                         class="mt-1 block w-full border border-gray-300 rounded px-3 py-2" />
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Số ngày</label>
+                    <label class="block text-sm font-medium text-gray-700">Duration (days)</label>
                     <input type="number" name="day" [(ngModel)]="newPlan.day" required min="1"
                         class="mt-1 block w-full border border-gray-300 rounded px-3 py-2" />
                 </div>
 
                 <div class="flex justify-end space-x-3 mt-6">
                     <button type="button" (click)="closePlanModal()"
-                        class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded">Hủy</button>
+                        class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded">Cancel</button>
                     <button type="submit" [disabled]="!planForm.form.valid"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Xác Nhận</button>
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Confirm</button>
                 </div>
             </form>
 
@@ -384,7 +362,4 @@
             </button>
         </div>
     </div>
-
-
-
 </div>

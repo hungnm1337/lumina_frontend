@@ -1,6 +1,5 @@
 <app-header></app-header>
 <div class="streak-page">
-  <!-- Loading State -->
   @if (loading) {
     <div class="loading-container">
       <div class="spinner"></div>
@@ -8,7 +7,6 @@
     </div>
   }
 
-  <!-- Error State -->
   @else if (error) {
     <div class="error-container">
       <div class="error-icon">❌</div>
@@ -18,10 +16,8 @@
     </div>
   }
 
-  <!-- Main Content -->
   @else {
     <div class="streak-container">
-      <!-- Header -->
       <div class="streak-header">
         <button (click)="goBack()" class="btn-back">
           <i class="fas fa-arrow-left"></i>
@@ -33,11 +29,8 @@
         </h1>
       </div>
 
-      <!-- Stats Cards -->
       <div class="stats-grid">
-        <!-- Current Streak -->
         <div class="stat-card current-streak" [style.border-color]="getStreakColor()">
-          <!-- ✅ THAY ĐỔI: Thêm fire animation -->
           <div 
             class="stat-icon fire-emoji"
             [class.seed]="getFireIntensity() === 'seed'"
@@ -56,7 +49,6 @@
           </div>
         </div>
 
-        <!-- Longest Streak -->
         <div class="stat-card">
           <div class="stat-icon">🏆</div>
           <div class="stat-content">
@@ -68,7 +60,6 @@
           </div>
         </div>
 
-        <!-- Freeze Tokens -->
         <div class="stat-card">
           <div class="stat-icon">💎</div>
           <div class="stat-content">
@@ -80,7 +71,6 @@
           </div>
         </div>
 
-        <!-- Last Practice -->
         <div class="stat-card">
           <div class="stat-icon">📅</div>
           <div class="stat-content">
@@ -92,10 +82,8 @@
         </div>
       </div>
 
-      <!-- Next Milestone Progress -->
       @if (nextMilestone) {
         <div class="next-milestone-card">
-          <!-- Header Section -->
           <div class="milestone-header">
             <div class="milestone-title-section">
               <h3>🎯 Mốc tiếp theo</h3>
@@ -107,7 +95,6 @@
             </div>
           </div>
 
-          <!-- Progress Stats -->
           <div class="progress-stats">
             <div class="progress-stat">
               <div class="stat-number">{{ currentStreak }}</div>
@@ -123,9 +110,7 @@
             </div>
           </div>
 
-          <!-- Progress Bar Container -->
           <div class="progress-bar-container">
-            <!-- Labels on top of progress bar -->
             <div class="progress-labels">
               <span class="progress-label-start">{{ getPreviousMilestoneDays() }} ngày</span>
               <span class="progress-label-current">
@@ -137,7 +122,6 @@
               <span class="progress-label-end">{{ nextMilestone.days }} ngày</span>
             </div>
 
-            <!-- Progress Bar -->
             <div class="progress-bar">
               <div 
                 class="progress-fill" 
@@ -148,7 +132,6 @@
               </div>
             </div>
 
-            <!-- Progress Info -->
             <div class="progress-info">
               <span class="progress-text">
                 Bạn đã hoàn thành <strong>{{ progressPercent }}%</strong> hành trình đến mốc tiếp theo
@@ -156,43 +139,22 @@
             </div>
           </div>
 
-          <!-- ✅ UPDATE: Reward Section với chi tiết -->
-          <div class="milestone-rewards-grid">
-            <!-- Freeze Tokens -->
-            @if (nextMilestone.freezeTokens > 0) {
-              <div class="reward-item freeze-token">
-                <div class="reward-icon">💎</div>
-                <div class="reward-content">
-                  <div class="reward-amount">+{{ nextMilestone.freezeTokens }}</div>
-                  <div class="reward-label">Freeze Token{{ nextMilestone.freezeTokens > 1 ? 's' : '' }}</div>
+          @if (nextMilestone.freezeTokens > 0) {
+            <div class="upcoming-reward-section">
+              <div class="reward-label-text">Phần thưởng khi hoàn thành</div>
+              <div class="reward-box freeze-theme">
+                <div class="reward-icon-wrapper">
+                  <span class="reward-emoji">💎</span>
+                  <div class="reward-glow"></div>
+                </div>
+                <div class="reward-details">
+                  <span class="reward-value">+{{ nextMilestone.freezeTokens }}</span>
+                  <span class="reward-name">Freeze Token{{ nextMilestone.freezeTokens > 1 ? 's' : '' }}</span>
                 </div>
               </div>
-            }
+            </div>
+          }
 
-            <!-- Listening Tests -->
-            @if (nextMilestone.listeningTests > 0) {
-              <div class="reward-item listening-test">
-                <div class="reward-icon">🎧</div>
-                <div class="reward-content">
-                  <div class="reward-amount">+{{ nextMilestone.listeningTests }}</div>
-                  <div class="reward-label">Listening Test{{ nextMilestone.listeningTests > 1 ? 's' : '' }}</div>
-                </div>
-              </div>
-            }
-
-            <!-- Reading Tests -->
-            @if (nextMilestone.readingTests > 0) {
-              <div class="reward-item reading-test">
-                <div class="reward-icon">📖</div>
-                <div class="reward-content">
-                  <div class="reward-amount">+{{ nextMilestone.readingTests }}</div>
-                  <div class="reward-label">Reading Test{{ nextMilestone.readingTests > 1 ? 's' : '' }}</div>
-                </div>
-              </div>
-            }
-          </div>
-
-          <!-- Motivation Message -->
           <div class="motivation-message">
             <span class="motivation-icon">💪</span>
             <span class="motivation-text">
@@ -211,7 +173,6 @@
         </div>
       }
 
-      <!-- Milestones Timeline -->
       <div class="milestones-section">
         <h2 class="section-title">
           <i class="fas fa-trophy"></i>
@@ -225,7 +186,6 @@
               [class.reached]="milestone.reached"
               [class.current]="nextMilestone?.days === milestone.days"
             >
-              <!-- Connector Line -->
               @if ($index < milestones.length - 1) {
                 <div 
                   class="milestone-connector"
@@ -233,7 +193,6 @@
                 ></div>
               }
 
-              <!-- Milestone Node -->
               <div class="milestone-node" [style.background]="milestone.reached ? milestone.color : '#E5E7EB'">
                 <div class="milestone-icon">{{ milestone.icon }}</div>
                 
@@ -244,7 +203,6 @@
                 }
               </div>
 
-              <!-- Milestone Info -->
               <div class="milestone-info">
                 <div class="milestone-days" [style.color]="milestone.reached ? milestone.color : '#6B7280'">
                   {{ milestone.days }} ngày
@@ -266,7 +224,6 @@
                 }
               </div>
 
-              <!-- Progress Bar for Current Milestone -->
               @if (nextMilestone?.days === milestone.days) {
                 <div class="milestone-progress">
                   <div class="mini-progress-bar">
@@ -284,7 +241,6 @@
         </div>
       </div>
 
-      <!-- Freeze Tokens Info -->
       <div class="info-card">
         <div class="info-header">
           <i class="fas fa-info-circle"></i>
@@ -302,7 +258,6 @@
         </div>
       </div>
 
-      <!-- Motivational Quote -->
       <div class="motivation-card">
         <div class="quote-icon">"</div>
         <p class="quote-text">

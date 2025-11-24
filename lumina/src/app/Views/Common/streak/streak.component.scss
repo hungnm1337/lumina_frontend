@@ -1183,4 +1183,101 @@
         fireScale 2s ease-in-out infinite !important;
     }
   }
+
+
+}
+
+/* Container bao ngoài để căn giữa */
+.upcoming-reward-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+/* Dòng chữ nhỏ "Phần thưởng khi hoàn thành" */
+.reward-label-text {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+/* Cái hộp chính chứa phần thưởng */
+.reward-box {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 16px;
+  padding: 10px 24px;
+  display: inline-flex; /* Giúp hộp co lại vừa nội dung */
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1), 
+              0 2px 4px -1px rgba(59, 130, 246, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.reward-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.15);
+}
+
+/* Phần icon kim cương */
+.reward-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reward-emoji {
+  font-size: 2rem;
+  z-index: 2;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Hiệu ứng tỏa sáng sau icon */
+.reward-glow {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background: radial-gradient(circle, rgba(96, 165, 250, 0.6) 0%, rgba(96, 165, 250, 0) 70%);
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Phần text bên phải icon */
+.reward-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.reward-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #2563eb; /* Màu xanh đậm */
+  line-height: 1;
+}
+
+.reward-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #60a5fa; /* Màu xanh nhạt hơn */
+  margin-top: 2px;
+}
+
+/* Animation nhẹ cho icon bay bay */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
 }

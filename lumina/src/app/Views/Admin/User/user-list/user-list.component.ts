@@ -17,7 +17,7 @@ export class UserListComponent implements OnInit {
   filteredUsers: any[] = [];
   roles: any[] = [];
   searchTerm: string = '';
-  selectedRole: string = 'Tất cả vai trò';
+  selectedRole: string = 'All'; 
   isLoading: boolean = true;
   errorMessage: string | null = null;
 
@@ -60,7 +60,10 @@ loadUsersPage(page: number): void {
   this.isLoading = true;
   this.errorMessage = null;
 
-  this.userService.getNonAdminUsersPaged(page, this.searchTerm, this.selectedRole)
+  
+  const roleParam = this.selectedRole === 'All' ? '' : this.selectedRole;
+
+  this.userService.getNonAdminUsersPaged(page, this.searchTerm, roleParam)
     .subscribe({
       next: (response) => {
         this.allUsers = response.data;
@@ -70,7 +73,7 @@ loadUsersPage(page: number): void {
         this.isLoading = false;
       },
       error: () => {
-        this.errorMessage = 'Không thể tải dữ liệu.';
+        this.errorMessage = 'Cannot load data.';
         this.isLoading = false;
       }
     });
@@ -81,7 +84,7 @@ loadUsersPage(page: number): void {
 applyFilters(): void {
   let users = this.allUsers;
 
-  if (this.selectedRole !== 'Tất cả vai trò') {
+  if (this.selectedRole !== 'All') {
     users = users.filter(user => user.roleName === this.selectedRole);
   }
 
