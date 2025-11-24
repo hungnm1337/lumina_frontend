@@ -39,7 +39,7 @@ export class SidebarComponent {
       title: 'Monitoring & Reports',
       items: [
         { path: '/admin/system-stats', name: 'Statistics & Charts', icon: 'fas fa-chart-bar' },
-        { path: '/admin/user-activity', name: 'User Activity', icon: 'fas fa-user-clock' },
+        { path: '/admin/user-reports', name: 'User Reports', icon: 'fas fa-user-clock' },
       ],
     }
   ];

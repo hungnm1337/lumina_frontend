@@ -33,6 +33,7 @@ import { ExamComponent as MockTestExamComponent } from './Views/User/MockTest/mo
 import { ResultComponent as MockTestResultComponent } from './Views/User/MockTest/mocktest-result/result.component';
 
 import { RankingsComponent } from './Views/Common/Rankings/rankings/rankings.component';
+import { ReportsComponent } from './Views/User/Report/reports/reports.component';
 export const routes: Routes = [
   {
     path: 'admin',
@@ -83,6 +84,7 @@ export const routes: Routes = [
           { path: 'part/:id', component: PartQuestionComponent },
           { path: 'notes', component: UserNoteListComponent },
           { path: 'note/:id', component: UserNoteDetailComponent },
+          { path: 'reports', component: ReportsComponent },
           { path: '', redirectTo: 'exams', pathMatch: 'full' },
         ],
       },

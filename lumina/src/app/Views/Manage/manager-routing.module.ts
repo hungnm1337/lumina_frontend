@@ -1,11 +1,12 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { ManagerLayoutComponent } from './layout/manager-layout/manager-layout.component'; 
+import { ManagerLayoutComponent } from './layout/manager-layout/manager-layout.component';
 import { DashboardComponent } from './Dashboard/dashboard/dashboard.component';
 import { ManageEventsDashboardComponent } from './Event/dashboardevent.component';
 import { DashboardSlideComponent } from './Slide/dashboardslide.component';
 import { ArticlesComponent } from './Articles/articles.component';
 import { VocabularyManagementComponent } from './Vocabulary/vocabulary-management.component';
+import { ReportListComponent } from '../Common/report-list/report-list.component';
 
 
 
@@ -22,6 +23,7 @@ const routes: Routes = [
       { path: 'slides', component: DashboardSlideComponent, data: { title: 'Slide' } },
       { path: 'manage-posts', component: ArticlesComponent, data: { title: 'Quản lý bài viết' } },
       { path: 'vocabulary', component: VocabularyManagementComponent, data: { title: 'Quản lý từ vựng' } },
+      { path: 'user-reports', component: ReportListComponent, data: { title: 'Báo cáo người dùng' } }
     ]
   }
 ];

@@ -23,6 +23,7 @@ export class SidebarComponent {
         { path: 'questions', name: 'Câu hỏi', icon: 'fas fa-question-circle' },
         { path: 'exams', name: 'Bài thi', icon: 'fas fa-clipboard-list' },
         { path: 'articles', name: 'Bài viết', icon: 'fas fa-edit' },
+        { path: 'reports', name: 'Báo cáo', icon: 'fas fa-flag' },
       ],
     },
     {

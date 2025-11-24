@@ -12,6 +12,7 @@ import {
   HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ReportPopupComponent } from '../../Report/report-popup/report-popup.component';
 import { Router } from '@angular/router';
 import { OptionsComponent } from '../../options/options.component';
 import { PromptComponent } from '../../prompt/prompt.component';
@@ -35,11 +36,16 @@ import { QuotaLimitModalComponent } from '../../quota-limit-modal/quota-limit-mo
     PromptComponent,
     ExamAttemptDetailComponent,
     QuotaLimitModalComponent,
+    ReportPopupComponent,
   ],
   templateUrl: './listening.component.html',
   styleUrl: './listening.component.scss',
 })
 export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
+  showReportPopup = false;
+  get examId(): number | null {
+    return this.partInfo?.examId ?? null;
+  }
   @Input() questions: QuestionDTO[] = [];
   @Input() partInfo: ExamPartDTO | null = null;
   @Output() listeningAnswered = new EventEmitter<boolean>();
@@ -86,6 +92,12 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     private authService: AuthService,
     private quotaService: QuotaService
   ) {}
+
+  // Handler for report popup close
+  onReportPopupClose(): void {
+    console.log('[ListeningComponent] Report popup close received');
+    this.showReportPopup = false;
+  }
 
   ngOnInit(): void {
     this.loadAttemptId();

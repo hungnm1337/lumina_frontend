@@ -22,8 +22,8 @@ export class HeaderComponent implements OnInit {
   isDropdownOpen = false;
 
   constructor(
-    private router: Router, 
-    private activatedRoute: ActivatedRoute, 
+    private router: Router,
+    private activatedRoute: ActivatedRoute,
     private authService: AuthService,
     private userService: UserService,
     private elementRef: ElementRef
@@ -32,7 +32,7 @@ export class HeaderComponent implements OnInit {
   ngOnInit() {
     this.currentUser$ = this.authService.currentUser$;
     this.loadUserProfile();
-    
+
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd),
       map(() => this.activatedRoute),
@@ -56,7 +56,7 @@ export class HeaderComponent implements OnInit {
     this.userService.getProfile().subscribe({
       next: (profile) => {
         if (profile.avatarUrl) {
-          this.authService.updateCurrentUser({ 
+          this.authService.updateCurrentUser({
             avatarUrl: profile.avatarUrl,
             name: profile.fullName
           });
@@ -97,6 +97,7 @@ export class HeaderComponent implements OnInit {
     if (url.includes('tests')) return 'Bài thi';
     if (url.includes('vocabulary')) return 'Từ vựng';
     if (url.includes('seasons')) return 'Mùa thi đấu';
+    if (url.includes('reports')) return 'Báo cáo';
     return 'Staff Panel';
   }
 

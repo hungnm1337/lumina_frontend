@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnInit } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
@@ -8,12 +8,13 @@ import { AuthUserResponse } from '../../../Interfaces/auth.interfaces';
 import { StreakService } from '../../../Services/streak/streak.service';
 import { QuotaService } from '../../../Services/Quota/quota.service';
 import { UpgradeModalComponent } from '../../User/upgrade-modal/upgrade-modal.component';
+import { ReportPopupComponent } from '../../User/Report/report-popup/report-popup.component';
 import { UserService } from '../../../Services/User/user.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterModule, UpgradeModalComponent],
+  imports: [CommonModule, RouterModule, UpgradeModalComponent, ReportPopupComponent],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
@@ -40,6 +41,22 @@ export class HeaderComponent implements OnInit {
     private quotaService: QuotaService,
     private userService: UserService
   ) {}
+
+  showReportPopup: boolean = false;
+
+  openReportPopup(event: Event): void {
+    event.stopPropagation();
+    this.isDropdownOpen = false;
+    this.showReportPopup = true;
+  }
+
+  onReportPopupClose(): void {
+    this.showReportPopup = false;
+    try {
+      // force change detection in some modal contexts
+      (this as any).cdr?.detectChanges();
+    } catch {}
+  }
 
   ngOnInit(): void {
     this.currentUser$ = this.authService.currentUser$;
