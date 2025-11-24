@@ -229,10 +229,16 @@
           </div>
 
           <button
+            (click)="goToNotifications()"
             class="relative p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
           >
             <i class="fas fa-bell text-base"></i>
-            <!-- <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span> -->
+            <span 
+              *ngIf="unreadNotificationCount > 0"
+              class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold"
+            >
+              {{ unreadNotificationCount > 99 ? '99+' : unreadNotificationCount }}
+            </span>
           </button>
 
           <!-- User Avatar & Dropdown -->

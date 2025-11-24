@@ -1,0 +1,286 @@
+<div class="notification-management">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>Quản Lý Thông Báo</h1>
+      <p class="subtitle">Quản lý thông báo hệ thống gửi đến người dùng</p>
+    </div>
+    <div class="header-right">
+      <button class="btn btn-primary" (click)="openCreateModal()">
+        <i class="fas fa-plus"></i> Tạo Thông Báo Mới
+      </button>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div class="alert alert-success" *ngIf="success">
+    <i class="fas fa-check-circle"></i> {{ success }}
+  </div>
+  <div class="alert alert-error" *ngIf="error">
+    <i class="fas fa-exclamation-circle"></i> {{ error }}
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button
+      class="tab active">
+      Tất cả ({{ totalItems }})
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Đang tải...</p>
+  </div>
+
+  <!-- Notification Table -->
+  <div class="table-container" *ngIf="!loading">
+    <table class="notification-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tiêu đề</th>
+          <th>Nội dung</th>
+          <th>Trạng thái</th>
+          <th>Thời gian tạo</th>
+          <th class="actions-col">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let notification of notifications">
+          <td>{{ notification.notificationId }}</td>
+          <td class="title-cell">
+            <strong>{{ notification.title }}</strong>
+          </td>
+          <td class="content-cell">
+            {{ truncateText(notification.content, 100) }}
+          </td>
+          <td>
+            <span class="badge" [class.badge-active]="notification.isActive" [class.badge-inactive]="!notification.isActive">
+              {{ notification.isActive ? 'Hiển thị' : 'Ẩn' }}
+            </span>
+          </td>
+          <td>{{ formatDate(notification.createdAt) }}</td>
+          <td class="actions-cell">
+            <button
+              class="btn-icon btn-view"
+              (click)="openDetailModal(notification)"
+              title="Xem chi tiết">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button
+              class="btn-icon btn-edit"
+              (click)="openEditModal(notification)"
+              title="Chỉnh sửa">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button
+              class="btn-icon btn-delete"
+              (click)="openDeleteModal(notification)"
+              title="Xóa">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="notifications.length === 0">
+          <td colspan="6" class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <p>Chưa có thông báo nào</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button
+      class="btn btn-page"
+      (click)="previousPage()"
+      [disabled]="currentPage === 1">
+      <i class="fas fa-chevron-left"></i> Trước
+    </button>
+    <div class="page-numbers">
+      <button
+        *ngFor="let page of [].constructor(totalPages); let i = index"
+        class="btn btn-page-number"
+        [class.active]="currentPage === i + 1"
+        (click)="goToPage(i + 1)">
+        {{ i + 1 }}
+      </button>
+    </div>
+    <button
+      class="btn btn-page"
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPages">
+      Sau <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+</div>
+
+<!-- CREATE MODAL -->
+<div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Tạo Thông Báo Mới</h2>
+      <button class="btn-close" (click)="closeCreateModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Tiêu đề <span class="required">*</span></label>
+        <input
+          type="text"
+          [(ngModel)]="createForm.title"
+          placeholder="Nhập tiêu đề thông báo"
+          maxlength="200"
+          class="form-control"
+        />
+        <small>{{ createForm.title.length }}/200 ký tự</small>
+      </div>
+      <div class="form-group">
+        <label>Nội dung <span class="required">*</span></label>
+        <textarea
+          [(ngModel)]="createForm.content"
+          placeholder="Nhập nội dung thông báo"
+          rows="6"
+          maxlength="2000"
+          class="form-control"
+        ></textarea>
+        <small>{{ createForm.content.length }}/2000 ký tự</small>
+      </div>
+      <div class="info-box">
+        <i class="fas fa-info-circle"></i>
+        <span>Thông báo sẽ được gửi đến <strong>tất cả người dùng</strong> trong hệ thống ngay lập tức.</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeCreateModal()">
+        Hủy
+      </button>
+      <button
+        class="btn btn-primary"
+        (click)="createNotification()"
+        [disabled]="loading || !createForm.title || !createForm.content">
+        <i class="fas fa-paper-plane"></i> Gửi Thông Báo
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Chỉnh Sửa Thông Báo</h2>
+      <button class="btn-close" (click)="closeEditModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Tiêu đề</label>
+        <input
+          type="text"
+          [(ngModel)]="editForm.title"
+          placeholder="Nhập tiêu đề mới"
+          maxlength="200"
+          class="form-control"
+        />
+        <small>{{ (editForm.title || '').length }}/200 ký tự</small>
+      </div>
+      <div class="form-group">
+        <label>Nội dung</label>
+        <textarea
+          [(ngModel)]="editForm.content"
+          placeholder="Nhập nội dung mới"
+          rows="6"
+          maxlength="2000"
+          class="form-control"
+        ></textarea>
+        <small>{{ (editForm.content || '').length }}/2000 ký tự</small>
+      </div>
+      <div class="warning-box">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>Chỉnh sửa thông báo sẽ không gửi lại đến người dùng.</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeEditModal()">
+        Hủy
+      </button>
+      <button
+        class="btn btn-primary"
+        (click)="updateNotification()"
+        [disabled]="loading">
+        <i class="fas fa-save"></i> Lưu Thay Đổi
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+  <div class="modal modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Xác Nhận Xóa</h2>
+      <button class="btn-close" (click)="closeDeleteModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="delete-warning">
+        <i class="fas fa-trash-alt"></i>
+        <p>Bạn có chắc chắn muốn xóa thông báo này?</p>
+        <p class="notification-title">"{{ selectedNotification?.title }}"</p>
+        <p class="warning-text">Thao tác này không thể hoàn tác!</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeDeleteModal()">
+        Hủy
+      </button>
+      <button
+        class="btn btn-danger"
+        (click)="deleteNotification()"
+        [disabled]="loading">
+        <i class="fas fa-trash"></i> Xóa
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Chi Tiết Thông Báo</h2>
+      <button class="btn-close" (click)="closeDetailModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body" *ngIf="selectedNotification">
+      <div class="detail-section">
+        <h3>{{ selectedNotification.title }}</h3>
+        <div class="meta-info">
+          <span><i class="fas fa-clock"></i> {{ formatDate(selectedNotification.createdAt) }}</span>
+          <span>
+            <i class="fas fa-eye"></i> 
+            {{ selectedNotification.isActive ? 'Đang hiển thị' : 'Đã ẩn' }}
+          </span>
+        </div>
+      </div>
+      <div class="detail-section">
+        <h4>Nội dung:</h4>
+        <p class="notification-content">{{ selectedNotification.content }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeDetailModal()">
+        Đóng
+      </button>
+    </div>
+  </div>
+</div>

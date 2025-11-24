@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NotificationService, NotificationDTO } from '../../../Services/Notification/notification.service';
+import { NotificationService, UserNotificationDTO } from '../../../Services/Notification/notification.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-notification-dropdown',
@@ -9,19 +10,24 @@ import { NotificationService, NotificationDTO } from '../../../Services/Notifica
   templateUrl: './notification-dropdown.component.html',
   styleUrl: './notification-dropdown.component.scss'
 })
-export class NotificationDropdownComponent implements OnInit {
-  notifications: NotificationDTO[] = [];
+export class NotificationDropdownComponent implements OnInit, OnDestroy {
+  notifications: UserNotificationDTO[] = [];
   unreadCount = 0;
   isOpen = false;
   isLoading = false;
+  private subscription?: Subscription;
 
   constructor(public notificationService: NotificationService) {}
 
   ngOnInit(): void {
     this.loadNotifications();
-    this.notificationService.unreadCount$.subscribe(count => {
+    this.subscription = this.notificationService.unreadCount$.subscribe(count => {
       this.unreadCount = count;
     });
+  }
+
+  ngOnDestroy(): void {
+    this.subscription?.unsubscribe();
   }
 
   toggleDropdown(): void {
@@ -45,34 +51,14 @@ export class NotificationDropdownComponent implements OnInit {
     });
   }
 
-  markAsRead(notification: NotificationDTO): void {
+  markAsRead(notification: UserNotificationDTO): void {
     if (!notification.isRead) {
-      this.notificationService.markAsRead(notification.notificationId).subscribe({
+      this.notificationService.markAsRead(notification.uniqueId).subscribe({
         next: () => {
           notification.isRead = true;
+          this.unreadCount = Math.max(0, this.unreadCount - 1);
         },
         error: (error) => console.error('Error marking as read:', error)
-      });
-    }
-  }
-
-  markAllAsRead(): void {
-    this.notificationService.markAllAsRead().subscribe({
-      next: () => {
-        this.notifications.forEach(n => n.isRead = true);
-      },
-      error: (error) => console.error('Error marking all as read:', error)
-    });
-  }
-
-  deleteNotification(notificationId: number, event: Event): void {
-    event.stopPropagation();
-    if (confirm('Bạn có chắc muốn xóa thông báo này?')) {
-      this.notificationService.delete(notificationId).subscribe({
-        next: () => {
-          this.notifications = this.notifications.filter(n => n.notificationId !== notificationId);
-        },
-        error: (error) => console.error('Error deleting notification:', error)
       });
     }
   }
