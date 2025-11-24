@@ -8,6 +8,8 @@ import {
   OnDestroy,
   OnInit,
   HostListener,
+  ChangeDetectorRef,
+  NgZone,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -75,19 +77,40 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   scoringQueue: number[] = [];
   isProcessingQueue = false;
   resetCounter = 0; // Force trigger resetAt changes
+  private isRecordingInProgress = false; // ✅ Track recording status
 
   constructor(
     private router: Router,
     private baseQuestionService: BaseQuestionService,
     private speakingStateService: SpeakingQuestionStateService,
     private examAttemptService: ExamAttemptService,
-    private quotaService: QuotaService
+    private quotaService: QuotaService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {
     // Subscribe to state changes
     this.stateSubscription = this.speakingStateService
       .getStates()
       .subscribe((states) => {
+        console.log('[SpeakingComponent] 🔄 State change detected:', {
+          statesCount: states.size,
+          isRecordingInProgress: this.isRecordingInProgress,
+        });
+
         this.updateSpeakingResults(states);
+
+        // ✅ CHỈ update UI khi KHÔNG đang recording
+        // Để tránh ngắt quá trình ghi âm
+        if (!this.isRecordingInProgress) {
+          // Dùng setTimeout để thoát khỏi current change detection cycle
+          setTimeout(() => {
+            this.cdr.detectChanges();
+          }, 0);
+        } else {
+          console.log(
+            '[SpeakingComponent] ⚠️ Skipping UI update - recording in progress'
+          );
+        }
       });
   }
 
@@ -135,7 +158,9 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
         // ✅ Nếu trong mock test, KHÔNG tạo attempt mới (mock test sẽ tạo)
         if (this.isInMockTest) {
-          console.warn('[Speaking] ⚠️ In mock test mode - waiting for mock test to create attempt');
+          console.warn(
+            '[Speaking] ⚠️ In mock test mode - waiting for mock test to create attempt'
+          );
           return;
         }
 
@@ -152,7 +177,9 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
         // ✅ Nếu trong mock test, KHÔNG tạo attempt mới
         if (this.isInMockTest) {
-          console.warn('[Speaking] ⚠️ In mock test mode - invalid attempt, waiting for mock test');
+          console.warn(
+            '[Speaking] ⚠️ In mock test mode - invalid attempt, waiting for mock test'
+          );
           return;
         }
 
@@ -263,29 +290,53 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   // Speaking-specific methods
-  onSpeakingResult(result: SpeakingScoringResult): void {
+  onSpeakingResult(event: {
+    questionId: number;
+    result: SpeakingScoringResult;
+  }): void {
+    const { questionId, result } = event;
     console.log('[SpeakingComponent] 📊 Received scoring result:', {
-      questionIndex: this.currentIndex,
-      questionId: this.questions[this.currentIndex]?.questionId,
+      questionId: questionId,
+      currentIndex: this.currentIndex,
       result: result,
       overallScore: result?.overallScore,
     });
 
-    const q = this.questions[this.currentIndex];
-    if (
-      q &&
-      result.overallScore !== null &&
-      result.overallScore !== undefined
-    ) {
+    // ✅ FIX: Tìm question theo questionId từ event, KHÔNG dùng currentIndex
+    const q = this.questions.find((q) => q.questionId === questionId);
+
+    if (!q) {
+      console.error(
+        '[SpeakingComponent] ❌ Question not found for questionId:',
+        questionId
+      );
+      return;
+    }
+
+    if (result.overallScore !== null && result.overallScore !== undefined) {
+      console.log(
+        '[SpeakingComponent] ✅ Processing result for correct question:',
+        {
+          questionId: questionId,
+          currentIndex: this.currentIndex,
+          currentQuestionId: this.questions[this.currentIndex]?.questionId,
+          resultBelongsToCurrentQuestion:
+            questionId === this.questions[this.currentIndex]?.questionId,
+        }
+      );
+
       // Lưu kết quả cho câu hỏi (map theo questionId, không đẩy trùng vào mảng)
       this.speakingResults.set(q.questionId, result);
 
-      // Cập nhật mảng summary không bị trùng: thay thế nếu đã tồn tại
+      // ✅ FIX: Tìm questionNumber dựa trên questionId, không dùng currentIndex
+      const questionIndex = this.questions.findIndex(
+        (q) => q.questionId === questionId
+      );
       const existingIndex = this.speakingQuestionResults.findIndex(
-        (x) => x.questionNumber === this.currentIndex + 1
+        (x) => x.questionNumber === questionIndex + 1
       );
       const item = {
-        questionNumber: this.currentIndex + 1,
+        questionNumber: questionIndex + 1,
         questionText: q.stemText,
         result: result,
       };
@@ -323,6 +374,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       }
     } else {
       console.warn('[SpeakingComponent] ⚠️ Invalid result received:', {
+        questionId: questionId,
         hasQuestion: !!q,
         overallScore: result?.overallScore,
       });
@@ -339,6 +391,26 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       console.log(
         '[SpeakingComponent] Speaking submission completed - staying on current question'
       );
+    }
+  }
+
+  /**
+   * ✅ Handler để nhận trạng thái recording từ SpeakingAnswerBox
+   * Khi đang recording, tạm dừng detectChanges để tránh ngắt quá trình ghi âm
+   */
+  onRecordingStatusChange(isRecording: boolean): void {
+    this.isRecordingInProgress = isRecording;
+    console.log(
+      `[SpeakingComponent] 🎤 Recording status changed: ${
+        isRecording ? 'STARTED' : 'STOPPED'
+      }`
+    );
+
+    // ✅ Khi kết thúc recording, trigger change detection để cập nhật UI
+    if (!isRecording) {
+      setTimeout(() => {
+        this.cdr.detectChanges();
+      }, 0);
     }
   }
 
@@ -453,21 +525,55 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   private updateSpeakingResults(states: Map<number, any>): void {
-    // Update speakingQuestionResults when states change
-    this.speakingQuestionResults = [];
+    // ✅ FIX: Build new results array
+    const newResults: QuestionResult[] = [];
     states.forEach((state, questionId) => {
       if (state.result) {
         const question = this.questions.find(
           (q) => q.questionId === questionId
         );
         if (question) {
-          this.speakingQuestionResults.push({
+          newResults.push({
             questionNumber: this.questions.indexOf(question) + 1,
             questionText: question.stemText,
             result: state.result,
           });
         }
       }
+    });
+
+    // ✅ FIX: Only update if array content actually changed
+    const hasChanges =
+      newResults.length !== this.speakingQuestionResults.length ||
+      newResults.some((nr, idx) => {
+        const existing = this.speakingQuestionResults[idx];
+        return (
+          !existing ||
+          nr.questionNumber !== existing.questionNumber ||
+          nr.result.overallScore !== existing.result.overallScore
+        );
+      });
+
+    if (hasChanges) {
+      console.log(
+        '[SpeakingComponent] 📊 Speaking results updated - changes detected'
+      );
+      this.speakingQuestionResults = newResults;
+    } else {
+      console.log(
+        '[SpeakingComponent] ℹ️ Speaking results unchanged - skipping update'
+      );
+    }
+
+    // ✅ Log state changes for debugging
+    console.log('[SpeakingComponent] 🔄 States updated:', {
+      totalQuestions: this.questions.length,
+      statesCount: states.size,
+      states: Array.from(states.entries()).map(([qId, state]) => ({
+        questionId: qId,
+        state: state.state,
+        hasResult: !!state.result,
+      })),
     });
   }
 
@@ -533,7 +639,9 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
     // ✅ Nếu đang trong mock test, chỉ phát sự kiện và KHÔNG hiển thị summary, KHÔNG check làm hết câu
     if (this.isInMockTest) {
-      console.log('[Speaking] ✅ Speaking part completed in mock test - emitting event');
+      console.log(
+        '[Speaking] ✅ Speaking part completed in mock test - emitting event'
+      );
       this.baseQuestionService.finishQuiz();
       this.speakingPartCompleted.emit();
       return;

@@ -17,6 +17,8 @@ import { HeaderComponent } from '../../Common/header/header.component';
 import { AuthService } from '../../../Services/Auth/auth.service';
 import { Router } from '@angular/router';
 import { UploadService } from '../../../Services/Upload/upload.service';
+import { QuotaService } from '../../../Services/Quota/quota.service';
+import { SubscriptionStatus } from '../../../Interfaces/quota.interfaces';
 
 interface PasswordForm {
   currentPassword: string;
@@ -39,6 +41,7 @@ export class ProfileComponent implements OnInit {
   passwordLoading = signal(false);
   editing = signal(false);
   profile = signal<UserDto | null>(null);
+  subscriptionStatus: SubscriptionStatus | null = null;
   avatarStatus = '';
   passwordStatus = '';
   passwordMessage = '';
@@ -79,7 +82,8 @@ export class ProfileComponent implements OnInit {
     private toast: ToastrService,
     private authService: AuthService,
     private router: Router,
-    private uploadService: UploadService
+    private uploadService: UploadService,
+    private quotaService: QuotaService
   ) {}
 
   ngOnInit(): void {
@@ -92,6 +96,18 @@ export class ProfileComponent implements OnInit {
       }
       // Nếu đã đăng nhập, tải thông tin profile
       this.fetch();
+      this.loadSubscriptionStatus();
+    });
+  }
+
+  loadSubscriptionStatus(): void {
+    this.quotaService.getSubscriptionStatus().subscribe({
+      next: (status) => {
+        this.subscriptionStatus = status;
+      },
+      error: (err) => {
+        console.error('Error loading subscription status:', err);
+      },
     });
   }
 

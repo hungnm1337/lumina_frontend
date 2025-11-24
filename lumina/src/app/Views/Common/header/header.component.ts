@@ -31,7 +31,6 @@ export class HeaderComponent implements OnInit {
   // Streak data
   currentStreak = 0;
   streakLoading = true;
-  
 
   constructor(
     private authService: AuthService,
@@ -46,6 +45,7 @@ export class HeaderComponent implements OnInit {
     this.currentUser$ = this.authService.currentUser$;
     this.loadStreakData();
     this.loadUserProfile();
+    this.checkPremiumStatus();
   }
 
   loadUserProfile(): void {
