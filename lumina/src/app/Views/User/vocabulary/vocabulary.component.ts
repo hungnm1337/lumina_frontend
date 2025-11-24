@@ -1,15 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HeaderComponent } from '../../Common/header/header.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { VocabularyService } from '../../../Services/Vocabulary/vocabulary.service';
-import { VocabularyListResponse } from '../../../Interfaces/vocabulary.interfaces';
+import { VocabularyListResponse, VocabularyListCreate } from '../../../Interfaces/vocabulary.interfaces';
 import { VocabularyListDetailComponent } from '../vocabulary-list-detail/vocabulary-list-detail.component';
+import { ToastService } from '../../../Services/Toast/toast.service';
 
 @Component({
   selector: 'app-user-vocabulary',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, VocabularyListDetailComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, HeaderComponent, VocabularyListDetailComponent],
   templateUrl: './vocabulary.component.html',
   styleUrls: ['./vocabulary.component.scss']
 })
@@ -42,6 +44,11 @@ export class UserVocabularyComponent implements OnInit {
   currentPage = 1;
   pageSize = 12;
   selectedVocabularyListDetail: any = null;
+  
+  // Modal state for creating new folder
+  isListModalOpen = false;
+  listForm: FormGroup;
+  isSubmitting = false;
 
 
   get showLimitedUserLists() {
@@ -91,8 +98,15 @@ export class UserVocabularyComponent implements OnInit {
   
   constructor(
     private router: Router,
-    private vocabularyService: VocabularyService
-  ) { }
+    private vocabularyService: VocabularyService,
+    private fb: FormBuilder,
+    private toastService: ToastService
+  ) {
+    // Form for creating new vocabulary list (private folder only)
+    this.listForm = this.fb.group({
+      name: ['', [Validators.required, Validators.maxLength(100)]]
+    });
+  }
 
   ngOnInit() {
     // Vocabulary component for User
@@ -151,5 +165,43 @@ export class UserVocabularyComponent implements OnInit {
       },
       error: _ => { this.isLoadingLists = false; }
     });
-}
+  }
+
+  // Modal methods for creating new folder
+  openCreateListModal(): void {
+    this.isListModalOpen = true;
+    this.listForm.reset();
+  }
+
+  closeCreateListModal(): void {
+    this.isListModalOpen = false;
+    this.listForm.reset();
+  }
+
+  saveNewList(): void {
+    if (this.listForm.invalid || this.isSubmitting) {
+      return;
+    }
+
+    this.isSubmitting = true;
+    // Always set isPublic to false for personal folders
+    const listData: VocabularyListCreate = {
+      name: this.listForm.value.name,
+      isPublic: false
+    };
+    
+    this.vocabularyService.createVocabularyList(listData).subscribe({
+      next: (newList) => {
+        this.toastService.success(`Đã tạo folder "${newList.name}" thành công!`);
+        this.isSubmitting = false;
+        this.closeCreateListModal();
+        this.loadUserLists(); // Refresh the list
+      },
+      error: (err) => {
+        this.toastService.error('Tạo folder thất bại. Vui lòng thử lại.');
+        this.isSubmitting = false;
+        console.error('Error creating vocabulary list:', err);
+      }
+    });
+  }
 }

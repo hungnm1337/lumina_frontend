@@ -190,24 +190,19 @@ export class DeckDetailComponent implements OnInit {
     const listId = parseInt(deckId);
     if (isNaN(listId)) return;
 
-    // Kiểm tra xem đã có SpacedRepetition chưa
+    // Chỉ load SpacedRepetition nếu đã có (đã được đánh giá trước đó)
+    // KHÔNG tự động tạo record mới - chỉ tạo khi người dùng đánh giá
     this.spacedRepetitionService.getByList(listId).subscribe({
       next: (repetition) => {
         this.spacedRepetition = repetition;
         console.log('SpacedRepetition loaded:', repetition);
       },
       error: (error) => {
-        // Nếu không tìm thấy (404), tạo mới
+        // Nếu không tìm thấy (404), không tạo mới - chỉ log
+        // Record sẽ được tạo khi người dùng đánh giá lần đầu
         if (error.status === 404) {
-          this.spacedRepetitionService.createRepetition(listId).subscribe({
-            next: (newRepetition) => {
-              this.spacedRepetition = newRepetition;
-              console.log('SpacedRepetition created:', newRepetition);
-            },
-            error: (createError) => {
-              console.error('Error creating SpacedRepetition:', createError);
-            }
-          });
+          console.log('Chưa có SpacedRepetition - sẽ tạo khi đánh giá');
+          this.spacedRepetition = null;
         } else {
           console.error('Error loading SpacedRepetition:', error);
         }
@@ -217,12 +212,59 @@ export class DeckDetailComponent implements OnInit {
 
   // Review vocabulary với quality 0-5
   reviewVocabulary(quality: number): void {
-    if (!this.spacedRepetition || this.isReviewing) return;
+    if (this.isReviewing) return;
 
     this.isReviewing = true;
 
+    // Nếu chưa có spacedRepetition, cần tạo mới trước khi đánh giá
+    if (!this.spacedRepetition) {
+      const listId = parseInt(this.deckId || '');
+      if (isNaN(listId)) {
+        alert('Không thể xác định bộ từ vựng. Vui lòng thử lại.');
+        this.isReviewing = false;
+        return;
+      }
+
+      // Tạo record mới trước khi đánh giá
+      this.spacedRepetitionService.createRepetition(listId).subscribe({
+        next: (newRepetition) => {
+          this.spacedRepetition = newRepetition;
+          // Sau khi tạo xong, tiếp tục đánh giá
+          this.performReview(quality);
+        },
+        error: (createError) => {
+          console.error('Error creating SpacedRepetition:', createError);
+          alert('Có lỗi xảy ra khi tạo bản ghi. Vui lòng thử lại.');
+          this.isReviewing = false;
+        }
+      });
+    } else {
+      // Đã có record, đánh giá trực tiếp
+      this.performReview(quality);
+    }
+  }
+
+  // Thực hiện đánh giá
+  private performReview(quality: number): void {
+    // Lấy term hiện tại để lấy VocabularyId
+    const currentTerm = this.terms[this.currentTermIndex];
+    if (!currentTerm) {
+      alert('Không tìm thấy từ vựng. Vui lòng thử lại.');
+      this.isReviewing = false;
+      return;
+    }
+
+    const listId = parseInt(this.deckId || '');
+    if (isNaN(listId)) {
+      alert('Không thể xác định bộ từ vựng. Vui lòng thử lại.');
+      this.isReviewing = false;
+      return;
+    }
+
+    // Gửi VocabularyId và VocabularyListId để tạo/tìm record theo word level
     const request: ReviewVocabularyRequest = {
-      userSpacedRepetitionId: this.spacedRepetition.userSpacedRepetitionId,
+      vocabularyId: currentTerm.id, // VocabularyId từ term
+      vocabularyListId: listId,
       quality: quality
     };
 

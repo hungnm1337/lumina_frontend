@@ -142,6 +142,13 @@ export const routes: Routes = [
     path: 'spaced-repetition/dashboard',
     component: SpacedRepetitionDashboardComponent,
   },
+  {
+    path: 'spaced-repetition/review-quiz',
+    loadComponent: () =>
+      import('./pages/review-quiz/review-quiz.component').then(
+        (m) => m.ReviewQuizComponent
+      ),
+  },
 
   // Payment Success/Cancel Pages
   {

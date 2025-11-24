@@ -115,7 +115,16 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-center mb-6">  
         <div class="text-center mb-12">
-          <h2 class="text-3xl font-bold text-gray-900 mb-4">Vocabulary Topics</h2>
+          <div class="flex items-center justify-center gap-4 mb-4">
+            <h2 class="text-3xl font-bold text-gray-900">Vocabulary Topics</h2>
+            <button 
+              class="btn-primary flex items-center gap-2 px-4 py-2 text-sm"
+              (click)="openCreateListModal()"
+              title="Tạo folder vocabulary mới">
+              <i class="fas fa-folder-plus"></i>
+              <span>Thêm Folder</span>
+            </button>
+          </div>
           <p class="text-lg text-gray-600">Learn vocabulary by common TOEIC topics</p>
         </div>
       </div>
@@ -178,6 +187,48 @@
         <div class="relative bg-white rounded-2xl w-[90vw] max-w-[900px] max-h-[90vh] overflow-auto p-6" (click)="$event.stopPropagation()">
           <button (click)="closeVocabularyListDetail()" class="absolute top-4 right-4 btn-primary">Close</button>
           <app-vocabulary-list-detail [vocabularyList]="selectedVocabularyListDetail" (close)="closeVocabularyListDetail()"></app-vocabulary-list-detail>
+        </div>
+      </div>
+      
+      <!-- Modal for creating new vocabulary folder -->
+      <div *ngIf="isListModalOpen" class="modal-overlay" (click)="closeCreateListModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <div class="modal-header-content">
+              <div class="modal-icon">
+                <i class="fas fa-folder-plus"></i>
+              </div>
+              <div class="modal-title-section">
+                <h2>Tạo Folder Vocabulary Mới</h2>
+                <p>Bắt đầu một bộ sưu tập từ vựng mới</p>
+              </div>
+            </div>
+            <button class="btn-close" (click)="closeCreateListModal()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <form [formGroup]="listForm" (ngSubmit)="saveNewList()" class="modal-form">
+            <div class="form-group">
+              <label for="list-name">Tên Folder *</label>
+              <input 
+                id="list-name" 
+                type="text" 
+                formControlName="name" 
+                placeholder="Ví dụ: TOEIC Business Vocabulary" 
+                class="form-input">
+              <div *ngIf="listForm.get('name')?.invalid && listForm.get('name')?.touched" class="error-message">
+                Tên folder là bắt buộc.
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" (click)="closeCreateListModal()">Hủy</button>
+              <button type="submit" class="btn-primary" [disabled]="listForm.invalid || isSubmitting">
+                <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin"></i>
+                <span *ngIf="!isSubmitting">Tạo Folder</span>
+                <span *ngIf="isSubmitting">Đang tạo...</span>
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

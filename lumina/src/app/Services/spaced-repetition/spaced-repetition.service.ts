@@ -6,8 +6,10 @@ import { environment } from '../../../environments/environment.development';
 export interface SpacedRepetition {
   userSpacedRepetitionId: number;
   userId: number;
+  vocabularyId?: number | null; // Null = folder level, Not null = word level
   vocabularyListId: number;
   vocabularyListName: string;
+  vocabularyWord?: string | null; // Word text if vocabularyId is set
   lastReviewedAt: string;
   nextReviewAt: string | null;
   reviewCount: number;
@@ -15,10 +17,19 @@ export interface SpacedRepetition {
   status: string;
   isDue: boolean;
   daysUntilReview: number;
+  // Quiz score fields (only used when vocabularyId is null)
+  bestQuizScore?: number;
+  lastQuizScore?: number;
+  lastQuizCompletedAt?: string;
+  totalQuizAttempts?: number;
 }
 
 export interface ReviewVocabularyRequest {
-  userSpacedRepetitionId: number;
+  // Option 1: Use existing userSpacedRepetitionId (backward compatible)
+  userSpacedRepetitionId?: number | null;
+  // Option 2: Create new record with vocabularyId and vocabularyListId (new way)
+  vocabularyId?: number | null;
+  vocabularyListId?: number | null;
   quality: number; // 0-5: 0 = không nhớ, 5 = nhớ rất tốt
 }
 

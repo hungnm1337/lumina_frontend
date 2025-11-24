@@ -1,0 +1,181 @@
+<app-header></app-header>
+
+<div class="review-quiz-page min-h-screen bg-gray-50">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex items-center justify-center min-h-screen">
+    <div class="text-center">
+      <i class="fas fa-spinner fa-spin text-6xl text-purple-600 mb-4"></i>
+      <p class="text-gray-600 text-lg">Đang tải quiz review...</p>
+    </div>
+  </div>
+
+  <!-- Quiz Content -->
+  <div *ngIf="!isLoading && !isFinished" class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-2xl font-bold text-gray-900">
+          <i class="fas fa-question-circle text-purple-600 mr-2"></i>
+          Bài kiểm tra từ vựng cần review
+        </h1>
+        <button
+          type="button"
+          (click)="goBack()"
+          class="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition"
+        >
+          <i class="fas fa-times mr-2"></i>
+          Thoát
+        </button>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-medium text-gray-700">
+            Câu {{ currentQuestionIndex + 1 }} / {{ questions.length }}
+          </span>
+          <span class="text-sm font-medium text-gray-700">
+            {{ getProgress() }}%
+          </span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-3">
+          <div 
+            class="bg-gradient-to-r from-purple-500 to-purple-700 h-3 rounded-full transition-all duration-300"
+            [style.width.%]="getProgress()"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Timer -->
+      <div class="flex items-center justify-center gap-4 mb-6">
+        <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200">
+          <i class="fas fa-clock text-purple-600"></i>
+          <span class="font-bold text-lg" [class.text-red-600]="timeRemaining <= 10 && timeRemaining > 0">
+            {{ formatTime(timeRemaining) }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Question Card -->
+    <div *ngIf="getCurrentQuestion()" class="bg-white rounded-xl shadow-lg border border-gray-200 p-8 mb-6">
+      <!-- Question -->
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">
+          {{ getCurrentQuestion()?.questionType === 'word-to-meaning' 
+            ? 'Từ này có nghĩa là gì?' 
+            : 'Nghĩa này là từ nào?' }}
+        </h2>
+        
+        <div class="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6 border-2 border-purple-200">
+          <div class="text-center">
+            <p class="text-3xl font-bold text-gray-900 mb-2">
+              {{ getCurrentQuestion()?.questionType === 'word-to-meaning' 
+                ? getCurrentQuestion()?.word 
+                : getCurrentQuestion()?.definition }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Answer Options -->
+      <div class="space-y-3 mb-6">
+        <button
+          *ngFor="let option of getCurrentQuestion()?.options"
+          type="button"
+          (click)="selectAnswer(option)"
+          [disabled]="getCurrentAnswer()"
+          [class]="'w-full text-left px-6 py-4 rounded-lg border-2 transition-all ' +
+                   (getCurrentAnswer() 
+                     ? (option === getCurrentQuestion()?.correctAnswer
+                       ? 'bg-green-100 border-green-500 text-green-900'
+                       : option === getCurrentAnswer()?.selectedAnswer && !getCurrentAnswer()?.isCorrect
+                       ? 'bg-red-100 border-red-500 text-red-900'
+                       : 'bg-gray-50 border-gray-300 text-gray-600')
+                     : 'bg-white border-gray-300 text-gray-900 hover:border-purple-500 hover:bg-purple-50 cursor-pointer')"
+        >
+          <div class="flex items-center justify-between">
+            <span>{{ option }}</span>
+            <i *ngIf="getCurrentAnswer() && option === getCurrentQuestion()?.correctAnswer" 
+               class="fas fa-check-circle text-green-600"></i>
+            <i *ngIf="getCurrentAnswer() && option === getCurrentAnswer()?.selectedAnswer && !getCurrentAnswer()?.isCorrect" 
+               class="fas fa-times-circle text-red-600"></i>
+          </div>
+        </button>
+      </div>
+
+      <!-- Feedback -->
+      <div *ngIf="getCurrentAnswer()" 
+           class="mt-4 p-4 rounded-lg"
+           [class.bg-green-100]="getCurrentAnswer()?.isCorrect"
+           [class.bg-red-100]="!getCurrentAnswer()?.isCorrect">
+        <div class="flex items-center gap-2">
+          <i *ngIf="getCurrentAnswer()?.isCorrect" class="fas fa-check-circle text-green-600 text-xl"></i>
+          <i *ngIf="!getCurrentAnswer()?.isCorrect" class="fas fa-times-circle text-red-600 text-xl"></i>
+          <span [class.text-green-900]="getCurrentAnswer()?.isCorrect" 
+                [class.text-red-900]="!getCurrentAnswer()?.isCorrect"
+                class="font-semibold">
+            {{ getCurrentAnswer()?.isCorrect ? 'Đúng rồi!' : 'Sai rồi! Đáp án đúng: ' + getCurrentQuestion()?.correctAnswer }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Screen -->
+  <div *ngIf="!isLoading && isFinished" class="max-w-4xl mx-auto px-4 py-8">
+    <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+      <div class="text-center mb-8">
+        <div class="w-20 h-20 bg-gradient-to-r from-purple-500 to-purple-700 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-trophy text-white text-4xl"></i>
+        </div>
+        <h2 class="text-3xl font-bold text-gray-900 mb-2">Hoàn thành!</h2>
+        <p class="text-gray-600">Bạn đã hoàn thành bài kiểm tra review</p>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-3 gap-4 mb-8">
+        <div class="text-center p-4 bg-purple-50 rounded-lg">
+          <div class="text-3xl font-bold text-purple-600 mb-1">{{ getScore() }}%</div>
+          <div class="text-sm text-gray-600">Điểm số</div>
+        </div>
+        <div class="text-center p-4 bg-green-50 rounded-lg">
+          <div class="text-3xl font-bold text-green-600 mb-1">{{ correctCount }}</div>
+          <div class="text-sm text-gray-600">Đúng</div>
+        </div>
+        <div class="text-center p-4 bg-red-50 rounded-lg">
+          <div class="text-3xl font-bold text-red-600 mb-1">{{ incorrectCount }}</div>
+          <div class="text-sm text-gray-600">Sai</div>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="mb-8">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Tóm tắt</h3>
+        <div class="space-y-2">
+          <p class="text-gray-700">
+            <i class="fas fa-check-circle text-green-600 mr-2"></i>
+            <strong>{{ correctCount }}</strong> từ vựng đã được đánh dấu là đã thuộc và sẽ không hiển thị trong danh sách review nữa.
+          </p>
+          <p class="text-gray-700">
+            <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
+            <strong>{{ incorrectCount }}</strong> từ vựng đã được chuyển vào danh sách học ngày mai.
+          </p>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-4 justify-center">
+        <button
+          type="button"
+          (click)="goBack()"
+          class="px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg hover:from-purple-600 hover:to-purple-800 transition font-semibold"
+        >
+          <i class="fas fa-arrow-left mr-2"></i>
+          Quay lại Dashboard
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

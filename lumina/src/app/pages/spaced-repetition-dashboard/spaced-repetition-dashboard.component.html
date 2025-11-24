@@ -29,17 +29,6 @@
         </div>
       </div>
 
-      <!-- Learning Card -->
-      <div class="stat-card stat-card-blue">
-        <div class="stat-icon">
-          <i class="fas fa-book-reader"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ isLoadingStats ? '...' : (spacedRepetitionStats?.learning || 0) }}</div>
-          <div class="stat-label">Đang học</div>
-        </div>
-      </div>
-
       <!-- Mastered Card -->
       <div class="stat-card stat-card-green">
         <div class="stat-icon">
@@ -51,28 +40,28 @@
         </div>
       </div>
 
-      <!-- Total Card -->
-      <div class="stat-card stat-card-purple">
+      <!-- Upcoming Card -->
+      <div class="stat-card stat-card-blue">
         <div class="stat-icon">
-          <i class="fas fa-layer-group"></i>
+          <i class="fas fa-calendar-alt"></i>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ isLoadingStats ? '...' : (spacedRepetitionStats?.total || 0) }}</div>
-          <div class="stat-label">Tổng số</div>
+          <div class="stat-value">{{ isLoadingStats ? '...' : (spacedRepetitionStats?.upcoming || 0) }}</div>
+          <div class="stat-label">Cần học sắp tới</div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Quick Actions -->
-  <div class="quick-actions-section" *ngIf="dueTodayLists && dueTodayLists.length > 0">
+  <div class="quick-actions-section" *ngIf="dueTodayWords && dueTodayWords.length > 0">
     <div class="quick-action-card">
       <div class="quick-action-content">
         <div class="quick-action-info">
           <h3>Bắt đầu ôn lại ngay</h3>
-          <p>Có {{ dueTodayLists.length }} từ vựng cần review hôm nay</p>
+          <p>Có {{ dueTodayWords.length }} từ vựng cần review hôm nay</p>
         </div>
-        <button class="action-button action-button-primary" (click)="startDueReviews()">
+        <button class="action-button action-button-primary" (click)="startReviewQuiz()">
           <i class="fas fa-play mr-2"></i>Bắt đầu
         </button>
       </div>
@@ -86,7 +75,7 @@
         <i class="fas fa-exclamation-triangle text-orange-600"></i>
         <h2 class="section-title">Cần review hôm nay</h2>
       </div>
-      <span class="badge badge-due" *ngIf="!isLoadingDue">{{ dueTodayLists.length }}</span>
+      <span class="badge badge-due" *ngIf="!isLoadingDue">{{ dueTodayWords.length }}</span>
     </div>
 
     <!-- Loading State -->
@@ -96,51 +85,103 @@
     </div>
 
     <!-- Empty State -->
-    <div *ngIf="!isLoadingDue && dueTodayLists.length === 0" class="empty-state">
+    <div *ngIf="!isLoadingDue && dueTodayWords.length === 0" class="empty-state">
       <div class="empty-icon">🎉</div>
       <h3>Không có từ vựng nào cần review!</h3>
       <p>Bạn đã hoàn thành tất cả các từ vựng cần review hôm nay.</p>
     </div>
 
-    <!-- Due Today List -->
-    <div *ngIf="!isLoadingDue && dueTodayLists.length > 0" class="list-container">
-      <div 
-        *ngFor="let item of dueTodayLists; let i = index" 
-        class="due-item-card">
-        <div class="due-item-header">
-          <div class="due-item-number">{{ i + 1 }}.</div>
-          <h3 class="due-item-title">{{ item.vocabularyListName }}</h3>
-        </div>
-        <div class="due-item-info">
-          <div class="info-row">
-            <i class="fas fa-calendar-alt text-orange-600"></i>
-            <span>Review tiếp theo: <strong>Hôm nay</strong></span>
+    <!-- Quiz Button for Due Today Words -->
+    <div *ngIf="!isLoadingDue && dueTodayWords.length > 0" class="mb-6">
+      <button 
+        class="action-button action-button-primary w-full"
+        (click)="startReviewQuiz()">
+        <i class="fas fa-question-circle mr-2"></i>
+        Làm bài kiểm tra ({{ dueTodayWords.length }} từ)
+      </button>
+      <p class="text-sm text-gray-600 mt-2 text-center">
+        <i class="fas fa-info-circle mr-1"></i>
+        Làm đúng: từ sẽ không hiển thị nữa. Làm sai: từ sẽ được chuyển vào danh sách học ngày mai.
+      </p>
+    </div>
+
+    <!-- Due Today Vocabulary Grid -->
+    <div *ngIf="!isLoadingDue && dueTodayWords.length > 0">
+      <div class="vocabulary-grid">
+        <div 
+          *ngFor="let item of dueTodayWords" 
+          class="vocabulary-card upcoming-vocab"
+          (click)="goToDeck(item.reviewInfo.vocabularyListId)">
+          <div class="vocab-header">
+            <h3 class="vocab-word">{{ item.vocabulary.word }}</h3>
+            <span class="badge" *ngIf="item.vocabulary.category">
+              {{ item.vocabulary.category }}
+            </span>
           </div>
-          <div class="info-row">
-            <i class="fas fa-chart-line text-orange-600"></i>
-            <span>Đã review: <strong>{{ item.reviewCount }} lần</strong></span>
+          <div class="vocab-content">
+            <p class="vocab-definition">{{ item.vocabulary.definition }}</p>
+            <div class="vocab-meta" *ngIf="item.vocabulary.type">
+              <i class="fas fa-tag"></i>
+              <span>{{ item.vocabulary.type }}</span>
+            </div>
           </div>
-        </div>
-        <div class="due-item-actions">
-          <button class="btn-review-now" (click)="goToDeck(item.vocabularyListId); $event.stopPropagation()">
-            <i class="fas fa-play mr-2"></i>Ôn lại ngay
-          </button>
-          <button class="btn-view-detail" (click)="goToDeck(item.vocabularyListId); $event.stopPropagation()">
-            <i class="fas fa-eye mr-2"></i>Xem chi tiết
-          </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Upcoming Reviews Section -->
+  <!-- Missed Words Section -->
+  <div class="section" *ngIf="!isLoadingStats && missedWords.length > 0">
+    <div class="section-header">
+      <div class="section-title-group">
+        <i class="fas fa-exclamation-circle text-red-600"></i>
+        <h2 class="section-title">Các từ vựng đã bỏ lỡ</h2>
+      </div>
+      <span class="badge badge-due">{{ missedWords.length }}</span>
+    </div>
+
+    <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+      <p class="text-sm text-red-800">
+        <i class="fas fa-info-circle mr-2"></i>
+        Những từ vựng này đã đến hẹn review nhưng bạn chưa học. Hãy học lại để không bỏ lỡ tiến độ!
+      </p>
+    </div>
+
+    <!-- Missed Words Grid -->
+    <div class="vocabulary-grid">
+      <div 
+        *ngFor="let item of missedWords" 
+        class="vocabulary-card missed-vocab"
+        (click)="goToDeck(item.reviewInfo.vocabularyListId)">
+        <div class="vocab-header">
+          <h3 class="vocab-word">{{ item.vocabulary.word }}</h3>
+          <span class="badge" *ngIf="item.vocabulary.category">
+            {{ item.vocabulary.category }}
+          </span>
+        </div>
+        <div class="vocab-content">
+          <p class="vocab-definition">{{ item.vocabulary.definition }}</p>
+          <div class="vocab-meta" *ngIf="item.vocabulary.type">
+            <i class="fas fa-tag"></i>
+            <span>{{ item.vocabulary.type }}</span>
+          </div>
+          <div class="vocab-meta text-red-600" *ngIf="item.reviewInfo.nextReviewAt">
+            <i class="fas fa-calendar-times"></i>
+            <span>Đã quá hạn: {{ getDaysOverdue(item.reviewInfo.nextReviewAt) }} ngày</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tomorrow's Review Section -->
   <div class="section">
     <div class="section-header">
       <div class="section-title-group">
         <i class="fas fa-calendar-alt text-blue-600"></i>
-        <h2 class="section-title">Sắp đến lượt review</h2>
+        <h2 class="section-title">Lịch học ngày mai</h2>
       </div>
-      <span class="badge badge-upcoming" *ngIf="!isLoadingUpcoming">{{ upcomingLists.length }}</span>
+      <span class="badge badge-upcoming" *ngIf="!isLoadingUpcoming">{{ upcomingVocabularies.length }}</span>
     </div>
 
     <!-- Loading State -->
@@ -150,130 +191,148 @@
     </div>
 
     <!-- Empty State -->
-    <div *ngIf="!isLoadingUpcoming && upcomingLists.length === 0" class="empty-state">
+    <div *ngIf="!isLoadingUpcoming && upcomingVocabularies.length === 0" class="empty-state">
       <div class="empty-icon">📅</div>
-      <h3>Không có từ vựng nào sắp đến lượt</h3>
+      <h3>Không có từ vựng nào cần học ngày mai</h3>
       <p>Các từ vựng của bạn đã được review hoặc chưa được lên lịch.</p>
     </div>
 
-    <!-- Upcoming List -->
-    <div *ngIf="!isLoadingUpcoming && upcomingLists.length > 0" class="list-container">
-      <div 
-        *ngFor="let item of upcomingLists" 
-        class="list-item-card upcoming-item"
-        (click)="goToDeck(item.vocabularyListId)">
-        <div class="item-content">
-          <div class="item-header">
-            <h3 class="item-title">{{ item.vocabularyListName }}</h3>
-            <span class="badge" [ngClass]="getStatusBadgeClass(item.status)">
-              {{ item.status }}
+    <!-- Upcoming Vocabulary Grid -->
+    <div *ngIf="!isLoadingUpcoming && upcomingVocabularies.length > 0">
+      <div class="vocabulary-grid">
+        <div 
+          *ngFor="let item of paginatedUpcomingVocabularies" 
+          class="vocabulary-card upcoming-vocab"
+          (click)="goToDeck(item.reviewInfo.vocabularyListId)">
+          <div class="vocab-header">
+            <h3 class="vocab-word">{{ item.vocabulary.word }}</h3>
+            <span class="badge" *ngIf="item.vocabulary.category">
+              {{ item.vocabulary.category }}
             </span>
           </div>
-          <div class="item-details">
-            <div class="detail-item">
-              <i class="fas fa-clock text-blue-600"></i>
-              <span>Còn {{ getDaysUntilReview(item.nextReviewAt) }} ngày</span>
-            </div>
-            <div class="detail-item">
-              <i class="fas fa-calendar-check text-gray-600"></i>
-              <span>Review vào: {{ formatDate(item.nextReviewAt) }}</span>
-            </div>
-            <div class="detail-item">
-              <i class="fas fa-redo text-gray-600"></i>
-              <span>Đã review: {{ item.reviewCount }} lần</span>
+          <div class="vocab-content">
+            <p class="vocab-definition">{{ item.vocabulary.definition }}</p>
+            <div class="vocab-meta" *ngIf="item.vocabulary.type">
+              <i class="fas fa-tag"></i>
+              <span>{{ item.vocabulary.type }}</span>
             </div>
           </div>
         </div>
-        <div class="item-action">
-          <i class="fas fa-arrow-right text-blue-600"></i>
+      </div>
+
+      <!-- Pagination Controls (Carousel Style) -->
+      <div *ngIf="totalUpcomingPages > 1" class="pagination-carousel">
+        <button 
+          class="carousel-btn prev-btn" 
+          [disabled]="currentUpcomingPage === 1"
+          (click)="previousUpcomingPage()">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        
+        <div class="carousel-info">
+          <span class="page-indicator">{{ currentUpcomingPage }} / {{ totalUpcomingPages }}</span>
+        </div>
+        
+        <button 
+          class="carousel-btn next-btn" 
+          [disabled]="currentUpcomingPage === totalUpcomingPages"
+          (click)="nextUpcomingPage()">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unlearned Folders Section -->
+  <div class="section" *ngIf="!isLoadingStats && unlearnedFolders.length > 0">
+    <div class="section-header">
+      <div class="section-title-group">
+        <i class="fas fa-folder text-gray-600"></i>
+        <h2 class="section-title">Folders chưa học</h2>
+      </div>
+      <span class="badge badge-default">{{ unlearnedFolders.length }}</span>
+    </div>
+
+    <div class="folder-grid">
+      <div 
+        *ngFor="let item of unlearnedFolders" 
+        class="folder-card unlearned-folder"
+        (click)="goToDeck(item.vocabularyListId)">
+        <div class="folder-card-content">
+          <h3 class="folder-card-title">{{ item.vocabularyListName }}</h3>
+          <span class="folder-badge badge-new">Mới</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- All Learning Progress Section -->
-  <div class="section">
+  <!-- Learned Folders by Date Section -->
+  <div class="section" *ngIf="!isLoadingStats && learnedVocabulariesByDate.length > 0">
     <div class="section-header">
       <div class="section-title-group">
-        <i class="fas fa-chart-line text-purple-600"></i>
-        <h2 class="section-title">Tất cả tiến độ học tập</h2>
-      </div>
-      <div class="filter-buttons">
-        <button 
-          class="filter-btn" 
-          [ngClass]="{ 'active': filterStatus === 'all' }"
-          (click)="setFilter('all')">
-          Tất cả
-        </button>
-        <button 
-          class="filter-btn" 
-          [ngClass]="{ 'active': filterStatus === 'due' }"
-          (click)="setFilter('due')">
-          Cần review
-        </button>
-        <button 
-          class="filter-btn" 
-          [ngClass]="{ 'active': filterStatus === 'learning' }"
-          (click)="setFilter('learning')">
-          Đang học
-        </button>
-        <button 
-          class="filter-btn" 
-          [ngClass]="{ 'active': filterStatus === 'mastered' }"
-          (click)="setFilter('mastered')">
-          Đã thuộc
-        </button>
+        <i class="fas fa-calendar-check text-purple-600"></i>
+        <h2 class="section-title">Lịch học tập</h2>
       </div>
     </div>
 
-    <!-- Loading State -->
-    <div *ngIf="isLoadingStats" class="loading-state">
-      <div class="loading-spinner"></div>
-      <p>Đang tải...</p>
-    </div>
+    <!-- Group by Date -->
+    <div *ngFor="let dateGroup of learnedVocabulariesByDate" class="date-group" [attr.data-date-group]="dateGroup.date">
+      <div class="date-group-header">
+        <h3 class="date-group-title">
+          <i class="fas fa-calendar-alt"></i>
+          {{ dateGroup.label }}
+        </h3>
+        <span class="date-group-count">{{ dateGroup.vocabularies.length }} từ vựng</span>
+      </div>
 
-    <!-- Empty State -->
-    <div *ngIf="!isLoadingStats && filteredRepetitions.length === 0" class="empty-state">
-      <div class="empty-icon">📚</div>
-      <h3>Chưa có dữ liệu học tập</h3>
-      <p>Hãy bắt đầu học flashcards để theo dõi tiến độ!</p>
-    </div>
-
-    <!-- All Progress List -->
-    <div *ngIf="!isLoadingStats && filteredRepetitions.length > 0" class="list-container">
-      <div 
-        *ngFor="let item of filteredRepetitions" 
-        class="list-item-card progress-item"
-        (click)="goToDeck(item.vocabularyListId)">
-        <div class="item-content">
-          <div class="item-header">
-            <h3 class="item-title">{{ item.vocabularyListName }}</h3>
-            <span class="badge" [ngClass]="getStatusBadgeClass(item.status)">
-              {{ item.status }}
-            </span>
-          </div>
-          <div class="item-details">
-            <div class="detail-item">
-              <i class="fas fa-redo text-gray-600"></i>
-              <span>Đã review: {{ item.reviewCount }} lần</span>
+      <!-- Vocabulary Grid -->
+      <div *ngIf="dateGroup.vocabularies.length > 0">
+        <div class="vocabulary-grid">
+          <div 
+            *ngFor="let item of getPaginatedVocabulariesForDate(dateGroup)" 
+            class="vocabulary-card progress-vocab"
+            (click)="goToDeck(item.reviewInfo.vocabularyListId)">
+            <div class="vocab-header">
+              <h3 class="vocab-word">{{ item.vocabulary.word }}</h3>
+              <span class="badge" *ngIf="item.vocabulary.category">
+                {{ item.vocabulary.category }}
+              </span>
             </div>
-            <div class="detail-item">
-              <i class="fas fa-calendar text-gray-600"></i>
-              <span>Review lần cuối: {{ formatDate(item.lastReviewedAt) }}</span>
-            </div>
-            <div class="detail-item" *ngIf="item.nextReviewAt">
-              <i class="fas fa-clock text-gray-600"></i>
-              <span>Review tiếp: {{ formatDate(item.nextReviewAt) }}</span>
-            </div>
-            <div class="detail-item">
-              <i class="fas fa-calendar-alt text-gray-600"></i>
-              <span>Khoảng cách: {{ item.intervals }} ngày</span>
+            <div class="vocab-content">
+              <p class="vocab-definition">{{ item.vocabulary.definition }}</p>
+              <div class="vocab-meta" *ngIf="item.vocabulary.type">
+                <i class="fas fa-tag"></i>
+                <span>{{ item.vocabulary.type }}</span>
+              </div>
             </div>
           </div>
         </div>
-        <div class="item-action">
-          <i class="fas fa-arrow-right text-purple-600"></i>
+
+        <!-- Pagination Controls (Carousel Style) -->
+        <div *ngIf="getTotalPagesForDate(dateGroup) > 1" class="pagination-carousel">
+          <button 
+            class="carousel-btn prev-btn" 
+            [disabled]="dateGroup.currentPage === 1"
+            (click)="previousPageForDate(dateGroup)">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          
+          <div class="carousel-info">
+            <span class="page-indicator">{{ dateGroup.currentPage }} / {{ getTotalPagesForDate(dateGroup) }}</span>
+          </div>
+          
+          <button 
+            class="carousel-btn next-btn" 
+            [disabled]="dateGroup.currentPage === getTotalPagesForDate(dateGroup)"
+            (click)="nextPageForDate(dateGroup)">
+            <i class="fas fa-chevron-right"></i>
+          </button>
         </div>
+      </div>
+
+      <!-- Empty state for date group -->
+      <div *ngIf="dateGroup.vocabularies.length === 0" class="empty-state">
+        <p>Không có từ vựng nào</p>
       </div>
     </div>
   </div>
