@@ -8,6 +8,7 @@ import {
   OnDestroy,
   OnInit,
   HostListener,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -76,7 +77,8 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     private examAttemptService: ExamAttemptService,
     private writingService: WritingExamPartOneService,
     private toastService: ToastService,
-    private quotaService: QuotaService
+    private quotaService: QuotaService,
+    private cdr: ChangeDetectorRef
   ) {
     this.startAutoSave();
   }
@@ -135,7 +137,9 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
 
         // ✅ Nếu trong mock test, chỉ cảnh báo (mock test sẽ tạo)
         if (this.isInMockTest) {
-          console.warn('[Writing] ⚠️ In mock test mode - waiting for mock test to create attempt');
+          console.warn(
+            '[Writing] ⚠️ In mock test mode - waiting for mock test to create attempt'
+          );
         }
       } else {
         console.log('[Writing] ✅ Loaded attemptId:', this.attemptId);
@@ -426,7 +430,9 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
 
     // ✅ Nếu đang trong mock test, chỉ phát sự kiện và KHÔNG hiển thị kết quả
     if (this.isInMockTest) {
-      console.log('[Writing] ✅ Writing part completed in mock test - emitting event');
+      console.log(
+        '[Writing] ✅ Writing part completed in mock test - emitting event'
+      );
       this.isFinished = true;
       this.writingPartCompleted.emit();
       return;
@@ -546,6 +552,11 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
           feedbackMap[String(qid)] = resp;
           this.feedbackDone++;
           pending--;
+          // ✅ Force change detection ngay khi nhận feedback
+          this.cdr.detectChanges();
+          console.log(
+            `[WritingComponent] 🟢 Question ${qid} feedback received`
+          );
           maybeComplete();
         },
         error: (error) => {
@@ -676,12 +687,35 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     return this.submittingQuestions.size > 0;
   }
 
+  /**
+   * Check if a question has feedback (đã chấm xong)
+   * Trạng thái này chỉ áp dụng cho Speaking và Writing
+   */
+  hasQuestionFeedback(questionId: number): boolean {
+    try {
+      const feedbackMap = this.loadFeedbackMap();
+      return !!feedbackMap[String(questionId)];
+    } catch {
+      return false;
+    }
+  }
+
   onSubmitStart(questionId: number): void {
     this.submittingQuestions.add(questionId);
+    // ✅ Force change detection để Navigator cập nhật trạng thái ngay
+    this.cdr.detectChanges();
+    console.log(
+      `[WritingComponent] 🟡 Question ${questionId} submitting started`
+    );
   }
 
   onSubmitEnd(questionId: number): void {
     this.submittingQuestions.delete(questionId);
+    // ✅ Force change detection để Navigator cập nhật trạng thái ngay
+    this.cdr.detectChanges();
+    console.log(
+      `[WritingComponent] 🟣 Question ${questionId} submitting ended`
+    );
   }
 
   finishWritingExam(): void {

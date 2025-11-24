@@ -6,6 +6,9 @@ import {
   OnChanges,
   SimpleChanges,
   OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -27,16 +30,23 @@ type RecordingState =
   imports: [CommonModule],
   templateUrl: './speaking-answer-box.component.html',
   styleUrl: './speaking-answer-box.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
+export class SpeakingAnswerBoxComponent
+  implements OnInit, OnChanges, OnDestroy
+{
   @Input() questionId: number = 0;
   @Input() disabled: boolean = false;
   @Input() resetAt: number = 0;
   @Input() questionTime: number = 0; // Time limit for this question
   @Input() attemptId: number = 0; // ✅ THÊM: Attempt ID của lượt thi hiện tại
   @Output() answered = new EventEmitter<boolean>();
-  @Output() scoringResult = new EventEmitter<SpeakingScoringResult>();
+  @Output() scoringResult = new EventEmitter<{
+    questionId: number;
+    result: SpeakingScoringResult;
+  }>(); // ✅ FIX: Emit questionId với result
   @Output() submitting = new EventEmitter<boolean>(); // New: Notify parent về trạng thái submit
+  @Output() recordingStatusChange = new EventEmitter<boolean>(); // ✅ NEW: Notify parent khi bắt đầu/kết thúc recording
 
   state: RecordingState = 'idle';
   recordingTime: number = 0;
@@ -44,6 +54,13 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
   private audioChunks: Blob[] = [];
   private recordingTimer: any = null;
   private audioBlob: Blob | null = null;
+
+  // ✅ FIX: Track if THIS component is actively processing (not restored state)
+  private isActivelyProcessing: boolean = false;
+
+  // ✅ FIX Bug #15: Track which questionId this component is currently displaying
+  // This prevents UI from one question bleeding into another when navigating
+  private currentDisplayedQuestionId: number = 0;
 
   // Kết quả chấm điểm
   result: SpeakingScoringResult | null = null;
@@ -60,16 +77,77 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
   constructor(
     private speakingService: SpeakingService,
     private toastService: ToastService,
-    private speakingStateService: SpeakingQuestionStateService
+    private speakingStateService: SpeakingQuestionStateService,
+    private cdr: ChangeDetectorRef
   ) {
     // Initialize with idle state
     this.state = 'idle';
+
+    console.log(
+      '[SpeakingAnswerBox] 🏗️ Constructor called - Component created'
+    );
 
     // ✅ FIX Bug #9: Setup Page Visibility API
     this.setupVisibilityHandler();
   }
 
+  ngOnInit(): void {
+    console.log('[SpeakingAnswerBox] 🎬 ngOnInit called:', {
+      questionId: this.questionId,
+      initialState: this.state,
+    });
+
+    // ✅ FIX Bug #15: Set current displayed questionId
+    this.currentDisplayedQuestionId = this.questionId;
+
+    // ✅ Initialize state service and restore state for this question
+    if (this.questionId) {
+      this.speakingStateService.initializeQuestion(this.questionId);
+      this.restoreStateFromService();
+      // ✅ FIX: Force change detection với OnPush strategy
+      this.cdr.markForCheck();
+    }
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
+    console.log('[SpeakingAnswerBox] 🔍 ngOnChanges called:', {
+      questionId: this.questionId,
+      currentDisplayedQuestionId: this.currentDisplayedQuestionId,
+      currentState: this.state,
+      changes: Object.keys(changes),
+      changeDetails: changes,
+    });
+
+    // ✅ CRITICAL FIX: Block ALL changes when recording OR processing
+    // This prevents cross-component interference when other questions complete scoring
+    if (this.state === 'recording' || this.state === 'processing') {
+      console.log(
+        `[SpeakingAnswerBox] ⚠️ ${this.state.toUpperCase()} IN PROGRESS - Ignoring ALL changes`
+      );
+      console.log(
+        '[SpeakingAnswerBox] 🚫 BLOCKED - mediaRecorder state:',
+        this.mediaRecorder?.state
+      );
+      return;
+    }
+
+    // ✅ ENHANCED: Only process actual value changes for relevant inputs
+    const hasQuestionIdChange =
+      changes['questionId'] &&
+      !changes['questionId'].isFirstChange() &&
+      changes['questionId'].currentValue !==
+        changes['questionId'].previousValue;
+
+    const hasResetChange =
+      changes['resetAt'] &&
+      !changes['resetAt'].isFirstChange() &&
+      changes['resetAt'].currentValue !== changes['resetAt'].previousValue;
+
+    if (!hasQuestionIdChange && !hasResetChange) {
+      console.log('[SpeakingAnswerBox] ℹ️ No actual value changes - ignoring');
+      return;
+    }
+
     // Debug attemptId changes
     if (changes['attemptId']) {
       console.log('[SpeakingAnswerBox] attemptId changed:', {
@@ -79,29 +157,76 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
       });
     }
 
-    // Initialize state service if not exists
-    if (changes['questionId'] && this.questionId) {
-      this.speakingStateService.initializeQuestion(this.questionId);
-      // Restore state for the new question
-      this.restoreStateFromService();
-    }
+    // ✅ FIX Bug #16: ALWAYS update currentDisplayedQuestionId first if questionId changed
+    // This ensures currentDisplayedQuestionId is in sync before any restore logic
+    if (this.currentDisplayedQuestionId !== this.questionId) {
+      console.log(
+        '[SpeakingAnswerBox] 🔄 Question ID mismatch detected, updating currentDisplayedQuestionId',
+        {
+          oldQuestionId: this.currentDisplayedQuestionId,
+          newQuestionId: this.questionId,
+          triggeredBy: hasQuestionIdChange ? 'questionId change' : 'resetAt change',
+        }
+      );
+      this.currentDisplayedQuestionId = this.questionId;
 
-    if (changes['resetAt']) {
+      // ✅ FIX Bug #16: FORCE clear audioBlob trước khi reset
+      // Đảm bảo không có dấu vết của câu cũ
+      if (this.audioBlob) {
+        console.log('[SpeakingAnswerBox] 🧹 Force clearing audioBlob from old question');
+        this.audioBlob = null;
+      }
+      if (this.audioUrl) {
+        URL.revokeObjectURL(this.audioUrl);
+        this.audioUrl = null;
+      }
+
+      // ✅ FIX: CLEAR old component state trước khi restore state mới
+      this.resetComponent();
+
+      // Initialize and restore state for the new question
+      this.speakingStateService.initializeQuestion(this.questionId);
+      this.restoreStateFromService();
+
+      console.log('[SpeakingAnswerBox] ✅ Question switch complete:', {
+        newQuestionId: this.questionId,
+        newState: this.state,
+        hasAudioBlob: !!this.audioBlob,
+        canStartRecording: this.canStartRecording,
+      });
+
+      // ✅ FIX: Force change detection với OnPush strategy
+      this.cdr.markForCheck();
+    } else if (hasResetChange) {
+      // ✅ Only handle resetChange if questionId didn't change
+      // This handles navigation within the same question (edge case)
+      console.log('[SpeakingAnswerBox] 🔄 resetAt changed without questionId change');
+
       // If currently recording, stop and save as draft before navigating
-      if (this.state === 'recording') {
+      if ((this.state as string) === 'recording') {
         this.stopRecording();
         // Wait a bit for the recording to be saved, then restore state
         setTimeout(() => {
           this.restoreStateFromService();
+          this.cdr.markForCheck();
         }, 100);
       } else {
         // For speaking questions: preserve state when navigating
         this.restoreStateFromService();
+        this.cdr.markForCheck();
       }
     }
   }
 
   private restoreStateFromService(): void {
+    // ✅ CRITICAL: Don't restore if currently recording or processing
+    if (this.state === 'recording' || this.state === 'processing') {
+      console.log(
+        `[SpeakingAnswerBox] ⚠️ Skipping restore - ${this.state} in progress`
+      );
+      return;
+    }
+
     const savedState = this.speakingStateService.getQuestionState(
       this.questionId
     );
@@ -117,29 +242,24 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
         this.audioUrl = null;
       }
 
-      // Restore state from service
-      this.audioBlob = savedState.audioBlob;
+      // ✅ FIX: Restore basic data (but NOT audioBlob yet - will set conditionally)
       this.recordingTime = savedState.recordingTime;
       this.result = savedState.result;
       this.errorMessage = savedState.errorMessage;
 
-      console.log(
-        `[SpeakingAnswerBox] Restored audioBlob:`,
-        this.audioBlob ? 'EXISTS' : 'NULL'
-      );
-      console.log(
-        `[SpeakingAnswerBox] Restored recordingTime:`,
-        this.recordingTime
-      );
-      console.log(
-        `[SpeakingAnswerBox] Restored result:`,
-        this.result ? 'EXISTS' : 'NULL'
-      );
+      console.log(`[SpeakingAnswerBox] Saved state data:`, {
+        hasAudioBlob: !!savedState.audioBlob,
+        recordingTime: savedState.recordingTime,
+        hasResult: !!savedState.result,
+        savedStateType: savedState.state,
+      });
 
       // Set component state based on saved state
       // PRIORITY: If result exists, always show submitted state regardless of saved state
       if (savedState.result) {
         this.state = 'submitted';
+        this.isActivelyProcessing = false; // Not actively processing, already has result
+        this.audioBlob = null; // ✅ Don't show draft UI when has result
         console.log(
           `[SpeakingAnswerBox] Result exists, setting state to 'submitted'`
         );
@@ -148,30 +268,58 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
         savedState.state === 'scored'
       ) {
         this.state = 'submitted';
+        this.isActivelyProcessing = false;
+        this.audioBlob = null; // ✅ Don't show draft UI when submitted
       } else if (savedState.state === 'has_recording') {
         this.state = 'idle'; // Show the recording is ready to submit
+        this.isActivelyProcessing = false;
+        this.audioBlob = savedState.audioBlob; // ✅ Keep audioBlob - user can submit/re-record
       } else if (savedState.state === 'scoring') {
-        // Only show processing if no result exists
-        this.state = 'processing';
+        // ✅ FIX: CRITICAL - When navigating to a question that's scoring in background,
+        // DON'T show processing spinner UI. Show as submitted instead.
+        // Processing spinner only shows when user actively submits from THIS component.
         console.log(
-          `[SpeakingAnswerBox] No result found, setting state to 'processing' for scoring state`
+          `[SpeakingAnswerBox] ⚠️ Question is scoring in background (not actively), showing as submitted`
         );
+        this.state = 'submitted'; // Show submitted state, not processing
+        this.isActivelyProcessing = false; // Not actively processing in THIS component
+        this.audioBlob = null; // ✅ Don't show draft UI when submitted
       } else if (savedState.state === 'in_progress') {
         this.state = 'idle'; // Reset to idle if was in progress
+        this.isActivelyProcessing = false;
+        this.audioBlob = savedState.audioBlob; // Restore if exists
       } else {
         this.state = 'idle';
+        this.isActivelyProcessing = false;
+        this.audioBlob = null;
       }
       console.log(
-        `[SpeakingAnswerBox] Restored state: component.state=${this.state}`
+        `[SpeakingAnswerBox] Restored state: component.state=${
+          this.state
+        }, savedState.state=${savedState.state}, isActivelyProcessing=${
+          this.isActivelyProcessing
+        }, hasAudioBlob=${!!this.audioBlob}`
       );
     } else {
       // No saved state, reset component
       console.log(`[SpeakingAnswerBox] No saved state, resetting component`);
       this.resetComponent();
     }
+
+    // ✅ FIX: Force change detection after restore
+    this.cdr.markForCheck();
   }
 
   ngOnDestroy(): void {
+    console.log(
+      '[SpeakingAnswerBox] 💥 ngOnDestroy called - Component being destroyed!',
+      {
+        questionId: this.questionId,
+        currentState: this.state,
+        isRecording: this.state === 'recording',
+      }
+    );
+
     this.stopRecording();
     this.clearTimer();
 
@@ -192,7 +340,72 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
   }
 
   async startRecording(): Promise<void> {
-    if (this.disabled || this.state !== 'idle') return;
+    console.log('[SpeakingAnswerBox] 🎤 START RECORDING called:', {
+      questionId: this.questionId,
+      currentDisplayedQuestionId: this.currentDisplayedQuestionId,
+      currentState: this.state,
+      disabled: this.disabled,
+      audioBlob: !!this.audioBlob,
+      canStartRecording: this.canStartRecording,
+    });
+
+    // ✅ FIX Bug #16: FORCE sync currentDisplayedQuestionId if mismatch detected
+    // This handles timing issues where user clicks too fast after navigation
+    if (this.currentDisplayedQuestionId !== this.questionId) {
+      console.warn(
+        '[SpeakingAnswerBox] ⚠️ Timing issue detected - questionId mismatch, force syncing!',
+        {
+          oldDisplayed: this.currentDisplayedQuestionId,
+          newQuestionId: this.questionId,
+        }
+      );
+
+      // Force sync and cleanup
+      this.currentDisplayedQuestionId = this.questionId;
+
+      // Force clear old state
+      if (this.audioBlob) {
+        console.log('[SpeakingAnswerBox] 🧹 Force clearing audioBlob');
+        this.audioBlob = null;
+      }
+      if (this.audioUrl) {
+        URL.revokeObjectURL(this.audioUrl);
+        this.audioUrl = null;
+      }
+
+      // Force reset and restore
+      this.resetComponent();
+      this.speakingStateService.initializeQuestion(this.questionId);
+      this.restoreStateFromService();
+
+      console.log('[SpeakingAnswerBox] ✅ Force sync complete, retrying startRecording');
+
+      // Force change detection
+      this.cdr.detectChanges();
+
+      // Verify state is now correct
+      if (this.state !== 'idle') {
+        console.error('[SpeakingAnswerBox] ❌ State still not idle after sync:', this.state);
+        this.toastService.error('Lỗi: Trạng thái không hợp lệ. Vui lòng thử lại.');
+        return;
+      }
+    }
+
+    if (this.disabled) {
+      console.log('[SpeakingAnswerBox] ⚠️ Cannot start - component disabled');
+      this.toastService.warning('Không thể ghi âm lúc này');
+      return;
+    }
+
+    if (this.state !== 'idle') {
+      console.log('[SpeakingAnswerBox] ⚠️ Cannot start - state not idle:', {
+        currentState: this.state,
+      });
+      this.toastService.warning(
+        `Không thể ghi âm - trạng thái hiện tại: ${this.state}`
+      );
+      return;
+    }
 
     try {
       // Request microphone permission
@@ -202,6 +415,28 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
           noiseSuppression: true,
           sampleRate: 16000,
         },
+      });
+
+      console.log('[SpeakingAnswerBox] 🎙️ MediaStream obtained:', {
+        questionId: this.questionId,
+        streamActive: stream.active,
+        tracks: stream.getTracks().map((t) => ({
+          kind: t.kind,
+          readyState: t.readyState,
+          enabled: t.enabled,
+        })),
+      });
+
+      // Listen to track ended events
+      stream.getTracks().forEach((track) => {
+        track.onended = () => {
+          console.error('[SpeakingAnswerBox] 🔴 TRACK ENDED:', {
+            questionId: this.questionId,
+            trackKind: track.kind,
+            trackState: track.readyState,
+            streamActive: stream.active,
+          });
+        };
       });
 
       // Sử dụng webm codec vì được hỗ trợ rộng rãi
@@ -215,7 +450,22 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
         }
       };
 
+      this.mediaRecorder.onerror = (event: any) => {
+        console.error('[SpeakingAnswerBox] ❌ MediaRecorder ERROR:', event);
+        this.state = 'error';
+        this.errorMessage = 'Lỗi khi ghi âm. Vui lòng thử lại.';
+        this.clearTimer();
+        this.recordingStatusChange.emit(false);
+      };
+
       this.mediaRecorder.onstop = () => {
+        console.log('[SpeakingAnswerBox] 📽️ mediaRecorder.onstop fired:', {
+          questionId: this.questionId,
+          currentState: this.state,
+          audioChunksCount: this.audioChunks.length,
+          recorderState: this.mediaRecorder?.state,
+        });
+
         this.audioBlob = new Blob(this.audioChunks, { type: mimeType });
         stream.getTracks().forEach((track) => track.stop());
 
@@ -224,6 +474,12 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
           URL.revokeObjectURL(this.audioUrl);
           this.audioUrl = null;
         }
+
+        // ✅ Notify parent: kết thúc recording (kể cả khi tự động stop)
+        this.recordingStatusChange.emit(false);
+        console.log(
+          '[SpeakingAnswerBox] 📡 Emitted recordingStatusChange(false) from onstop'
+        );
 
         // Save recording to state service as draft
         if (this.audioBlob) {
@@ -236,14 +492,25 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
             this.audioBlob,
             this.recordingTime
           );
+
+          // ✅ FIX: Trigger change detection after saving
+          this.cdr.markForCheck();
         }
       };
 
       this.mediaRecorder.start();
       this.state = 'recording';
+      console.log('[SpeakingAnswerBox] ✅ State changed to RECORDING:', {
+        questionId: this.questionId,
+        mediaRecorderState: this.mediaRecorder.state,
+      });
       this.recordingTime = 0;
       this.startTimer();
       this.toastService.info('Đang ghi âm...');
+
+      // ✅ Notify parent: bắt đầu recording
+      this.recordingStatusChange.emit(true);
+      console.log('[SpeakingAnswerBox] 📡 Emitted recordingStatusChange(true)');
 
       // Update state service
       this.speakingStateService.updateQuestionState(this.questionId, {
@@ -259,12 +526,27 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
   }
 
   stopRecording(): void {
+    console.log('[SpeakingAnswerBox] 🛑 STOP RECORDING called:', {
+      questionId: this.questionId,
+      currentState: this.state,
+      mediaRecorderState: this.mediaRecorder?.state,
+    });
+
     if (this.mediaRecorder && this.state === 'recording') {
       this.mediaRecorder.stop();
       this.clearTimer();
       this.state = 'idle';
+      console.log(
+        '[SpeakingAnswerBox] ✅ State changed to IDLE after stopping'
+      );
       this.toastService.success(
         'Đã dừng ghi âm - Bản ghi đã được lưu như bản nháp'
+      );
+
+      // ✅ Notify parent: kết thúc recording
+      this.recordingStatusChange.emit(false);
+      console.log(
+        '[SpeakingAnswerBox] 📡 Emitted recordingStatusChange(false)'
       );
 
       // Save recording to state service as draft
@@ -287,11 +569,15 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
       return;
     }
 
+    // ✅ FIX Bug #17: Capture questionId at submission time
+    // This prevents emitting wrong questionId if user navigates during async scoring
+    const submittedQuestionId = this.questionId;
+
     // ✅ DEBUG: Kiểm tra attemptId trước khi submit
     console.log('[SpeakingAnswerBox] 🔍 DEBUG attemptId:', {
       attemptId: this.attemptId,
       type: typeof this.attemptId,
-      questionId: this.questionId,
+      questionId: submittedQuestionId,
       hasAudioBlob: !!this.audioBlob,
     });
 
@@ -308,14 +594,15 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
     }
 
     this.state = 'processing';
+    this.isActivelyProcessing = true; // ✅ FIX: Mark as actively processing
     this.errorMessage = '';
     this.submitting.emit(true);
-    this.speakingStateService.markAsScoring(this.questionId);
+    this.speakingStateService.markAsScoring(submittedQuestionId);
 
     try {
       // Submit via service-level method to ensure continuity across navigation
       console.log(
-        `[SpeakingAnswerBox] Submitting answer for question ${this.questionId} with attemptId: ${this.attemptId}`
+        `[SpeakingAnswerBox] Submitting answer for question ${submittedQuestionId} with attemptId: ${this.attemptId}`
       );
       if (!navigator.onLine) {
         this.errorMessage = 'Mất kết nối mạng. Vui lòng kiểm tra và thử lại.';
@@ -324,7 +611,7 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
         return;
       }
       const result = await this.speakingStateService.submitAnswerAndStore(
-        this.questionId,
+        submittedQuestionId,  // ✅ Use captured questionId
         this.audioBlob,
         this.attemptId // ✅ Truyền attemptId
       );
@@ -332,16 +619,27 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
       if (result) {
         this.result = result;
         this.state = 'submitted';
+        this.isActivelyProcessing = false; // ✅ FIX: Clear flag
         // Remove toast notification - chấm điểm ngầm, không thông báo
         // this.toastService.success('Đã nộp bài thành công!');
 
         // State already saved by service method
 
-        // Emit kết quả để parent component có thể xử lý
-        this.scoringResult.emit(result);
+        // ✅ FIX Bug #17: Emit with CAPTURED questionId, not current this.questionId
+        // This ensures correct questionId even if user navigated during scoring
+        console.log(
+          '[SpeakingAnswerBox] 📤 Emitting result for submittedQuestionId:',
+          submittedQuestionId,
+          '(current questionId:', this.questionId, ')'
+        );
+        this.scoringResult.emit({ questionId: submittedQuestionId, result });
         this.answered.emit(true);
+
+        // ✅ FIX: Trigger change detection khi có result
+        this.cdr.markForCheck();
       }
     } catch (error: any) {
+      this.isActivelyProcessing = false; // ✅ FIX: Clear flag on error
       if (error.status === 0 || error.message?.includes('NetworkError')) {
         this.errorMessage =
           'Lỗi kết nối mạng. Bản ghi âm đã được lưu tạm thời.';
@@ -355,6 +653,9 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
         'Đã xảy ra lỗi khi chấm điểm. Vui lòng thử lại.';
       this.state = 'error';
       this.toastService.error(this.errorMessage);
+
+      // ✅ FIX: Trigger change detection on error
+      this.cdr.markForCheck();
     } finally {
       this.submitting.emit(false); // ← Notify parent: Submit xong (thành công hoặc lỗi)
     }
@@ -378,17 +679,27 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
   }
 
   private resetComponent(): void {
+    console.log('[SpeakingAnswerBox] 🔄 Resetting component to clean state', {
+      currentQuestionId: this.currentDisplayedQuestionId,
+      oldState: this.state,
+    });
     this.state = 'idle';
     this.recordingTime = 0;
     this.audioBlob = null;
     this.audioChunks = [];
     this.result = null;
     this.errorMessage = '';
+    this.isActivelyProcessing = false; // ✅ FIX: Clear flag
     this.clearTimer();
     if (this.audioUrl) {
       URL.revokeObjectURL(this.audioUrl);
       this.audioUrl = null;
     }
+    // ✅ FIX Bug #15: DO NOT reset currentDisplayedQuestionId here
+    // It should only be updated when questionId @Input changes
+    console.log('[SpeakingAnswerBox] ✅ Component reset complete');
+    // ✅ FIX: Force UI update with OnPush
+    this.cdr.markForCheck();
   }
 
   private startTimer(): void {
@@ -468,27 +779,59 @@ export class SpeakingAnswerBoxComponent implements OnChanges, OnDestroy {
   }
 
   get hasRecording(): boolean {
-    return this.audioBlob !== null;
+    // ✅ FIX Bug #15: Only show recording for current question
+    return (
+      this.audioBlob !== null &&
+      this.currentDisplayedQuestionId === this.questionId
+    );
   }
 
   get canStartRecording(): boolean {
-    return !this.disabled && (this.state === 'idle' || this.state === 'error');
+    // ✅ FIX Bug #15: Only allow recording for current question
+    return (
+      !this.disabled &&
+      (this.state === 'idle' || this.state === 'error') &&
+      this.currentDisplayedQuestionId === this.questionId
+    );
   }
 
   get isRecording(): boolean {
-    return this.state === 'recording';
+    // ✅ FIX Bug #15: Only show recording UI for current question
+    return (
+      this.state === 'recording' &&
+      this.currentDisplayedQuestionId === this.questionId
+    );
   }
 
   get isProcessing(): boolean {
-    return this.state === 'processing';
+    // ✅ FIX Bug #15: Only show processing UI if:
+    // 1. State is 'processing'
+    // 2. Actively processing in THIS component (not restored from service)
+    // 3. The processing belongs to the CURRENT displayed question
+    const savedState = this.speakingStateService.getQuestionState(this.questionId);
+    const isProcessingCurrentQuestion =
+      this.state === 'processing' &&
+      this.isActivelyProcessing &&
+      this.currentDisplayedQuestionId === this.questionId &&
+      savedState?.state === 'scoring'; // Service confirms this question is being scored
+
+    return isProcessingCurrentQuestion;
   }
 
   get isSubmitted(): boolean {
-    return this.state === 'submitted';
+    // ✅ FIX Bug #15: Only show submitted UI for current question
+    return (
+      this.state === 'submitted' &&
+      this.currentDisplayedQuestionId === this.questionId
+    );
   }
 
   get isError(): boolean {
-    return this.state === 'error';
+    // ✅ FIX Bug #15: Only show error UI for current question
+    return (
+      this.state === 'error' &&
+      this.currentDisplayedQuestionId === this.questionId
+    );
   }
 
   getAudioUrl(): string | null {

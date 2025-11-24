@@ -30,6 +30,9 @@
           <div>
             <strong>{{ p.fullName || "—" }}</strong>
             <div class="muted">{{ p.email || "—" }}</div>
+
+            <!-- Premium Subscription Info -->
+
             <div class="kpi">
               <div class="pill" title="Vai trò">
                 <i class="fas fa-user-shield"></i>
@@ -53,6 +56,63 @@
           <button class="btn" (click)="avatarInput.click()">
             Thay đổi ảnh
           </button>
+          <div
+            *ngIf="
+              subscriptionStatus?.hasActiveSubscription &&
+              subscriptionStatus?.subscriptionType === 'PREMIUM'
+            "
+            style="
+              margin-top: 12px;
+              padding: 12px;
+              background: #ffffff;
+              border-radius: 12px;
+              box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+              border: 1px solid #d7d7d7;
+            "
+          >
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 6px;
+              "
+            >
+             
+              <span style="color: rgb(0, 0, 0); font-weight: bold; font-size: 14px"
+                >Gói Premium</span
+              >
+            </div>
+            <div
+              style="
+                color: rgba(88, 88, 88, 0.95);
+                font-size: 12px;
+                line-height: 1.5;
+              "
+            >
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 6px;
+                  margin-bottom: 4px;
+                "
+              >
+                <span
+                  >Đăng ký:
+                  {{
+                    subscriptionStatus?.startDate | date : "dd/MM/yyyy"
+                  }}</span
+                >
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px">
+                <span
+                  >Hết hạn:
+                  {{ subscriptionStatus?.endDate | date : "dd/MM/yyyy" }}</span
+                >
+              </div>
+            </div>
+          </div>
           <div class="status" *ngIf="avatarStatus">{{ avatarStatus }}</div>
         </div>
       </aside>

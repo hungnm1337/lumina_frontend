@@ -151,23 +151,31 @@
           [class]="
             isAnyQuestionSubmitting()
               ? 'w-10 h-10 rounded-lg opacity-50 cursor-not-allowed ' +
-                (i === currentIndex
-                  ? 'bg-blue-600 text-white font-semibold'
+                (hasQuestionFeedback(question.questionId)
+                  ? 'bg-green-600 text-white font-semibold'
                   : isQuestionSubmitting(question.questionId)
                   ? 'bg-yellow-500 text-white font-semibold animate-pulse'
                   : isQuestionSubmitted(question.questionId)
                   ? 'bg-purple-500 text-white font-semibold'
                   : hasAnswer(question.questionId)
-                  ? 'bg-green-500 text-white'
+                  ? 'bg-orange-500 text-white'
+                  : i === currentIndex
+                  ? 'bg-blue-600 text-white font-semibold'
                   : 'bg-gray-200 text-gray-700')
+              : hasQuestionFeedback(question.questionId)
+              ? 'w-10 h-10 rounded-lg bg-green-600 text-white font-semibold' +
+                (i === currentIndex ? ' ring-4 ring-blue-400' : '')
+              : isQuestionSubmitting(question.questionId)
+              ? 'w-10 h-10 rounded-lg bg-yellow-500 text-white font-semibold animate-pulse' +
+                (i === currentIndex ? ' ring-4 ring-blue-400' : '')
+              : isQuestionSubmitted(question.questionId)
+              ? 'w-10 h-10 rounded-lg bg-purple-500 text-white font-semibold' +
+                (i === currentIndex ? ' ring-4 ring-blue-400' : '')
+              : hasAnswer(question.questionId)
+              ? 'w-10 h-10 rounded-lg bg-orange-500 text-white' +
+                (i === currentIndex ? ' ring-4 ring-blue-400' : '')
               : i === currentIndex
               ? 'w-10 h-10 rounded-lg bg-blue-600 text-white font-semibold'
-              : isQuestionSubmitting(question.questionId)
-              ? 'w-10 h-10 rounded-lg bg-yellow-500 text-white font-semibold animate-pulse'
-              : isQuestionSubmitted(question.questionId)
-              ? 'w-10 h-10 rounded-lg bg-purple-500 text-white font-semibold'
-              : hasAnswer(question.questionId)
-              ? 'w-10 h-10 rounded-lg bg-green-500 text-white'
               : 'w-10 h-10 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300'
           "
         >
@@ -182,13 +190,20 @@
           <span>Chưa làm</span>
         </div>
         <div class="flex items-center gap-1">
-          <div class="w-4 h-4 bg-green-500 rounded"></div>
+          <div class="w-4 h-4 bg-orange-500 rounded"></div>
           <span>Đã làm</span>
         </div>
-
         <div class="flex items-center gap-1">
           <div class="w-4 h-4 bg-purple-500 rounded"></div>
           <span>Đã nộp</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <div class="w-4 h-4 bg-yellow-500 rounded animate-pulse"></div>
+          <span>Đang chấm</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <div class="w-4 h-4 bg-green-600 rounded"></div>
+          <span>Đã chấm xong</span>
         </div>
         <div class="flex items-center gap-1">
           <div class="w-4 h-4 bg-blue-600 rounded"></div>
