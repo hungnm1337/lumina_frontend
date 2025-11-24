@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
-import { OfflineStorageService, PendingSpeakingSubmission } from './offline-storage.service';
-import { SpeakingService } from './speaking.service';
-import { ToastService } from './toast.service';
+import {
+  OfflineStorageService,
+  PendingSpeakingSubmission,
+} from './offline-storage.service';
+import { SpeakingService } from './Exam/Speaking/speaking.service';
+import { ToastService } from './Toast/toast.service';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 export interface SyncStatus {
@@ -12,17 +15,18 @@ export interface SyncStatus {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class OfflineSyncService {
   private syncStatusSubject = new BehaviorSubject<SyncStatus>({
     isSyncing: false,
     pendingCount: 0,
     successCount: 0,
-    failedCount: 0
+    failedCount: 0,
   });
 
-  public syncStatus$: Observable<SyncStatus> = this.syncStatusSubject.asObservable();
+  public syncStatus$: Observable<SyncStatus> =
+    this.syncStatusSubject.asObservable();
   private isSyncing = false;
 
   constructor(
@@ -40,13 +44,17 @@ export class OfflineSyncService {
   private initOnlineListener(): void {
     window.addEventListener('online', () => {
       console.log('[OfflineSync] Network online - starting sync');
-      this.toastService.info('Kết nối mạng đã khôi phục. Đang đồng bộ dữ liệu...');
+      this.toastService.info(
+        'Kết nối mạng đã khôi phục. Đang đồng bộ dữ liệu...'
+      );
       this.syncPendingSubmissions();
     });
 
     window.addEventListener('offline', () => {
       console.log('[OfflineSync] Network offline');
-      this.toastService.warning('Mất kết nối mạng. Bài làm sẽ được lưu tạm và tự động đồng bộ khi có mạng.');
+      this.toastService.warning(
+        'Mất kết nối mạng. Bài làm sẽ được lưu tạm và tự động đồng bộ khi có mạng.'
+      );
     });
   }
 
@@ -57,8 +65,13 @@ export class OfflineSyncService {
     if (navigator.onLine) {
       const pending = await this.offlineStorage.getPendingSubmissions();
       if (pending.length > 0) {
-        console.log('[OfflineSync] Found pending submissions on init:', pending.length);
-        this.toastService.info(`Tìm thấy ${pending.length} bài chưa đồng bộ. Đang xử lý...`);
+        console.log(
+          '[OfflineSync] Found pending submissions on init:',
+          pending.length
+        );
+        this.toastService.info(
+          `Tìm thấy ${pending.length} bài chưa đồng bộ. Đang xử lý...`
+        );
         await this.syncPendingSubmissions();
       }
     }
@@ -89,13 +102,17 @@ export class OfflineSyncService {
         return;
       }
 
-      console.log('[OfflineSync] Starting sync for', pending.length, 'submissions');
+      console.log(
+        '[OfflineSync] Starting sync for',
+        pending.length,
+        'submissions'
+      );
 
       this.syncStatusSubject.next({
         isSyncing: true,
         pendingCount: pending.length,
         successCount: 0,
-        failedCount: 0
+        failedCount: 0,
       });
 
       let successCount = 0;
@@ -106,42 +123,63 @@ export class OfflineSyncService {
 
       for (const submission of pending) {
         try {
-          console.log('[OfflineSync] Syncing submission:', submission.questionId);
+          console.log(
+            '[OfflineSync] Syncing submission:',
+            submission.questionId
+          );
 
           // Submit to backend
-          const result = await this.speakingService.submitSpeakingAnswer(
-            submission.audioBlob,
-            submission.questionId,
-            submission.attemptId
-          ).toPromise();
+          const result = await this.speakingService
+            .submitSpeakingAnswer(
+              submission.audioBlob,
+              submission.questionId,
+              submission.attemptId
+            )
+            .toPromise();
 
           if (result) {
             // Success - delete from offline storage
-            await this.offlineStorage.deletePendingSubmission(submission.questionId);
+            await this.offlineStorage.deletePendingSubmission(
+              submission.questionId
+            );
             successCount++;
 
-            console.log('[OfflineSync] Successfully synced:', submission.questionId);
+            console.log(
+              '[OfflineSync] Successfully synced:',
+              submission.questionId
+            );
 
             // Update status
             this.syncStatusSubject.next({
               isSyncing: true,
               pendingCount: pending.length,
               successCount,
-              failedCount
+              failedCount,
             });
           } else {
             failedCount++;
-            console.error('[OfflineSync] Failed to sync (no result):', submission.questionId);
+            console.error(
+              '[OfflineSync] Failed to sync (no result):',
+              submission.questionId
+            );
           }
-
         } catch (error: any) {
           failedCount++;
-          console.error('[OfflineSync] Error syncing submission:', submission.questionId, error);
+          console.error(
+            '[OfflineSync] Error syncing submission:',
+            submission.questionId,
+            error
+          );
 
           // Check if it's a permanent error (e.g., 400 Bad Request, duplicate)
           if (this.isPermanentError(error)) {
-            console.log('[OfflineSync] Permanent error, removing from queue:', submission.questionId);
-            await this.offlineStorage.deletePendingSubmission(submission.questionId);
+            console.log(
+              '[OfflineSync] Permanent error, removing from queue:',
+              submission.questionId
+            );
+            await this.offlineStorage.deletePendingSubmission(
+              submission.questionId
+            );
           }
           // Otherwise keep it for next sync attempt
         }
@@ -155,20 +193,26 @@ export class OfflineSyncService {
         isSyncing: false,
         pendingCount: failedCount, // Remaining pending
         successCount,
-        failedCount
+        failedCount,
       });
 
       // Show result notification
       if (successCount > 0) {
-        this.toastService.success(`Đã đồng bộ thành công ${successCount} bài làm!`);
+        this.toastService.success(
+          `Đã đồng bộ thành công ${successCount} bài làm!`
+        );
       }
 
       if (failedCount > 0) {
-        this.toastService.warning(`${failedCount} bài làm chưa thể đồng bộ. Sẽ thử lại sau.`);
+        this.toastService.warning(
+          `${failedCount} bài làm chưa thể đồng bộ. Sẽ thử lại sau.`
+        );
       }
 
-      console.log('[OfflineSync] Sync completed:', { successCount, failedCount });
-
+      console.log('[OfflineSync] Sync completed:', {
+        successCount,
+        failedCount,
+      });
     } catch (error) {
       console.error('[OfflineSync] Sync process error:', error);
       this.toastService.error('Lỗi khi đồng bộ dữ liệu. Vui lòng thử lại.');
@@ -177,7 +221,7 @@ export class OfflineSyncService {
         isSyncing: false,
         pendingCount: 0,
         successCount: 0,
-        failedCount: 0
+        failedCount: 0,
       });
     } finally {
       this.isSyncing = false;
@@ -205,7 +249,10 @@ export class OfflineSyncService {
 
     if (error.error && typeof error.error === 'string') {
       const errorMsg = error.error.toLowerCase();
-      if (errorMsg.includes('duplicate') || errorMsg.includes('already exists')) {
+      if (
+        errorMsg.includes('duplicate') ||
+        errorMsg.includes('already exists')
+      ) {
         return true;
       }
     }
@@ -218,7 +265,9 @@ export class OfflineSyncService {
    */
   async manualSync(): Promise<void> {
     if (!navigator.onLine) {
-      this.toastService.warning('Không có kết nối mạng. Vui lòng kiểm tra và thử lại.');
+      this.toastService.warning(
+        'Không có kết nối mạng. Vui lòng kiểm tra và thử lại.'
+      );
       return;
     }
 
@@ -246,7 +295,7 @@ export class OfflineSyncService {
    * Utility delay function
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**

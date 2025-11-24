@@ -26,6 +26,10 @@ import { ExamAttemptRequestDTO } from '../../../../Interfaces/ExamAttempt/ExamAt
 import { ToastService } from '../../../../Services/Toast/toast.service';
 import { QuotaService } from '../../../../Services/Quota/quota.service';
 import { QuotaLimitModalComponent } from '../../quota-limit-modal/quota-limit-modal.component';
+import {
+  WritingQuestionStateService,
+  WritingQuestionStateData,
+} from '../../../../Services/Exam/Writing/writing-question-state.service';
 
 @Component({
   selector: 'app-writing',
@@ -64,6 +68,9 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   attemptId: number | null = null;
   submittingQuestions: Set<number> = new Set();
 
+  // ✅ Track question states for parallel scoring
+  questionStates: Map<number, WritingQuestionStateData> = new Map();
+
   // Quota modal
   showQuotaModal = false;
   quotaMessage =
@@ -78,7 +85,8 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     private writingService: WritingExamPartOneService,
     private toastService: ToastService,
     private quotaService: QuotaService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private writingStateService: WritingQuestionStateService
   ) {
     this.startAutoSave();
   }
@@ -93,7 +101,24 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     this.checkQuotaAccess();
     if (this.questions && this.questions.length > 0) {
       this.preloadAllCaptions();
+      // ✅ Initialize all questions in state service
+      this.questions.forEach((q) => {
+        this.writingStateService.initializeQuestion(q.questionId);
+      });
     }
+
+    // ✅ Subscribe to state changes
+    this.writingStateService.getStates().subscribe((states) => {
+      this.questionStates = states;
+      this.cdr.markForCheck();
+
+      console.log('[Writing] Question states updated:', {
+        totalStates: states.size,
+        scoringCount: Array.from(states.values()).filter(
+          (s) => s.state === 'scoring'
+        ).length,
+      });
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -385,43 +410,39 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   nextQuestion(): void {
-    // Chặn không cho chuyển câu khi đang nộp
-    if (this.isAnyQuestionSubmitting()) {
-      return;
-    }
-
     if (this.questions && this.currentIndex < this.questions.length - 1) {
       this.currentIndex += 1;
       this.showExplain = false;
       this.isShowHint = false;
+
+      // ✅ Force immediate change detection
+      this.cdr.detectChanges();
     } else {
       this.finishExam();
     }
   }
 
   previousQuestion(): void {
-    // Chặn không cho chuyển câu khi đang nộp
-    if (this.isAnyQuestionSubmitting()) {
-      return;
-    }
-
     if (this.currentIndex > 0) {
       this.currentIndex -= 1;
       this.showExplain = false;
       this.isShowHint = false;
+
+      // ✅ Force immediate change detection
+      this.cdr.detectChanges();
     }
   }
 
   navigateToQuestion(index: number): void {
-    // Chặn không cho chuyển câu khi đang nộp
-    if (this.isAnyQuestionSubmitting()) {
-      return;
-    }
-
     if (this.questions && index >= 0 && index < this.questions.length) {
       this.currentIndex = index;
       this.showExplain = false;
       this.isShowHint = false;
+
+      // ✅ Force immediate change detection to update UI
+      this.cdr.detectChanges();
+
+      console.log(`[WritingComponent] 📍 Navigated to question index ${index}, questionId: ${this.questions[index].questionId}`);
     }
   }
 
@@ -680,11 +701,21 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   isQuestionSubmitting(questionId: number): boolean {
-    return this.submittingQuestions.has(questionId);
+    // ✅ Check both old mechanism and new state service
+    const stateData = this.questionStates.get(questionId);
+    return (
+      this.submittingQuestions.has(questionId) || stateData?.state === 'scoring'
+    );
   }
 
   isAnyQuestionSubmitting(): boolean {
-    return this.submittingQuestions.size > 0;
+    // ✅ Check both old mechanism and new state service
+    if (this.submittingQuestions.size > 0) return true;
+
+    for (const state of this.questionStates.values()) {
+      if (state.state === 'scoring') return true;
+    }
+    return false;
   }
 
   /**
@@ -692,6 +723,12 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
    * Trạng thái này chỉ áp dụng cho Speaking và Writing
    */
   hasQuestionFeedback(questionId: number): boolean {
+    // ✅ Check state service first, then fallback to localStorage
+    const stateData = this.questionStates.get(questionId);
+    if (stateData?.state === 'scored' && stateData.feedback) {
+      return true;
+    }
+
     try {
       const feedbackMap = this.loadFeedbackMap();
       return !!feedbackMap[String(questionId)];

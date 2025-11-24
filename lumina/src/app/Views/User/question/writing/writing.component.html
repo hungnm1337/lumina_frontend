@@ -96,7 +96,7 @@
     <div class="mt-6 flex items-center justify-between">
       <button
         (click)="previousQuestion()"
-        [disabled]="currentIndex === 0 || isAnyQuestionSubmitting()"
+        [disabled]="currentIndex === 0"
         class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <i class="fas fa-arrow-left mr-2"></i>Câu trước
@@ -107,7 +107,6 @@
         @if (!isInMockTest) {
         <button
           (click)="finishWritingExam()"
-          [disabled]="isAnyQuestionSubmitting()"
           class="px-4 py-2 rounded bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Nộp bài
@@ -120,7 +119,6 @@
       <!-- Nếu đang trong mock test và ở câu cuối -->
       <button
         (click)="finishWritingExam()"
-        [disabled]="isAnyQuestionSubmitting()"
         class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Hoàn thành Part<i class="fas fa-check ml-2"></i>
@@ -129,9 +127,7 @@
       <!-- Nút Câu sau bình thường -->
       <button
         (click)="nextQuestion()"
-        [disabled]="
-          currentIndex === questions.length - 1 || isAnyQuestionSubmitting()
-        "
+        [disabled]="currentIndex === questions.length - 1"
         class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Câu sau<i class="fas fa-arrow-right ml-2"></i>
@@ -147,22 +143,8 @@
         {
         <button
           (click)="navigateToQuestion(i)"
-          [disabled]="isAnyQuestionSubmitting()"
           [class]="
-            isAnyQuestionSubmitting()
-              ? 'w-10 h-10 rounded-lg opacity-50 cursor-not-allowed ' +
-                (hasQuestionFeedback(question.questionId)
-                  ? 'bg-green-600 text-white font-semibold'
-                  : isQuestionSubmitting(question.questionId)
-                  ? 'bg-yellow-500 text-white font-semibold animate-pulse'
-                  : isQuestionSubmitted(question.questionId)
-                  ? 'bg-purple-500 text-white font-semibold'
-                  : hasAnswer(question.questionId)
-                  ? 'bg-orange-500 text-white'
-                  : i === currentIndex
-                  ? 'bg-blue-600 text-white font-semibold'
-                  : 'bg-gray-200 text-gray-700')
-              : hasQuestionFeedback(question.questionId)
+            hasQuestionFeedback(question.questionId)
               ? 'w-10 h-10 rounded-lg bg-green-600 text-white font-semibold' +
                 (i === currentIndex ? ' ring-4 ring-blue-400' : '')
               : isQuestionSubmitting(question.questionId)
