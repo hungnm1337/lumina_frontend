@@ -1,8 +1,8 @@
-import { Component, ElementRef, HostListener, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { AuthService } from '../../../Services/Auth/auth.service';
 import { AuthUserResponse } from '../../../Interfaces/auth.interfaces';
 import { StreakService } from '../../../Services/streak/streak.service';
@@ -10,6 +10,8 @@ import { QuotaService } from '../../../Services/Quota/quota.service';
 import { UpgradeModalComponent } from '../../User/upgrade-modal/upgrade-modal.component';
 import { ReportPopupComponent } from '../../User/Report/report-popup/report-popup.component';
 import { UserService } from '../../../Services/User/user.service';
+import { SignalRService } from '../../../Services/SignalR/signalr.service';
+import { NotificationService } from '../../../Services/Notification/notification.service';
 
 @Component({
   selector: 'app-header',
@@ -18,7 +20,7 @@ import { UserService } from '../../../Services/User/user.service';
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
   currentUser$!: Observable<AuthUserResponse | null>;
 
   moveToMocktest() {
@@ -33,13 +35,19 @@ export class HeaderComponent implements OnInit {
   currentStreak = 0;
   streakLoading = true;
 
+  // Notification badge
+  unreadNotificationCount = 0;
+  private signalRSubscription?: Subscription;
+
   constructor(
     private authService: AuthService,
     private elementRef: ElementRef,
     private router: Router,
     private streakService: StreakService,
     private quotaService: QuotaService,
-    private userService: UserService
+    private userService: UserService,
+    private signalRService: SignalRService,
+    private notificationService: NotificationService
   ) {}
 
   showReportPopup: boolean = false;
@@ -63,6 +71,21 @@ export class HeaderComponent implements OnInit {
     this.loadStreakData();
     this.loadUserProfile();
     this.checkPremiumStatus();
+    this.loadUnreadNotificationCount();
+
+    // ✅ Listen for realtime notifications
+    this.signalRSubscription = this.signalRService.notificationReceived$.subscribe(
+      (notification) => {
+        console.log('📢 New notification in header:', notification);
+        this.unreadNotificationCount++;
+      }
+    );
+  }
+
+  ngOnDestroy(): void {
+    if (this.signalRSubscription) {
+      this.signalRSubscription.unsubscribe();
+    }
   }
 
   loadUserProfile(): void {
@@ -151,6 +174,17 @@ export class HeaderComponent implements OnInit {
     });
   }
 
+  loadUnreadNotificationCount(): void {
+    this.notificationService.getUnreadCount().subscribe({
+      next: (response) => {
+        this.unreadNotificationCount = response.unreadCount;
+      },
+      error: (err) => {
+        console.error('Error loading unread notification count:', err);
+      }
+    });
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
     if (!this.elementRef.nativeElement.contains(event.target)) {
@@ -175,6 +209,10 @@ export class HeaderComponent implements OnInit {
 
   moveToExams() {
     this.router.navigate(['homepage/user-dashboard']);
+  }
+
+  goToNotifications(): void {
+    this.router.navigate(['/homepage/notifications']);
   }
 
   openUpgradeModal(): void {

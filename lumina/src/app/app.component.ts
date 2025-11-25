@@ -3,6 +3,8 @@ import { RouterOutlet } from '@angular/router';
 import { RouterModule } from '@angular/router';
 import { FloatingChatComponent } from './Views/Common/floating-chat/floating-chat.component';
 import { GoogleAnalyticsService } from './Services/Analytics/google-analytics.service';
+import { SignalRService } from './Services/SignalR/signalr.service';
+import { AuthService } from './Services/Auth/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -15,11 +17,21 @@ export class AppComponent implements OnInit {
   title = 'Lumina TOEIC';
 
   constructor(
-    private googleAnalyticsService: GoogleAnalyticsService
+    private googleAnalyticsService: GoogleAnalyticsService,
+    private signalRService: SignalRService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
     this.googleAnalyticsService.initializePageTracking();
     console.log('✅ Google Analytics initialized');
+
+    // Start SignalR connection if user is logged in
+    this.authService.currentUser$.subscribe(user => {
+      if (user) {
+        this.signalRService.startConnection();
+        console.log('✅ SignalR connection initiated for user:', user.id);
+      }
+    });
   }
 }

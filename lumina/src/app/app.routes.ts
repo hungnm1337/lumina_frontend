@@ -67,6 +67,14 @@ export const routes: Routes = [
       { path: 'slides', component: DashboardSlideComponent },
       { path: 'leaderboard', component: UserLeaderboardComponent },
       {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./Views/User/notifications-page/notifications-page.component').then(
+            (m) => m.NotificationsPageComponent
+          ),
+        canActivate: [AuthGuard],
+      },
+      {
         path: 'user-dashboard',
         component: UserDashboardComponent,
         children: [

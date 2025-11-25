@@ -36,6 +36,14 @@ export class SlideService {
       });
     }
 
+    private getAuthHeadersForFormData(): HttpHeaders {
+      const token = localStorage.getItem('lumina_token');
+      return new HttpHeaders({
+        Authorization: token ? `Bearer ${token}` : '',
+      });
+      // Note: Don't set Content-Type for FormData - browser will set it automatically with boundary
+    }
+
     /**
      * Get all slides with optional filtering
      * @param keyword - Optional keyword to search for
@@ -71,6 +79,24 @@ export class SlideService {
     }
 
     /**
+     * Create a new slide with file upload (requires authentication)
+     * @param slideName - The slide name
+     * @param isActive - Whether the slide is active
+     * @param imageFile - The image file to upload
+     * @returns Observable of the created slide ID
+     */
+    createSlideWithFile(slideName: string, isActive: boolean, imageFile: File): Observable<number> {
+      const formData = new FormData();
+      formData.append('slideName', slideName);
+      formData.append('isActive', isActive.toString());
+      formData.append('imageFile', imageFile);
+
+      return this.httpClient.post<number>(this.apiUrl, formData, {
+        headers: this.getAuthHeadersForFormData()
+      });
+    }
+
+    /**
      * Update an existing slide (requires authentication)
      * @param slideId - The slide ID to update
      * @param slideData - The updated slide data
@@ -79,6 +105,27 @@ export class SlideService {
     updateSlide(slideId: number, slideData: SlideDTO): Observable<void> {
       return this.httpClient.put<void>(`${this.apiUrl}/${slideId}`, slideData, {
         headers: this.getAuthHeaders()
+      });
+    }
+
+    /**
+     * Update an existing slide with file upload (requires authentication)
+     * @param slideId - The slide ID to update
+     * @param slideName - The slide name
+     * @param isActive - Whether the slide is active
+     * @param imageFile - Optional image file to upload (if null, keeps existing image)
+     * @returns Observable of void
+     */
+    updateSlideWithFile(slideId: number, slideName: string, isActive: boolean, imageFile: File | null): Observable<void> {
+      const formData = new FormData();
+      formData.append('slideName', slideName);
+      formData.append('isActive', isActive.toString());
+      if (imageFile) {
+        formData.append('imageFile', imageFile);
+      }
+
+      return this.httpClient.put<void>(`${this.apiUrl}/${slideId}`, formData, {
+        headers: this.getAuthHeadersForFormData()
       });
     }
 

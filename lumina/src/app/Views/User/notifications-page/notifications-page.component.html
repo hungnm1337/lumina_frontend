@@ -1,0 +1,92 @@
+<div class="notifications-page">
+  <!-- Header -->
+  <div class="header-container">
+    <div class="header-content">
+      <h1 class="title">
+        <i class="fas fa-bell"></i>
+        Thông báo
+      </h1>
+      <button class="btn-mark-all" (click)="markAllAsRead()" *ngIf="unreadCount > 0" title="Đánh dấu tất cả đã đọc">
+        <i class="fas fa-check-double"></i>
+        <span class="btn-text">Đánh dấu đã đọc</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-container">
+    <button
+      class="tab"
+      [class.active]="activeTab === 'all'"
+      (click)="activeTab = 'all'">
+      <i class="fas fa-list"></i>
+      Tất cả
+    </button>
+    <button
+      class="tab"
+      [class.active]="activeTab === 'unread'"
+      (click)="activeTab = 'unread'">
+      <i class="fas fa-envelope"></i>
+      Chưa đọc
+      <span class="badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Đang tải thông báo...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="error-message" *ngIf="error && !loading">
+    <i class="fas fa-exclamation-circle"></i>
+    <p>{{ error }}</p>
+    <button class="btn-retry" (click)="loadNotifications()">
+      <i class="fas fa-redo"></i> Thử lại
+    </button>
+  </div>
+
+  <!-- Notifications List -->
+  <div class="notifications-list" *ngIf="!loading && !error">
+    <ng-container *ngFor="let notification of filteredNotifications; trackBy: trackByUniqueId">
+      <div 
+        class="notification-card"
+        [class.unread]="!notification.isRead"
+        (click)="markAsRead(notification)">
+        
+        <div class="notification-icon" [class.unread]="!notification.isRead">
+          <i class="fas fa-bell"></i>
+        </div>
+        
+        <div class="notification-body">
+          <div class="notification-header">
+            <h3 class="notification-title">{{ notification.title }}</h3>
+            <span class="notification-time" [title]="formatFullDate(notification.createdAt)">
+              <i class="far fa-clock"></i>
+              {{ getRelativeTime(notification.createdAt) }}
+            </span>
+          </div>
+          
+          <p class="notification-content">{{ notification.content }}</p>
+          
+          <div class="notification-footer" *ngIf="!notification.isRead">
+            <span class="unread-indicator">
+              <i class="fas fa-circle"></i>
+              Chưa đọc
+            </span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="filteredNotifications.length === 0">
+      <div class="empty-icon">
+        <i class="fas fa-bell-slash"></i>
+      </div>
+      <h3>{{ activeTab === 'unread' ? 'Không có thông báo chưa đọc' : 'Chưa có thông báo' }}</h3>
+      <p>{{ activeTab === 'unread' ? 'Bạn đã xem tất cả thông báo' : 'Thông báo sẽ xuất hiện ở đây' }}</p>
+    </div>
+  </div>
+</div>

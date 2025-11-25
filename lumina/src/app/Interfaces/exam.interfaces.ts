@@ -18,9 +18,11 @@ export interface ExamDTO {
 export interface ExamPartDTO {
   partId: number;
   examId: number;
+  examPartId?: number; // ID của exam part (1=Listening, 2=Reading)
   partCode: string;
   title: string;
   orderIndex: number;
+  duration?: number; // Thời gian làm bài (phút)
   questions: QuestionDTO[];
   // ✅ Add completion status
   completionStatus?: PartCompletionStatusDTO;
