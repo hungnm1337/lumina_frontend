@@ -126,14 +126,14 @@
 
   <!-- Statistics Cards -->
   <div class="stats-cards" *ngIf="terms.length > 0">
-    <!-- Spaced Repetition Info -->
-    <div class="stat-card spaced-repetition-info" *ngIf="spacedRepetition">
+    <!-- Spaced Repetition Info - Đã ẩn theo yêu cầu -->
+    <!-- <div class="stat-card spaced-repetition-info" *ngIf="spacedRepetition">
       <div class="stat-number">{{ spacedRepetition.reviewCount }}</div>
       <div class="stat-label">Lần đã review</div>
       <div class="stat-detail" *ngIf="spacedRepetition.nextReviewAt">
         <small>Review tiếp theo: {{ formatNextReviewDate(spacedRepetition.nextReviewAt) }}</small>
       </div>
-    </div>
+    </div> -->
 
     <div class="stat-card learning">
       <div class="stat-number">{{ learningCount }}</div>

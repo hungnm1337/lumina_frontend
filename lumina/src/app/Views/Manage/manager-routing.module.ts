@@ -6,6 +6,7 @@ import { ManageEventsDashboardComponent } from './Event/dashboardevent.component
 import { DashboardSlideComponent } from './Slide/dashboardslide.component';
 import { ArticlesComponent } from './Articles/articles.component';
 import { VocabularyManagementComponent } from './Vocabulary/vocabulary-management.component';
+import { ReportingOverviewComponent } from './Reporting/reporting-overview.component';
 
 
 
@@ -22,6 +23,7 @@ const routes: Routes = [
       { path: 'slides', component: DashboardSlideComponent, data: { title: 'Slide' } },
       { path: 'manage-posts', component: ArticlesComponent, data: { title: 'Quản lý bài viết' } },
       { path: 'vocabulary', component: VocabularyManagementComponent, data: { title: 'Quản lý từ vựng' } },
+      { path: 'reporting', component: ReportingOverviewComponent, data: { title: 'Báo cáo & Thống kê' } },
     ]
   }
 ];

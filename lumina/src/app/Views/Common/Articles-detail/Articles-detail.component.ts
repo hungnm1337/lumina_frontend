@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { HeaderComponent } from '../header/header.component';
 import { ArticleService } from '../../../Services/Article/article.service';
 import { ArticleResponse, ArticleProgress } from '../../../Interfaces/article.interfaces';
@@ -95,7 +96,8 @@ export class BlogDetailComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute,
-    private articleService: ArticleService
+    private articleService: ArticleService,
+    private sanitizer: DomSanitizer
   ) { }
 
   ngOnInit(): void {
@@ -296,6 +298,16 @@ export class BlogDetailComponent implements OnInit {
         this.article = article;
         this.articleLikes = 0;
         this.contentArticle = article.sections.map(section => section.sectionContent).join('\n\n');
+        
+        // Debug: Log section content to see what we're receiving
+        console.log('Article loaded:', article);
+        console.log('Sections:', article.sections);
+        article.sections.forEach((section, index) => {
+          console.log(`Section ${index} content:`, section.sectionContent);
+          console.log(`Section ${index} content type:`, typeof section.sectionContent);
+          console.log(`Section ${index} content length:`, section.sectionContent?.length);
+        });
+        
         this.isLoading = false;
 
         // Initialize section tracking
@@ -387,5 +399,109 @@ export class BlogDetailComponent implements OnInit {
       return 0;
     }
     return this.article.sections[this.currentSectionIndex]?.sectionId || 0;
+  }
+
+  // Sanitize HTML content from Quill editor to allow images and videos
+  getSanitizedContent(content: string): SafeHtml {
+    if (!content) {
+      console.log('getSanitizedContent: content is empty');
+      return this.sanitizer.bypassSecurityTrustHtml('');
+    }
+    
+    console.log('getSanitizedContent - Original content:', content);
+    console.log('getSanitizedContent - Content type:', typeof content);
+    
+    // Check if content is Quill Delta format (JSON string)
+    let processedContent = content;
+    try {
+      // Try to parse as JSON (Quill Delta format)
+      const parsed = JSON.parse(content);
+      if (parsed && parsed.ops) {
+        console.log('Content is Quill Delta format, converting to HTML...');
+        // This is Quill Delta format - we need to convert it to HTML
+        // For now, we'll use a simple approach or you might need quill-delta-to-html library
+        processedContent = this.convertDeltaToHtml(parsed);
+        console.log('Converted HTML:', processedContent);
+      }
+    } catch (e) {
+      // Not JSON, assume it's already HTML
+      console.log('Content is already HTML format');
+    }
+    
+    // Ensure img tags have proper attributes for display
+    processedContent = processedContent.replace(
+      /<img([^>]*)>/gi,
+      (match, attributes) => {
+        // Check if style attribute exists
+        if (!attributes.includes('style')) {
+          return `<img${attributes} style="max-width: 100%; height: auto; display: block; margin: 1rem auto;">`;
+        } else if (!attributes.includes('max-width')) {
+          // Add max-width if style exists but doesn't have max-width
+          return match.replace('style="', 'style="max-width: 100%; height: auto; display: block; margin: 1rem auto; ');
+        }
+        return match;
+      }
+    );
+    
+    // Ensure video tags have proper attributes
+    processedContent = processedContent.replace(
+      /<video([^>]*)>/gi,
+      (match, attributes) => {
+        if (!attributes.includes('style')) {
+          return `<video${attributes} style="max-width: 100%; height: auto; display: block; margin: 1rem auto;" controls>`;
+        } else if (!attributes.includes('controls')) {
+          return match.replace('>', ' controls>');
+        }
+        return match;
+      }
+    );
+    
+    // Use bypassSecurityTrustHtml to allow images and videos from Cloudinary
+    // Note: This is safe because content comes from our own database (staff-created articles)
+    return this.sanitizer.bypassSecurityTrustHtml(processedContent);
+  }
+
+  // Get sanitized content for current section
+  getCurrentSectionContent(): SafeHtml {
+    if (!this.article || !this.article.sections || this.article.sections.length === 0) {
+      return this.sanitizer.bypassSecurityTrustHtml('');
+    }
+    const section = this.article.sections[this.currentSectionIndex];
+    const content = section?.sectionContent || '';
+    console.log('getCurrentSectionContent - Section index:', this.currentSectionIndex);
+    console.log('getCurrentSectionContent - Section content:', content);
+    return this.getSanitizedContent(content);
+  }
+
+  // Convert Quill Delta format to HTML (simple implementation)
+  private convertDeltaToHtml(delta: any): string {
+    if (!delta || !delta.ops) return '';
+    
+    let html = '';
+    for (const op of delta.ops) {
+      if (op.insert) {
+        if (typeof op.insert === 'string') {
+          // Text content
+          let text = op.insert;
+          if (op.attributes) {
+            if (op.attributes.bold) text = `<strong>${text}</strong>`;
+            if (op.attributes.italic) text = `<em>${text}</em>`;
+            if (op.attributes.underline) text = `<u>${text}</u>`;
+            if (op.attributes.header) {
+              const level = op.attributes.header;
+              text = `<h${level}>${text}</h${level}>`;
+            }
+          }
+          html += text;
+        } else if (op.insert.image) {
+          // Image embed
+          html += `<img src="${op.insert.image}" style="max-width: 100%; height: auto; display: block; margin: 1rem auto;" />`;
+        } else if (op.insert.video) {
+          // Video embed
+          html += `<video src="${op.insert.video}" controls style="max-width: 100%; height: auto; display: block; margin: 1rem auto;"></video>`;
+        }
+      }
+    }
+    return html;
   }
 }

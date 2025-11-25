@@ -335,8 +335,8 @@
 
 // Statistics Cards
 .stats-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  justify-content: center;
   gap: 16px;
   max-width: 700px;
   margin: 48px auto 0;
