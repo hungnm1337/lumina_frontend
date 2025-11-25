@@ -1203,6 +1203,31 @@ $toeic-purple: #8b5cf6;
               .form-textarea {
                 min-height: 80px;
               }
+
+              // Upload progress indicator
+              .upload-progress {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 12px;
+                background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+                border: 1px solid $toeic-primary;
+                border-radius: 8px;
+                margin-top: 8px;
+                font-size: 13px;
+                color: #92400e;
+                font-weight: 500;
+
+                i {
+                  color: $toeic-primary;
+                  animation: spin 1s linear infinite;
+                }
+
+                @keyframes spin {
+                  from { transform: rotate(0deg); }
+                  to { transform: rotate(360deg); }
+                }
+              }
             }
 
             .section-controls {
