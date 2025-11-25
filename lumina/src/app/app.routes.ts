@@ -33,6 +33,7 @@ import { ExamComponent as MockTestExamComponent } from './Views/User/MockTest/mo
 import { ResultComponent as MockTestResultComponent } from './Views/User/MockTest/mocktest-result/result.component';
 
 import { RankingsComponent } from './Views/Common/Rankings/rankings/rankings.component';
+import { ReportsComponent } from './Views/User/Report/reports/reports.component';
 export const routes: Routes = [
   {
     path: 'admin',
@@ -66,6 +67,14 @@ export const routes: Routes = [
       { path: 'slides', component: DashboardSlideComponent },
       { path: 'leaderboard', component: UserLeaderboardComponent },
       {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./Views/User/notifications-page/notifications-page.component').then(
+            (m) => m.NotificationsPageComponent
+          ),
+        canActivate: [AuthGuard],
+      },
+      {
         path: 'user-dashboard',
         component: UserDashboardComponent,
         children: [
@@ -83,6 +92,7 @@ export const routes: Routes = [
           { path: 'part/:id', component: PartQuestionComponent },
           { path: 'notes', component: UserNoteListComponent },
           { path: 'note/:id', component: UserNoteDetailComponent },
+          { path: 'reports', component: ReportsComponent },
           { path: '', redirectTo: 'exams', pathMatch: 'full' },
         ],
       },

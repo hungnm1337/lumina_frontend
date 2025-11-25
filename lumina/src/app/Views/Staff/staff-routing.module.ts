@@ -9,6 +9,7 @@ import { ExamsComponent } from './exams/exams.component';
 import { AiChatComponent } from './AI-Chat/ai-chat.component';
 import { SeasonManagementComponent } from './Season/season-management.component';
 import { LeaderboardRankingComponent } from './Leaderboard/leaderboard-ranking.component';
+import { ReportListComponent } from '../Common/report-list/report-list.component';
 
 const routes: Routes = [
   {
@@ -59,6 +60,11 @@ const routes: Routes = [
         path: 'leaderboard',
         component: LeaderboardRankingComponent,
         data: { title: 'Bảng Xếp Hạng' }
+      },
+      {
+        path: 'reports',
+        component: ReportListComponent,
+        data: { title: 'Báo cáo' }
       }
     ]
   }

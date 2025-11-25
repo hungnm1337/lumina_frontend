@@ -1,9 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { HeaderComponent } from '../header/header.component';
+import { ReportPopupComponent } from '../../User/Report/report-popup/report-popup.component';
 import { ArticleService } from '../../../Services/Article/article.service';
 import { ArticleResponse, ArticleProgress } from '../../../Interfaces/article.interfaces';
 import { ChatBoxComponent } from './chat-box/chat-box.component';
@@ -72,7 +73,7 @@ interface BlogArticle {
 @Component({
   selector: 'app-blog-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, HeaderComponent, ChatBoxComponent, NoteComponent],
+  imports: [CommonModule, FormsModule, HeaderComponent, ChatBoxComponent, NoteComponent, ReportPopupComponent],
   templateUrl: './Articles-detail.component.html',
   styleUrls: ['./Articles-detail.component.scss']
 })
@@ -80,11 +81,12 @@ export class BlogDetailComponent implements OnInit {
   article: ArticleResponse | null = null;
   isLoading: boolean = true;
   error: string = '';
-  contentArticle : string = '';
+  contentArticle: string = '';
   // Additional properties for UI
   articleLikes: number = 0;
   isFollowing: boolean = false;
   isLogin: boolean = false;
+  showReportPopup: boolean = false;
 
   // Progress tracking by sections
   currentSectionIndex: number = 0;
@@ -97,7 +99,8 @@ export class BlogDetailComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private articleService: ArticleService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -105,7 +108,12 @@ export class BlogDetailComponent implements OnInit {
     this.isLogin = this.authService.getCurrentUser() !== null;
   }
 
-
+  onReportPopupClose(): void {
+    console.log('[BlogDetailComponent] Report popup close received');
+    this.showReportPopup = false;
+    // Force change detection in case needed
+    this.cdr.detectChanges();
+  }
   // Load existing progress
   loadArticleProgress(): void {
     if (!this.article || !this.isLogin) return;
@@ -154,7 +162,7 @@ export class BlogDetailComponent implements OnInit {
   canAccessSection(sectionIndex: number): boolean {
     // Nếu chưa đăng nhập, cho phép xem tất cả sections
     if (!this.isLogin) return true;
-    
+
     if (sectionIndex === 0) return true; // First section is always accessible
     return this.completedSections.has(sectionIndex - 1); // Can access if previous is completed
   }

@@ -26,6 +26,7 @@ import { ExamAttemptRequestDTO } from '../../../../Interfaces/ExamAttempt/ExamAt
 import { ToastService } from '../../../../Services/Toast/toast.service';
 import { QuotaService } from '../../../../Services/Quota/quota.service';
 import { QuotaLimitModalComponent } from '../../quota-limit-modal/quota-limit-modal.component';
+import { ReportPopupComponent } from '../../Report/report-popup/report-popup.component';
 import {
   WritingQuestionStateService,
   WritingQuestionStateData,
@@ -40,11 +41,19 @@ import {
     WritingAnswerBoxComponent,
     TimeComponent,
     QuotaLimitModalComponent,
+    ReportPopupComponent,
   ],
   templateUrl: './writing.component.html',
   styleUrl: './writing.component.scss',
 })
 export class WritingComponent implements OnChanges, OnDestroy, OnInit {
+    // Show report popup state
+    showReportPopup: boolean = false;
+
+    // Exam ID getter for popup type
+    get examId(): number | null {
+      return this.attemptId;
+    }
   @Input() questions: QuestionDTO[] | null = null;
   @Input() isInMockTest: boolean = false; // Để biết đang thi trong mock test hay standalone
   @Output() finished = new EventEmitter<void>();
@@ -89,6 +98,14 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     private writingStateService: WritingQuestionStateService
   ) {
     this.startAutoSave();
+  }
+
+  // Handler called when report popup requests close
+  onReportPopupClose(): void {
+    console.log('[WritingComponent] Report popup close received');
+    this.showReportPopup = false;
+    // Force change detection in case needed
+    this.cdr.detectChanges();
   }
 
   showHint() {
