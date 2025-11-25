@@ -1,0 +1,20 @@
+/* Popup overlay and animation */
+.fixed {
+	animation: overlayFadeIn 0.18s forwards;
+}
+
+.modal-content {
+	transform: translateY(0);
+	opacity: 1;
+	transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.modal-content.leaving {
+	transform: translateY(-8px);
+	opacity: 0;
+}
+
+@keyframes overlayFadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}

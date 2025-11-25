@@ -12,6 +12,7 @@ import {
   NgZone,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ReportPopupComponent } from '../../Report/report-popup/report-popup.component';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { PromptComponent } from '../../prompt/prompt.component';
@@ -50,11 +51,16 @@ interface QuestionResult {
     SpeakingAnswerBoxComponent,
     SpeakingSummaryComponent,
     QuotaLimitModalComponent,
+    ReportPopupComponent,
   ],
   templateUrl: './speaking.component.html',
   styleUrl: './speaking.component.scss',
 })
 export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
+  showReportPopup = false;
+  get examId(): number | null {
+    return this.partInfo?.examId ?? null;
+  }
   @Input() questions: QuestionDTO[] = [];
   @Input() partInfo: ExamPartDTO | null = null;
   @Input() isInMockTest: boolean = false; // Để biết đang thi trong mock test hay standalone
@@ -120,6 +126,14 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
           );
         }
       });
+  }
+
+  // Handler for report popup close
+  onReportPopupClose(): void {
+    console.log('[SpeakingComponent] Report popup close received');
+    this.showReportPopup = false;
+    // Ensure UI updates (may be inside modal overlay)
+    this.cdr.detectChanges();
   }
 
   ngOnChanges(changes: SimpleChanges): void {

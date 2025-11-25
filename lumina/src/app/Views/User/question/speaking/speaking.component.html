@@ -243,6 +243,14 @@
       <h2 class="text-2xl font-bold text-gray-800">
         📊 Kết quả TOEIC Speaking Test
       </h2>
+      <button (click)="showReportPopup = true">
+        Báo cáo bài thi
+      </button>
+      <app-report-popup
+        *ngIf="showReportPopup"
+        [type]="'Exam - ' + examId"
+        (close)="onReportPopupClose()"
+      ></app-report-popup>
       <button
         (click)="closeSpeakingSummary()"
         class="text-gray-500 hover:text-gray-700 text-2xl font-bold w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"

@@ -8,6 +8,7 @@ import { SystemPlansComponent } from './system-plans/system-plans.component';
 import { SystemStatsComponent } from './system-stats/system-stats.component';
 import { UserActivityComponent } from './user-activity/user-activity.component';
 import { NotificationManagementComponent } from './notification-management/notification-management.component';
+import { ReportListComponent } from '../Common/report-list/report-list.component';
 const routes: Routes = [
   {
     path: '',
@@ -49,6 +50,7 @@ const routes: Routes = [
         component: NotificationManagementComponent,
         data: { title: 'Quản lý thông báo' }
       }
+
     ]
   }
 ];

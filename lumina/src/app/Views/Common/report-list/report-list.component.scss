@@ -1,0 +1,27 @@
+/* existing styles */
+body {
+	margin: 0;
+}
+
+:host {
+	display: block;
+}
+
+/* small helper for slide animation when detail opens */
+.translate-x-0 {
+	transform: translateX(0) !important;
+}
+.translate-x-full {
+	transform: translateX(100%);
+}
+
+.form-select {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+}
+
+/* additional styles */
+.some-other-class {
+	color: red;
+}
