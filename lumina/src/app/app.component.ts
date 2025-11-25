@@ -30,7 +30,7 @@ export class AppComponent implements OnInit {
     this.authService.currentUser$.subscribe(user => {
       if (user) {
         this.signalRService.startConnection();
-        console.log('✅ SignalR connection initiated for user:', user.userId);
+        console.log('✅ SignalR connection initiated for user:', user.id);
       }
     });
   }
