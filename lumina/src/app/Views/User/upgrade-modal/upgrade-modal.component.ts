@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './upgrade-modal.component.html',
-  styleUrl: './upgrade-modal.component.scss',
+  styleUrls: ['./upgrade-modal.component.scss'],
 })
 export class UpgradeModalComponent implements OnChanges {
   @Input() isVisible = false;
@@ -18,7 +18,7 @@ export class UpgradeModalComponent implements OnChanges {
 
   isLoading = false;
   errorMessage = '';
-  
+
   // Package selection
   packages: Package[] = [];
   selectedPackage: Package | null = null;
@@ -28,11 +28,11 @@ export class UpgradeModalComponent implements OnChanges {
   premiumFeatures = [
     'Unlimited bài thi 4 kĩ năng',
     'AI Scoring Speaking/Writing'
-    
+
   ];
 
   constructor(
-    private paymentService: PaymentService, 
+    private paymentService: PaymentService,
     private packagesService: PackagesService,
     private router: Router
   ) {}
@@ -46,7 +46,7 @@ export class UpgradeModalComponent implements OnChanges {
   loadPackages(): void {
     this.isLoadingPackages = true;
     this.errorMessage = '';
-    
+
     this.packagesService.getActivePackages().subscribe({
       next: (packages) => {
         this.packages = packages;
@@ -97,7 +97,7 @@ export class UpgradeModalComponent implements OnChanges {
     try {
       const response = await this.paymentService
         .createPaymentLink(
-          this.selectedPackage.packageId!, 
+          this.selectedPackage.packageId!,
           this.selectedPackage.price!
         )
         .toPromise();

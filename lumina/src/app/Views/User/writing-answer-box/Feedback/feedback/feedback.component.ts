@@ -6,7 +6,7 @@ import { WritingResponseDTO } from '../../../../../Interfaces/WrittingExam/Writi
   standalone: true,
   imports: [],
   templateUrl: './feedback.component.html',
-  styleUrl: './feedback.component.scss'
+  styleUrls: ['./feedback.component.scss']
 })
 export class FeedbackComponent {
   @Input() feedback: WritingResponseDTO | null = null;

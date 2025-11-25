@@ -4,6 +4,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ExamAttemptService } from '../../../../Services/ExamAttempt/exam-attempt.service';
 import { ExamAttemptDetailResponseDTO } from '../../../../Interfaces/ExamAttempt/ExamAttemptDetailResponseDTO.interface';
 import { ToastService } from '../../../../Services/Toast/toast.service';
+import { MockTestService } from '../../../../Services/MockTest/mocktest.service';
+import { MocktestFeedbackDTO } from '../../../../Interfaces/mocktest.interface';
 
 @Component({
   selector: 'app-result',
@@ -16,12 +18,18 @@ export class ResultComponent implements OnInit {
   attemptId: number | null = null;
   attemptDetails: ExamAttemptDetailResponseDTO | null = null;
   isLoading: boolean = true;
+  
+  // Feedback properties
+  feedback: MocktestFeedbackDTO | null = null;
+  isLoadingFeedback: boolean = false;
+  feedbackError: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private examAttemptService: ExamAttemptService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private mockTestService: MockTestService
   ) {}
 
   ngOnInit(): void {
@@ -29,6 +37,7 @@ export class ResultComponent implements OnInit {
       this.attemptId = +params['attemptId'];
       if (this.attemptId) {
         this.loadAttemptDetails();
+        this.loadFeedback();
       }
     });
   }
@@ -131,5 +140,39 @@ export class ResultComponent implements OnInit {
     if (this.attemptId) {
       this.router.navigate(['/homepage/user-dashboard/exam-attempts', this.attemptId]);
     }
+  }
+
+  loadFeedback(): void {
+    if (!this.attemptId) return;
+
+    this.isLoadingFeedback = true;
+    this.feedbackError = null;
+
+    this.mockTestService.getMocktestFeedback(this.attemptId).subscribe({
+      next: (response) => {
+        this.feedback = response;
+        this.isLoadingFeedback = false;
+        console.log('✅ Feedback loaded:', response);
+      },
+      error: (error) => {
+        console.error('❌ Error loading feedback:', error);
+        this.isLoadingFeedback = false;
+        this.feedbackError = error.error?.message || 'Không thể tải phản hồi từ AI. Vui lòng thử lại.';
+        this.toastService.error('Không thể tải phản hồi từ AI');
+      }
+    });
+  }
+
+  retryFeedback(): void {
+    this.loadFeedback();
+  }
+
+  getToeicLevel(score: number): string {
+    if (score >= 900) return 'Cao cấp (Advanced)';
+    if (score >= 800) return 'Trung cao cấp (Upper Intermediate)';
+    if (score >= 700) return 'Trung cấp (Intermediate)';
+    if (score >= 600) return 'Sơ trung cấp (Pre-Intermediate)';
+    if (score >= 500) return 'Sơ cấp (Elementary)';
+    return 'Bắt đầu (Beginner)';
   }
 }

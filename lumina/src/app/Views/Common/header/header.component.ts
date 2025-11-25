@@ -16,7 +16,7 @@ import { UserService } from '../../../Services/User/user.service';
   standalone: true,
   imports: [CommonModule, RouterModule, UpgradeModalComponent, ReportPopupComponent],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.scss',
+  styleUrls: ['./header.component.scss'],
 })
 export class HeaderComponent implements OnInit {
   currentUser$!: Observable<AuthUserResponse | null>;

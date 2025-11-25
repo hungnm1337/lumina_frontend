@@ -9,7 +9,7 @@ import { UserReportResponse } from '../../../../Interfaces/report/UserReportResp
   standalone: true,
   imports: [CommonModule, FormsModule, DatePipe],
   templateUrl: './reports.component.html',
-  styleUrl: './reports.component.scss'
+  styleUrls: ['./reports.component.scss']
 })
 export class ReportsComponent implements OnInit {
   reports: UserReportResponse[] = [];

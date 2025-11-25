@@ -20,7 +20,7 @@ interface QuestionResult {
   imports: [CommonModule, FormsModule, SpeakingSummaryComponent],
   providers: [DatePipe],
   templateUrl: './exam-attempt-detail.component.html',
-  styleUrl: './exam-attempt-detail.component.scss',
+    styleUrls: ['./exam-attempt-detail.component.scss'],
 })
 export class ExamAttemptDetailComponent implements OnInit {
   @Input() examAttemptDetails: ExamAttemptDetailResponseDTO | null = null;

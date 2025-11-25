@@ -62,7 +62,6 @@ export const routes: Routes = [
     children: [
       { path: '', component: ContentHomepageComponent },
       { path: 'mocktest/exams', component: MockTestExamComponent },
-      { path: 'mocktest/result/:attemptId', component: MockTestResultComponent },
       { path: 'events', component: UserEventsDashboardComponent },
       { path: 'slides', component: DashboardSlideComponent },
       { path: 'leaderboard', component: UserLeaderboardComponent },
@@ -78,6 +77,8 @@ export const routes: Routes = [
                 (m) => m.UpgradePageComponent
               ),
           },
+          { path: 'mocktest/result/:attemptId', component: MockTestResultComponent },
+
           { path: 'exam-attempts', component: ExamAttemptListComponent },
           { path: 'exam-attempts/:id', component: ExamAttemptDetailComponent },
           { path: 'exam/:id', component: ExamPartComponent },
@@ -181,8 +182,8 @@ export const routes: Routes = [
         (m) => m.PaymentCancelComponent
       ),
   },
-{path: 'rankings', component: RankingsComponent},
-{ path: 'streak', component: StreakComponent },
+  { path: 'rankings', component: RankingsComponent },
+  { path: 'streak', component: StreakComponent },
   { path: '', redirectTo: '/homepage', pathMatch: 'full' },
   { path: '**', component: ErrorComponent },
 ];

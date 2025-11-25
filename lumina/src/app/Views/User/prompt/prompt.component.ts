@@ -14,7 +14,7 @@ import { PictureCaptioningService } from '../../../Services/PictureCaptioning/pi
   standalone: true,
   imports: [],
   templateUrl: './prompt.component.html',
-  styleUrl: './prompt.component.scss',
+  styleUrls: ['./prompt.component.scss'],
 })
 export class PromptComponent implements OnChanges {
   isLoading: boolean = false;

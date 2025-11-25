@@ -14,7 +14,7 @@ type StatusFilter = 'all' | 'replied' | 'unreplied';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './report-list.component.html',
-  styleUrl: './report-list.component.scss'
+  styleUrls: ['./report-list.component.scss']
 })
 export class ReportListComponent implements OnInit {
   reports: UserReportResponse[] = [];

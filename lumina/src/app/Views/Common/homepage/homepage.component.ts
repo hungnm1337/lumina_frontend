@@ -7,7 +7,7 @@ import { HeaderComponent } from "../header/header.component";
   standalone: true,
   imports: [RouterOutlet, HeaderComponent],
   templateUrl: './homepage.component.html',
-  styleUrl: './homepage.component.scss'
+  styleUrls: ['./homepage.component.scss']
 })
 export class HomepageComponent {
 moveToUserDashboard() {

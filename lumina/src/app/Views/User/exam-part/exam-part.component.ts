@@ -14,7 +14,7 @@ import { ExamAttemptService } from '../../../Services/ExamAttempt/exam-attempt.s
   standalone: true,
   imports: [CommonModule],
   templateUrl: './exam-part.component.html',
-  styleUrl: './exam-part.component.scss',
+  styleUrls: ['./exam-part.component.scss'],
 })
 export class ExamPartComponent {
   examattemptRequestDTO: ExamAttemptRequestDTO | null = null;

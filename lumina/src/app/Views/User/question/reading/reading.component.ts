@@ -38,7 +38,7 @@ import { QuotaLimitModalComponent } from '../../quota-limit-modal/quota-limit-mo
     ReportPopupComponent,
   ],
   templateUrl: './reading.component.html',
-  styleUrl: './reading.component.scss',
+  styleUrls: ['./reading.component.scss'],
 })
 export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
   showReportPopup = false;

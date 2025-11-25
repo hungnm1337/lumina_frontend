@@ -106,27 +106,145 @@
       </div>
     </div>
 
-    <!-- Feedback -->
-    <div class="feedback-section">
-      <div class="feedback-card" [class.excellent]="percentCorrect >= 80"
-                                   [class.good]="percentCorrect >= 60 && percentCorrect < 80"
-                                   [class.need-improvement]="percentCorrect < 60">
-        <i class="fas" [class.fa-star]="percentCorrect >= 80"
-                        [class.fa-thumbs-up]="percentCorrect >= 60 && percentCorrect < 80"
-                        [class.fa-info-circle]="percentCorrect < 60"></i>
-        <h3 *ngIf="percentCorrect >= 80">Xuất sắc!</h3>
-        <h3 *ngIf="percentCorrect >= 60 && percentCorrect < 80">Tốt!</h3>
-        <h3 *ngIf="percentCorrect < 60">Cần cố gắng hơn!</h3>
+    <!-- AI Feedback Section -->
+    <div class="mt-8">
+      <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+            </svg>
+            Phân tích từ AI
+          </h2>
+          <button 
+            *ngIf="feedbackError || (!isLoadingFeedback && !feedback)"
+            (click)="retryFeedback()"
+            [disabled]="isLoadingFeedback"
+            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2">
+            <svg *ngIf="!isLoadingFeedback" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            <svg *ngIf="isLoadingFeedback" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ isLoadingFeedback ? 'Đang tải...' : 'Thử lại' }}
+          </button>
+        </div>
 
-        <p *ngIf="percentCorrect >= 80">
-          Bạn đã hoàn thành xuất sắc bài thi mock test. Hãy tiếp tục duy trì phong độ này!
-        </p>
-        <p *ngIf="percentCorrect >= 60 && percentCorrect < 80">
-          Kết quả tốt! Bạn đang tiến bộ rõ rệt. Hãy tiếp tục luyện tập thêm!
-        </p>
-        <p *ngIf="percentCorrect < 60">
-          Đừng nản chí! Hãy xem lại các phần chưa tốt và tiếp tục luyện tập.
-        </p>
+        <!-- Loading State -->
+        <div *ngIf="isLoadingFeedback" class="flex flex-col items-center justify-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
+          <p class="text-gray-600">Đang phân tích kết quả bài làm của bạn...</p>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="feedbackError && !isLoadingFeedback" class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <h3 class="text-lg font-semibold text-red-800 mb-2">Không thể tải phản hồi</h3>
+          <p class="text-red-600 mb-4">{{ feedbackError }}</p>
+          <button 
+            (click)="retryFeedback()"
+            class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+            Thử lại
+          </button>
+        </div>
+
+        <!-- Feedback Content -->
+        <div *ngIf="feedback && !isLoadingFeedback" class="space-y-6">
+          <!-- Overview & TOEIC Score -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <!-- Overview -->
+            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+              <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Tổng quan
+              </h3>
+              <p class="text-gray-700 leading-relaxed">{{ feedback.overview }}</p>
+            </div>
+
+            <!-- TOEIC Score -->
+            <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6 border border-purple-200">
+              <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                Điểm TOEIC
+              </h3>
+              <div class="flex items-baseline gap-2">
+                <span class="text-4xl font-bold text-purple-600">{{ feedback.toeicScore }}</span>
+                <span class="text-gray-600">/ 990</span>
+              </div>
+              <div class="mt-4">
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                  <div 
+                    class="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500"
+                    [style.width.%]="(feedback.toeicScore / 990) * 100">
+                  </div>
+                </div>
+                <p class="text-sm text-gray-600 mt-2">
+                  {{ getToeicLevel(feedback.toeicScore) }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Strengths & Weaknesses -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <!-- Strengths -->
+            <div class="bg-green-50 rounded-lg p-6 border border-green-200">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Điểm mạnh
+              </h3>
+              <ul class="space-y-3">
+                <li *ngFor="let strength of feedback.strengths" class="flex items-start gap-3">
+                  <svg class="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                  </svg>
+                  <span class="text-gray-700">{{ strength }}</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Weaknesses -->
+            <div class="bg-orange-50 rounded-lg p-6 border border-orange-200">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                Điểm cần cải thiện
+              </h3>
+              <ul class="space-y-3">
+                <li *ngFor="let weakness of feedback.weaknesses" class="flex items-start gap-3">
+                  <svg class="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                  </svg>
+                  <span class="text-gray-700">{{ weakness }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Action Plan -->
+          <div class="bg-indigo-50 rounded-lg p-6 border border-indigo-200">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+              </svg>
+              Kế hoạch học tập
+            </h3>
+            <div class="bg-white rounded-lg p-4 border border-indigo-100">
+              <p class="text-gray-700 leading-relaxed whitespace-pre-line">{{ feedback.actionPlan }}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 

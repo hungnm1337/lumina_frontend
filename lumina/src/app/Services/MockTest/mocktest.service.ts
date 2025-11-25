@@ -6,7 +6,8 @@ import {
   MockTestAttemptRequest,
   MockTestAttemptResponse,
   PartAnswersSubmission,
-  MockTestResultDTO
+  MockTestResultDTO,
+  MocktestFeedbackDTO
 } from '../../Interfaces/mocktest.interface';
 import { ExamPartDTO } from '../../Interfaces/exam.interfaces';
 
@@ -20,5 +21,9 @@ export class MockTestService {
 
   getMocktestQuestions(): Observable<ExamPartDTO[]> {
     return this.http.get<ExamPartDTO[]>(`${this.apiUrl}/questions`);
+  }
+
+  getMocktestFeedback(examAttemptId: number): Observable<MocktestFeedbackDTO> {
+    return this.http.get<MocktestFeedbackDTO>(`${this.apiUrl}/feedback/${examAttemptId}`);
   }
 }
