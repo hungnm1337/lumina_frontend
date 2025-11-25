@@ -501,12 +501,20 @@
 <div class="section-content">
   <label>Content</label>
   
-  <!-- THAY THẾ BẰNG QUILL-EDITOR -->
+  <!-- QUILL-EDITOR với Cloudinary upload -->
   <quill-editor 
     formControlName="content"
     placeholder="Enter section content..."
-    [styles]="{ 'min-height': '150px' }"> 
+    [modules]="getQuillConfig(i)"
+    [styles]="{ 'min-height': '150px' }"
+    (onEditorCreated)="onEditorCreated($event, i)"> 
   </quill-editor>
+
+  <!-- Upload progress indicator -->
+  <div *ngIf="uploadingImages[i]" class="upload-progress">
+    <i class="fas fa-spinner fa-spin"></i>
+    <span>Đang upload lên Cloudinary...</span>
+  </div>
 
   <div *ngIf="sectionGroup.get('content')?.invalid && sectionGroup.get('content')?.touched" 
        class="error-message">

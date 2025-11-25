@@ -34,6 +34,9 @@ export class DashboardSlideComponent implements OnInit {
     createAt: new Date()
   };
 
+  // File upload
+  selectedFile: File | null = null;
+
   constructor(private slideService: SlideService) {}
 
   ngOnInit(): void {
@@ -97,6 +100,7 @@ export class DashboardSlideComponent implements OnInit {
   openCreateModal(): void {
     this.isEditMode = true;
     this.selectedSlide = null;
+    this.selectedFile = null;
     this.formData = {
       slideUrl: '',
       slideName: '',
@@ -111,6 +115,7 @@ export class DashboardSlideComponent implements OnInit {
   openEditModal(slide: SlideDTO): void {
     this.isEditMode = true;
     this.selectedSlide = slide;
+    this.selectedFile = null;
     this.formData = { ...slide };
     this.isModalOpen = true;
     this.clearMessages();
@@ -127,13 +132,51 @@ export class DashboardSlideComponent implements OnInit {
     this.isModalOpen = false;
     this.isEditMode = false;
     this.selectedSlide = null;
+    this.selectedFile = null;
     this.clearMessages();
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
+      
+      // Validate file type
+      if (!this.selectedFile.type.startsWith('image/')) {
+        this.errorMessage = 'Vui lòng chọn file ảnh hợp lệ';
+        this.selectedFile = null;
+        input.value = '';
+        return;
+      }
+      
+      // Validate file size (max 10MB)
+      if (this.selectedFile.size > 10 * 1024 * 1024) {
+        this.errorMessage = 'Kích thước file không được vượt quá 10MB';
+        this.selectedFile = null;
+        input.value = '';
+        return;
+      }
+      
+      this.clearMessages();
+    }
   }
 
   // ===== CRUD OPERATIONS =====
   saveSlide(): void {
-    if (!this.formData.slideName || !this.formData.slideUrl) {
-      this.errorMessage = 'Vui lòng điền đầy đủ thông tin';
+    if (!this.formData.slideName) {
+      this.errorMessage = 'Vui lòng điền tên slide';
+      return;
+    }
+
+    // Khi tạo mới, bắt buộc phải có file
+    if (!this.selectedSlide && !this.selectedFile) {
+      this.errorMessage = 'Vui lòng chọn ảnh để upload';
+      return;
+    }
+
+    // Khi chỉnh sửa, nếu không chọn file mới thì vẫn cho phép (giữ nguyên ảnh cũ)
+    if (this.selectedSlide && !this.selectedFile && !this.selectedSlide.slideUrl) {
+      this.errorMessage = 'Vui lòng chọn ảnh để upload';
       return;
     }
 
@@ -142,7 +185,12 @@ export class DashboardSlideComponent implements OnInit {
 
     if (this.selectedSlide && this.selectedSlide.slideId) {
       // Update existing slide
-      this.slideService.updateSlide(this.selectedSlide.slideId, this.formData).subscribe({
+      this.slideService.updateSlideWithFile(
+        this.selectedSlide.slideId,
+        this.formData.slideName,
+        this.formData.isActive ?? true,
+        this.selectedFile
+      ).subscribe({
         next: () => {
           this.successMessage = 'Cập nhật slide thành công!';
           this.loadSlides();
@@ -155,14 +203,18 @@ export class DashboardSlideComponent implements OnInit {
         }
       });
     } else {
-      // Create new slide - SỬA: Cast đúng type
-      const createData = {
-        slideName: this.formData.slideName,
-        slideUrl: this.formData.slideUrl,
-        isActive: this.formData.isActive
-      } as any; // Cast to bypass type checking
+      // Create new slide
+      if (!this.selectedFile) {
+        this.errorMessage = 'Vui lòng chọn ảnh để upload';
+        this.isLoading = false;
+        return;
+      }
 
-      this.slideService.createSlide(createData).subscribe({
+      this.slideService.createSlideWithFile(
+        this.formData.slideName,
+        this.formData.isActive ?? true,
+        this.selectedFile
+      ).subscribe({
         next: () => {
           this.successMessage = 'Tạo slide thành công!';
           this.loadSlides();

@@ -19,13 +19,17 @@ export class UploadService {
   }
   /**
    * Upload file lên Cloudinary thông qua API backend
-   * @param file File cần upload
+   * @param file File cần upload (ảnh, video, hoặc audio)
    * @returns Observable trả về { url, publicId }
    */
   uploadFile(file: File): Observable<{ url: string, publicId: string }> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<{ url: string, publicId: string }>(this.baseUrl, formData);
+    return this.http.post<{ url: string, publicId: string }>(
+      this.baseUrl, 
+      formData,
+      { headers: this.getAuthHeaders() }
+    );
   }
 
     /**

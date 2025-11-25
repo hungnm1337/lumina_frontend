@@ -18,6 +18,7 @@ export class SidebarComponent {
       title: 'Quản lý',
       items: [
         { path: 'dashboard', name: 'Bảng điều khiển', icon: 'fas fa-chart-pie' },
+        { path: 'reporting', name: 'Báo cáo & Thống kê', icon: 'fas fa-chart-line' },
         { path: 'events', name: 'Sự kiện', icon: 'fas fa-calendar-alt' },
         { path: 'slides', name: 'Slide', icon: 'fas fa-images' },
         { path: 'manage-posts', name: 'Quản lý bài viết', icon: 'fas fa-edit' },

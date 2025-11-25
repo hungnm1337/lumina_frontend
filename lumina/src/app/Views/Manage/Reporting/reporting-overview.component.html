@@ -1,0 +1,477 @@
+<main class="flex-1 overflow-y-auto p-6 simple-bg">
+  <!-- Loading State -->
+  <div class="fixed inset-0 bg-black bg-opacity-10 flex items-center justify-center z-50" *ngIf="isLoading">
+    <div class="bg-white rounded-xl p-6 card-shadow flex items-center space-x-3">
+      <i class="fas fa-spinner fa-spin text-xl text-blue-600"></i>
+      <span class="text-gray-700">Đang tải dữ liệu báo cáo...</span>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div class="mb-4" *ngIf="errorMessage && !isLoading">
+    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          <p class="font-semibold">Có lỗi xảy ra</p>
+          <p class="text-sm">{{ errorMessage }}</p>
+        </div>
+      </div>
+      <button class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-sm" (click)="refreshData()">
+        <i class="fas fa-redo mr-1"></i>
+        Thử lại
+      </button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="bg-white border border-gray-200 rounded-xl px-6 py-4 mb-6 card-shadow">
+    <div class="flex items-center justify-between flex-wrap gap-4">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900">Reporting - Overview</h2>
+        <p class="text-sm text-gray-600">Báo cáo tổng quan và thống kê</p>
+      </div>
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2">
+          <label class="text-sm text-gray-600">Khoảng thời gian:</label>
+          <select [(ngModel)]="selectedDays" (change)="onDaysChange()" 
+                  class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option [value]="7">7 ngày</option>
+            <option [value]="30">30 ngày</option>
+            <option [value]="90">90 ngày</option>
+            <option [value]="180">180 ngày</option>
+          </select>
+        </div>
+        <div class="flex items-center space-x-2">
+          <label class="text-sm text-gray-600">Top N:</label>
+          <select [(ngModel)]="topN" (change)="onTopNChange()" 
+                  class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option [value]="5">Top 5</option>
+            <option [value]="10">Top 10</option>
+            <option [value]="20">Top 20</option>
+          </select>
+        </div>
+        <button (click)="refreshData()" 
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm flex items-center space-x-2">
+          <i class="fas fa-sync-alt"></i>
+          <span>Làm mới</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Active Users Section -->
+  <div class="mb-6" *ngIf="activeUsers">
+    <div class="bg-white rounded-xl p-6 card-shadow">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Active Users</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-4 text-white">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm opacity-90">Đang hoạt động</p>
+              <p class="text-3xl font-bold">{{ formatNumber(activeUsers.activeUsersNow) }}</p>
+            </div>
+            <i class="fas fa-users text-3xl opacity-80"></i>
+          </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-4 text-white">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm opacity-90">Tổng người dùng</p>
+              <p class="text-3xl font-bold">{{ formatNumber(activeUsers.totalUsers) }}</p>
+            </div>
+            <i class="fas fa-user-friends text-3xl opacity-80"></i>
+          </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-4 text-white">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm opacity-90">Mới tuần này</p>
+              <p class="text-3xl font-bold">{{ formatNumber(activeUsers.newUsersThisWeek) }}</p>
+            </div>
+            <i class="fas fa-user-plus text-3xl opacity-80"></i>
+          </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-4 text-white">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm opacity-90">Mới tháng này</p>
+              <p class="text-3xl font-bold">{{ formatNumber(activeUsers.newUsersThisMonth) }}</p>
+              <p class="text-xs opacity-80 mt-1">
+                <i class="fas" [ngClass]="activeUsers.growthRate >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+                {{ formatPercentage(abs(activeUsers.growthRate)) }}
+              </p>
+            </div>
+            <i class="fas fa-chart-line text-3xl opacity-80"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Content Section -->
+  <div class="mb-6" *ngIf="overview">
+    <div class="bg-white rounded-xl p-6 card-shadow">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Top Content</h3>
+      
+      <!-- Tabs -->
+      <div class="border-b border-gray-200 mb-4">
+        <nav class="flex space-x-4">
+          <button (click)="topContentActiveTab = 'articles'" 
+                  [class]="topContentActiveTab === 'articles' ? 'border-b-2 border-blue-500 text-blue-600 font-semibold' : 'text-gray-500 hover:text-gray-700'"
+                  class="pb-2 px-2">
+            <i class="fas fa-newspaper mr-2"></i>Bài viết
+          </button>
+          <button (click)="topContentActiveTab = 'vocabulary'" 
+                  [class]="topContentActiveTab === 'vocabulary' ? 'border-b-2 border-blue-500 text-blue-600 font-semibold' : 'text-gray-500 hover:text-gray-700'"
+                  class="pb-2 px-2">
+            <i class="fas fa-book-open mr-2"></i>Từ vựng
+          </button>
+          <button (click)="topContentActiveTab = 'events'" 
+                  [class]="topContentActiveTab === 'events' ? 'border-b-2 border-blue-500 text-blue-600 font-semibold' : 'text-gray-500 hover:text-gray-700'"
+                  class="pb-2 px-2">
+            <i class="fas fa-calendar-alt mr-2"></i>Sự kiện
+          </button>
+          <button (click)="topContentActiveTab = 'slides'" 
+                  [class]="topContentActiveTab === 'slides' ? 'border-b-2 border-blue-500 text-blue-600 font-semibold' : 'text-gray-500 hover:text-gray-700'"
+                  class="pb-2 px-2">
+            <i class="fas fa-images mr-2"></i>Slide
+          </button>
+          <button (click)="topContentActiveTab = 'exams'" 
+                  [class]="topContentActiveTab === 'exams' ? 'border-b-2 border-blue-500 text-blue-600 font-semibold' : 'text-gray-500 hover:text-gray-700'"
+                  class="pb-2 px-2">
+            <i class="fas fa-clipboard-list mr-2"></i>Bài thi
+          </button>
+        </nav>
+      </div>
+
+      <!-- Top Articles -->
+      <div *ngIf="topContentActiveTab === 'articles' && overview.topArticles.length > 0" class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bài viết</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lượt xem</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Người đọc</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thời gian đọc TB</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tỷ lệ hoàn thành</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let article of overview.topArticles" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">{{ article.title }}</div>
+                <div class="text-xs text-gray-500">{{ formatDate(article.createdAt) }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatNumber(article.viewCount) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatNumber(article.readerCount) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatTime(article.averageReadingTime) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 rounded-full text-xs font-medium" [ngClass]="getCompletionRateBadgeClass(article.completionRate)">
+                  {{ formatPercentage(article.completionRate) }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Top Vocabulary -->
+      <div *ngIf="topContentActiveTab === 'vocabulary' && overview.topVocabulary.length > 0" class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Danh sách từ vựng</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Số người học</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Từ đã học TB</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tổng từ</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tỷ lệ hoàn thành</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let vocab of overview.topVocabulary" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">{{ vocab.listName }}</div>
+                <div class="text-xs text-gray-500">{{ formatDate(vocab.createdAt) }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatNumber(vocab.learnerCount) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatNumber(vocab.averageWordsLearned) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatNumber(vocab.totalWords) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 rounded-full text-xs font-medium" [ngClass]="getCompletionRateBadgeClass(vocab.completionRate)">
+                  {{ formatPercentage(vocab.completionRate) }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Top Events -->
+      <div *ngIf="topContentActiveTab === 'events' && overview.topEvents.length > 0" class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sự kiện</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Người tham gia</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tỷ lệ tham gia</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thời gian</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let event of overview.topEvents" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">{{ event.eventName }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatNumber(event.participantCount) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 rounded-full text-xs font-medium" [ngClass]="getCompletionRateBadgeClass(event.participationRate)">
+                  {{ formatPercentage(event.participationRate) }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ formatDate(event.startDate) }} - {{ formatDate(event.endDate) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Top Slides -->
+      <div *ngIf="topContentActiveTab === 'slides' && overview.topSlides.length > 0" class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Slide</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngày tạo</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let slide of overview.topSlides" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">{{ slide.slideName }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 rounded-full text-xs font-medium" [ngClass]="slide.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
+                  {{ slide.isActive ? 'Hoạt động' : 'Tắt' }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(slide.createdAt) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Top Exams -->
+      <div *ngIf="topContentActiveTab === 'exams' && overview.topExams.length > 0" class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bài thi</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Loại</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Số lượt làm</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Đã hoàn thành</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Điểm TB</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tỷ lệ hoàn thành</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let exam of overview.topExams" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">{{ exam.examName }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">{{ exam.examType }}</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatNumber(exam.attemptCount) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatNumber(exam.completedCount) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatNumber(exam.averageScore) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 rounded-full text-xs font-medium" [ngClass]="getCompletionRateBadgeClass(exam.completionRate)">
+                  {{ formatPercentage(exam.completionRate) }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="(topContentActiveTab === 'articles' && overview.topArticles.length === 0) ||
+                  (topContentActiveTab === 'vocabulary' && overview.topVocabulary.length === 0) ||
+                  (topContentActiveTab === 'events' && overview.topEvents.length === 0) ||
+                  (topContentActiveTab === 'slides' && overview.topSlides.length === 0) ||
+                  (topContentActiveTab === 'exams' && overview.topExams.length === 0)"
+           class="text-center py-12 text-gray-500">
+        <i class="fas fa-inbox text-4xl mb-4"></i>
+        <p>Không có dữ liệu</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Completion Rates Section -->
+  <div class="mb-6" *ngIf="overview">
+    <div class="bg-white rounded-xl p-6 card-shadow">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Completion Rates</h3>
+      
+      <!-- Tabs -->
+      <div class="border-b border-gray-200 mb-4">
+        <nav class="flex space-x-4">
+          <button (click)="completionRatesActiveTab = 'exams'" 
+                  [class]="completionRatesActiveTab === 'exams' ? 'border-b-2 border-blue-500 text-blue-600 font-semibold' : 'text-gray-500 hover:text-gray-700'"
+                  class="pb-2 px-2">
+            <i class="fas fa-clipboard-list mr-2"></i>Bài thi
+          </button>
+          <button (click)="completionRatesActiveTab = 'articles'" 
+                  [class]="completionRatesActiveTab === 'articles' ? 'border-b-2 border-blue-500 text-blue-600 font-semibold' : 'text-gray-500 hover:text-gray-700'"
+                  class="pb-2 px-2">
+            <i class="fas fa-newspaper mr-2"></i>Bài viết
+          </button>
+          <button (click)="completionRatesActiveTab = 'vocabulary'" 
+                  [class]="completionRatesActiveTab === 'vocabulary' ? 'border-b-2 border-blue-500 text-blue-600 font-semibold' : 'text-gray-500 hover:text-gray-700'"
+                  class="pb-2 px-2">
+            <i class="fas fa-book-open mr-2"></i>Từ vựng
+          </button>
+          <button (click)="completionRatesActiveTab = 'events'" 
+                  [class]="completionRatesActiveTab === 'events' ? 'border-b-2 border-blue-500 text-blue-600 font-semibold' : 'text-gray-500 hover:text-gray-700'"
+                  class="pb-2 px-2">
+            <i class="fas fa-calendar-alt mr-2"></i>Sự kiện
+          </button>
+        </nav>
+      </div>
+
+      <!-- Exam Completion Rates -->
+      <div *ngIf="completionRatesActiveTab === 'exams' && overview.examCompletionRates.length > 0" class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bài thi</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Loại</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tổng lượt làm</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Đã hoàn thành</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tỷ lệ hoàn thành</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thời gian TB</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let exam of overview.examCompletionRates" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ exam.examName }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">{{ exam.examType }}</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatNumber(exam.totalAttempts) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatNumber(exam.completedAttempts) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 rounded-full text-xs font-medium" [ngClass]="getCompletionRateBadgeClass(exam.completionRate)">
+                  {{ formatPercentage(exam.completionRate) }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatTime(exam.averageCompletionTime) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Article Completion Rates -->
+      <div *ngIf="completionRatesActiveTab === 'articles' && overview.articleCompletionRates.length > 0" class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bài viết</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tổng người đọc</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Đã hoàn thành</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tỷ lệ hoàn thành</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thời gian đọc TB</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let article of overview.articleCompletionRates" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ article.title }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatNumber(article.totalReaders) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatNumber(article.completedReaders) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 rounded-full text-xs font-medium" [ngClass]="getCompletionRateBadgeClass(article.completionRate)">
+                  {{ formatPercentage(article.completionRate) }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatTime(article.averageReadingTime) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Vocabulary Completion Rates -->
+      <div *ngIf="completionRatesActiveTab === 'vocabulary' && overview.vocabularyCompletionRates.length > 0" class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Danh sách từ vựng</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tổng người học</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Đã hoàn thành</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tỷ lệ hoàn thành</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Từ đã học TB</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let vocab of overview.vocabularyCompletionRates" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ vocab.listName }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatNumber(vocab.totalLearners) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatNumber(vocab.completedLearners) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 rounded-full text-xs font-medium" [ngClass]="getCompletionRateBadgeClass(vocab.completionRate)">
+                  {{ formatPercentage(vocab.completionRate) }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatNumber(vocab.averageWordsLearned) }} / {{ formatNumber(vocab.totalWords) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Event Participation Rates -->
+      <div *ngIf="completionRatesActiveTab === 'events' && overview.eventParticipationRates.length > 0" class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sự kiện</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tổng người dùng</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Người tham gia</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tỷ lệ tham gia</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thời gian</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let event of overview.eventParticipationRates" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ event.eventName }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatNumber(event.totalUsers) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatNumber(event.participants) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 rounded-full text-xs font-medium" [ngClass]="getCompletionRateBadgeClass(event.participationRate)">
+                  {{ formatPercentage(event.participationRate) }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ formatDate(event.startDate) }} - {{ formatDate(event.endDate) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="(completionRatesActiveTab === 'exams' && overview.examCompletionRates.length === 0) ||
+                  (completionRatesActiveTab === 'articles' && overview.articleCompletionRates.length === 0) ||
+                  (completionRatesActiveTab === 'vocabulary' && overview.vocabularyCompletionRates.length === 0) ||
+                  (completionRatesActiveTab === 'events' && overview.eventParticipationRates.length === 0)"
+           class="text-center py-12 text-gray-500">
+        <i class="fas fa-inbox text-4xl mb-4"></i>
+        <p>Không có dữ liệu</p>
+      </div>
+    </div>
+  </div>
+</main>
+

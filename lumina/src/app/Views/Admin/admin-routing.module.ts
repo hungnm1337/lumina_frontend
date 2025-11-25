@@ -7,6 +7,7 @@ import { UserDetailComponent } from './User/user-detail/user-detail.component'; 
 import { SystemPlansComponent } from './system-plans/system-plans.component';
 import { SystemStatsComponent } from './system-stats/system-stats.component';
 import { UserActivityComponent } from './user-activity/user-activity.component';
+import { NotificationManagementComponent } from './notification-management/notification-management.component';
 import { ReportListComponent } from '../Common/report-list/report-list.component';
 const routes: Routes = [
   {
@@ -45,9 +46,9 @@ const routes: Routes = [
         data: { title: 'Hành vi người dùng' }
       },
       {
-        path: 'user-reports',
-        component: ReportListComponent,
-        data: { title: 'Báo cáo người dùng' }
+        path: 'notifications',
+        component: NotificationManagementComponent,
+        data: { title: 'Quản lý thông báo' }
       }
 
     ]
