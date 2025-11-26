@@ -215,9 +215,15 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   // ============= ANSWER SUBMISSION =============
 
   markAnswered(selectedOptionId: number): void {
-    if (this.isSubmitting || this.showExplain || !this.attemptId) return;
+    // ✅ Removed showExplain check to allow re-selection
+    if (this.isSubmitting || !this.attemptId) return;
 
     const currentQuestion = this.questions[this.currentIndex];
+
+    // ✅ Check if this question was already answered
+    const previousAnswer = this.answeredQuestions.get(currentQuestion.questionId);
+    const isUpdatingAnswer = previousAnswer !== undefined;
+
     this.isSubmitting = true;
 
     const model = {
@@ -226,18 +232,29 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       selectedOptionId: selectedOptionId,
     };
 
-    console.log('Submitting listening answer:', model);
+    console.log(isUpdatingAnswer ? 'Updating listening answer:' : 'Submitting listening answer:', model);
 
     this.examAttemptService.submitListeningAnswer(model).subscribe({
       next: (response) => {
         console.log('Listening answer submitted:', response);
 
+        // ✅ If updating answer, adjust previous scores first
+        if (isUpdatingAnswer) {
+          if (previousAnswer.isCorrect) {
+            this.correctCount--;
+          }
+          this.totalScore -= previousAnswer.score;
+          console.log('Adjusted scores - removed previous answer contribution');
+        }
+
+        // Store new answer info
         this.answeredQuestions.set(currentQuestion.questionId, {
           selectedOptionId: selectedOptionId,
           isCorrect: response.isCorrect,
           score: response.score,
         });
 
+        // Update totals with new answer
         if (response.isCorrect) {
           this.correctCount++;
         }
