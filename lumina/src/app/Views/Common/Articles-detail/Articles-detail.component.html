@@ -41,16 +41,6 @@
           <p class="author-title">Content Creator</p>
         </div>
       </div>
-      <div class="article-actions">
-        <button class="action-btn like-btn" (click)="onLikeArticle()">
-          <i class="fas fa-heart"></i>
-          {{ articleLikes }}
-        </button>
-        <button class="action-btn share-btn" (click)="onShareArticle()">
-          <i class="fas fa-bookmark"></i>
-          Share article
-        </button>
-      </div>
     </div>
 
     <!-- Article Introduction -->
@@ -152,48 +142,7 @@
       <span class="tag">{{ article.categoryName }}</span>
     </div>
 
-    <!-- Share Buttons -->
-    <div class="share-section">
-      <h4 class="share-title">Share article</h4>
-      <div class="share-buttons">
-        <button class="share-btn facebook">
-          <i class="fab fa-facebook-f"></i>
-        </button>
-        <button class="share-btn twitter">
-          <i class="fab fa-twitter"></i>
-        </button>
-        <button class="share-btn linkedin">
-          <i class="fab fa-linkedin-in"></i>
-        </button>
-        <button class="share-btn other">
-          <i class="fas fa-share-alt"></i>
-        </button>
-      </div>
-    </div>
 
-    <!-- Author Bio -->
-    <div class="author-bio">
-      <div class="author-bio-header">
-        <div [class]="'author-avatar ' + getAuthorAvatarColor(article.authorName)">
-          {{ article.authorName.charAt(0).toUpperCase() }}
-        </div>
-        <div class="author-bio-info">
-          <h3 class="author-name">{{ article.authorName }}</h3>
-          <p class="author-bio-text">Professional Content Creator with years of experience in TOEIC education.</p>
-          <div class="author-stats">
-            <span class="stat">1 article</span>
-            <span class="stat">0 followers</span>
-            <span class="stat">0 likes</span>
-          </div>
-        </div>
-        <button
-          [class]="isFollowing ? 'follow-btn following' : 'follow-btn'"
-          (click)="onFollowAuthor()"
-        >
-          {{ isFollowing ? 'Following' : '+ Follow' }}
-        </button>
-      </div>
-    </div>
   </div>
 </div>
 

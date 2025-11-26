@@ -30,12 +30,15 @@ export class ArticlesComponent implements OnInit {
   // State Properties - CHANGED TO STAFF
   isStaff = false;  // Changed from isManager
   isModalOpen = false;
+  isAddCategoryModalOpen = false;
   editingArticle: Article | null = null;
   isLoading = true;
   isSubmitting = false;
   
   // Form Properties
   articleForm: FormGroup;
+  categoryForm: FormGroup;
+  isSubmittingCategory = false;
   
   // Filter Properties
   searchTerm = '';
@@ -78,11 +81,14 @@ export class ArticlesComponent implements OnInit {
   ) {
     this.articleForm = this.fb.group({
       category: ['', Validators.required],
-      status: ['draft', Validators.required],
       title: ['', [Validators.required, Validators.minLength(5)]],
       summary: ['', [Validators.required, Validators.minLength(20)]],
       sections: this.fb.array([]),
       tags: ['']
+    });
+
+    this.categoryForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]]
     });
   }
 
@@ -250,7 +256,6 @@ export class ArticlesComponent implements OnInit {
       // Edit mode
       this.articleForm.patchValue({
         category: article.category,
-        status: article.status,
         title: article.title,
         summary: article.summary,
         tags: article.tags ? article.tags.join(', ') : ''
@@ -273,7 +278,6 @@ export class ArticlesComponent implements OnInit {
       // Create mode
       this.articleForm.reset({ 
         category: '', 
-        status: 'draft',
         title: '',
         summary: '',
         tags: ''
@@ -950,5 +954,54 @@ export class ArticlesComponent implements OnInit {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+  }
+
+  // ===== CATEGORY MANAGEMENT METHODS =====
+  openAddCategoryModal(): void {
+    this.categoryForm.reset();
+    this.isAddCategoryModalOpen = true;
+  }
+
+  closeAddCategoryModal(): void {
+    this.categoryForm.reset();
+    this.isAddCategoryModalOpen = false;
+  }
+
+  onSubmitCategory(): void {
+    if (this.categoryForm.invalid) {
+      this.categoryForm.markAllAsTouched();
+      return;
+    }
+
+    const categoryName = this.categoryForm.get('name')?.value?.trim();
+    if (!categoryName) {
+      this.toastService.error('Vui lòng nhập tên category');
+      return;
+    }
+
+    // Check if category already exists
+    const categoryExists = this.categories.some(
+      cat => cat.name.toLowerCase() === categoryName.toLowerCase()
+    );
+
+    if (categoryExists) {
+      this.toastService.error('Category này đã tồn tại!');
+      return;
+    }
+
+    this.isSubmittingCategory = true;
+    this.articleService.createCategory({ name: categoryName }).subscribe({
+      next: (response) => {
+        this.toastService.success('Category đã được tạo thành công!');
+        this.loadCategories(); // Reload categories list
+        this.closeAddCategoryModal();
+        this.isSubmittingCategory = false;
+      },
+      error: (error) => {
+        console.error('Error creating category:', error);
+        this.toastService.error(error?.error?.message || 'Không thể tạo category. Vui lòng thử lại.');
+        this.isSubmittingCategory = false;
+      }
+    });
   }
 }

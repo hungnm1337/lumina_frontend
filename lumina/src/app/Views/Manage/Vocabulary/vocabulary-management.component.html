@@ -1,195 +1,253 @@
 <div class="vocabulary-management-container">
-  <!-- Header -->
-  <div class="header-section">
+  <!-- TOEIC Header Section - MANAGER VERSION -->
+  <div class="page-header">
     <div class="header-content">
-      <h1 class="page-title">
-        <i class="fas fa-book-open"></i>
-        Quản lý Từ vựng
-      </h1>
-      <p class="page-subtitle">Duyệt và quản lý danh sách từ vựng từ staff</p>
+      <div class="title-section">
+        <h1 class="page-title">
+          <span class="toeic-badge">TOEIC</span>
+          Vocabulary Management
+        </h1>
+        <p class="page-subtitle">
+          Review and manage vocabulary lists from staff
+        </p>
+      </div>
+      <div class="header-stats">
+        <div class="stat-card">
+          <div class="stat-number">{{getTotalCount() || 0}}</div>
+          <div class="stat-label">Total Lists</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{{getPendingCount()}}</div>
+          <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{{getPublishedCount()}}</div>
+          <div class="stat-label">Published</div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Navigation Tabs -->
-  <div class="nav-tabs">
-    <button 
-      class="nav-tab" 
-      [class.active]="currentView === 'lists'"
-      (click)="showListView()">
-      <i class="fas fa-list"></i>
-      Danh sách từ điển
-    </button>
-    <button 
-      class="nav-tab" 
-      [class.active]="currentView === 'words'"
-      [disabled]="!selectedList">
-      <i class="fas fa-book"></i>
-      Từ vựng chi tiết
-    </button>
-  </div>
-
-  <!-- Search and Filter Section -->
-  <div class="search-filter-section">
-    <div class="search-box">
-      <i class="fas fa-search"></i>
-      <input 
-        type="text" 
-        placeholder="Tìm kiếm..." 
-        [(ngModel)]="searchTerm"
-        (input)="onSearchChange()"
-        class="search-input">
-      <button 
-        *ngIf="searchTerm" 
-        (click)="clearSearch()" 
-        class="clear-search-btn">
-        <i class="fas fa-times"></i>
-      </button>
+  <!-- Advanced Search & Filter Panel -->
+  <div class="search-filter-panel">
+    <div class="search-section">
+      <div class="search-input-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (input)="onSearchChange()"
+          placeholder="Search vocabulary lists..."
+          class="search-input">
+        <button 
+          *ngIf="searchTerm" 
+          (click)="clearSearch()" 
+          class="clear-search-btn">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
     </div>
 
-    <div class="filter-controls" *ngIf="currentView === 'lists'">
-      <select 
-        [(ngModel)]="statusFilter" 
-        (change)="onStatusFilterChange()"
-        class="status-filter">
-        <option value="all">Tất cả trạng thái</option>
-        <option value="pending">Chờ duyệt</option>
-        <option value="approved">Đã xuất bản</option>
-        <option value="rejected">Bị từ chối</option>
-      </select>
+    <div class="filters-section">
+      <div class="filter-group">
+        <label>Status</label>
+        <select [(ngModel)]="statusFilter" (change)="onStatusFilterChange()" class="filter-select">
+          <option value="all">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="published">Published</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+
+      <div class="filter-actions">
+        <button (click)="statusFilter = 'all'; onStatusFilterChange()" class="btn-clear-filters">
+          <i class="fas fa-eraser"></i>
+          Clear All
+        </button>
+        <button (click)="loadVocabularyLists()" class="btn-refresh">
+          <i class="fas fa-sync-alt"></i>
+          Refresh
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- Loading State -->
-  <div *ngIf="isLoading" class="loading-state">
-    <div class="spinner"></div>
-    <p>Đang tải dữ liệu...</p>
-  </div>
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Vocabulary Lists Section -->
+    <div class="lists-list-section">
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-state">
+        <div class="loading-spinner">
+          <i class="fas fa-spinner fa-spin"></i>
+        </div>
+        <p>Loading vocabulary lists...</p>
+      </div>
 
-  <!-- Vocabulary Lists View -->
-  <div *ngIf="currentView === 'lists' && !isLoading" class="lists-view">
-    <div class="lists-grid">
-      <div 
-        *ngFor="let list of pagedVocabularyLists" 
-        class="list-card"
-        [class.pending]="list.status?.toLowerCase() === 'pending'"
-        [class.approved]="list.status?.toLowerCase() === 'published'"
-        [class.rejected]="list.status?.toLowerCase() === 'rejected'">
-        
-        <div class="card-header">
-          <div class="list-info">
+      <!-- Vocabulary Lists Grid -->
+      <div *ngIf="!isLoading && currentView === 'lists'" class="lists-grid">
+        <div 
+          *ngFor="let list of pagedVocabularyLists; let i = index" 
+          class="list-card"
+          [class.featured]="list.status?.toLowerCase() === 'published'"
+          [class.pending-card]="list.status?.toLowerCase() === 'pending'">
+          
+          <!-- Card Header -->
+          <div class="card-header">
+            <div class="list-status-section">
+              <span class="status-badge" [ngClass]="getStatusClass(list.status)">
+                <i class="fas fa-circle status-dot"></i>
+                {{getStatusText(list.status)}}
+              </span>
+            </div>
+            
+            <div class="card-actions">
+              <div class="action-buttons">
+                <button 
+                  class="btn-action btn-view" 
+                  (click)="selectList(list)"
+                  title="View details">
+                  <i class="fas fa-eye"></i>
+                </button>
+                
+                <button 
+                  *ngIf="canReview(list)"
+                  class="btn-action btn-approve" 
+                  (click)="approveList(list)"
+                  title="Duyệt">
+                  <i class="fas fa-check"></i>
+                </button>
+                
+                <button 
+                  *ngIf="canReview(list)"
+                  class="btn-action btn-reject" 
+                  (click)="rejectList(list)"
+                  title="Từ chối">
+                  <i class="fas fa-times"></i>
+                </button>
+                
+                <button 
+                  *ngIf="canSendBackToStaff(list)"
+                  class="btn-action btn-undo" 
+                  (click)="sendBackToStaff(list)"
+                  title="Gửi về staff">
+                  <i class="fas fa-undo"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Body -->
+          <div class="card-body">
             <h3 class="list-name">{{ list.name }}</h3>
+            
             <div class="list-meta">
-              <span class="creator">
+              <div class="meta-item">
                 <i class="fas fa-user"></i>
-                {{ list.makeByName }}
-              </span>
-              <span class="date">
+                <span>{{ list.makeByName }}</span>
+              </div>
+              <div class="meta-item">
                 <i class="fas fa-calendar"></i>
-                {{ list.createAt | date:'dd/MM/yyyy' }}
+                <span>{{ list.createAt | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </div>
+
+            <div class="list-stats">
+              <div class="stat-item">
+                <i class="fas fa-book"></i>
+                <span>{{ list.vocabularyCount || 0 }} từ vựng</span>
+              </div>
+              <div class="stat-item">
+                <i class="fas fa-globe" *ngIf="list.isPublic"></i>
+                <i class="fas fa-lock" *ngIf="!list.isPublic"></i>
+                <span>{{ list.isPublic ? 'Công khai' : 'Riêng tư' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Footer -->
+          <div class="card-footer">
+            <button 
+              class="btn-primary-card"
+              (click)="selectList(list)">
+              <i class="fas fa-eye"></i>
+              Xem chi tiết
+            </button>
+            
+            <button 
+              *ngIf="canReview(list)"
+              class="btn-success-card"
+              (click)="approveList(list)">
+              <i class="fas fa-check"></i>
+              Duyệt
+            </button>
+            
+            <button 
+              *ngIf="canReview(list)"
+              class="btn-danger-card"
+              (click)="rejectList(list)">
+              <i class="fas fa-times"></i>
+              Từ chối
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && currentView === 'lists' && pagedVocabularyLists.length === 0" class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <h3>Không có danh sách nào</h3>
+        <p>Chưa có danh sách từ vựng nào để quản lý.</p>
+      </div>
+
+      <!-- Vocabulary Words View -->
+      <div *ngIf="!isLoading && currentView === 'words'" class="words-view">
+        <div class="words-header">
+          <button class="btn-back" (click)="showListView()">
+            <i class="fas fa-arrow-left"></i>
+            Quay lại
+          </button>
+          <h2>{{ selectedList?.name }}</h2>
+        </div>
+
+        <div class="words-grid">
+          <div 
+            *ngFor="let vocab of pagedVocabularies" 
+            class="word-card">
+            
+            <div class="word-header">
+              <h4 class="word-text">{{ vocab.word }}</h4>
+              <span class="part-of-speech" [ngClass]="getPartOfSpeechClass(vocab.partOfSpeech)">
+                {{ vocab.partOfSpeech }}
               </span>
             </div>
-          </div>
-          <div class="status-badge" [ngClass]="getStatusClass(list.status)">
-            <span class="status-icon">{{ getStatusIcon(list.status) }}</span>
-            <span class="status-text">{{ getStatusText(list.status) }}</span>
+
+            <div class="word-body">
+              <div class="definition">
+                <strong>Định nghĩa:</strong>
+                <p>{{ vocab.definition }}</p>
+              </div>
+              
+              <div class="example" *ngIf="vocab.example">
+                <strong>Ví dụ:</strong>
+                <p>{{ vocab.example }}</p>
+              </div>
+              
+              <div class="category" *ngIf="vocab.category">
+                <strong>Danh mục:</strong>
+                <span class="category-tag">{{ getCategoryName(vocab.category) }}</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="card-body">
-          <div class="list-stats">
-            <div class="stat-item">
-              <i class="fas fa-book"></i>
-              <span>{{ list.vocabularyCount || 0 }} từ vựng</span>
-            </div>
-            <div class="stat-item">
-              <i class="fas fa-globe" *ngIf="list.isPublic"></i>
-              <i class="fas fa-lock" *ngIf="!list.isPublic"></i>
-              <span>{{ list.isPublic ? 'Công khai' : 'Riêng tư' }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="card-actions">
-          <button 
-            class="btn btn-primary"
-            (click)="selectList(list)">
-            <i class="fas fa-eye"></i>
-            Xem chi tiết
-          </button>
-          
-          <button 
-            *ngIf="canReview(list)"
-            class="btn btn-success"
-            (click)="openReviewModal(list)">
-            <i class="fas fa-check"></i>
-            Duyệt
-          </button>
-          
-          <button 
-            *ngIf="canSendBackToStaff(list)"
-            class="btn btn-warning"
-            (click)="sendBackToStaff(list)">
-            <i class="fas fa-undo"></i>
-            Gửi về staff
-          </button>
+        <!-- Empty State -->
+        <div *ngIf="pagedVocabularies.length === 0" class="empty-state">
+          <i class="fas fa-book"></i>
+          <h3>Không có từ vựng nào</h3>
+          <p>Danh sách này chưa có từ vựng nào.</p>
         </div>
       </div>
-    </div>
-
-    <!-- Empty State -->
-    <div *ngIf="pagedVocabularyLists.length === 0" class="empty-state">
-      <i class="fas fa-inbox"></i>
-      <h3>Không có danh sách nào</h3>
-      <p>Chưa có danh sách từ vựng nào để quản lý.</p>
-    </div>
-  </div>
-
-  <!-- Vocabulary Words View -->
-  <div *ngIf="currentView === 'words' && !isLoading" class="words-view">
-    <div class="words-header">
-      <button class="btn btn-secondary" (click)="showListView()">
-        <i class="fas fa-arrow-left"></i>
-        Quay lại
-      </button>
-      <h2>{{ selectedList?.name }}</h2>
-    </div>
-
-    <div class="words-grid">
-      <div 
-        *ngFor="let vocab of pagedVocabularies" 
-        class="word-card">
-        
-        <div class="word-header">
-          <h4 class="word-text">{{ vocab.word }}</h4>
-          <span class="part-of-speech" [ngClass]="getPartOfSpeechClass(vocab.partOfSpeech)">
-            {{ vocab.partOfSpeech }}
-          </span>
-        </div>
-
-        <div class="word-body">
-          <div class="definition">
-            <strong>Định nghĩa:</strong>
-            <p>{{ vocab.definition }}</p>
-          </div>
-          
-          <div class="example" *ngIf="vocab.example">
-            <strong>Ví dụ:</strong>
-            <p>{{ vocab.example }}</p>
-          </div>
-          
-          <div class="category" *ngIf="vocab.category">
-            <strong>Danh mục:</strong>
-            <span class="category-tag">{{ getCategoryName(vocab.category) }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Empty State -->
-    <div *ngIf="pagedVocabularies.length === 0" class="empty-state">
-      <i class="fas fa-book"></i>
-      <h3>Không có từ vựng nào</h3>
-      <p>Danh sách này chưa có từ vựng nào.</p>
     </div>
   </div>
 
@@ -218,80 +276,53 @@
     </button>
   </div>
 
-  <!-- Review Modal -->
-  <div *ngIf="isReviewModalOpen" class="modal-overlay" (click)="closeReviewModal()">
+  <!-- Rejection Modal -->
+  <div *ngIf="isReviewModalOpen" class="modal-overlay" (click)="cancelReject()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>Duyệt danh sách từ vựng</h3>
-        <button class="close-btn" (click)="closeReviewModal()">
+        <h3 class="modal-title">Từ chối danh sách từ vựng</h3>
+        <button class="modal-close" (click)="cancelReject()">
           <i class="fas fa-times"></i>
         </button>
       </div>
-      
+
       <div class="modal-body">
-        <div class="review-info">
-          <h4>{{ reviewingList?.name }}</h4>
+        <div class="reject-info">
+          <h4>Danh sách: {{ reviewingList?.name }}</h4>
           <p>Tạo bởi: {{ reviewingList?.makeByName }}</p>
-          <p>Số từ vựng: {{ reviewingList?.vocabularyCount || 0 }}</p>
         </div>
 
-        <form [formGroup]="reviewForm" class="review-form">
-          <div class="form-group">
-            <label class="form-label">Quyết định:</label>
-            <div class="radio-group">
-              <label class="radio-option">
-                <input 
-                  type="radio" 
-                  formControlName="isApproved" 
-                  [value]="true">
-                <span class="radio-label">
-                  <i class="fas fa-check-circle"></i>
-                  Duyệt
-                </span>
-              </label>
-              <label class="radio-option">
-                <input 
-                  type="radio" 
-                  formControlName="isApproved" 
-                  [value]="false">
-                <span class="radio-label">
-                  <i class="fas fa-times-circle"></i>
-                  Từ chối
-                </span>
-              </label>
-            </div>
+        <div class="form-group">
+          <label for="rejectionReason" class="form-label">
+            Lý do từ chối <span class="required">*</span>
+          </label>
+          <textarea 
+            id="rejectionReason"
+            [(ngModel)]="rejectionReason"
+            class="form-textarea"
+            placeholder="Vui lòng nhập lý do từ chối danh sách từ vựng này..."
+            rows="4"
+            required>
+          </textarea>
+          <div class="form-help">
+            Lý do từ chối sẽ được gửi đến staff để họ có thể sửa lại danh sách.
           </div>
-
-          <div class="form-group">
-            <label class="form-label">Lý do (tùy chọn):</label>
-            <textarea 
-              formControlName="comment"
-              placeholder="Nhập lý do duyệt hoặc từ chối..."
-              class="form-textarea"
-              rows="4">
-            </textarea>
-          </div>
-        </form>
+        </div>
       </div>
-      
+
       <div class="modal-footer">
-        <button 
-          class="btn btn-secondary" 
-          (click)="closeReviewModal()"
-          [disabled]="isSubmitting">
+        <button class="btn btn-secondary" (click)="cancelReject()">
           Hủy
         </button>
         <button 
-          class="btn btn-primary" 
-          (click)="submitReview()"
-          [disabled]="reviewForm.invalid || isSubmitting">
-          <i class="fas fa-check" *ngIf="!isSubmitting"></i>
+          class="btn btn-danger" 
+          (click)="confirmReject()"
+          [disabled]="!rejectionReason.trim() || isSubmitting">
+          <i class="fas fa-times" *ngIf="!isSubmitting"></i>
           <div class="spinner-small" *ngIf="isSubmitting"></div>
-          {{ isSubmitting ? 'Đang xử lý...' : 'Xác nhận' }}
+          {{ isSubmitting ? 'Đang xử lý...' : 'Từ chối danh sách' }}
         </button>
       </div>
     </div>
   </div>
 </div>
-
-

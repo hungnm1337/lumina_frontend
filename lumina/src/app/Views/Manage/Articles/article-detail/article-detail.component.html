@@ -1,0 +1,120 @@
+<div class="article-detail-container">
+  <!-- Back Button -->
+  <div class="back-section">
+    <button (click)="goBack()" class="back-btn">
+      <i class="fas fa-arrow-left"></i>
+      Quay lại danh sách
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Đang tải bài viết...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && error" class="error-state">
+    <i class="fas fa-exclamation-circle"></i>
+    <p>{{ error }}</p>
+    <button (click)="goBack()" class="btn-back">Quay lại</button>
+  </div>
+
+  <!-- Article Content -->
+  <div *ngIf="!isLoading && !error && article" class="article-content">
+    <!-- Header Section -->
+    <div class="article-header">
+      <div class="header-top">
+        <div class="article-meta">
+          <span class="category-tag">{{ article.categoryName }}</span>
+          <span class="status-badge" [ngClass]="getStatusClass()">
+            <i class="fas fa-circle status-dot"></i>
+            {{ getStatusText() }}
+          </span>
+          <span class="publish-date">
+            <i class="fas fa-calendar"></i>
+            {{ formatDate(article.createdAt) }}
+          </span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons" *ngIf="canApproveReject()">
+          <button class="btn-action btn-approve" (click)="approveArticle()">
+            <i class="fas fa-check"></i>
+            Duyệt bài viết
+          </button>
+          <button class="btn-action btn-reject" (click)="rejectArticle()">
+            <i class="fas fa-times"></i>
+            Từ chối
+          </button>
+        </div>
+      </div>
+
+      <!-- Title -->
+      <h1 class="article-title">{{ article.title }}</h1>
+
+      <!-- Author Info -->
+      <div class="author-info">
+        <div class="author-avatar">
+          {{ article.authorName.charAt(0).toUpperCase() }}
+        </div>
+        <div class="author-details">
+          <h3 class="author-name">{{ article.authorName }}</h3>
+          <p class="author-role">Content Creator</p>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="article-summary">
+        <p>{{ article.summary }}</p>
+      </div>
+
+      <!-- Rejection Reason (if rejected) -->
+      <div *ngIf="article.rejectionReason" class="rejection-alert">
+        <div class="alert-header">
+          <i class="fas fa-exclamation-triangle"></i>
+          <h4>Lý do từ chối</h4>
+        </div>
+        <p>{{ article.rejectionReason }}</p>
+      </div>
+    </div>
+
+    <!-- Article Sections -->
+    <div class="article-sections">
+      <div *ngFor="let section of article.sections; let i = index" class="section-item">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span class="section-number">{{ i + 1 }}</span>
+            {{ section.sectionTitle }}
+          </h2>
+        </div>
+        <div class="section-content" [innerHTML]="sanitizeHtml(section.sectionContent)"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Rejection Modal -->
+<div *ngIf="showRejectModal" class="modal-overlay" (click)="cancelReject()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Từ chối bài viết</h3>
+      <button class="modal-close" (click)="cancelReject()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-description">Vui lòng nhập lý do từ chối bài viết này:</p>
+      <textarea
+        [(ngModel)]="rejectionReason"
+        placeholder="Nhập lý do từ chối..."
+        class="rejection-textarea"
+        rows="5"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cancelReject()">Hủy</button>
+      <button class="btn-confirm" (click)="confirmReject()">Xác nhận từ chối</button>
+    </div>
+  </div>
+</div>
+
