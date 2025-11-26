@@ -116,7 +116,8 @@ export class BlogDetailComponent implements OnInit {
   loadArticleProgress(): void {
     if (!this.article || !this.isLogin) return;
 
-    this.articleService.getUserArticleProgress([this.article.articleId]).subscribe({
+    const articleId = this.article.articleId;
+    this.articleService.getUserArticleProgress([articleId]).subscribe({
       next: (progressList) => {
         if (progressList.length > 0) {
           this.articleProgress = progressList[0];
@@ -236,13 +237,14 @@ export class BlogDetailComponent implements OnInit {
   updateProgress(): void {
     if (!this.article || !this.isLogin) return;
 
+    const articleId = this.article.articleId;
     const totalSections = this.article.sections.length;
     const completedCount = this.completedSections.size;
     const progressPercent = Math.round((completedCount / totalSections) * 100);
     const status = progressPercent === 100 ? 'completed' : progressPercent > 0 ? 'in_progress' : 'not_started';
 
     // Save progress to backend
-    this.articleService.saveArticleProgress(this.article.articleId, {
+    this.articleService.saveArticleProgress(articleId, {
       progressPercent: progressPercent,
       status: status
     }).subscribe({
@@ -256,12 +258,52 @@ export class BlogDetailComponent implements OnInit {
 
     // Update local progress
     this.articleProgress = {
-      articleId: this.article.articleId,
+      articleId: articleId,
       progressPercent: progressPercent,
       status: status as 'not_started' | 'in_progress' | 'completed',
       lastAccessedAt: new Date().toISOString(),
       completedAt: status === 'completed' ? new Date().toISOString() : undefined
     };
+  }
+
+  // Mark current section as done
+  markSectionAsDone(): void {
+    if (!this.article || !this.isLogin) return;
+
+    // Mark current section as completed
+    this.completedSections.add(this.currentSectionIndex);
+    
+    // Update progress
+    this.updateProgress();
+    
+    // Check if all sections are completed
+    const totalSections = this.article.sections.length;
+    const completedCount = this.completedSections.size;
+    
+    // If all sections are completed, mark article as done in backend
+    if (completedCount === totalSections) {
+      const articleId = this.article.articleId;
+      this.articleService.markArticleAsDone(articleId).subscribe({
+        next: () => {
+          console.log('All sections completed - Article marked as done');
+        },
+        error: (error) => {
+          console.error('Error marking article as done:', error);
+        }
+      });
+    }
+    
+    // Auto-scroll to next section if available
+    if (this.currentSectionIndex < this.article.sections.length - 1) {
+      setTimeout(() => {
+        this.goToSection(this.currentSectionIndex + 1);
+      }, 500);
+    }
+  }
+
+  // Check if article is completed
+  isArticleCompleted(): boolean {
+    return this.articleProgress?.status === 'completed' || false;
   }
 
   // Get progress percent
@@ -394,6 +436,54 @@ export class BlogDetailComponent implements OnInit {
     return this.article.sections[this.currentSectionIndex]?.sectionId || 0;
   }
 
+  // Extract YouTube video ID from URL
+  private extractYouTubeId(url: string): string | null {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+      /youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/
+    ];
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+    return null;
+  }
+
+  // Convert YouTube URL to embed iframe
+  private convertYouTubeUrlToEmbed(content: string): string {
+    // Check if content is a YouTube URL
+    const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const match = content.trim().match(youtubeRegex);
+    
+    if (match && match[1]) {
+      const videoId = match[1];
+      // Add necessary parameters to prevent video from stopping
+      // enablejsapi=1: Enable JavaScript API
+      // origin: Required for security
+      // rel=0: Don't show related videos from other channels
+      // modestbranding=1: Reduce YouTube branding
+      const embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}&rel=0&modestbranding=1&playsinline=1`;
+      
+      return `<div class="youtube-embed-container">
+        <iframe 
+          width="100%" 
+          height="400" 
+          src="${embedUrl}" 
+          frameborder="0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+          allowfullscreen
+          loading="lazy"
+          style="max-width: 100%; border-radius: 12px;">
+        </iframe>
+      </div>`;
+    }
+    
+    return content;
+  }
+
   // Sanitize HTML content from Quill editor to allow images and videos
   getSanitizedContent(content: string): SafeHtml {
     if (!content) {
@@ -403,6 +493,12 @@ export class BlogDetailComponent implements OnInit {
     
     console.log('getSanitizedContent - Original content:', content);
     console.log('getSanitizedContent - Content type:', typeof content);
+    
+    // Check if content is a YouTube URL (plain text)
+    if (content.trim().startsWith('http') && (content.includes('youtube.com') || content.includes('youtu.be'))) {
+      const embedHtml = this.convertYouTubeUrlToEmbed(content);
+      return this.sanitizer.bypassSecurityTrustHtml(embedHtml);
+    }
     
     // Check if content is Quill Delta format (JSON string)
     let processedContent = content;
@@ -420,6 +516,28 @@ export class BlogDetailComponent implements OnInit {
       // Not JSON, assume it's already HTML
       console.log('Content is already HTML format');
     }
+    
+    // Check for YouTube URLs in HTML content and convert to embeds
+    processedContent = processedContent.replace(
+      /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/g,
+      (match, videoId) => {
+        // Add necessary parameters to prevent video from stopping
+        const embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}&rel=0&modestbranding=1&playsinline=1`;
+        
+        return `<div class="youtube-embed-container">
+          <iframe 
+            width="100%" 
+            height="400" 
+            src="${embedUrl}" 
+            frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            allowfullscreen
+            loading="lazy"
+            style="max-width: 100%; border-radius: 12px;">
+          </iframe>
+        </div>`;
+      }
+    );
     
     // Ensure img tags have proper attributes for display
     processedContent = processedContent.replace(

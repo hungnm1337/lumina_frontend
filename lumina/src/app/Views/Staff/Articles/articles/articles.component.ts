@@ -123,11 +123,42 @@ export class ArticlesComponent implements OnInit {
 
   // ===== SECTION MANAGEMENT METHODS =====
   createSectionFormGroup(): FormGroup {
-    return this.fb.group({
+    const formGroup = this.fb.group({
       type: ['đoạn văn', Validators.required],
-      content: ['', Validators.required],
-      sectionTitle: ['', Validators.required]
+      content: [''],
+      sectionTitle: ['', Validators.required],
+      youtubeUrl: [''] // Keep for backward compatibility, but not used in UI
     });
+
+    // Custom validator: content is required
+    // For video type, content should contain YouTube URL
+    formGroup.get('content')?.setValidators([
+      (control) => {
+        const type = formGroup.get('type')?.value;
+        const content = control.value || '';
+        
+        if (!content || content.trim() === '') {
+          return { required: true };
+        }
+        
+        // If type is video, check if content contains YouTube URL
+        if (type === 'video') {
+          const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+          if (!youtubeRegex.test(content.trim())) {
+            return { invalidYoutubeUrl: true };
+          }
+        }
+        
+        return null;
+      }
+    ]);
+
+    // Update validation when type changes
+    formGroup.get('type')?.valueChanges.subscribe(() => {
+      formGroup.get('content')?.updateValueAndValidity();
+    });
+
+    return formGroup;
   }
 
   addSection(): void {
@@ -264,10 +295,23 @@ export class ArticlesComponent implements OnInit {
       // Add sections từ dữ liệu có sẵn
       if (article.sections && article.sections.length > 0) {
         article.sections.forEach(sectionData => {
+          // Extract YouTube URL from content if it's a YouTube link
+          let youtubeUrl = '';
+          let content = sectionData.content || '';
+          
+          // Check if content contains YouTube URL
+          const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+          const match = content.match(youtubeRegex);
+          if (match) {
+            youtubeUrl = content;
+            content = ''; // Clear content if YouTube URL is found
+          }
+          
           this.sections.push(this.fb.group({
             type: [sectionData.type || 'đoạn văn', Validators.required],
-            content: [sectionData.content, Validators.required],
-            sectionTitle: [sectionData.sectionTitle || '', Validators.required]
+            content: [content, Validators.required],
+            sectionTitle: [sectionData.sectionTitle || '', Validators.required],
+            youtubeUrl: [youtubeUrl]
           }));
         });
       } else {
@@ -366,9 +410,28 @@ export class ArticlesComponent implements OnInit {
         console.log(`Section ${index} final content:`, content);
         console.log(`Section ${index} contains img tag:`, content?.includes('<img'));
         
+        // If type is video, extract YouTube URL from content if it's a plain URL
+        let finalContent = content;
+        if (section.type === 'video') {
+          // Check if content is a plain YouTube URL (not HTML)
+          const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+          const match = content.trim().match(youtubeRegex);
+          
+          if (match) {
+            // Content is a plain YouTube URL, use it directly
+            finalContent = content.trim();
+          } else {
+            // Content might be HTML from Quill, try to extract YouTube URL from it
+            const htmlMatch = content.match(youtubeRegex);
+            if (htmlMatch) {
+              finalContent = htmlMatch[0];
+            }
+          }
+        }
+        
         return {
           sectionTitle: section.sectionTitle || `Section ${index + 1}`,
-          sectionContent: content,
+          sectionContent: finalContent,
           type: section.type,
           orderIndex: index
         };

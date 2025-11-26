@@ -495,7 +495,7 @@
   <!-- QUILL-EDITOR với Cloudinary upload -->
   <quill-editor 
     formControlName="content"
-    placeholder="Enter section content..."
+    [placeholder]="sectionGroup.get('type')?.value === 'video' ? 'Paste YouTube video URL here (e.g., https://www.youtube.com/watch?v=...)' : 'Enter section content...'"
     [modules]="getQuillConfig(i)"
     [styles]="{ 'min-height': '150px' }"
     (onEditorCreated)="onEditorCreated($event, i)"> 
@@ -509,7 +509,12 @@
 
   <div *ngIf="sectionGroup.get('content')?.invalid && sectionGroup.get('content')?.touched" 
        class="error-message">
-    Content is required
+    <span *ngIf="sectionGroup.get('type')?.value === 'video'">
+      Please paste a YouTube video URL
+    </span>
+    <span *ngIf="sectionGroup.get('type')?.value !== 'video'">
+      Content is required
+    </span>
   </div>
 </div>
 

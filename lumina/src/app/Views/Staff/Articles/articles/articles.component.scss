@@ -1198,10 +1198,33 @@ $toeic-purple: #8b5cf6;
               label {
                 font-size: 14px;
                 margin-bottom: 8px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+
+                .video-hint {
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 6px;
+                  font-size: 12px;
+                  font-weight: 500;
+                  color: #ef4444;
+                  margin-left: auto;
+
+                  i {
+                    color: #ef4444;
+                    font-size: 14px;
+                  }
+                }
               }
 
               .form-textarea {
                 min-height: 80px;
+              }
+
+              &.hidden {
+                display: none;
               }
 
               // Upload progress indicator
@@ -1857,17 +1880,17 @@ $toeic-purple: #8b5cf6;
   .btn-create-article {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;
     border: none;
-    padding: 16px 24px;
-    border-radius: 12px;
+    padding: 10px 18px;
+    border-radius: 10px;
     font-weight: 600;
-    font-size: 15px;
+    font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    box-shadow: 0 3px 12px rgba(16, 185, 129, 0.3);
     position: relative;
     overflow: hidden;
 
@@ -1896,14 +1919,14 @@ $toeic-purple: #8b5cf6;
     }
 
     i {
-      font-size: 16px;
+      font-size: 0.875rem;
       animation: pulse 2s infinite;
     }
 
     .btn-text {
       transition: transform 0.3s ease;
       font-weight: 600;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
     }
 
     &:active {
@@ -1925,17 +1948,17 @@ $toeic-purple: #8b5cf6;
   .btn-add-category {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     background: linear-gradient(135deg, $toeic-blue 0%, #2563eb 100%);
     color: white;
     border: none;
-    padding: 16px 24px;
-    border-radius: 12px;
+    padding: 10px 18px;
+    border-radius: 10px;
     font-weight: 600;
-    font-size: 15px;
+    font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    box-shadow: 0 3px 12px rgba(59, 130, 246, 0.3);
     position: relative;
     overflow: hidden;
 
