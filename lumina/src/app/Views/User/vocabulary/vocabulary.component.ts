@@ -7,6 +7,8 @@ import { VocabularyService } from '../../../Services/Vocabulary/vocabulary.servi
 import { VocabularyListResponse, VocabularyListCreate } from '../../../Interfaces/vocabulary.interfaces';
 import { VocabularyListDetailComponent } from '../vocabulary-list-detail/vocabulary-list-detail.component';
 import { ToastService } from '../../../Services/Toast/toast.service';
+import { StreakService } from '../../../Services/streak/streak.service';
+import { AuthService } from '../../../Services/Auth/auth.service';
 
 @Component({
   selector: 'app-user-vocabulary',
@@ -49,6 +51,10 @@ export class UserVocabularyComponent implements OnInit {
   isListModalOpen = false;
   listForm: FormGroup;
   isSubmitting = false;
+
+  // Streak data
+  streakData: any = null;
+  isLoadingStreak = false;
 
 
   get showLimitedUserLists() {
@@ -100,7 +106,9 @@ export class UserVocabularyComponent implements OnInit {
     private router: Router,
     private vocabularyService: VocabularyService,
     private fb: FormBuilder,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private streakService: StreakService,
+    private authService: AuthService
   ) {
     // Form for creating new vocabulary list (private folder only)
     this.listForm = this.fb.group({
@@ -111,6 +119,7 @@ export class UserVocabularyComponent implements OnInit {
   ngOnInit() {
     // Vocabulary component for User
     this.loadUserLists();
+    this.loadStreakData();
   }
 
   openVocabularyListDetail(list: VocabularyListResponse) {
@@ -154,7 +163,37 @@ export class UserVocabularyComponent implements OnInit {
   }
 
   startDailyChallenge(): void {
-    console.log('Start daily challenge...');
+    // Navigate to Practice page (user dashboard)
+    this.router.navigate(['/homepage/user-dashboard']);
+  }
+
+  loadStreakData(): void {
+    const userId = this.authService.getCurrentUserId();
+    if (!userId) {
+      return;
+    }
+
+    this.isLoadingStreak = true;
+    this.streakService.getStreakSummary(userId).subscribe({
+      next: (data) => {
+        this.streakData = data;
+        this.isLoadingStreak = false;
+      },
+      error: (error: any) => {
+        console.error('Error loading streak data:', error);
+        this.isLoadingStreak = false;
+      }
+    });
+  }
+
+
+  getConsecutiveDays(): number {
+    return this.streakData?.currentStreak || 0;
+  }
+
+  getStreakEmoji(): string {
+    const streak = this.getConsecutiveDays();
+    return this.streakService.getStreakEmoji(streak);
   }
   private loadUserLists(): void {
     this.isLoadingLists = true;

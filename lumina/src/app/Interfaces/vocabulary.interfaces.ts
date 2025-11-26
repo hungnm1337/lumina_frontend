@@ -21,6 +21,7 @@ export interface VocabularyListResponse {
   name: string;
   isPublic: boolean | null;
   makeByName: string;
+  makeByRoleId?: number; // Role ID của người tạo (3 = Staff)
   createAt: string;
   vocabularyCount: number;
   status?: string;

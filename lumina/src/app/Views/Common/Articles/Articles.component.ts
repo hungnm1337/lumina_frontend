@@ -31,16 +31,6 @@ interface BlogArticle {
   imagePlaceholder: string;
 }
 
-interface BlogAuthor {
-  id: number;
-  name: string;
-  expertise: string;
-  avatar: string;
-  avatarColor: string;
-  articlesCount: number;
-  followers: string;
-  isFollowing: boolean;
-}
 
 @Component({
   selector: 'app-blog-articles',
@@ -86,18 +76,28 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
   }
 
   get latestArticles(): ArticleResponse[] {
+    let articles = this.publishedArticles;
+    
+    // Filter by selected author if any
+    if (this.selectedAuthor) {
+      articles = articles.filter(a => a.authorName === this.selectedAuthor);
+    }
+    
     if (!this.showAllLatestArticles) {
-      return this.publishedArticles.slice(0, 3);
+      return articles.slice(0, 3);
     }
 
     // Show paginated articles
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
-    return this.publishedArticles.slice(startIndex, endIndex);
+    return articles.slice(startIndex, endIndex);
   }
 
   get totalPages(): number {
-    return Math.ceil(this.publishedArticles.length / this.itemsPerPage);
+    const articles = this.selectedAuthor 
+      ? this.publishedArticles.filter(a => a.authorName === this.selectedAuthor)
+      : this.publishedArticles;
+    return Math.ceil(articles.length / this.itemsPerPage);
   }
 
   get hasMoreArticles(): boolean {
@@ -107,7 +107,7 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
   // Flag to show all articles in latest section
   showAllLatestArticles: boolean = false;
 
-  get featuredAuthors(): BlogAuthor[] {
+  get featuredAuthors(): any[] {
     // Extract unique authors from published articles
     const authors = new Map();
     this.publishedArticles.forEach(article => {
@@ -118,17 +118,19 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
           expertise: 'Content Creator',
           avatar: article.authorName.charAt(0).toUpperCase(),
           avatarColor: this.getAuthorAvatarColor(authors.size),
-          articlesCount: this.publishedArticles.filter(a => a.authorName === article.authorName).length,
-          followers: Math.floor(Math.random() * 50) + 10 + 'K',
-          isFollowing: false
+          articlesCount: this.publishedArticles.filter(a => a.authorName === article.authorName).length
         });
       }
     });
     return Array.from(authors.values()).slice(0, 4);
   }
 
+
   // Track login status
   isLogin: boolean = false;
+
+  // Selected author for filtering
+  selectedAuthor: string | null = null;
 
   constructor(
     private router: Router,
@@ -298,12 +300,6 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
     });
   }
 
-  onFollowAuthor(authorId: number): void {
-    const author = this.featuredAuthors.find(a => a.id === authorId);
-    if (author) {
-      author.isFollowing = !author.isFollowing;
-    }
-  }
 
   formatNumber(num: number): string {
     if (num >= 1000) {
@@ -314,6 +310,32 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
 
   goToArticleDetail(articleId: number): void {
     this.router.navigate(['/articles', articleId]);
+  }
+
+  // Filter articles by author
+  filterByAuthor(authorName: string): void {
+    if (this.selectedAuthor === authorName) {
+      // If clicking the same author, clear the filter
+      this.selectedAuthor = null;
+    } else {
+      this.selectedAuthor = authorName;
+    }
+    this.currentPage = 1; // Reset to first page
+    this.showAllLatestArticles = true; // Show all articles when filtering
+    
+    // Scroll to latest articles section
+    setTimeout(() => {
+      const element = document.querySelector('.latest-section');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  }
+
+  // Clear author filter
+  clearAuthorFilter(): void {
+    this.selectedAuthor = null;
+    this.currentPage = 1;
   }
 
   getAuthorAvatarColor(index: number): string {
