@@ -44,7 +44,8 @@ export class OptionsComponent implements OnChanges {
   }
 
   onSelect(option: OptionDTO): void {
-    if (this.disabled || this.selectedOption) {
+    // ✅ FIX: Allow re-selection by only checking if disabled
+    if (this.disabled) {
       return;
     }
 
