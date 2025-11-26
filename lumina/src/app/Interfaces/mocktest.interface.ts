@@ -59,3 +59,11 @@ export interface PerformanceAnalysisDTO {
   recommendations: string[];
   percentileRank?: number;
 }
+
+export interface MocktestFeedbackDTO {
+  overview: string;
+  toeicScore: number;
+  strengths: string[];
+  weaknesses: string[];
+  actionPlan: string;
+}

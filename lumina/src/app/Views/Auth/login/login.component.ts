@@ -20,7 +20,7 @@ declare var google: any;
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule,HeaderComponent, RouterLink],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.scss',
+  styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;

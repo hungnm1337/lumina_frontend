@@ -21,8 +21,8 @@ import { flush } from '@angular/core/testing';
     ReadingComponent,
     ListeningComponent,
   ],
-  templateUrl: './part-question.component.html',
-  styleUrl: './part-question.component.scss',
+    templateUrl: './part-question.component.html',
+    styleUrls: ['./part-question.component.scss'],
 })
 export class PartQuestionComponent {
   partId: number | null = null;

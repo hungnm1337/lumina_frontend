@@ -194,6 +194,12 @@ export class ExamComponent implements OnInit, OnDestroy {
     }
   }
 
+  updatePartCodeStorage() {
+    if (this.currentPart && this.currentPart.partCode) {
+      localStorage.setItem("PartCodeStorage", this.currentPart.partCode[this.currentPart.partCode.length - 1]);
+    }
+  }
+
   private submitAnswerToBackend(questionId: number, selectedOptionId: number): void {
     if (!this.attemptId) return;
 
@@ -335,6 +341,7 @@ export class ExamComponent implements OnInit, OnDestroy {
       this.currentQuestionIndex = 0;
       this.showPartCompletionMessage = false;
       this.toastService.success(`Starting ${this.currentPart?.title}`);
+      this.updatePartCodeStorage();
     }
   }
 
@@ -422,9 +429,9 @@ export class ExamComponent implements OnInit, OnDestroy {
               this.isSubmitting = false;
               this.toastService.warning('Exam submitted but failed to calculate final score');
 
-              // Still navigate to home
+              // Still navigate to result page to show feedback
               setTimeout(() => {
-                this.router.navigate(['/homepage/user-dashboard/exams']);
+                this.router.navigate(['/homepage/user-dashboard/mocktest/result', this.attemptId]);
               }, 1500);
             }
           });
@@ -483,11 +490,13 @@ export class ExamComponent implements OnInit, OnDestroy {
       next: () => {
         console.log('✅ Progress saved successfully');
         localStorage.removeItem('currentExamAttempt');
-        this.router.navigate(['/homepage/user-dashboard/exams']);
+        // Navigate to result page to show feedback
+        this.router.navigate(['/homepage/user-dashboard/mocktest/result', this.attemptId]);
       },
       error: (error) => {
         console.error('❌ Error saving progress:', error);
-        this.router.navigate(['/homepage/user-dashboard/exams']);
+        // Still navigate to result page even if save fails
+        this.router.navigate(['/homepage/user-dashboard/mocktest/result', this.attemptId]);
       }
     });
   }

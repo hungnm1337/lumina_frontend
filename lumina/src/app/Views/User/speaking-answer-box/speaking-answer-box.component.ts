@@ -31,7 +31,7 @@ type RecordingState =
   standalone: true,
   imports: [CommonModule],
   templateUrl: './speaking-answer-box.component.html',
-  styleUrl: './speaking-answer-box.component.scss',
+  styleUrls: ['./speaking-answer-box.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SpeakingAnswerBoxComponent

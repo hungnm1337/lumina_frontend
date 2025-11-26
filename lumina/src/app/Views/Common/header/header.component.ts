@@ -18,7 +18,7 @@ import { NotificationService } from '../../../Services/Notification/notification
   standalone: true,
   imports: [CommonModule, RouterModule, UpgradeModalComponent, ReportPopupComponent],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.scss',
+  styleUrls: ['./header.component.scss'],
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   currentUser$!: Observable<AuthUserResponse | null>;

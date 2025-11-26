@@ -27,7 +27,7 @@ import { WritingQuestionStateService } from '../../../Services/Exam/Writing/writ
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './writing-answer-box.component.html',
-  styleUrl: './writing-answer-box.component.scss',
+  styleUrls: ['./writing-answer-box.component.scss'],
 })
 export class WritingAnswerBoxComponent implements OnInit, OnChanges, OnDestroy {
   @Input() questionId: number = 0;
