@@ -312,8 +312,8 @@ export class ReviewQuizComponent implements OnInit, OnDestroy {
       this.incorrectCount++;
     }
     
-    // Update spaced repetition status
-    this.updateSpacedRepetition(question, isCorrect);
+    // Update spaced repetition status (truyền thêm timeSpent)
+    this.updateSpacedRepetition(question, isCorrect, timeSpent);
     
     // Move to next question or finish
     setTimeout(() => {
@@ -326,11 +326,24 @@ export class ReviewQuizComponent implements OnInit, OnDestroy {
     }, 1500); // Show feedback for 1.5 seconds
   }
 
-  updateSpacedRepetition(question: ReviewQuizQuestion, isCorrect: boolean): void {
-    // Quality: 0-5
-    // If correct: quality = 4 (nhớ tốt)
-    // If incorrect: quality = 2 (không nhớ tốt, sẽ reset về 1 ngày = ngày mai)
-    const quality = isCorrect ? 4 : 2;
+  updateSpacedRepetition(question: ReviewQuizQuestion, isCorrect: boolean, timeSpent: number): void {
+    // Cải thiện quality mapping: tính dựa trên thời gian trả lời
+    // Quality: 0-5 (0 = không nhớ, 5 = nhớ rất tốt)
+    let quality: number;
+    
+    if (!isCorrect) {
+      quality = 0;  // Không nhớ
+    } else {
+      // Tính quality dựa trên thời gian trả lời
+      // Nhanh (< 5s) = 5, Trung bình (5-15s) = 4, Chậm (> 15s) = 3
+      if (timeSpent < 5) {
+        quality = 5;  // Nhớ rất tốt
+      } else if (timeSpent < 15) {
+        quality = 4;  // Nhớ tốt
+      } else {
+        quality = 3;  // Nhớ tạm
+      }
+    }
     
     const request: ReviewVocabularyRequest = {
       vocabularyId: question.vocabularyId,

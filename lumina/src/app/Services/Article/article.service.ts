@@ -55,9 +55,19 @@ export class ArticleService {
     return this.http.post<ArticleResponse>(this.apiUrl, articleData, { headers });
   }
 
-  // Lấy chi tiết article theo ID
+  // Lấy chi tiết article theo ID (chỉ bài đã published)
   getArticleById(id: number): Observable<ArticleResponse> {
     return this.http.get<ArticleResponse>(`${this.apiUrl}/${id}`);
+  }
+
+  // Lấy chi tiết article cho manager (có thể xem bài pending/draft)
+  getArticleByIdForManager(id: number): Observable<ArticleResponse> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+    return this.http.get<ArticleResponse>(`${this.apiUrl}/manager/${id}`, { headers });
   }
 
   // Lấy danh sách tất cả articles (không cần đăng nhập)
@@ -212,66 +222,82 @@ reviewArticle(id: number, isApproved: boolean, comment?: string): Observable<any
     };
   }
 
-  // Get user article progress (mock data tạm thời - sẽ thay bằng API call thật sau)
+  // Get user article progress
   getUserArticleProgress(articleIds: number[]): Observable<ArticleProgress[]> {
     const token = localStorage.getItem('lumina_token');
+    if (!token) {
+      // If not logged in, return empty progress
+      return of([]);
+    }
+
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     });
 
-    // TODO: Thay bằng API call thật khi backend có endpoint
-    // return this.http.get<ArticleProgress[]>(`${this.apiUrl}/progress`, { 
-    //   params: { articleIds: articleIds.join(',') }, 
-    //   headers 
-    // });
+    if (articleIds.length === 0) {
+      return of([]);
+    }
 
-    // Mock data tạm thời
-    const mockProgress: ArticleProgress[] = articleIds.map((id, index) => {
-      // Tạo random progress để demo
-      const randomStatus = Math.random();
-      let status: 'not_started' | 'in_progress' | 'completed' = 'not_started';
-      let progressPercent = 0;
-
-      if (randomStatus > 0.6) {
-        status = 'completed';
-        progressPercent = 100;
-      } else if (randomStatus > 0.3) {
-        status = 'in_progress';
-        progressPercent = Math.floor(Math.random() * 80) + 10; // 10-90%
-      }
-
-      return {
-        articleId: id,
-        progressPercent,
-        status,
-        lastAccessedAt: status !== 'not_started' ? new Date().toISOString() : undefined,
-        completedAt: status === 'completed' ? new Date().toISOString() : undefined
-      };
-    });
-
-    // Return mock data with delay simulation
-    return of(mockProgress).pipe(
-      map(data => {
-        // Simulate API delay
-        return data;
+    return this.http.get<ArticleProgress[]>(`${this.apiUrl}/progress`, { 
+      params: { articleIds: articleIds.join(',') }, 
+      headers 
+    }).pipe(
+      map((response: any[]) => {
+        // Map backend response to frontend interface
+        return response.map(item => ({
+          articleId: item.articleId,
+          progressPercent: item.progressPercent || 0,
+          status: item.status || 'not_started' as 'not_started' | 'in_progress' | 'completed',
+          lastAccessedAt: item.lastAccessedAt,
+          completedAt: item.completedAt
+        }));
+      }),
+      catchError(error => {
+        console.error('Error loading article progress:', error);
+        // Return empty array on error
+        return of([]);
       })
     );
   }
 
-  // Save article progress (mock implementation - replace with actual API call)
+  // Save article progress
   saveArticleProgress(articleId: number, progress: { progressPercent: number; status: string }): Observable<any> {
     const token = localStorage.getItem('lumina_token');
+    if (!token) {
+      return throwError(() => new Error('User not authenticated'));
+    }
+
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     });
 
-    // TODO: Replace with actual API call when backend endpoint is ready
-    // return this.http.post(`${this.apiUrl}/${articleId}/progress`, progress, { headers });
+    return this.http.post(`${this.apiUrl}/${articleId}/progress`, progress, { headers }).pipe(
+      catchError(error => {
+        console.error('Error saving article progress:', error);
+        return throwError(() => error);
+      })
+    );
+  }
 
-    // Mock implementation - just log for now
-    console.log('Saving progress for article', articleId, progress);
-    return of({ success: true, message: 'Progress saved' });
+  // Mark article as done
+  markArticleAsDone(articleId: number): Observable<any> {
+    const token = localStorage.getItem('lumina_token');
+    if (!token) {
+      return throwError(() => new Error('User not authenticated'));
+    }
+
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post(`${this.apiUrl}/${articleId}/mark-as-done`, {}, { headers }).pipe(
+      catchError(error => {
+        console.error('Error marking article as done:', error);
+        return throwError(() => error);
+      })
+    );
   }
 }

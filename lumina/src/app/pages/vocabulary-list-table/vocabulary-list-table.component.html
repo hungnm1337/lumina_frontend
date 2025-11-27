@@ -1,0 +1,266 @@
+<app-header></app-header>
+
+<div class="vocabulary-list-container">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="header-content">
+      <button (click)="goBack()" class="back-button">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"
+          class="back-icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+        <span>Quay lại</span>
+      </button>
+      <div class="title-wrapper">
+        <h1 class="page-title">
+          <span class="toeic-badge">TOEIC</span>
+          Danh Sách Từ Vựng Spaced Repetition
+        </h1>
+        <p class="page-subtitle">Theo dõi chi tiết tiến độ học tập của từng từ vựng</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters and Search Section -->
+  <div class="filters-section">
+    <div class="filters-container">
+      <!-- Search -->
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" [(ngModel)]="searchQuery" (input)="applyFilters()"
+          placeholder="Tìm kiếm từ hoặc định nghĩa..." class="search-input">
+      </div>
+
+      <!-- Status Filter -->
+      <div class="filter-group">
+        <label class="filter-label">Trạng thái:</label>
+        <select [(ngModel)]="statusFilter" (change)="applyFilters()" class="filter-select">
+          <option value="all">Tất cả</option>
+          <option value="New">Mới</option>
+          <option value="Learning">Đang học</option>
+          <option value="Mastered">Đã thuộc</option>
+        </select>
+      </div>
+
+      <!-- Stats Summary -->
+      <div class="stats-summary">
+        <div class="stat-item">
+          <i class="fas fa-book"></i>
+          <span class="stat-value">{{ filteredRows.length }}</span>
+          <span class="stat-label">từ vựng</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Đang tải danh sách từ vựng...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && filteredRows.length === 0" class="empty-state">
+    <div class="empty-icon">📚</div>
+    <h3>Không tìm thấy từ vựng nào</h3>
+    <p *ngIf="searchQuery">Thử tìm kiếm với từ khóa khác</p>
+    <p *ngIf="!searchQuery">Bạn chưa có từ vựng nào trong hệ thống spaced repetition</p>
+  </div>
+
+  <!-- Vocabulary Table -->
+  <div *ngIf="!isLoading && filteredRows.length > 0" class="table-container">
+    <!-- Desktop Table View -->
+    <div class="desktop-table">
+      <table class="vocabulary-table">
+        <thead>
+          <tr>
+            <th class="sortable" (click)="setSortBy('word')">
+              <div class="th-content">
+                <span>Từ vựng</span>
+                <i class="fas" [ngClass]="{
+                  'fa-sort': sortBy !== 'word',
+                  'fa-sort-up': sortBy === 'word' && sortDirection === 'asc',
+                  'fa-sort-down': sortBy === 'word' && sortDirection === 'desc'
+                }"></i>
+              </div>
+            </th>
+            <th>Định nghĩa</th>
+            <th class="sortable" (click)="setSortBy('status')">
+              <div class="th-content">
+                <span>Trạng thái</span>
+                <i class="fas" [ngClass]="{
+                  'fa-sort': sortBy !== 'status',
+                  'fa-sort-up': sortBy === 'status' && sortDirection === 'asc',
+                  'fa-sort-down': sortBy === 'status' && sortDirection === 'desc'
+                }"></i>
+              </div>
+            </th>
+            <th class="sortable" (click)="setSortBy('intervals')">
+              <div class="th-content">
+                <span>Interval</span>
+                <i class="fas" [ngClass]="{
+                  'fa-sort': sortBy !== 'intervals',
+                  'fa-sort-up': sortBy === 'intervals' && sortDirection === 'asc',
+                  'fa-sort-down': sortBy === 'intervals' && sortDirection === 'desc'
+                }"></i>
+              </div>
+            </th>
+            <th>Độ dễ nhớ</th>
+            <th>Số lần review</th>
+            <th class="sortable" (click)="setSortBy('nextReview')">
+              <div class="th-content">
+                <span>Review tiếp theo</span>
+                <i class="fas" [ngClass]="{
+                  'fa-sort': sortBy !== 'nextReview',
+                  'fa-sort-up': sortBy === 'nextReview' && sortDirection === 'asc',
+                  'fa-sort-down': sortBy === 'nextReview' && sortDirection === 'desc'
+                }"></i>
+              </div>
+            </th>
+            <th>Folder</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of paginatedRows" (click)="goToDeck(row.vocabularyListId)" class="vocabulary-row">
+            <!-- Word -->
+            <td class="word-cell">
+              <div class="word-content">
+                <span class="word">{{ row.word }}</span>
+                <span *ngIf="row.category" class="category-badge">{{ row.category }}</span>
+              </div>
+            </td>
+
+            <!-- Definition -->
+            <td class="definition-cell">
+              <div class="definition-content">
+                <p class="definition">{{ row.definition }}</p>
+                <span *ngIf="row.type" class="type-text">
+                  <i class="fas fa-tag"></i>
+                  {{ row.type }}
+                </span>
+              </div>
+            </td>
+
+            <!-- Status -->
+            <td class="status-cell">
+              <span class="status-badge" [ngClass]="getStatusClass(row.status)">
+                {{ row.status }}
+              </span>
+            </td>
+
+            <!-- Intervals -->
+            <td class="intervals-cell">
+              <div class="intervals-content">
+                <span class="intervals-value">{{ row.intervals }} ngày</span>
+                <span class="intervals-milestone">{{ getIntervalMilestones(row.intervals) }}</span>
+              </div>
+            </td>
+
+            <!-- Quality -->
+            <td class="quality-cell">
+              <div class="quality-content" *ngIf="row.quality !== undefined">
+                <div class="quality-bar-container">
+                  <div class="quality-bar" [ngClass]="getQualityClass(row.quality)" [style.width.%]="row.quality * 20">
+                  </div>
+                </div>
+                <span class="quality-value">{{ row.quality }}/5</span>
+              </div>
+              <span *ngIf="row.quality === undefined" class="no-data">-</span>
+            </td>
+
+            <!-- Review Count -->
+            <td class="review-count-cell">
+              <div class="review-count-content">
+                <i class="fas fa-redo-alt"></i>
+                <span>{{ row.reviewCount }} lần</span>
+              </div>
+            </td>
+
+            <!-- Next Review -->
+            <td class="next-review-cell">
+              <div class="next-review-content">
+                <span class="date">{{ formatDate(row.nextReviewAt) }}</span>
+                <span class="days-until" *ngIf="row.nextReviewAt" [ngClass]="{
+                  'overdue': getDaysUntilReview(row.nextReviewAt) < 0,
+                  'due-soon': getDaysUntilReview(row.nextReviewAt) >= 0 && getDaysUntilReview(row.nextReviewAt) <= 1,
+                  'upcoming': getDaysUntilReview(row.nextReviewAt) > 1
+                }">
+                  <ng-container *ngIf="getDaysUntilReview(row.nextReviewAt) === 0">Hôm nay</ng-container>
+                  <ng-container *ngIf="getDaysUntilReview(row.nextReviewAt) === 1">Ngày mai</ng-container>
+                  <ng-container *ngIf="getDaysUntilReview(row.nextReviewAt) < 0">Quá {{
+                    -getDaysUntilReview(row.nextReviewAt) }} ngày</ng-container>
+                  <ng-container *ngIf="getDaysUntilReview(row.nextReviewAt) > 1">Còn {{
+                    getDaysUntilReview(row.nextReviewAt) }} ngày</ng-container>
+                </span>
+              </div>
+            </td>
+
+            <!-- Folder -->
+            <td class="folder-cell">
+              <span class="folder-name">{{ row.vocabularyListName }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile Card View -->
+    <div class="mobile-cards">
+      <div *ngFor="let row of paginatedRows" class="vocab-card" (click)="goToDeck(row.vocabularyListId)">
+        <div class="card-header">
+          <h3 class="word">{{ row.word }}</h3>
+          <span class="status-badge" [ngClass]="getStatusClass(row.status)">{{ row.status }}</span>
+        </div>
+
+        <div class="card-body">
+          <p class="definition">{{ row.definition }}</p>
+
+          <div class="card-stats">
+            <div class="stat-row">
+              <span class="stat-label">Interval:</span>
+              <span class="stat-value">{{ row.intervals }} ngày</span>
+            </div>
+
+            <div class="stat-row" *ngIf="row.quality !== undefined">
+              <span class="stat-label">Độ dễ nhớ:</span>
+              <span class="stat-value">{{ row.quality }}/5</span>
+            </div>
+
+            <div class="stat-row">
+              <span class="stat-label">Review:</span>
+              <span class="stat-value">{{ row.reviewCount }} lần</span>
+            </div>
+
+            <div class="stat-row" *ngIf="row.nextReviewAt">
+              <span class="stat-label">Lần sau:</span>
+              <span class="stat-value">{{ formatDate(row.nextReviewAt) }}</span>
+            </div>
+
+            <div class="stat-row">
+              <span class="stat-label">Folder:</span>
+              <span class="stat-value">{{ row.vocabularyListName }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container" *ngIf="totalPages > 1">
+      <button class="pagination-btn" [disabled]="currentPage === 1" (click)="previousPage()">
+        <i class="fas fa-chevron-left"></i>
+        Trước
+      </button>
+
+      <div class="pagination-info">
+        <span>Trang {{ currentPage }} / {{ totalPages }}</span>
+        <span class="total-items">({{ filteredRows.length }} từ vựng)</span>
+      </div>
+
+      <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
+        Sau
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+</div>

@@ -48,45 +48,60 @@
       <p>{{ article.summary }}</p>
     </div>
 
-    <!-- Article Content Sections (chỉ hiển thị 1 section tại một thời điểm - giống exam) -->
+    <!-- Progress Bar -->
+    <div class="progress-section" *ngIf="isLogin">
+      <div class="progress-header">
+        <span class="progress-label">Tiến độ đọc</span>
+        <span class="progress-percent">{{ getProgressPercent() }}%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="getProgressPercent()"></div>
+      </div>
+    </div>
+
+    <!-- Article Content Sections -->
     <div class="content-sections">
       <div *ngIf="article.sections && article.sections.length > 0; else noContent">
-        <!-- Chỉ hiển thị section hiện tại -->
-        <div *ngIf="article.sections[currentSectionIndex]"
-             class="content-section"
-             [class.active]="true"
-             [class.completed]="isSectionCompleted(currentSectionIndex)">
-
-          <!-- Section Header -->
+        <!-- Current Section -->
+        <div class="section-card"
+             [class.completed]="isSectionCompleted(currentSectionIndex)"
+             [class.active]="true">
+          
           <div class="section-header">
+            <div class="section-number">
+              <span class="section-current">{{ currentSectionIndex + 1 }}</span>
+              <span class="section-divider">/</span>
+              <span class="section-total">{{ article.sections.length }}</span>
+            </div>
             <h2 class="section-title">
-              Section {{ currentSectionIndex + 1 }} / {{ article.sections.length }}:
               {{ article.sections[currentSectionIndex].sectionTitle }}
             </h2>
-            <div class="section-status" *ngIf="isSectionCompleted(currentSectionIndex)">
+            <div class="section-status-badge" *ngIf="isSectionCompleted(currentSectionIndex)">
               <i class="fas fa-check-circle"></i>
-              <span>Completed</span>
+              <span>Đã hoàn thành</span>
             </div>
           </div>
 
-          <!-- Section Content -->
-          <div class="section-content"
-               [innerHTML]="getCurrentSectionContent()">
-          </div>
+          <div class="section-content" [innerHTML]="getCurrentSectionContent()"></div>
 
-          <!-- Mark as Read Button - chỉ hiển thị khi đã đăng nhập -->
-          <div class="section-actions" *ngIf="!isSectionCompleted(currentSectionIndex) && isLogin">
-            <button class="mark-read-btn" (click)="markSectionAsRead(currentSectionIndex)">
-              <i class="fas fa-check"></i>
-              Mark as Read
+          <!-- Action Buttons -->
+          <div class="section-actions">
+            <button 
+              *ngIf="isLogin && !isSectionCompleted(currentSectionIndex)"
+              class="btn-mark-done" 
+              (click)="markSectionAsDone()">
+              <i class="fas fa-check-circle"></i>
+              <span>Đánh dấu hoàn thành</span>
+            </button>
+            
+            <button
+              (click)="showReportPopup = true"
+              class="btn-report">
+              <i class="fas fa-flag"></i>
+              <span>Báo cáo bài viết</span>
             </button>
           </div>
-          <button
-            (click)="showReportPopup = true"
-            class="px-6 py-4 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 font-semibold shadow-lg"
-          >
-            <i class="fas fa-flag mr-2"></i>Báo cáo bài viết
-          </button>
+
           @if (showReportPopup) {
             <app-report-popup
               [type]="'Article - ' + article.articleId + ' - Section - ' + currentSectionId"
@@ -95,71 +110,74 @@
           }
         </div>
 
-        <!-- Navigation Buttons (giống exam - Previous/Next) -->
+        <!-- Navigation -->
         <div class="section-navigation">
           <button
             (click)="previousSection()"
             [disabled]="currentSectionIndex === 0"
             class="nav-btn prev-btn">
-            <i class="fas fa-arrow-left"></i>
-            Previous Section
+            <i class="fas fa-chevron-left"></i>
+            <span>Section trước</span>
           </button>
 
           <button
             (click)="nextSection()"
             [disabled]="currentSectionIndex === article.sections.length - 1"
             class="nav-btn next-btn">
-            Next Section
-            <i class="fas fa-arrow-right"></i>
+            <span>Section tiếp theo</span>
+            <i class="fas fa-chevron-right"></i>
           </button>
         </div>
 
-        <!-- Section Navigator (giống exam question navigator) - Hiển thị dưới navigation buttons -->
+        <!-- Section Navigator -->
         <div class="section-navigator" *ngIf="article && article.sections && article.sections.length > 0">
-          <div class="navigator-container">
-            <h4 class="navigator-title">Navigator</h4>
-            <div class="section-buttons grid-cols-10">
-              <button
-                *ngFor="let section of article.sections; let i = index"
-                [class]="'section-btn ' + getSectionButtonClass(i)"
-                (click)="goToSection(i)"
-                [disabled]="!canAccessSection(i)">
-                {{ i + 1 }}
-              </button>
-            </div>
+          <div class="navigator-header">
+            <h4 class="navigator-title">
+              <i class="fas fa-list"></i>
+              Danh sách sections
+            </h4>
+          </div>
+          <div class="section-buttons">
+            <button
+              *ngFor="let section of article.sections; let i = index"
+              [class]="'section-btn ' + getSectionButtonClass(i)"
+              (click)="goToSection(i)"
+              [disabled]="!canAccessSection(i)"
+              [title]="section.sectionTitle">
+              <span class="btn-number">{{ i + 1 }}</span>
+              <span class="btn-status" *ngIf="isSectionCompleted(i)">
+                <i class="fas fa-check"></i>
+              </span>
+            </button>
           </div>
         </div>
       </div>
+      
       <ng-template #noContent>
         <div class="no-content">
-          <p>Article content is being updated...</p>
+          <i class="fas fa-file-alt"></i>
+          <p>Nội dung bài viết đang được cập nhật...</p>
         </div>
       </ng-template>
     </div>
-
-    <!-- Tags -->
-    <div class="article-tags">
-      <span class="tag">{{ article.categoryName }}</span>
-    </div>
-
-
   </div>
 </div>
 
 <!-- Loading State -->
 <div *ngIf="isLoading" class="loading-state">
   <div class="loading-spinner"></div>
-    <p>Loading article...</p>
+  <p>Đang tải bài viết...</p>
 </div>
 
 <!-- Error State -->
 <div *ngIf="error" class="error-state">
+  <i class="fas fa-exclamation-circle"></i>
   <p>{{ error }}</p>
-    <button (click)="loadArticle()" class="retry-btn">Retry</button>
+  <button (click)="loadArticle()" class="retry-btn">Thử lại</button>
 </div>
 
-<!-- Floating Chat Box - Always visible at bottom right -->
+<!-- Floating Chat Box & Note -->
 @if(isLogin){
-<app-chat-box [contentArticle]="contentArticle"></app-chat-box>
-<app-note *ngIf="article" [articleId]="article.articleId" [sectionId]="currentSectionId"></app-note>
+  <app-chat-box [contentArticle]="contentArticle"></app-chat-box>
+  <app-note *ngIf="article" [articleId]="article.articleId" [sectionId]="currentSectionId"></app-note>
 }

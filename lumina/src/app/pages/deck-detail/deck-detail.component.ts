@@ -32,6 +32,11 @@ export class DeckDetailComponent implements OnInit {
   isReviewing = false;
   showReviewButtons = false;
 
+  // Custom Modal
+  showModal = false;
+  modalMessage = '';
+  modalType: 'success' | 'error' | 'info' = 'info';
+
   constructor(
     private route: ActivatedRoute,
     private flashcardService: FlashcardService,
@@ -288,7 +293,7 @@ export class DeckDetailComponent implements OnInit {
     if (!this.spacedRepetition) {
       const listId = parseInt(this.deckId || '');
       if (isNaN(listId)) {
-        alert('Không thể xác định bộ từ vựng. Vui lòng thử lại.');
+        this.showCustomAlert('Không thể xác định bộ từ vựng. Vui lòng thử lại.', 'error');
         this.isReviewing = false;
         return;
       }
@@ -302,7 +307,7 @@ export class DeckDetailComponent implements OnInit {
         },
         error: (createError) => {
           console.error('Error creating SpacedRepetition:', createError);
-          alert('Có lỗi xảy ra khi tạo bản ghi. Vui lòng thử lại.');
+          this.showCustomAlert('Có lỗi xảy ra khi tạo bản ghi. Vui lòng thử lại.', 'error');
           this.isReviewing = false;
         }
       });
@@ -317,14 +322,14 @@ export class DeckDetailComponent implements OnInit {
     // Lấy term hiện tại để lấy VocabularyId
     const currentTerm = this.terms[this.currentTermIndex];
     if (!currentTerm) {
-      alert('Không tìm thấy từ vựng. Vui lòng thử lại.');
+      this.showCustomAlert('Không tìm thấy từ vựng. Vui lòng thử lại.', 'error');
       this.isReviewing = false;
       return;
     }
 
     const listId = parseInt(this.deckId || '');
     if (isNaN(listId)) {
-      alert('Không thể xác định bộ từ vựng. Vui lòng thử lại.');
+      this.showCustomAlert('Không thể xác định bộ từ vựng. Vui lòng thử lại.', 'error');
       this.isReviewing = false;
       return;
     }
@@ -348,13 +353,13 @@ export class DeckDetailComponent implements OnInit {
           }
 
           // Hiển thị thông báo thành công
-          alert(`Đã đánh giá thành công! Lần review tiếp theo: ${this.formatNextReviewDate(response.nextReviewAt)}`);
+          this.showCustomAlert(`Đã đánh giá thành công! Lần review tiếp theo: ${this.formatNextReviewDate(response.nextReviewAt)}`, 'success');
         }
         this.isReviewing = false;
       },
       error: (error) => {
         console.error('Error reviewing vocabulary:', error);
-        alert('Có lỗi xảy ra khi đánh giá. Vui lòng thử lại.');
+        this.showCustomAlert('Có lỗi xảy ra khi đánh giá. Vui lòng thử lại.', 'error');
         this.isReviewing = false;
       }
     });
@@ -407,5 +412,17 @@ export class DeckDetailComponent implements OnInit {
     this.isFlipped = false;
     // Scroll lên đầu flashcard
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Custom Alert Modal Methods
+  showCustomAlert(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
+    this.modalMessage = message;
+    this.modalType = type;
+    this.showModal = true;
+  }
+
+  closeModal(): void {
+    this.showModal = false;
+    this.modalMessage = '';
   }
 }

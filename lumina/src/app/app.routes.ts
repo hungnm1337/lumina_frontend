@@ -168,6 +168,13 @@ export const routes: Routes = [
     component: SpacedRepetitionDashboardComponent,
   },
   {
+    path: 'spaced-repetition/vocabulary-list',
+    loadComponent: () =>
+      import('./pages/vocabulary-list-table/vocabulary-list-table.component').then(
+        (m) => m.VocabularyListTableComponent
+      ),
+  },
+  {
     path: 'spaced-repetition/review-quiz',
     loadComponent: () =>
       import('./pages/review-quiz/review-quiz.component').then(
