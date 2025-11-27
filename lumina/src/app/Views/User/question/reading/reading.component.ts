@@ -154,6 +154,10 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
 
     const currentQuestion = this.questions[this.currentIndex];
 
+    // ✅ Check if this question was already answered
+    const previousAnswer = this.answeredQuestions.get(currentQuestion.questionId);
+    const isUpdatingAnswer = previousAnswer !== undefined;
+
     this.isSubmitting = true;
     const model = {
       examAttemptId: this.attemptId,
@@ -161,20 +165,29 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
       selectedOptionId: selectedOptionId,
     };
 
-    console.log('Submitting reading answer:', model);
+    console.log(isUpdatingAnswer ? 'Updating reading answer:' : 'Submitting reading answer:', model);
 
     this.examAttemptService.submitReadingAnswerNew(model).subscribe({
       next: (response) => {
         console.log('Reading answer submitted:', response);
 
-        // Store answer info
+        // ✅ If updating answer, adjust previous scores first
+        if (isUpdatingAnswer) {
+          if (previousAnswer.isCorrect) {
+            this.correctCount--;
+          }
+          this.totalScore -= previousAnswer.score;
+          console.log('Adjusted scores - removed previous answer contribution');
+        }
+
+        // Store new answer info
         this.answeredQuestions.set(currentQuestion.questionId, {
           selectedOptionId: selectedOptionId,
           isCorrect: response.isCorrect,
           score: response.score,
         });
 
-        // Update totals
+        // Update totals with new answer
         if (response.isCorrect) {
           this.correctCount++;
         }

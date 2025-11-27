@@ -39,7 +39,6 @@
   <!-- Options -->
   <app-options
     [options]="questions[currentIndex].options || []"
-    [disabled]="showExplain"
     [resetAt]="currentIndex"
     [preSelectedOptionId]="
       getSelectedOptionId(questions[currentIndex].questionId)
