@@ -155,6 +155,17 @@ export class QuestionsComponent implements OnInit {
     const file = event.target.files[0];
     if (!file) return;
 
+    const isValid =
+      this.isAcceptedMedia(file, [
+        { prefix: 'image/', extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp'] },
+        { prefix: 'audio/', extensions: ['mp3', 'wav', 'm4a', 'ogg'] },
+      ]);
+
+    if (!isValid) {
+      alert('Vui lòng chọn file hình ảnh hoặc âm thanh hợp lệ!');
+      return;
+    }
+
     this.uploading = true;
     this.uploadedUrl = null;
 
@@ -182,7 +193,7 @@ export class QuestionsComponent implements OnInit {
     const questionGroup: any = {
       stemText: ['', Validators.required],
       questionExplain: [''],
-      scoreWeight: [1, Validators.required],
+      scoreWeight: [1, [Validators.required, Validators.min(1)]],
       time: [30, Validators.required],
     };
 
@@ -202,10 +213,11 @@ export class QuestionsComponent implements OnInit {
     this.questions.removeAt(index);
   }
 
-  createOption(): FormGroup {
+  createOption(option?: any): FormGroup {
     return this.fb.group({
-      content: ['', Validators.required],
-      isCorrect: [false],
+      optionId: [option?.optionId ?? null],
+      content: [option?.content ?? '', Validators.required],
+      isCorrect: [option?.isCorrect ?? false],
     });
   }
 
@@ -236,14 +248,42 @@ export class QuestionsComponent implements OnInit {
 
   uploadMedia(event: any, field: 'referenceImageUrl' | 'referenceAudioUrl') {
     const file = event.target.files[0];
-    if (file) {
-      this.mediaService.uploadFile(file).subscribe({
-        next: (res) => {
-          this.promptForm.patchValue({ [field]: res.url });
-        },
-        error: () => alert('Upload thất bại!'),
-      });
+    if (!file) return;
+
+    const isImageField = field === 'referenceImageUrl';
+    const validations = isImageField
+      ? [{ prefix: 'image/', extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp'] }]
+      : [{ prefix: 'audio/', extensions: ['mp3', 'wav', 'm4a', 'ogg'] }];
+
+    if (!this.isAcceptedMedia(file, validations)) {
+      alert(
+        `Vui lòng chọn file ${
+          isImageField ? 'hình ảnh' : 'âm thanh'
+        } đúng định dạng!`
+      );
+      return;
     }
+
+    this.mediaService.uploadFile(file).subscribe({
+      next: (res) => {
+        this.promptForm.patchValue({ [field]: res.url });
+      },
+      error: () => alert('Upload thất bại!'),
+    });
+  }
+
+  private isAcceptedMedia(
+    file: File,
+    rules: { prefix: string; extensions: string[] }[]
+  ): boolean {
+    const type = (file.type || '').toLowerCase();
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+
+    return rules.some(
+      (rule) =>
+        (!!type && type.startsWith(rule.prefix)) ||
+        (!!ext && rule.extensions.includes(ext))
+    );
   }
   selectedSkill: string = '';
   filteredParts: any[] = [];
@@ -603,7 +643,7 @@ export class QuestionsComponent implements OnInit {
     const formObj: any = {
       stemText: ['', [Validators.required, noWhitespaceValidator()]],
       questionExplain: [''],
-      scoreWeight: [1, Validators.required],
+      scoreWeight: [1, [Validators.required, Validators.min(1)]],
       time: [30, Validators.required],
     };
 
@@ -648,7 +688,10 @@ export class QuestionsComponent implements OnInit {
     const formObj: any = {
       stemText: [q.stemText, Validators.required],
       questionExplain: [q.questionExplain || ''],
-      scoreWeight: [q.scoreWeight ?? 1, Validators.required],
+      scoreWeight: [
+        q.scoreWeight ?? 1,
+        [Validators.required, Validators.min(1)],
+      ],
       time: [q.time ?? 30, Validators.required],
     };
 
@@ -663,14 +706,10 @@ export class QuestionsComponent implements OnInit {
       this.currentSkill !== 'SPEAKING' &&
       this.currentSkill !== 'WRITING'
     ) {
+      const optionSource =
+        q.options && q.options.length ? q.options : Array(4).fill(null);
       formObj.options = this.fb.array(
-        (q.options && q.options.length ? q.options : [1, 2, 3, 4]).map(
-          (opt: any) =>
-            this.fb.group({
-              content: [opt?.content || '', Validators.required],
-              isCorrect: [!!opt?.isCorrect],
-            })
-        )
+        optionSource.map((opt: any) => this.createOption(opt))
       );
     }
     this.questionForm = this.fb.group(formObj);
@@ -689,6 +728,11 @@ export class QuestionsComponent implements OnInit {
   // Thêm mới câu hỏi
   saveQuestion() {
     if (this.questionForm.invalid) {
+      const scoreControl = this.questionForm.get('scoreWeight');
+      if (scoreControl?.errors?.['min']) {
+        this.showMessage('Điểm mỗi câu hỏi phải lớn hơn 0!', 'error');
+        return;
+      }
       this.showMessage('Vui lòng nhập đủ thông tin!', 'error');
       return;
     }
@@ -738,10 +782,16 @@ export class QuestionsComponent implements OnInit {
       this.currentSkill !== 'Writing' &&
       Array.isArray(value.options)
     ) {
-      dto.options = value.options.map((opt: any) => ({
-        content: opt.content,
-        isCorrect: !!opt.isCorrect,
-      }));
+      dto.options = value.options.map((opt: any) => {
+        const optionPayload: any = {
+          content: opt.content,
+          isCorrect: !!opt.isCorrect,
+        };
+        if (opt.optionId) {
+          optionPayload.optionId = opt.optionId;
+        }
+        return optionPayload;
+      });
     } else {
       dto.options = [];
     }
