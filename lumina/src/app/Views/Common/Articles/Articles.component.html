@@ -5,25 +5,10 @@
   <div class="hero-content">
     <h1 class="hero-title">Articles TOEIC</h1>
     <p class="hero-subtitle">Discover knowledge, study tips and TOEIC exam experience from leading experts</p>
-    
-    <div class="hero-stats">
-      <div class="stat-item">
-        <i class="fas fa-file-alt"></i>
-        <span>500+ articles</span>
-      </div>
-      <div class="stat-item">
-        <i class="fas fa-users"></i>
-        <span>50+ authors</span>
-      </div>
-      <div class="stat-item">
-        <i class="fas fa-eye"></i>
-        <span>1M+ reads</span>
-      </div>
-    </div>
   </div>
 </div>
 
-<!-- Search and Filter Section -->
+<!-- Search Section -->
 <div class="search-filter-section">
   <div class="search-container">
     <div class="search-input-group">
@@ -38,35 +23,6 @@
         <i class="fas fa-search"></i>
       </button>
     </div>
-    
-    <div class="filter-group">
-      <select [(ngModel)]="selectedCategory" class="filter-select">
-        <option value="all">All topics</option>
-        <option value="study-tips">Study tips</option>
-        <option value="grammar">Grammar</option>
-        <option value="vocabulary">Vocabulary</option>
-        <option value="listening">Listening</option>
-        <option value="reading">Reading</option>
-      </select>
-      
-      <select [(ngModel)]="selectedSort" class="filter-select">
-        <option value="newest">Newest</option>
-        <option value="popular">Popular</option>
-        <option value="trending">Trending</option>
-      </select>
-    </div>
-  </div>
-  
-  <div class="category-buttons">
-    <button 
-      *ngFor="let category of filterCategories" 
-      [class.active]="selectedCategory === category.id"
-      (click)="onCategorySelect(category.id)"
-      class="category-btn"
-    >
-      <i [class]="category.icon"></i>
-      {{ category.name }}
-    </button>
   </div>
 </div>
 
@@ -117,21 +73,6 @@
             <span class="publish-date">{{ formatDate(article.createdAt) }}</span>
           </div>
         </div>
-        
-        <div class="card-stats">
-          <div class="stat">
-            <i class="fas fa-heart"></i>
-            <span>0</span>
-          </div>
-          <div class="stat">
-            <i class="fas fa-comment"></i>
-            <span>0</span>
-          </div>
-          <div class="stat">
-            <i class="fas fa-eye"></i>
-            <span>0</span>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -152,8 +93,18 @@
 <!-- Latest Articles Section -->
 <div class="latest-section">
   <div class="section-header">
-    <h2 class="section-title">Latest Articles</h2>
-    <p class="section-subtitle">Latest TOEIC knowledge updates</p>
+    <h2 class="section-title">
+      <span *ngIf="selectedAuthor">Articles by {{ selectedAuthor }}</span>
+      <span *ngIf="!selectedAuthor">Latest Articles</span>
+    </h2>
+    <p class="section-subtitle" *ngIf="!selectedAuthor">Latest TOEIC knowledge updates</p>
+    <button 
+      *ngIf="selectedAuthor"
+      (click)="clearAuthorFilter()"
+      class="clear-filter-btn">
+      <i class="fas fa-times"></i>
+      Clear filter
+    </button>
     <button 
       class="view-more-btn" 
       (click)="onViewMoreLatestArticles()"
@@ -201,21 +152,6 @@
           <div class="author-info">
             <span class="author-name">{{ article.authorName }}</span>
             <span class="publish-date">{{ formatDate(article.createdAt) }}</span>
-          </div>
-        </div>
-        
-        <div class="card-stats">
-          <div class="stat">
-            <i class="fas fa-heart"></i>
-            <span>0</span>
-          </div>
-          <div class="stat">
-            <i class="fas fa-comment"></i>
-            <span>0</span>
-          </div>
-          <div class="stat">
-            <i class="fas fa-eye"></i>
-            <span>0</span>
           </div>
         </div>
       </div>
@@ -289,7 +225,11 @@
   </div>
   
   <div class="authors-grid">
-    <div *ngFor="let author of featuredAuthors" class="author-card">
+    <div 
+      *ngFor="let author of featuredAuthors" 
+      class="author-card"
+      [class.active]="selectedAuthor === author.name"
+      (click)="filterByAuthor(author.name)">
       <div [class]="'author-avatar ' + author.avatarColor">
         {{ author.avatar }}
       </div>
@@ -297,17 +237,11 @@
       <p class="author-expertise">{{ author.expertise }}</p>
       <div class="author-stats">
         <span class="articles-count">{{ author.articlesCount }} articles</span>
-        <span class="followers-count">{{ author.followers }} followers</span>
       </div>
-      <button 
-        [class]="author.isFollowing ? 'follow-btn following' : 'follow-btn'"
-        (click)="onFollowAuthor(author.id)"
-      >
-        {{ author.isFollowing ? 'Following' : '+ Follow' }}
-      </button>
     </div>
   </div>
 </div>
+
 
 
 

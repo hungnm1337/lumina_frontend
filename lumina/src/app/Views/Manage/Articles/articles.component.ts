@@ -40,6 +40,12 @@ export class ArticlesComponent implements OnInit {
   selectedStatus: string = 'all';
   searchTerm: string = '';
 
+  // Pagination
+  page: number = 1;
+  pageSize: number = 8;
+  totalItems: number = 0;
+  totalPages: number = 0;
+
   // Rejection modal
   showRejectModal = false;
   rejectingArticle: Article | null = null;
@@ -62,7 +68,9 @@ export class ArticlesComponent implements OnInit {
 
     this.articleService.getAllArticles().subscribe({
       next: (response: any) => {
-        this.articles = response.map((article: any) => this.articleService.convertToArticle(article));
+        // Filter out draft articles (manager không xem draft)
+        const allArticles = response.map((article: any) => this.articleService.convertToArticle(article));
+        this.articles = allArticles.filter((article: Article) => article.status !== 'draft' || article.rejectionReason);
         this.updateStats();
         this.isLoading = false;
       },
@@ -86,6 +94,10 @@ export class ArticlesComponent implements OnInit {
   get filteredArticles(): Article[] {
     let filtered = this.articles;
 
+    // Manager không xem draft (trừ khi có rejectionReason - đã bị từ chối)
+    // Đã filter ở loadArticles, nhưng đảm bảo lại ở đây
+    filtered = filtered.filter(article => article.status !== 'draft' || article.rejectionReason);
+
     // Filter by status
     if (this.selectedStatus !== 'all') {
       filtered = filtered.filter(article => {
@@ -106,7 +118,18 @@ export class ArticlesComponent implements OnInit {
       );
     }
 
+    // Update pagination
+    this.totalItems = filtered.length;
+    this.totalPages = Math.ceil(this.totalItems / this.pageSize) || 1;
+    if (this.page > this.totalPages) this.page = this.totalPages;
+
     return filtered;
+  }
+
+  // Get paged articles
+  get pagedArticles(): Article[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.filteredArticles.slice(start, start + this.pageSize);
   }
 
   // Get status badge class
@@ -116,6 +139,16 @@ export class ArticlesComponent implements OnInit {
       case 'published': return 'badge-success';
       case 'draft': return 'badge-secondary';
       default: return 'badge-secondary';
+    }
+  }
+
+  // Get status class for styling (similar to staff)
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'pending': return 'status-pending';
+      case 'published': return 'status-published';
+      case 'draft': return 'status-draft';
+      default: return 'status-draft';
     }
   }
 
@@ -184,17 +217,53 @@ export class ArticlesComponent implements OnInit {
 
   // Xem chi tiết bài viết
   viewArticle(article: Article) {
-    this.router.navigate(['/manage/articles', article.id]);
+    this.router.navigate(['/manager/manage-posts', article.id]);
   }
 
   // Clear search
   clearSearch() {
     this.searchTerm = '';
+    this.page = 1; // Reset to first page when clearing search
   }
 
   // Clear all filters
   clearFilters() {
     this.selectedStatus = 'all';
     this.searchTerm = '';
+    this.page = 1;
+  }
+
+  // Handle status filter change
+  onStatusChange() {
+    this.page = 1; // Reset to first page when filter changes
+  }
+
+  // Pagination methods
+  nextPage() {
+    if (this.page < this.totalPages) {
+      this.page++;
+    }
+  }
+
+  prevPage() {
+    if (this.page > 1) {
+      this.page--;
+    }
+  }
+
+  goToPage(pageNum: number) {
+    this.page = pageNum;
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const maxVisiblePages = 5;
+    const startPage = Math.max(1, this.page - Math.floor(maxVisiblePages / 2));
+    const endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
   }
 }

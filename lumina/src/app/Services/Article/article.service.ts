@@ -24,6 +24,26 @@ export class ArticleService {
     return this.http.get<ArticleCategory[]>(`${this.apiUrl}/categories`);
   }
 
+  // Tạo category mới
+  createCategory(categoryData: { name: string; description?: string }): Observable<ArticleCategory> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post<{ id: number; name: string; description?: string; createdByUserId?: number; createAt: string }>(
+      `${this.apiUrl}/categories`, 
+      categoryData, 
+      { headers }
+    ).pipe(
+      map(response => ({
+        id: response.id,
+        name: response.name
+      }))
+    );
+  }
+
   // Tạo article mới
   createArticle(articleData: ArticleCreate): Observable<ArticleResponse> {
     const token = localStorage.getItem('lumina_token');

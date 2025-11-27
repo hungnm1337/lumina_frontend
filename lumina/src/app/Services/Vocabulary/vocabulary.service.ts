@@ -219,15 +219,25 @@ export class VocabularyService {
     console.log('Converting vocabulary:', vocabulary);
     console.log('Category from API:', vocabulary.category);
     
+    // Tách definition và translation nếu có format "DEFINITION|||TRANSLATION"
+    let definition = vocabulary.definition;
+    let translation = vocabulary.definition;
+    
+    if (vocabulary.definition.includes('|||')) {
+      const parts = vocabulary.definition.split('|||');
+      definition = parts[0] || vocabulary.definition;
+      translation = parts[1] || vocabulary.definition;
+    }
+    
     const converted = {
       id: vocabulary.id,
       word: vocabulary.word,
       pronunciation: this.getPronunciation(vocabulary.word), // Tự động tạo phiên âm
       category: vocabulary.category || 'general', // Sử dụng category từ API hoặc default
       partOfSpeech: vocabulary.type,
-      definition: vocabulary.definition,
+      definition: definition.trim(),
       example: vocabulary.example || '',
-      translation: vocabulary.definition, // Dùng definition làm translation tạm
+      translation: translation.trim(),
       difficulty: 'Intermediate' as 'Beginner' | 'Intermediate' | 'Advanced', // Default difficulty
       createdDate: new Date().toLocaleDateString('vi-VN'),
       createdBy: 'System', // Default creator

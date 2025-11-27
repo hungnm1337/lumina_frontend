@@ -83,8 +83,6 @@ export class BlogDetailComponent implements OnInit {
   error: string = '';
   contentArticle: string = '';
   // Additional properties for UI
-  articleLikes: number = 0;
-  isFollowing: boolean = false;
   isLogin: boolean = false;
   showReportPopup: boolean = false;
 
@@ -304,7 +302,6 @@ export class BlogDetailComponent implements OnInit {
     this.articleService.getArticleById(+articleId).subscribe({
       next: (article) => {
         this.article = article;
-        this.articleLikes = 0;
         this.contentArticle = article.sections.map(section => section.sectionContent).join('\n\n');
         
         // Debug: Log section content to see what we're receiving
@@ -347,19 +344,7 @@ export class BlogDetailComponent implements OnInit {
     this.router.navigate(['/articles']);
   }
 
-  onLikeArticle(): void {
-    if (this.article) {
-      this.articleLikes++;
-    }
-  }
 
-  onShareArticle(): void {
-    console.log('Sharing article...');
-  }
-
-  onFollowAuthor(): void {
-    this.isFollowing = !this.isFollowing;
-  }
 
 
   formatNumber(num: number): string {

@@ -32,6 +32,19 @@ export class VocabularyManagementComponent implements OnInit {
   filteredVocabularies: Vocabulary[] = [];
   vocabularyLists: VocabularyListResponse[] = [];
   stats: VocabularyStats[] = [];
+  
+  // ----- STATS METHODS -----
+  getTotalCount(): number {
+    return this.vocabularyLists.length;
+  }
+  
+  getPendingCount(): number {
+    return this.vocabularyLists.filter(list => list.status?.toLowerCase() === 'pending').length;
+  }
+  
+  getPublishedCount(): number {
+    return this.vocabularyLists.filter(list => list.status?.toLowerCase() === 'published').length;
+  }
 
   // ----- TRẠNG THÁI BỘ LỌC VÀ TÌM KIẾM -----
   searchTerm = '';
@@ -40,7 +53,7 @@ export class VocabularyManagementComponent implements OnInit {
   // ----- TRẠNG THÁI MODAL REVIEW -----
   isReviewModalOpen = false;
   reviewingList: VocabularyListResponse | null = null;
-  reviewForm: FormGroup;
+  rejectionReason: string = '';
 
   // ----- TRẠNG THÁI KHÁC -----
   isLoading = false;
@@ -59,7 +72,8 @@ export class VocabularyManagementComponent implements OnInit {
   
   // ----- PHÂN TRANG -----
   page: number = 1;
-  pageSize: number = 10;
+  pageSize: number = 10; // For vocabulary lists
+  wordsPageSize: number = 9; // For vocabulary words (detail view)
   totalItems: number = 0;
   totalPages: number = 0;
 
@@ -67,13 +81,7 @@ export class VocabularyManagementComponent implements OnInit {
     private fb: FormBuilder,
     private vocabularyService: VocabularyService,
     private toastService: ToastService
-  ) {
-    // Form cho việc review vocabulary list
-    this.reviewForm = this.fb.group({
-      isApproved: [false, Validators.required],
-      comment: ['']
-    });
-  }
+  ) {}
 
   ngOnInit() {
     this.loadVocabularyLists();
@@ -101,8 +109,27 @@ export class VocabularyManagementComponent implements OnInit {
     this.vocabularyService.getVocabularyLists(this.searchTerm).subscribe({
       next: (lists) => { 
         console.log('Manager received vocabulary lists:', lists);
-        this.vocabularyLists = lists; 
-        this.filterVocabularyLists();
+        // Chỉ hiển thị:
+        // 1. Các folder có status = "Pending" (đã gửi yêu cầu phê duyệt)
+        // 2. Các folder có status = "Published" mà do Staff tạo (RoleId = 3)
+        let allLists = lists.filter(list => {
+          const status = list.status?.toLowerCase();
+          const isStaffCreated = list.makeByRoleId === 3; // RoleId 3 = Staff
+          
+          return status === 'pending' || 
+                 (status === 'published' && isStaffCreated);
+        }); 
+        
+        // Apply status filter
+        if (this.statusFilter !== 'all') {
+          allLists = allLists.filter(list => {
+            const status = list.status?.toLowerCase();
+            return status === this.statusFilter.toLowerCase();
+          });
+        }
+        
+        this.vocabularyLists = allLists;
+        this.updatePagination();
         this.isLoading = false; 
       },
       error: (error) => { 
@@ -115,6 +142,7 @@ export class VocabularyManagementComponent implements OnInit {
 
   loadVocabularies(listId: number) {
     this.isLoading = true;
+    this.page = 1; // Reset to first page when loading new list
     this.vocabularyService.getVocabularies(listId, this.searchTerm).subscribe({
         next: (vocabularies) => {
             this.vocabularies = vocabularies.map(v => this.vocabularyService.convertToVocabulary(v));
@@ -130,13 +158,8 @@ export class VocabularyManagementComponent implements OnInit {
 
   // ----- TÌM KIẾM & LỌC -----
   filterVocabularyLists() {
-    let filtered = this.vocabularyLists;
-    
-    if (this.statusFilter !== 'all') {
-      filtered = filtered.filter(list => list.status?.toLowerCase() === this.statusFilter);
-    }
-    
-    this.vocabularyLists = filtered;
+    // Note: vocabularyLists đã được filter ở loadVocabularyLists
+    // Chỉ cần update pagination
     this.updatePagination();
   }
 
@@ -166,49 +189,79 @@ export class VocabularyManagementComponent implements OnInit {
     this.onSearchChange();
   }
 
-  // ----- MODAL REVIEW -----
-  openReviewModal(list: VocabularyListResponse) {
-    this.reviewingList = list;
-    this.isReviewModalOpen = true;
-    this.reviewForm.reset({
-      isApproved: false,
-      comment: ''
-    });
-  }
-
-  closeReviewModal() {
-    this.isReviewModalOpen = false;
-    this.reviewingList = null;
-  }
-
-  submitReview() {
-    if (this.reviewForm.invalid || this.isSubmitting || !this.reviewingList) {
+  // ----- DUYỆT/TỪ CHỐI -----
+  approveList(list: VocabularyListResponse) {
+    if (!list || this.isSubmitting) {
       return;
     }
 
     this.isSubmitting = true;
-    const reviewData: VocabularyReviewRequest = this.reviewForm.value;
+    const reviewData: VocabularyReviewRequest = {
+      isApproved: true,
+      comment: ''
+    };
 
-    this.vocabularyService.reviewVocabularyList(this.reviewingList.vocabularyListId, reviewData).subscribe({
+    this.vocabularyService.reviewVocabularyList(list.vocabularyListId, reviewData).subscribe({
       next: () => {
-        const action = reviewData.isApproved ? 'duyệt' : 'từ chối';
-        this.toastService.success(`Đã ${action} danh sách từ vựng thành công!`);
-        this.closeReviewModal();
+        this.toastService.success('Đã duyệt danh sách từ vựng thành công!');
         this.loadVocabularyLists();
         this.isSubmitting = false;
       },
       error: (error) => {
-        console.error('Review error:', error);
-        this.toastService.error('Có lỗi xảy ra khi xử lý yêu cầu.');
+        console.error('Approve error:', error);
+        this.toastService.error('Có lỗi xảy ra khi duyệt danh sách.');
         this.isSubmitting = false;
       }
     });
   }
 
+  rejectList(list: VocabularyListResponse) {
+    this.reviewingList = list;
+    this.rejectionReason = '';
+    this.isReviewModalOpen = true;
+  }
+
+  confirmReject() {
+    if (!this.rejectionReason.trim()) {
+      this.toastService.warning('Vui lòng nhập lý do từ chối');
+      return;
+    }
+
+    if (!this.reviewingList || this.isSubmitting) {
+      return;
+    }
+
+    this.isSubmitting = true;
+    const reviewData: VocabularyReviewRequest = {
+      isApproved: false,
+      comment: this.rejectionReason.trim()
+    };
+
+    this.vocabularyService.reviewVocabularyList(this.reviewingList.vocabularyListId, reviewData).subscribe({
+      next: () => {
+        this.toastService.success('Đã từ chối danh sách từ vựng');
+        this.cancelReject();
+        this.loadVocabularyLists();
+        this.isSubmitting = false;
+      },
+      error: (error) => {
+        console.error('Reject error:', error);
+        this.toastService.error('Có lỗi xảy ra khi từ chối danh sách.');
+        this.isSubmitting = false;
+      }
+    });
+  }
+
+  cancelReject() {
+    this.isReviewModalOpen = false;
+    this.reviewingList = null;
+    this.rejectionReason = '';
+  }
+
   // ----- PHÂN TRANG -----
   get pagedVocabularies() { 
-    const start = (this.page - 1) * this.pageSize; 
-    return this.filteredVocabularies.slice(start, start + this.pageSize); 
+    const start = (this.page - 1) * this.wordsPageSize; 
+    return this.filteredVocabularies.slice(start, start + this.wordsPageSize); 
   }
 
   get pagedVocabularyLists() {
@@ -218,7 +271,8 @@ export class VocabularyManagementComponent implements OnInit {
 
   updatePagination() { 
     this.totalItems = this.currentView === 'lists' ? this.vocabularyLists.length : this.filteredVocabularies.length; 
-    this.totalPages = Math.ceil(this.totalItems / this.pageSize) || 1; 
+    const currentPageSize = this.currentView === 'lists' ? this.pageSize : this.wordsPageSize;
+    this.totalPages = Math.ceil(this.totalItems / currentPageSize) || 1; 
     if (this.page > this.totalPages) this.page = this.totalPages; 
   }
 
@@ -239,11 +293,13 @@ export class VocabularyManagementComponent implements OnInit {
   }
   
   getStartIndex(): number {
-    return (this.page - 1) * this.pageSize + 1;
+    const currentPageSize = this.currentView === 'lists' ? this.pageSize : this.wordsPageSize;
+    return (this.page - 1) * currentPageSize + 1;
   }
   
   getEndIndex(): number {
-    return Math.min(this.page * this.pageSize, this.totalItems);
+    const currentPageSize = this.currentView === 'lists' ? this.pageSize : this.wordsPageSize;
+    return Math.min(this.page * currentPageSize, this.totalItems);
   }
 
   // ----- HELPERS -----

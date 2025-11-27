@@ -6,14 +6,26 @@
       <div class="header-content">
         <div class="title-section">
           <h1 class="page-title">
-            <i class="fas fa-graduation-cap"></i>
-            <span class="toeic-badge">TOEIC</span> 
+            <span class="toeic-badge">TOEIC</span>
             Vocabulary Management
           </h1>
           <p class="page-subtitle">
-            <i class="fas fa-book-open"></i>
             Organize your vocabulary into lists for focused learning
           </p>
+        </div>
+        <div class="header-stats">
+          <div class="stat-card">
+            <div class="stat-number">{{vocabularyLists.length || 0}}</div>
+            <div class="stat-label">Total Lists</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">{{getPendingCount()}}</div>
+            <div class="stat-label">Pending</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">{{getPublishedCount()}}</div>
+            <div class="stat-label">Published</div>
+          </div>
         </div>
       </div>
       <button class="btn-primary" (click)="openCreateListModal()"><i class="fas fa-folder-plus"></i> Add New List</button>
@@ -34,37 +46,45 @@
       <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></div><p>Loading lists...</p>
     </div>
     <div *ngIf="!isLoading && vocabularyLists.length > 0" class="folder-grid">
-      <div *ngFor="let list of vocabularyLists" class="folder-card" (click)="selectList(list)">
-        <div class="folder-icon"><i class="fas fa-folder"></i></div>
-        <div class="folder-details">
-          <h3 class="folder-name">{{ list.name }}</h3>
-          <p class="folder-meta">{{ list.vocabularyCount }} words · Created by {{ list.makeByName }}</p>
-          <div class="status-section">
-            <span class="status-badge" [ngClass]="getStatusClass(list.status)">
-              {{ getStatusText(list.status) }}
-            </span>
-            <span *ngIf="list.rejectionReason" class="rejection-reason">
-              <i class="fas fa-exclamation-triangle"></i> {{ list.rejectionReason }}
-            </span>
+      <div *ngFor="let list of vocabularyLists" 
+           class="folder-card" 
+           [class.featured]="list.status?.toLowerCase() === 'published'"
+           [class.pending-card]="list.status?.toLowerCase() === 'pending'"
+           (click)="selectList(list)">
+        <div class="card-header">
+          <div class="list-icon-section">
+            <div class="folder-icon"><i class="fas fa-folder"></i></div>
+            <div class="list-info">
+              <h3 class="folder-name">{{ list.name }}</h3>
+              <p class="folder-meta">{{ list.vocabularyCount }} words · Created by {{ list.makeByName }}</p>
+            </div>
+          </div>
+          <div class="folder-status-right">
+            <div *ngIf="list.status?.toLowerCase() === 'published'" class="status-badge-published">
+              <i class="fas fa-check-circle"></i>
+              <div class="status-text-wrapper">
+                <span class="status-line-1">Approved</span>
+                <span class="status-line-2">& Published</span>
+              </div>
+            </div>
+            <div *ngIf="list.status?.toLowerCase() === 'pending'" class="status-info status-pending">
+              <i class="fas fa-clock"></i>
+              <span>Waiting for approval</span>
+            </div>
+            <div *ngIf="list.status?.toLowerCase() === 'draft' || list.status?.toLowerCase() === 'rejected'" class="action-buttons">
+              <button class="btn-request-approval" (click)="requestApproval(list, $event); $event.stopPropagation()" 
+                      [disabled]="isSubmitting">
+                <i class="fas fa-paper-plane"></i> 
+                <span *ngIf="!isSubmitting">Send for Review</span>
+                <span *ngIf="isSubmitting">Sending...</span>
+              </button>
+            </div>
           </div>
         </div>
-        <div class="folder-actions">
-          <div *ngIf="list.status?.toLowerCase() === 'draft' || list.status?.toLowerCase() === 'rejected'" class="action-buttons">
-            <button class="btn-request-approval" (click)="requestApproval(list, $event)" 
-                    [disabled]="isSubmitting">
-              <i class="fas fa-paper-plane"></i> 
-              <span *ngIf="!isSubmitting">Send for Review</span>
-              <span *ngIf="isSubmitting">Sending...</span>
-            </button>
-          </div>
-          <div *ngIf="list.status?.toLowerCase() === 'pending'" class="status-info status-pending">
-            <i class="fas fa-clock"></i>
-            <span>Waiting for approval</span>
-          </div>
-          <div *ngIf="list.status?.toLowerCase() === 'published'" class="status-info status-published">
-            <i class="fas fa-check-circle"></i>
-            <span>Approved & Published</span>
-          </div>
+        <div class="folder-footer">
+          <button *ngIf="list.status?.toLowerCase() === 'published'" class="btn-published" (click)="$event.stopPropagation()">
+            ĐÃ XUẤT BẢN
+          </button>
           <div class="folder-arrow"><i class="fas fa-chevron-right"></i></div>
         </div>
       </div>
@@ -113,28 +133,61 @@
         </div>
         <div *ngIf="!isLoading" class="vocabulary-grid">
           <div *ngFor="let vocab of pagedVocabularies" class="vocabulary-card">
-            <div class="card-header">
-              <div class="word-section">
-                <h3 class="word-title" (click)="speakWord(vocab.word)">{{vocab.word}} <i class="fas fa-volume-up speak-icon"></i></h3>
-                <div class="pronunciation" *ngIf="vocab.pronunciation">{{vocab.pronunciation}}</div>
-              </div>
-              <div class="card-actions">
-                <span class="category-badge"><i class="fas fa-tag"></i> {{getCategoryName(vocab.category)}}</span>
-                <div class="action-buttons">
-                  <button class="btn-action btn-study" title="Study with flashcards"><i class="fas fa-brain"></i></button>
-                  <button class="btn-action btn-quiz" title="Take quiz"><i class="fas fa-question-circle"></i></button>
-                  <button class="btn-action btn-edit" (click)="openModal(vocab)" title="Edit word"><i class="fas fa-edit"></i></button>
-                  <button class="btn-action btn-delete" (click)="deleteVocabulary(vocab.id)" title="Delete word"><i class="fas fa-trash"></i></button>
+            <!-- Card Top Section -->
+            <div class="card-top">
+              <div class="word-main">
+                <div class="word-header">
+                  <h3 class="word-title" (click)="speakWord(vocab.word)">
+                    {{vocab.word}}
+                    <button class="btn-speak" (click)="speakWord(vocab.word); $event.stopPropagation()" title="Pronounce">
+                      <i class="fas fa-volume-up"></i>
+                    </button>
+                  </h3>
+                  <div class="word-pronunciation" *ngIf="vocab.pronunciation">
+                    <i class="fas fa-language"></i>
+                    {{vocab.pronunciation}}
+                  </div>
+                </div>
+                <div class="word-badges">
+                  <span class="pos-badge">{{vocab.partOfSpeech}}</span>
+                  <span class="category-badge">
+                    <i class="fas fa-tag"></i>
+                    {{getCategoryName(vocab.category)}}
+                  </span>
                 </div>
               </div>
-            </div>
-            <div class="card-content">
-              <div class="word-meta">
-                <span class="pos-tag">{{vocab.partOfSpeech}}</span>
-                <span class="translation">{{vocab.translation}}</span>
+              <div class="card-actions-menu">
+                <button class="btn-action btn-edit" (click)="openModal(vocab); $event.stopPropagation()" title="Edit word">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-action btn-delete" (click)="deleteVocabulary(vocab.id); $event.stopPropagation()" title="Delete word">
+                  <i class="fas fa-trash"></i>
+                </button>
               </div>
-              <p class="definition-text">{{vocab.definition}}</p>
-              <p class="example-text" *ngIf="vocab.example">"{{vocab.example}}"</p>
+            </div>
+
+            <!-- Card Content Section -->
+            <div class="card-body">
+              <div class="translation-box">
+                <i class="fas fa-language translation-icon"></i>
+                <span class="translation-text">{{vocab.translation}}</span>
+              </div>
+              
+              <div class="definition-box">
+                <div class="definition-label">
+                  <i class="fas fa-book"></i>
+                  <span>Definition</span>
+                </div>
+                <p class="definition-content">{{vocab.definition}}</p>
+              </div>
+
+              <div class="example-box" *ngIf="vocab.example">
+                <div class="example-label">
+                  <i class="fas fa-quote-left"></i>
+                  <span>Example</span>
+                </div>
+                <p class="example-content">"{{vocab.example}}"</p>
+              </div>
             </div>
           </div>
         </div>
@@ -144,15 +197,6 @@
           <button class="btn-add-first" (click)="openModal()"><i class="fas fa-plus"></i> Add First Word</button>
         </div>
         <div *ngIf="!isLoading && totalPages > 1" class="pagination-section">
-          <div class="pagination-info">
-            <div class="pagination-stats">
-              <i class="fas fa-info-circle"></i>
-              <span>Showing {{getStartIndex()}} - {{getEndIndex()}} of {{totalItems}} words</span>
-            </div>
-            <div class="pagination-page-info">
-              <span class="page-indicator">Page {{page}} of {{totalPages}}</span>
-            </div>
-          </div>
           <div class="pagination-controls">
             <button class="btn-page btn-prev" [disabled]="page <= 1" (click)="prevPage()">
               <i class="fas fa-chevron-left"></i>
@@ -256,10 +300,17 @@
 
         <div class="form-group">
           <label for="category">CATEGORY <span class="required">*</span></label>
-          <select id="category" formControlName="category" class="form-select">
-            <option value="">Select category</option>
-            <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
-          </select>
+          <input
+            id="category"
+            type="text"
+            formControlName="category"
+            class="form-input"
+            placeholder="Enter category (e.g., Business, Technology, Travel...)"
+            list="category-suggestions"
+          />
+          <datalist id="category-suggestions">
+            <option *ngFor="let category of categories" [value]="category.name"></option>
+          </datalist>
         </div>
 
       </div>
@@ -311,5 +362,51 @@
         </button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div *ngIf="showConfirmModal" class="modal-overlay" (click)="closeConfirmModal()">
+  <div class="modal-content modal-confirm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-content">
+        <div class="modal-icon" [ngClass]="{'icon-danger': confirmType === 'delete', 'icon-warning': confirmType === 'approval'}">
+          <i *ngIf="confirmType === 'delete'" class="fas fa-exclamation-triangle"></i>
+          <i *ngIf="confirmType === 'approval'" class="fas fa-paper-plane"></i>
+        </div>
+        <div class="modal-title-section">
+          <h2>{{confirmTitle}}</h2>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeConfirmModal()" type="button">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <p class="confirm-message">{{confirmMessage}}</p>
+      <p *ngIf="confirmType === 'delete'" class="confirm-warning">
+        <i class="fas fa-info-circle"></i>
+        Thao tác này không thể hoàn tác!
+      </p>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" (click)="closeConfirmModal()" [disabled]="isSubmitting || isLoading">
+        Hủy
+      </button>
+      <button
+        type="button"
+        class="btn-primary"
+        [ngClass]="{'btn-danger': confirmType === 'delete', 'btn-warning': confirmType === 'approval'}"
+        (click)="confirmType === 'delete' ? confirmDelete() : confirmApproval()"
+        [disabled]="isSubmitting || isLoading">
+        <i *ngIf="isSubmitting || isLoading" class="fas fa-spinner fa-spin"></i>
+        <i *ngIf="!isSubmitting && !isLoading && confirmType === 'delete'" class="fas fa-trash"></i>
+        <i *ngIf="!isSubmitting && !isLoading && confirmType === 'approval'" class="fas fa-paper-plane"></i>
+        <span *ngIf="!isSubmitting && !isLoading">{{confirmType === 'delete' ? 'Xóa' : 'Gửi phê duyệt'}}</span>
+        <span *ngIf="isSubmitting || isLoading">Đang xử lý...</span>
+      </button>
+    </div>
   </div>
 </div>
