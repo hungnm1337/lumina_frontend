@@ -49,6 +49,10 @@ const routes: Routes = [
         path: 'notifications',
         component: NotificationManagementComponent,
         data: { title: 'Quản lý thông báo' }
+      },{
+        path: 'user-reports',
+        component: ReportListComponent,
+        data: { title: 'Báo cáo hệ thống' }
       }
 
     ]

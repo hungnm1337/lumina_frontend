@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReportPopupComponent } from '../../Report/report-popup/report-popup.component';
+import { PopupComponent } from '../../../Common/popup/popup.component';
 import { Router } from '@angular/router';
 import { OptionsComponent } from '../../options/options.component';
 import { PromptComponent } from '../../prompt/prompt.component';
@@ -37,11 +38,25 @@ import { LeaderboardService } from '../../../../Services/Leaderboard/leaderboard
     ExamAttemptDetailComponent,
     QuotaLimitModalComponent,
     ReportPopupComponent,
+    PopupComponent,
   ],
   templateUrl: './reading.component.html',
   styleUrls: ['./reading.component.scss'],
 })
 export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
+    // Popup state cho thông báo kết thúc bài thi
+    showPopup = false;
+    popupMessage = '';
+    popupTitle = '';
+    popupOkHandler: (() => void) | null = null;
+    popupCancelHandler: (() => void) | null = null;
+
+    onPopupOk() {
+      if (this.popupOkHandler) this.popupOkHandler();
+    }
+    onPopupCancel() {
+      if (this.popupCancelHandler) this.popupCancelHandler();
+    }
   showReportPopup = false;
   get examId(): number | null {
     return this.partInfo?.examId ?? null;
@@ -220,15 +235,12 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
       this.currentIndex++;
       this.updateExplainState();
     } else {
-      // Nếu là câu cuối, hỏi có muốn nộp bài không
-      const confirmFinish = confirm(
-        'Đây là câu cuối cùng. Bạn có muốn nộp bài ngay không?\n\n' +
-          'Chọn "OK" để nộp bài\n' +
-          'Chọn "Cancel" để xem lại các câu trước'
-      );
-      if (confirmFinish) {
-        this.finishExam();
-      }
+      // Nếu là câu cuối, hỏi có muốn nộp bài không bằng popup
+      this.showPopup = true;
+      this.popupTitle = 'Xác nhận nộp bài';
+      this.popupMessage = 'Đây là câu cuối cùng. Bạn có muốn nộp bài ngay không?\n\nChọn "OK" để nộp bài\nChọn "Cancel" để xem lại các câu trước';
+      this.popupOkHandler = () => { this.showPopup = false; this.finishExam(); };
+      this.popupCancelHandler = () => { this.showPopup = false; };
     }
   }
   finishExamManual(): void {
@@ -246,11 +258,11 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
 
     message += 'Chọn "OK" để nộp bài hoặc "Cancel" để tiếp tục làm bài.';
 
-    const confirmResult = confirm(message);
-
-    if (confirmResult) {
-      this.finishExam();
-    }
+    this.showPopup = true;
+    this.popupTitle = 'Xác nhận nộp bài';
+    this.popupMessage = message;
+    this.popupOkHandler = () => { this.showPopup = false; this.finishExam(); };
+    this.popupCancelHandler = () => { this.showPopup = false; };
   }
   navigateToQuestion(index: number): void {
     if (index >= 0 && index < this.questions.length) {
@@ -365,18 +377,30 @@ ${response.toeicMessage}
 ${response.isFirstAttempt ? '\n🎯 Lần đầu làm đề này!' : '\n🔄 Làm lại đề - TOEIC giữ nguyên'}
     `.trim();
 
-    alert(message);
+    this.showPopup = true;
+    this.popupTitle = 'Thông báo';
+    this.popupMessage = message;
+    this.popupOkHandler = () => { this.showPopup = false; };
+    this.popupCancelHandler = null;
   }
 
   private showLevelUpNotification(newLevel: string, previousLevel?: string): void {
     const levelText = this.leaderboardService.getTOEICLevelText(newLevel);
     const icon = this.leaderboardService.getTOEICLevelIcon(newLevel);
-    
-    alert(`${icon} CHÚC MỪNG!\n\nBạn đã lên cấp độ: ${levelText}\n${previousLevel ? `Từ: ${this.leaderboardService.getTOEICLevelText(previousLevel)}` : ''}\n\nHãy tiếp tục phát huy!`);
+
+    this.showPopup = true;
+    this.popupTitle = 'Chúc mừng!';
+    this.popupMessage = `${icon} CHÚC MỪNG!\n\nBạn đã lên cấp độ: ${levelText}\n${previousLevel ? `Từ: ${this.leaderboardService.getTOEICLevelText(previousLevel)}` : ''}\n\nHãy tiếp tục phát huy!`;
+    this.popupOkHandler = () => { this.showPopup = false; };
+    this.popupCancelHandler = null;
   }
 
   private showMilestoneNotification(milestone: number): void {
-    alert(`🎯 THÀNH TÍCH MỚI!\n\nBạn đã đạt mốc ${milestone} điểm TOEIC ước tính!\n\nChúc mừng bạn!`);
+    this.showPopup = true;
+    this.popupTitle = 'Thành tích mới!';
+    this.popupMessage = `🎯 THÀNH TÍCH MỚI!\n\nBạn đã đạt mốc ${milestone} điểm TOEIC ước tính!\n\nChúc mừng bạn!`;
+    this.popupOkHandler = () => { this.showPopup = false; };
+    this.popupCancelHandler = null;
   }
 
   // ============= EXAM HISTORY =============
@@ -446,15 +470,11 @@ ${response.isFirstAttempt ? '\n🎯 Lần đầu làm đề này!' : '\n🔄 Là
   }
 
   confirmExit(): void {
-    const confirmResult = confirm(
-      'Bạn có muốn lưu tiến trình và thoát không?\n\n' +
-        '- Chọn "OK" để lưu và thoát\n' +
-        '- Chọn "Cancel" để tiếp tục làm bài'
-    );
-
-    if (confirmResult) {
-      this.saveProgressAndExit();
-    }
+    this.showPopup = true;
+    this.popupTitle = 'Xác nhận thoát';
+    this.popupMessage = 'Bạn có muốn lưu tiến trình và thoát không?\n\n- Chọn "OK" để lưu và thoát\n- Chọn "Cancel" để tiếp tục làm bài';
+    this.popupOkHandler = () => { this.showPopup = false; this.saveProgressAndExit(); };
+    this.popupCancelHandler = () => { this.showPopup = false; };
   }
 
   private saveProgressAndExit(): void {
