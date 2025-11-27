@@ -36,7 +36,7 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
 
   // Vocabulary with review info
   upcomingVocabularies: VocabularyWithReview[] = [];
-  
+
   // Pagination for upcoming vocabularies
   currentUpcomingPage = 1;
   upcomingPageSize = 9;
@@ -69,7 +69,7 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
 
   loadStatistics(): void {
     this.isLoadingStats = true;
-    
+
     // Sử dụng getDueForReview() để đảm bảo logic nhất quán với backend
     // và loadStatistics() để tính thống kê chính xác
     forkJoin({
@@ -83,65 +83,55 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
         today.setHours(0, 0, 0, 0);
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
-        
+
         // CHỈ XỬ LÝ NHỮNG TỪ ĐÃ ĐƯỢC ĐÁNH GIÁ
-        const reviewedRepetitions = allRepetitions.filter(r => 
+        const reviewedRepetitions = allRepetitions.filter(r =>
           (r.vocabularyId !== null && r.vocabularyId !== undefined) || // Word-level records
           (r.reviewCount > 0 || r.bestQuizScore !== undefined || r.lastQuizScore !== undefined) // Folder-level với progress
         );
-        
+
         // 1. Tính "Cần review hôm nay": sử dụng kết quả từ getDueForReview() để đảm bảo nhất quán
         // Backend đã filter: NextReviewAt <= now, Intervals == 1 || null, ReviewCount > 0, Status New/Learning
         const dueTodayWordLevel = dueForReview.filter(r => r.vocabularyId !== null && r.vocabularyId !== undefined);
-        
+
         // Loại bỏ các từ đã được review hôm nay và làm đúng (intervals > 1)
         // Vì những từ đó đã được tính vào "Đã thuộc"
         const dueToday = dueTodayWordLevel.filter(r => {
           if (!r.lastReviewedAt) return true; // Chưa review thì vẫn cần review
-          
+
           const lastReviewedDate = new Date(r.lastReviewedAt);
           lastReviewedDate.setHours(0, 0, 0, 0);
-          
+
           // Nếu đã review hôm nay và làm đúng (intervals > 1) thì không tính vào "Cần review"
           if (lastReviewedDate.getTime() === today.getTime() && r.intervals > 1) {
             return false;
           }
-          
+
           return true;
         });
 
-        // 2. Tính "Đã thuộc": các từ vựng đã làm quiz đúng từ phần "Cần review hôm nay"
-        // Điều kiện: word-level, được review hôm nay, và intervals > 1 (làm đúng)
+        // 2. Tính "Đã thuộc": các từ vựng có status = "Mastered"
+        // Đây là những từ đã đạt level cao trong spaced repetition
         const mastered = reviewedRepetitions.filter(r => {
           if (!r.vocabularyId || r.vocabularyId === null || r.vocabularyId === undefined) return false;
-          if (!r.lastReviewedAt) return false;
-          
-          const reviewedDate = new Date(r.lastReviewedAt);
-          reviewedDate.setHours(0, 0, 0, 0);
-          const isReviewedToday = reviewedDate.getTime() === today.getTime();
-          const hasCorrectAnswer = r.intervals > 1;
-          
-          return isReviewedToday && hasCorrectAnswer;
+          return r.status === 'Mastered';
         });
-        
-        // 3. Tính "Cần học sắp tới": các từ vựng có nextReviewAt từ ngày mai trở đi
-        // KHÔNG TÍNH CÁC TỪ CẦN REVIEW HÔM NAY
+
+        // 3. Tính "Cần học sắp tới": TẤT CẢ các từ đang trong quá trình học
+        // Bao gồm: New + Learning (không tính Mastered, không tính từ cần review hôm nay)
         const upcoming = reviewedRepetitions.filter(r => {
           if (!r.vocabularyId || r.vocabularyId === null || r.vocabularyId === undefined) return false;
-          if (!r.nextReviewAt) return false;
-          
-          const reviewDate = new Date(r.nextReviewAt);
-          reviewDate.setHours(0, 0, 0, 0);
-          
-          // nextReviewAt phải từ ngày mai trở đi (KHÔNG bao gồm hôm nay)
-          const isUpcoming = reviewDate >= tomorrow;
-          
+
           // Chỉ tính những từ đang trong quá trình học (New hoặc Learning)
           const isActive = r.status === 'New' || r.status === 'Learning';
-          
-          return isUpcoming && isActive;
+
+          // Không tính các từ cần review hôm nay (đã được tính ở "Cần review")
+          // Kiểm tra xem từ này có trong danh sách dueToday không
+          const isDueToday = dueToday.some(d => d.vocabularyId === r.vocabularyId);
+
+          return isActive && !isDueToday;
         });
-        
+
         this.spacedRepetitionStats = {
           dueToday: dueToday.length,
           mastered: mastered.length,
@@ -162,34 +152,34 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
 
   loadDueToday(): void {
     this.isLoadingDue = true;
-    
+
     this.spacedRepetitionService.getDueForReview().subscribe({
       next: (repetitions) => {
         // Separate folder-level and word-level
         this.dueTodayLists = repetitions.filter(r => !r.vocabularyId || r.vocabularyId === null);
-        
+
         // Get word-level vocabulary that needs review today
         const wordLevelRepetitions = repetitions.filter(r => r.vocabularyId !== null && r.vocabularyId !== undefined);
-        
+
         // Loại bỏ các từ đã được review hôm nay và làm đúng (intervals > 1)
         // Vì những từ đó đã được tính vào "Đã thuộc"
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
+
         const filteredWordLevelRepetitions = wordLevelRepetitions.filter(r => {
           if (!r.lastReviewedAt) return true; // Chưa review thì vẫn cần review
-          
+
           const lastReviewedDate = new Date(r.lastReviewedAt);
           lastReviewedDate.setHours(0, 0, 0, 0);
-          
+
           // Nếu đã review hôm nay và làm đúng (intervals > 1) thì không hiển thị
           if (lastReviewedDate.getTime() === today.getTime() && r.intervals > 1) {
             return false;
           }
-          
+
           return true;
         });
-        
+
         if (filteredWordLevelRepetitions.length > 0) {
           // Load actual vocabulary words
           const uniqueListIds = new Set<number>();
@@ -199,17 +189,17 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
             }
           });
 
-          const vocabularyRequests = Array.from(uniqueListIds).map(listId => 
+          const vocabularyRequests = Array.from(uniqueListIds).map(listId =>
             this.vocabularyService.getVocabularies(listId)
           );
 
           forkJoin(vocabularyRequests).subscribe({
             next: (vocabulariesArrays) => {
               const dueWordsMap = new Map<number, VocabularyWithReview>();
-              
+
               Array.from(uniqueListIds).forEach((listId, index) => {
                 const vocabularies = vocabulariesArrays[index] || [];
-                
+
                 vocabularies.forEach(vocab => {
                   const vocabId = vocab.id;
                   if (vocabId) {
@@ -256,7 +246,7 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
 
   loadUpcoming(): void {
     this.isLoadingUpcoming = true;
-    
+
     this.spacedRepetitionService.getAllRepetitions().subscribe({
       next: (repetitions) => {
         const now = new Date();
@@ -265,26 +255,26 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
         tomorrow.setDate(tomorrow.getDate() + 1);
         const dayAfterTomorrow = new Date(tomorrow);
         dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
-        
+
         // CHỈ XỬ LÝ NHỮNG TỪ ĐÃ ĐƯỢC ĐÁNH GIÁ
         // - Có VocabularyId != null: đã đánh giá từng word (spaced repetition)
         // - Có reviewCount > 0 hoặc quiz scores: đã đánh giá folder level
-        const reviewedRepetitions = repetitions.filter(r => 
+        const reviewedRepetitions = repetitions.filter(r =>
           (r.vocabularyId !== null && r.vocabularyId !== undefined) || // Word-level records
           (r.reviewCount > 0 || r.bestQuizScore !== undefined || r.lastQuizScore !== undefined) // Folder-level với progress
         );
-        
+
         // Lọc những từ sẽ review NGÀY MAI (chỉ lấy word-level records)
         const tomorrowVocabularies = reviewedRepetitions
           .filter(r => {
             if (!r.nextReviewAt || !r.vocabularyId) return false; // Chỉ lấy word-level
             const reviewDate = new Date(r.nextReviewAt);
             reviewDate.setHours(0, 0, 0, 0);
-            
+
             // Review date phải là ngày mai (giữa tomorrow và dayAfterTomorrow)
             const isTomorrow = reviewDate >= tomorrow && reviewDate < dayAfterTomorrow;
             const isActive = (r.status === 'New' || r.status === 'Learning');
-            
+
             return isTomorrow && isActive;
           })
           .sort((a, b) => {
@@ -315,26 +305,26 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
         }
 
         // Load vocabularies từ các list
-        const vocabularyRequests = Array.from(uniqueListIds).map(listId => 
+        const vocabularyRequests = Array.from(uniqueListIds).map(listId =>
           this.vocabularyService.getVocabularies(listId)
         );
 
         forkJoin(vocabularyRequests).subscribe({
           next: (vocabulariesArrays) => {
             const uniqueVocabulariesMap = new Map<number | string, VocabularyWithReview>();
-            
+
             Array.from(uniqueListIds).forEach((listId, index) => {
               const vocabularies = vocabulariesArrays[index] || [];
-              
+
               // CHỈ HIỂN THỊ NHỮNG TỪ ĐÃ ĐƯỢC ĐÁNH GIÁ VÀ CẦN REVIEW NGÀY MAI
               vocabularies.forEach(vocab => {
                 const vocabId: number | string = vocab.id || vocab.word?.toLowerCase() || '';
                 const vocabIdNum = typeof vocabId === 'number' ? vocabId : null;
-                
+
                 // Chỉ thêm nếu từ này đã được đánh giá và cần review ngày mai
                 if (vocabIdNum && reviewedVocabMap.has(vocabIdNum)) {
                   const reviewRecord = reviewedVocabMap.get(vocabIdNum)!;
-                  
+
                   if (!uniqueVocabulariesMap.has(vocabId)) {
                     uniqueVocabulariesMap.set(vocabId, {
                       vocabulary: vocab,
@@ -399,7 +389,7 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
     const uniqueFolders = Array.from(uniqueFoldersMap.values());
 
     // Tạo các requests để load vocabularies từ mỗi folder (chỉ load 1 lần cho mỗi folder)
-    const vocabularyRequests = uniqueFolders.map(folder => 
+    const vocabularyRequests = uniqueFolders.map(folder =>
       this.vocabularyService.getVocabularies(folder.vocabularyListId)
     );
 
@@ -407,7 +397,7 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
       next: (vocabulariesArrays) => {
         // Map để loại bỏ duplicate vocabularies theo vocabularyId
         const uniqueVocabulariesMap = new Map<number | string, VocabularyWithReview>();
-        
+
         // Tạo map từ allRepetitions để tìm những từ đã được đánh giá (có VocabularyId)
         const reviewedVocabMap = new Map<number, SpacedRepetition>();
         this.allRepetitions.forEach(rep => {
@@ -415,20 +405,20 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
             reviewedVocabMap.set(rep.vocabularyId, rep);
           }
         });
-        
+
         uniqueFolders.forEach((folder, index) => {
           const vocabularies = vocabulariesArrays[index] || [];
-          
+
           // CHỈ HIỂN THỊ NHỮNG TỪ ĐÃ ĐƯỢC ĐÁNH GIÁ (có record trong reviewedVocabMap)
           vocabularies.forEach(vocab => {
             // Lấy ID từ vocabulary (fallback về word nếu không có ID)
             const vocabId: number | string = vocab.id || vocab.word?.toLowerCase() || '';
             const vocabIdNum = typeof vocabId === 'number' ? vocabId : null;
-            
+
             // Chỉ thêm nếu từ này đã được đánh giá (có record với VocabularyId)
             if (vocabIdNum && reviewedVocabMap.has(vocabIdNum)) {
               const reviewRecord = reviewedVocabMap.get(vocabIdNum)!;
-              
+
               if (!uniqueVocabulariesMap.has(vocabId)) {
                 uniqueVocabulariesMap.set(vocabId, {
                   vocabulary: vocab,
@@ -524,20 +514,20 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
       next: (repetitions) => {
         const now = new Date();
         now.setHours(0, 0, 0, 0);
-        
+
         // Find words that are past their due date (nextReviewAt < today) and haven't been reviewed
         // These are words that were due but the user didn't study them
         const missedRepetitions = repetitions.filter(r => {
           if (!r.vocabularyId || !r.nextReviewAt) return false;
-          
+
           const reviewDate = new Date(r.nextReviewAt);
           reviewDate.setHours(0, 0, 0, 0);
-          
+
           // Word is missed if:
           // 1. It has a vocabularyId (word-level)
           // 2. nextReviewAt is in the past (before today)
           // 3. Status is New or Learning (not Mastered)
-          return reviewDate < now 
+          return reviewDate < now
             && (r.status === 'New' || r.status === 'Learning')
             && r.vocabularyId !== null;
         });
@@ -550,7 +540,7 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
         // Load actual vocabulary words
         const uniqueListIds = new Set<number>();
         const wordToRepetitionMap = new Map<number, SpacedRepetition>();
-        
+
         missedRepetitions.forEach(rep => {
           if (rep.vocabularyListId) {
             uniqueListIds.add(rep.vocabularyListId);
@@ -560,22 +550,22 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
           }
         });
 
-        const vocabularyRequests = Array.from(uniqueListIds).map(listId => 
+        const vocabularyRequests = Array.from(uniqueListIds).map(listId =>
           this.vocabularyService.getVocabularies(listId)
         );
 
         forkJoin(vocabularyRequests).subscribe({
           next: (vocabulariesArrays) => {
             const missedWordsMap = new Map<number, VocabularyWithReview>();
-            
+
             Array.from(uniqueListIds).forEach((listId, index) => {
               const vocabularies = vocabulariesArrays[index] || [];
-              
+
               vocabularies.forEach(vocab => {
                 const vocabId = vocab.id;
                 if (vocabId && wordToRepetitionMap.has(vocabId)) {
                   const reviewRecord = wordToRepetitionMap.get(vocabId)!;
-                  
+
                   missedWordsMap.set(vocabId, {
                     vocabulary: vocab,
                     reviewInfo: {
@@ -595,7 +585,7 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
             });
 
             this.missedWords = Array.from(missedWordsMap.values());
-            
+
             // Sort by how many days overdue
             this.missedWords.sort((a, b) => {
               if (!a.reviewInfo.nextReviewAt || !b.reviewInfo.nextReviewAt) return 0;
@@ -668,7 +658,7 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
   // Get filtered repetitions
   get filteredRepetitions(): SpacedRepetition[] {
     if (!this.allRepetitions || this.allRepetitions.length === 0) return [];
-    
+
     switch (this.filterStatus) {
       case 'due':
         return this.allRepetitions.filter(r => r.isDue);
@@ -724,7 +714,7 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
     const total = this.totalUpcomingPages;
     const current = this.currentUpcomingPage;
     const pages: number[] = [];
-    
+
     if (total <= 7) {
       // Hiển thị tất cả các trang nếu <= 7
       for (let i = 1; i <= total; i++) {
@@ -751,7 +741,7 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
         pages.push(total);
       }
     }
-    
+
     return pages;
   }
 
@@ -764,20 +754,20 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
   organizeFolders(repetitions: SpacedRepetition[]): void {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
-    
+
     // Loại bỏ duplicate theo vocabularyListId - chỉ giữ 1 bản ghi cho mỗi list
     const uniqueFolders = new Map<number, SpacedRepetition>();
-    
+
     repetitions.forEach(rep => {
       const existing = uniqueFolders.get(rep.vocabularyListId);
-      
+
       if (!existing) {
         uniqueFolders.set(rep.vocabularyListId, rep);
       } else {
         // Ưu tiên bản ghi có tiến độ hoặc mới hơn
         const currentHasProgress = (rep.reviewCount > 0) || (rep.bestQuizScore || rep.lastQuizScore);
         const existingHasProgress = (existing.reviewCount > 0) || (existing.bestQuizScore || existing.lastQuizScore);
-        
+
         if (currentHasProgress && !existingHasProgress) {
           uniqueFolders.set(rep.vocabularyListId, rep);
         } else if (rep.userSpacedRepetitionId > existing.userSpacedRepetitionId) {
@@ -785,9 +775,9 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
         }
       }
     });
-    
+
     const uniqueRepetitions = Array.from(uniqueFolders.values());
-    
+
     // Tách folders: chưa học vs đã học
     // LƯU Ý: Tất cả repetitions ở đây đã được filter để chỉ có những từ đã đánh giá
     // Nên "unlearned" ở đây có nghĩa là đã đánh giá nhưng chưa thuộc (chưa mastered)
@@ -816,7 +806,7 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
     // CHỈ HIỂN THỊ CÁC TỪ CHƯA HỌC (chưa được review trong tuần này)
     // LOẠI BỎ: các từ cần review hôm nay và các từ trong "Lịch học ngày mai"
     const thisWeekVocabularies: SpacedRepetition[] = [];
-    
+
     // Tính ngày đầu tuần (hôm nay) và ngày mai
     const weekStart = new Date(now);
     const tomorrow = new Date(now);
@@ -824,13 +814,13 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
     tomorrow.setHours(0, 0, 0, 0);
     const dayAfterTomorrow = new Date(tomorrow);
     dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
-    
+
     learned.forEach(rep => {
       // Chỉ lấy word-level records (có VocabularyId)
       if (!rep.vocabularyId) return;
-      
+
       if (!rep.nextReviewAt) return;
-      
+
       const reviewDate = new Date(rep.nextReviewAt);
       reviewDate.setHours(0, 0, 0, 0);
       const diffTime = reviewDate.getTime() - now.getTime();
@@ -838,7 +828,7 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
 
       // LOẠI BỎ các từ cần review hôm nay (nextReviewAt <= hôm nay)
       if (reviewDate <= now) return;
-      
+
       // LOẠI BỎ các từ trong "Lịch học ngày mai" (nextReviewAt = ngày mai)
       if (reviewDate >= tomorrow && reviewDate < dayAfterTomorrow) return;
 
@@ -847,17 +837,17 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
         // KIỂM TRA: Từ này chưa được review trong tuần này
         // Nếu lastReviewedAt không có hoặc lastReviewedAt < đầu tuần này thì chưa học
         let isNotReviewedThisWeek = true;
-        
+
         if (rep.lastReviewedAt) {
           const lastReviewedDate = new Date(rep.lastReviewedAt);
           lastReviewedDate.setHours(0, 0, 0, 0);
-          
+
           // Nếu đã được review trong tuần này (từ đầu tuần đến giờ) thì không hiển thị
           if (lastReviewedDate >= weekStart) {
             isNotReviewedThisWeek = false;
           }
         }
-        
+
         // Chỉ thêm nếu chưa được review trong tuần này
         if (isNotReviewedThisWeek) {
           thisWeekVocabularies.push(rep);
@@ -878,7 +868,7 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
     } else {
       this.learnedFoldersByDate = [];
     }
-    
+
     // Load vocabularies cho các date groups
     this.loadVocabulariesForDateGroups(this.learnedFoldersByDate);
   }
@@ -892,11 +882,11 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
       currentPage: 1,
       pageSize: 9
     }));
-    
+
     dateGroups.forEach((dateGroup, groupIndex) => {
       // Lưu dateGroup vào biến local để tránh closure issues
       const currentDateGroup = { ...dateGroup };
-      
+
       // Loại bỏ duplicate folders
       const uniqueFoldersMap = new Map<number, SpacedRepetition>();
       currentDateGroup.folders.forEach(folder => {
@@ -912,14 +902,14 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
       }
 
       // Load vocabularies từ các folders
-      const vocabularyRequests = uniqueFolders.map(folder => 
+      const vocabularyRequests = uniqueFolders.map(folder =>
         this.vocabularyService.getVocabularies(folder.vocabularyListId)
       );
 
       forkJoin(vocabularyRequests).subscribe({
         next: (vocabulariesArrays) => {
           const uniqueVocabulariesMap = new Map<number | string, VocabularyWithReview>();
-          
+
           // Tạo map từ allRepetitions để tìm những từ đã được đánh giá (có VocabularyId)
           const reviewedVocabMap = new Map<number, SpacedRepetition>();
           this.allRepetitions.forEach(rep => {
@@ -927,19 +917,19 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
               reviewedVocabMap.set(rep.vocabularyId, rep);
             }
           });
-          
+
           uniqueFolders.forEach((folder, index) => {
             const vocabularies = vocabulariesArrays[index] || [];
-            
+
             // CHỈ HIỂN THỊ NHỮNG TỪ ĐÃ ĐƯỢC ĐÁNH GIÁ (có record trong reviewedVocabMap)
             vocabularies.forEach(vocab => {
               const vocabId: number | string = vocab.id || vocab.word?.toLowerCase() || '';
               const vocabIdNum = typeof vocabId === 'number' ? vocabId : null;
-              
+
               // Chỉ thêm nếu từ này đã được đánh giá (có record với VocabularyId)
               if (vocabIdNum && reviewedVocabMap.has(vocabIdNum)) {
                 const reviewRecord = reviewedVocabMap.get(vocabIdNum)!;
-                
+
                 if (!uniqueVocabulariesMap.has(vocabId)) {
                   uniqueVocabulariesMap.set(vocabId, {
                     vocabulary: vocab,

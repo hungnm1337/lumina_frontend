@@ -4,7 +4,8 @@
   <!-- Header Section -->
   <div class="header-section">
     <button (click)="goBack()" class="back-button">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="back-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"
+        class="back-icon">
         <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
       </svg>
       <span>Quay lại</span>
@@ -51,6 +52,15 @@
         </div>
       </div>
     </div>
+
+    <!-- New: Button to Vocabulary List Table -->
+    <div class="action-center" style="margin-top: 24px; text-align: center;">
+      <button class="btn-view-all-vocabulary" routerLink="/spaced-repetition/vocabulary-list">
+        <i class="fas fa-table"></i>
+        <span>Xem danh sách đầy đủ từ vựng</span>
+        <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
   </div>
 
   <!-- Quick Actions -->
@@ -93,9 +103,7 @@
 
     <!-- Quiz Button for Due Today Words -->
     <div *ngIf="!isLoadingDue && dueTodayWords.length > 0" class="mb-6">
-      <button 
-        class="action-button action-button-primary w-full"
-        (click)="startReviewQuiz()">
+      <button class="action-button action-button-primary w-full" (click)="startReviewQuiz()">
         <i class="fas fa-question-circle mr-2"></i>
         Làm bài kiểm tra ({{ dueTodayWords.length }} từ)
       </button>
@@ -108,9 +116,7 @@
     <!-- Due Today Vocabulary Grid -->
     <div *ngIf="!isLoadingDue && dueTodayWords.length > 0">
       <div class="vocabulary-grid">
-        <div 
-          *ngFor="let item of dueTodayWords" 
-          class="vocabulary-card upcoming-vocab"
+        <div *ngFor="let item of dueTodayWords" class="vocabulary-card upcoming-vocab"
           (click)="goToDeck(item.reviewInfo.vocabularyListId)">
           <div class="vocab-header">
             <h3 class="vocab-word">{{ item.vocabulary.word }}</h3>
@@ -149,9 +155,7 @@
 
     <!-- Missed Words Grid -->
     <div class="vocabulary-grid">
-      <div 
-        *ngFor="let item of missedWords" 
-        class="vocabulary-card missed-vocab"
+      <div *ngFor="let item of missedWords" class="vocabulary-card missed-vocab"
         (click)="goToDeck(item.reviewInfo.vocabularyListId)">
         <div class="vocab-header">
           <h3 class="vocab-word">{{ item.vocabulary.word }}</h3>
@@ -200,9 +204,7 @@
     <!-- Upcoming Vocabulary Grid -->
     <div *ngIf="!isLoadingUpcoming && upcomingVocabularies.length > 0">
       <div class="vocabulary-grid">
-        <div 
-          *ngFor="let item of paginatedUpcomingVocabularies" 
-          class="vocabulary-card upcoming-vocab"
+        <div *ngFor="let item of paginatedUpcomingVocabularies" class="vocabulary-card upcoming-vocab"
           (click)="goToDeck(item.reviewInfo.vocabularyListId)">
           <div class="vocab-header">
             <h3 class="vocab-word">{{ item.vocabulary.word }}</h3>
@@ -222,20 +224,15 @@
 
       <!-- Pagination Controls (Carousel Style) -->
       <div *ngIf="totalUpcomingPages > 1" class="pagination-carousel">
-        <button 
-          class="carousel-btn prev-btn" 
-          [disabled]="currentUpcomingPage === 1"
-          (click)="previousUpcomingPage()">
+        <button class="carousel-btn prev-btn" [disabled]="currentUpcomingPage === 1" (click)="previousUpcomingPage()">
           <i class="fas fa-chevron-left"></i>
         </button>
-        
+
         <div class="carousel-info">
           <span class="page-indicator">{{ currentUpcomingPage }} / {{ totalUpcomingPages }}</span>
         </div>
-        
-        <button 
-          class="carousel-btn next-btn" 
-          [disabled]="currentUpcomingPage === totalUpcomingPages"
+
+        <button class="carousel-btn next-btn" [disabled]="currentUpcomingPage === totalUpcomingPages"
           (click)="nextUpcomingPage()">
           <i class="fas fa-chevron-right"></i>
         </button>
@@ -254,9 +251,7 @@
     </div>
 
     <div class="folder-grid">
-      <div 
-        *ngFor="let item of unlearnedFolders" 
-        class="folder-card unlearned-folder"
+      <div *ngFor="let item of unlearnedFolders" class="folder-card unlearned-folder"
         (click)="goToDeck(item.vocabularyListId)">
         <div class="folder-card-content">
           <h3 class="folder-card-title">{{ item.vocabularyListName }}</h3>
@@ -288,9 +283,7 @@
       <!-- Vocabulary Grid -->
       <div *ngIf="dateGroup.vocabularies.length > 0">
         <div class="vocabulary-grid">
-          <div 
-            *ngFor="let item of getPaginatedVocabulariesForDate(dateGroup)" 
-            class="vocabulary-card progress-vocab"
+          <div *ngFor="let item of getPaginatedVocabulariesForDate(dateGroup)" class="vocabulary-card progress-vocab"
             (click)="goToDeck(item.reviewInfo.vocabularyListId)">
             <div class="vocab-header">
               <h3 class="vocab-word">{{ item.vocabulary.word }}</h3>
@@ -310,20 +303,16 @@
 
         <!-- Pagination Controls (Carousel Style) -->
         <div *ngIf="getTotalPagesForDate(dateGroup) > 1" class="pagination-carousel">
-          <button 
-            class="carousel-btn prev-btn" 
-            [disabled]="dateGroup.currentPage === 1"
+          <button class="carousel-btn prev-btn" [disabled]="dateGroup.currentPage === 1"
             (click)="previousPageForDate(dateGroup)">
             <i class="fas fa-chevron-left"></i>
           </button>
-          
+
           <div class="carousel-info">
             <span class="page-indicator">{{ dateGroup.currentPage }} / {{ getTotalPagesForDate(dateGroup) }}</span>
           </div>
-          
-          <button 
-            class="carousel-btn next-btn" 
-            [disabled]="dateGroup.currentPage === getTotalPagesForDate(dateGroup)"
+
+          <button class="carousel-btn next-btn" [disabled]="dateGroup.currentPage === getTotalPagesForDate(dateGroup)"
             (click)="nextPageForDate(dateGroup)">
             <i class="fas fa-chevron-right"></i>
           </button>
@@ -337,4 +326,3 @@
     </div>
   </div>
 </div>
-
