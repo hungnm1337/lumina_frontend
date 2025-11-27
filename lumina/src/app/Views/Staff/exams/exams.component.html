@@ -20,7 +20,7 @@
                     Manage TOEIC exams with 4 skills: Listening - Speaking - Reading - Writing
                 </p>
             </div>
-            <div class="header-stats">
+            <!-- <div class="header-stats">
                 <div class="stat-card">
                     <div class="stat-number">48</div>
                     <div class="stat-label">Total Exams</div>
@@ -33,16 +33,20 @@
                     <div class="stat-number">2,847</div>
                     <div class="stat-label">Attempts</div>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Action Button -->
-        <div class="header-actions">
+            </div> -->
             <button class="btn-create-exam" (click)="showCreateExamModal = true">
                 <i class="fas fa-plus"></i>
                 <span class="btn-text">Create New Exam</span>
             </button>
         </div>
+        
+        <!-- Action Button -->
+        <!-- <div class="header-actions">
+            <button class="btn-create-exam" (click)="showCreateExamModal = true">
+                <i class="fas fa-plus"></i>
+                <span class="btn-text">Create New Exam</span>
+            </button>
+        </div> -->
     </div>
 
         <!-- TOEIC Skills Introduction -->
@@ -63,19 +67,19 @@
                     <div class="space-y-2 text-sm text-red-700">
                         <div class="flex justify-between">
                             <span>Part 1: Photographs</span>
-                            <span class="font-medium">6 câu</span>
+                            <span class="font-medium">6 prompt - 6 câu</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Part 2: Question-Response</span>
-                            <span class="font-medium">25 câu</span>
+                            <span class="font-medium">25 prompt - 25 câu</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Part 3: Conversations</span>
-                            <span class="font-medium">39 câu</span>
+                            <span class="font-medium">13 prompt - 39 câu</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Part 4: Talks</span>
-                            <span class="font-medium">30 câu</span>
+                            <span class="font-medium">10 prompt - 30 câu</span>
                         </div>
                     </div>
                 </div>
@@ -94,15 +98,15 @@
                     <div class="space-y-2 text-sm text-green-700">
                         <div class="flex justify-between">
                             <span>Part 5: Incomplete Sentences</span>
-                            <span class="font-medium">30 câu</span>
+                            <span class="font-medium">30 prompt - 30 câu</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Part 6: Text Completion</span>
-                            <span class="font-medium">16 câu</span>
+                            <span class="font-medium">4 prompt - 16 câu</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Part 7: Reading Comprehension</span>
-                            <span class="font-medium">54 câu</span>
+                            <span class="font-medium">18 prompt - 54 câu</span>
                         </div>
                     </div>
                 </div>
@@ -121,23 +125,23 @@
                     <div class="space-y-2 text-sm text-blue-700">
                         <div class="flex justify-between">
                             <span>Part 1: Read a text aloud</span>
-                            <span class="font-medium">2 câu</span>
+                            <span class="font-medium">2 prompt - 2 câu</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Part 2: Describe a picture</span>
-                            <span class="font-medium">2 câu</span>
+                            <span class="font-medium">2 prompt - 2 câu</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Part 3: Respond to questions</span>
-                            <span class="font-medium">3 câu</span>
+                            <span class="font-medium">1 prompt - 3 câu</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Part 4: Respond using information</span>
-                            <span class="font-medium">3 câu</span>
+                            <span class="font-medium">1 prompt - 3 câu</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Part 5: Express an opinion</span>
-                            <span class="font-medium">1 câu</span>
+                            <span class="font-medium">1 prompt - 1 câu</span>
                         </div>
                     </div>
                 </div>
@@ -156,15 +160,15 @@
                     <div class="space-y-2 text-sm text-purple-700">
                         <div class="flex justify-between">
                             <span>Part 1: Write a sentence</span>
-                            <span class="font-medium">5 câu</span>
+                            <span class="font-medium">5 prompt - 5 câu</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Part 2: Respond to a request</span>
-                            <span class="font-medium">2 câu</span>
+                            <span class="font-medium">2 prompt - 2 câu</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Part 3: Write an opinion essay</span>
-                            <span class="font-medium">1 câu</span>
+                            <span class="font-medium">1 prompt - 1 câu</span>
                         </div>
                     </div>
                 </div>
@@ -289,15 +293,15 @@
 
                                 <!-- Card Footer -->
                                 <div class="card-footer">
-                                    <div class="attempts-count">
+                                    <!-- <div class="attempts-count">
                                         <i class="fas fa-users"></i>
                                         <span>847 attempts</span>
-                                    </div>
+                                    </div> -->
                                     <div class="card-actions">
-                                        <button class="btn-view" (click)="openExamModal(exam)">
+                                        <!-- <button class="btn-view" (click)="openExamModal(exam)">
                                             <i class="fas fa-eye"></i>
                                             View
-                                        </button>
+                                        </button> -->
                                         <button class="btn-toggle" 
                                                 [class.lock]="exam.isActive"
                                                 [class.unlock]="!exam.isActive"
