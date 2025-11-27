@@ -10,7 +10,7 @@ import { UploadService } from '../../../../Services/Upload/upload.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './preview-panel.component.html',
-  styleUrl: './preview-panel.component.scss'
+  styleUrls: ['./preview-panel.component.scss']
 })
 export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
   @Input() previewData: any = null;
@@ -25,8 +25,8 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
   toastMessage = '';
 
   constructor(
-    private examPartService: ExamPartService, 
-    private questionService: QuestionService, 
+    private examPartService: ExamPartService,
+    private questionService: QuestionService,
     private uploadService: UploadService
   ) {}
 
@@ -49,7 +49,7 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
   loadExamParts() {
     console.log('🔄 Loading exam parts...');
     this.isLoadingParts = true;
-    
+
     this.examPartService.getExamsParts().subscribe({
       next: (parts: any[]) => {
         console.log('✅ Exam parts loaded:', parts);
@@ -100,16 +100,16 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
     try {
       // BƯỚC 1: Đếm tổng số câu hỏi
       let totalQuestions = 0;
-      
+
       console.log('🔍 Preview Data:', this.previewData);
-      
+
       for (const prompt of this.previewData) {
         console.log('🔍 Prompt:', prompt);
-        
+
         if (prompt.Questions && Array.isArray(prompt.Questions)) {
           totalQuestions += prompt.Questions.length;
           console.log(`  ✅ Tìm thấy ${prompt.Questions.length} câu hỏi trong Questions`);
-        } 
+        }
         else if (prompt.questions && Array.isArray(prompt.questions)) {
           totalQuestions += prompt.questions.length;
           console.log(`  ✅ Tìm thấy ${prompt.questions.length} câu hỏi trong questions`);
@@ -151,7 +151,7 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
         if (prompt.referenceImageUrl && prompt.referenceImageUrl.trim() !== '') {
           const imageUploadRes = await this.uploadService.uploadFromUrl(prompt.referenceImageUrl).toPromise();
           if (imageUploadRes && imageUploadRes.url) {
-            prompt.referenceImageUrl = imageUploadRes.url; 
+            prompt.referenceImageUrl = imageUploadRes.url;
           }
         }
 
@@ -174,7 +174,7 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
           console.log('✅ Lưu đề thi thành công', res);
           this.isSaving = false;
           this.showToastMessage('✅ Lưu đề thi thành công!');
-          
+
           // ✅ Reset selectors sau khi save thành công
           setTimeout(() => {
             this.resetSelectors();

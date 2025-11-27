@@ -33,7 +33,7 @@ export const passwordMatchValidator: ValidatorFn = (
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink, HeaderComponent],
   templateUrl: './forgot-password.component.html',
-  styleUrl: './forgot-password.component.scss',
+  styleUrls: ['./forgot-password.component.scss'],
 })
 export class ForgotPasswordComponent {
   currentStep = 1; // 1: Enter email, 2: Reset password

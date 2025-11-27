@@ -15,26 +15,10 @@
         <p class="text-xl text-purple-100 mb-8 max-w-3xl mx-auto">
           Learn and practice TOEIC vocabulary effectively with smart flashcard system and diverse exercises
         </p>
-        <div class="flex items-center justify-center space-x-8 text-sm">
-          <div class="flex items-center space-x-2"><i class="fas fa-book text-yellow-300"></i><span>3,000+ vocabulary words</span></div>
-          <div class="flex items-center space-x-2"><i class="fas fa-brain text-green-300"></i><span>Smart Learning</span></div>
-          <div class="flex items-center space-x-2"><i class="fas fa-chart-line text-blue-300"></i><span>Track Progress</span></div>
-        </div>
       </div>
     </div>
   </section>
 
-  <!-- Quick Stats -->
-  <section class="py-8 bg-white border-b border-gray-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <div class="text-center"><div class="text-3xl font-bold text-blue-600 mb-2">1,247</div><div class="text-gray-600 text-sm">Words Learned</div></div>
-        <div class="text-center"><div class="text-3xl font-bold text-green-600 mb-2">89%</div><div class="text-gray-600 text-sm">Accuracy</div></div>
-        <div class="text-center"><div class="text-3xl font-bold text-purple-600 mb-2">15</div><div class="text-gray-600 text-sm">Consecutive Days</div></div>
-        <div class="text-center"><div class="text-3xl font-bold text-orange-600 mb-2">Level 8</div><div class="text-gray-600 text-sm">Current Level</div></div>
-      </div>
-    </div>
-  </section>
 
   <!-- Learning Methods -->
   <section class="py-16">
@@ -122,7 +106,7 @@
               (click)="openCreateListModal()"
               title="Tạo folder vocabulary mới">
               <i class="fas fa-folder-plus"></i>
-              <span>Thêm Folder</span>
+              <span>Add Folder</span>
             </button>
           </div>
           <p class="text-lg text-gray-600">Learn vocabulary by common TOEIC topics</p>
@@ -140,7 +124,6 @@
               </div>
               <p class="text-gray-600 text-sm mb-3">{{ list.vocabularyCount }} words</p>
               <div class="progress-bar mb-2"><div class="progress-fill" [style.width]="(Math.min(list.vocabularyCount,100)) + '%'" ></div></div>
-              <p class="text-xs text-gray-500">Status: {{ list.status || 'Approved' }}</p>
             </div>
           </div>
         </div>
@@ -242,9 +225,14 @@
         <h2 class="text-3xl font-bold mb-4">Daily Challenge</h2>
         <p class="text-xl text-orange-100 mb-6">Learn 10 new words every day to maintain your learning streak</p>
         <div class="flex items-center justify-center space-x-8 mb-8">
-          <div class="text-center"><div class="text-3xl font-bold">15</div><div class="text-orange-200 text-sm">Consecutive Days</div></div>
-          <div class="text-center"><div class="text-3xl font-bold">7/10</div><div class="text-orange-200 text-sm">Words Today</div></div>
-          <div class="text-center"><div class="text-3xl font-bold">🔥</div><div class="text-orange-200 text-sm">Streak</div></div>
+          <div class="text-center">
+            <div class="text-3xl font-bold">{{ getConsecutiveDays() }}</div>
+            <div class="text-orange-200 text-sm">Consecutive Days</div>
+          </div>
+          <div class="text-center">
+            <div class="text-3xl font-bold">{{ getStreakEmoji() }}</div>
+            <div class="text-orange-200 text-sm">Streak</div>
+          </div>
         </div>
         <button class="btn-primary bg-white text-orange-600 hover:bg-gray-100" (click)="startDailyChallenge()">
           <i class="fas fa-play mr-2"></i>Continue Challenge

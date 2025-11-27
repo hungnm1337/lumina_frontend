@@ -32,6 +32,7 @@ export class SidebarComponent {
       items: [
         { path: '/admin/system-plans', name: 'Plans & Limits', icon: 'fas fa-layer-group' },
           { path: '/admin/user-activity', name: 'User Activity', icon: 'fas fa-user-check' },
+        { path: '/admin/notifications', name: 'Notification management', icon: 'fas fa-bell' },
         // { path: '/admin/system-integrations', name: 'AI/Email/Payment', icon: 'fas fa-plug' },
         // { path: '/admin/system-srs', name: 'SRS & Leaderboard', icon: 'fas fa-cogs' },
       ],

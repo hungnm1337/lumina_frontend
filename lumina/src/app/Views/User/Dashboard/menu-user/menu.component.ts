@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
   standalone: true,
   imports: [],
   templateUrl: './menu.component.html',
-  styleUrl: './menu.component.scss'
+  styleUrls: ['./menu.component.scss']
 })
 export class MenuComponent {
   moveToReportList() {

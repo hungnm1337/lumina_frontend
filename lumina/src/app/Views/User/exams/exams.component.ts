@@ -23,7 +23,7 @@ interface SkillGroup {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './exams.component.html',
-  styleUrl: './exams.component.scss',
+  styleUrls: ['./exams.component.scss'],
 })
 export class ExamsComponent {
   exams: ExamDTO[] = [];

@@ -37,11 +37,21 @@ export class FloatingChatComponent implements OnInit, OnDestroy {
     this.routerSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: any) => {
-        this.currentRoute = event.url;
-        // Đóng chatbox nếu chuyển sang trang không cho phép hiển thị
-        if (!this.shouldShowChatbox) {
+        // Lấy pathname (bỏ query params) để so sánh
+        const urlWithoutQuery = event.url.split('?')[0];
+        const previousRoute = this.currentRoute;
+        this.currentRoute = urlWithoutQuery;
+        
+        // Kiểm tra xem có phải đang ở trang vocabulary không
+        const isVocabularyPage = this.currentRoute === '/vocabulary' || this.currentRoute.startsWith('/vocabulary/');
+        const wasVocabularyPage = previousRoute === '/vocabulary' || previousRoute.startsWith('/vocabulary/');
+        
+        // Nếu chuyển từ vocabulary sang vocabulary (có thể có query params), giữ nguyên trạng thái mở
+        // Chỉ đóng nếu chuyển sang trang khác (không phải vocabulary)
+        if (!isVocabularyPage) {
           this.isOpen = false;
         }
+        // Nếu vẫn ở trang vocabulary, giữ nguyên trạng thái isOpen
       });
 
     // Theo dõi trạng thái authentication
@@ -53,8 +63,8 @@ export class FloatingChatComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Set route ban đầu
-    this.currentRoute = this.router.url;
+    // Set route ban đầu (bỏ query params)
+    this.currentRoute = this.router.url.split('?')[0];
     
     // Set authentication state ban đầu
     this.isAuthenticated = !!this.authService.getCurrentUser();
@@ -77,20 +87,13 @@ export class FloatingChatComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    // 2. Không hiển thị ở trang Articles-detail (articles/:id)
-    // Route: /articles/:id (không phải /articles)
-    if (this.currentRoute.match(/^\/articles\/\d+/)) {
-      return false;
+    // 2. Chỉ hiển thị ở trang vocabulary
+    // Route: /vocabulary hoặc /vocabulary/list/:id
+    if (this.currentRoute === '/vocabulary' || this.currentRoute.startsWith('/vocabulary/')) {
+      return true;
     }
 
-    // 3. Không hiển thị khi đang làm bài thi
-    // Route: /homepage/user-dashboard/exam/:id hoặc /homepage/user-dashboard/part/:id
-    if (this.currentRoute.includes('/user-dashboard/exam/') || 
-        this.currentRoute.includes('/user-dashboard/part/')) {
-      return false;
-    }
-
-    return true;
+    return false;
   }
 
   toggleChatbox() {
@@ -109,12 +112,7 @@ export class FloatingChatComponent implements OnInit, OnDestroy {
         type: 'ai',
         content: '**Xin chào! Tôi là AI Assistant**\n\nTôi có thể giúp bạn:\n\n**Tư vấn & Hỗ trợ:**\n• Cách học TOEIC hiệu quả?\n• Giải thích cấu trúc câu này\n\n**Tips**: Mô tả càng chi tiết, kết quả càng tốt!\n\nBạn muốn tôi giúp gì nào? 😊',
         timestamp: new Date(),
-        conversationType: 'general',
-        suggestions: [
-          'Tư vấn học TOEIC',
-          'Giải thích ngữ pháp',
-          'Chiến lược làm bài'
-        ]
+        conversationType: 'general'
       });
     }
   }

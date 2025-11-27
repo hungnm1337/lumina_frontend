@@ -44,6 +44,14 @@ export class VocabularyComponent implements OnInit {
   isListModalOpen = false;
   listForm: FormGroup;
 
+  // ----- TRẠNG THÁI CONFIRMATION MODAL -----
+  showConfirmModal = false;
+  confirmTitle = '';
+  confirmMessage = '';
+  confirmType: 'delete' | 'approval' = 'delete';
+  pendingDeleteId: number | null = null;
+  pendingApprovalList: VocabularyListResponse | null = null;
+
   // ----- TRẠNG THÁI KHÁC -----
   isLoading = false;
   isSubmitting = false;
@@ -152,6 +160,20 @@ export class VocabularyComponent implements OnInit {
     this.onSearchChange();
   }
 
+  // ----- STATS METHODS -----
+  getPendingCount(): number {
+    return this.vocabularyLists.filter(list => 
+      list.status?.toLowerCase() === 'pending' || 
+      list.status?.toLowerCase() === 'draft'
+    ).length;
+  }
+
+  getPublishedCount(): number {
+    return this.vocabularyLists.filter(list => 
+      list.status?.toLowerCase() === 'published'
+    ).length;
+  }
+
   // ----- MODAL DANH SÁCH -----
   openCreateListModal() { this.isListModalOpen = true; this.listForm.reset({ isPublic: false }); }
   closeCreateListModal() { this.isListModalOpen = false; }
@@ -209,11 +231,20 @@ export class VocabularyComponent implements OnInit {
     const formData = this.vocabularyForm.value;
     console.log('Form data to submit:', formData);
 
+    // Lưu translation vào definition field với format "DEFINITION|||TRANSLATION"
+    // Vì backend không có translation field riêng
+    const definitionWithTranslation = formData.translation 
+      ? `${formData.definition}|||${formData.translation}`
+      : formData.definition;
+
     // Logic cho CHỈNH SỬA
     if (this.editingVocabulary) {
       const updateData = {
-        word: formData.word, typeOfWord: formData.partOfSpeech, category: formData.category,
-        definition: formData.definition, example: formData.example
+        word: formData.word, 
+        typeOfWord: formData.partOfSpeech, 
+        category: formData.category,
+        definition: definitionWithTranslation, 
+        example: formData.example
       };
       console.log('Updating vocabulary:', updateData);
       this.vocabularyService.updateVocabulary(this.editingVocabulary.id, updateData).subscribe({
@@ -233,9 +264,12 @@ export class VocabularyComponent implements OnInit {
     // Logic cho TẠO MỚI
     else {
       const vocabularyData = {
-        vocabularyListId: this.selectedList.vocabularyListId, word: formData.word,
-        typeOfWord: formData.partOfSpeech, category: formData.category,
-        definition: formData.definition, example: formData.example
+        vocabularyListId: this.selectedList.vocabularyListId, 
+        word: formData.word,
+        typeOfWord: formData.partOfSpeech, 
+        category: formData.category,
+        definition: definitionWithTranslation, 
+        example: formData.example
       };
       console.log('Creating vocabulary:', vocabularyData);
       this.vocabularyService.createVocabulary(vocabularyData).subscribe({
@@ -255,14 +289,27 @@ export class VocabularyComponent implements OnInit {
   }
 
   deleteVocabulary(id: number) {
-    if (confirm('Bạn có chắc chắn muốn xóa từ vựng này?')) {
+    this.pendingDeleteId = id;
+    this.confirmType = 'delete';
+    this.confirmTitle = 'Xác nhận xóa';
+    this.confirmMessage = 'Bạn có chắc chắn muốn xóa từ vựng này?';
+    this.showConfirmModal = true;
+  }
+
+  confirmDelete() {
+    if (this.pendingDeleteId) {
       this.isLoading = true;
-      this.vocabularyService.deleteVocabulary(id).subscribe({
+      this.vocabularyService.deleteVocabulary(this.pendingDeleteId).subscribe({
         next: () => {
           this.toastService.success('Xóa từ vựng thành công!');
           if (this.selectedList) this.loadVocabularies(this.selectedList.vocabularyListId);
+          this.closeConfirmModal();
         },
-        error: (error) => { this.toastService.error('Không thể xóa từ vựng.'); this.isLoading = false; }
+        error: (error) => { 
+          this.toastService.error('Không thể xóa từ vựng.'); 
+          this.isLoading = false;
+          this.closeConfirmModal();
+        }
       });
     }
   }
@@ -302,21 +349,39 @@ export class VocabularyComponent implements OnInit {
   // ===== APPROVAL METHODS =====
   requestApproval(list: VocabularyListResponse, event: Event): void {
     event.stopPropagation(); // Ngăn click vào card
-    if (confirm('Bạn có chắc muốn gửi danh sách từ vựng này để phê duyệt?')) {
+    this.pendingApprovalList = list;
+    this.confirmType = 'approval';
+    this.confirmTitle = 'Xác nhận gửi phê duyệt';
+    this.confirmMessage = 'Bạn có chắc muốn gửi danh sách từ vựng này để phê duyệt?';
+    this.showConfirmModal = true;
+  }
+
+  confirmApproval() {
+    if (this.pendingApprovalList) {
       this.isSubmitting = true;
-      this.vocabularyService.requestApproval(list.vocabularyListId).subscribe({
+      this.vocabularyService.requestApproval(this.pendingApprovalList.vocabularyListId).subscribe({
         next: () => {
           this.toastService.success('Đã gửi yêu cầu phê duyệt!');
           this.loadVocabularyLists(); // Reload lists
           this.isSubmitting = false;
+          this.closeConfirmModal();
         },
         error: (err) => {
           console.error("Error requesting approval:", err);
           this.toastService.error('Gửi yêu cầu thất bại.');
           this.isSubmitting = false;
+          this.closeConfirmModal();
         }
       });
     }
+  }
+
+  closeConfirmModal() {
+    this.showConfirmModal = false;
+    this.pendingDeleteId = null;
+    this.pendingApprovalList = null;
+    this.confirmTitle = '';
+    this.confirmMessage = '';
   }
 
   getStatusClass(status: string | undefined): string {

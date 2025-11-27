@@ -13,7 +13,7 @@ interface QuestionResult {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './speaking-summary.component.html',
-  styleUrl: './speaking-summary.component.scss',
+  styleUrls: ['./speaking-summary.component.scss'],
 })
 export class SpeakingSummaryComponent {
   @Input() results: QuestionResult[] = [];

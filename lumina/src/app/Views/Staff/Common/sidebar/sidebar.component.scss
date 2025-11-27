@@ -32,6 +32,12 @@
   animation: tooltip-fade 0.2s ease-out;
 }
 
+// Ẩn tooltip nếu title là null hoặc rỗng
+.nav-item[title="null"]:hover::after,
+.nav-item[title=""]:hover::after {
+  display: none;
+}
+
 @keyframes tooltip-fade {
   from {
     opacity: 0;

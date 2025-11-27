@@ -92,17 +92,44 @@ export class DeckDetailComponent implements OnInit {
     const listId = parseInt(deckId);
     if (isNaN(listId)) return;
 
-    this.vocabularyService.getPublicVocabularyLists().subscribe({
+    // Thử load từ my-and-staff lists trước (bao gồm cả folder của user và staff)
+    this.vocabularyService.getMyAndStaffVocabularyLists().subscribe({
       next: (lists) => {
         const list = lists.find(l => l.vocabularyListId === listId);
         if (list && this.deck) {
           this.deck.title = list.name;
           this.deck.author = list.makeByName;
+        } else {
+          // Nếu không tìm thấy trong my-and-staff, thử load từ public lists (cho folder đã publish)
+          this.vocabularyService.getPublicVocabularyLists().subscribe({
+            next: (publicLists) => {
+              const publicList = publicLists.find(l => l.vocabularyListId === listId);
+              if (publicList && this.deck) {
+                this.deck.title = publicList.name;
+                this.deck.author = publicList.makeByName;
+              }
+            },
+            error: (error) => {
+              console.error('Error loading deck info from public lists:', error);
+            }
+          });
         }
       },
       error: (error) => {
         console.error('Error loading deck info:', error);
-        // Không cần hiển thị lỗi vì deck đã load được
+        // Fallback: thử load từ public lists
+        this.vocabularyService.getPublicVocabularyLists().subscribe({
+          next: (publicLists) => {
+            const publicList = publicLists.find(l => l.vocabularyListId === listId);
+            if (publicList && this.deck) {
+              this.deck.title = publicList.name;
+              this.deck.author = publicList.makeByName;
+            }
+          },
+          error: (fallbackError) => {
+            console.error('Error loading deck info from public lists (fallback):', fallbackError);
+          }
+        });
       }
     });
   }
@@ -190,22 +217,63 @@ export class DeckDetailComponent implements OnInit {
     const listId = parseInt(deckId);
     if (isNaN(listId)) return;
 
-    // Chỉ load SpacedRepetition nếu đã có (đã được đánh giá trước đó)
-    // KHÔNG tự động tạo record mới - chỉ tạo khi người dùng đánh giá
-    this.spacedRepetitionService.getByList(listId).subscribe({
-      next: (repetition) => {
-        this.spacedRepetition = repetition;
-        console.log('SpacedRepetition loaded:', repetition);
+    // Load tất cả spaced repetition records và tổng hợp thống kê từ word-level records
+    this.spacedRepetitionService.getAllRepetitions().subscribe({
+      next: (allRepetitions) => {
+        // Lọc các word-level records (vocabularyId != null) cho folder này
+        const wordLevelRecords = allRepetitions.filter(r => 
+          r.vocabularyListId === listId && 
+          r.vocabularyId != null && 
+          r.vocabularyId !== undefined
+        );
+
+        // Tổng hợp thống kê từ word-level records
+        const totalReviewCount = wordLevelRecords.reduce((sum, r) => sum + (r.reviewCount || 0), 0);
+        const earliestNextReview = wordLevelRecords
+          .filter(r => r.nextReviewAt)
+          .map(r => new Date(r.nextReviewAt!))
+          .sort((a, b) => a.getTime() - b.getTime())[0];
+
+        // Luôn tạo một spaced repetition object tổng hợp để hiển thị
+        // Ngay cả khi chưa có review, vẫn hiển thị với reviewCount = 0
+        this.spacedRepetition = {
+          userSpacedRepetitionId: 0,
+          userId: 0,
+          vocabularyId: null,
+          vocabularyListId: listId,
+          vocabularyListName: this.deck?.title || '',
+          vocabularyWord: null,
+          lastReviewedAt: wordLevelRecords.length > 0 
+            ? wordLevelRecords.sort((a, b) => new Date(b.lastReviewedAt).getTime() - new Date(a.lastReviewedAt).getTime())[0].lastReviewedAt
+            : new Date().toISOString(),
+          nextReviewAt: earliestNextReview ? earliestNextReview.toISOString() : null,
+          reviewCount: totalReviewCount,
+          intervals: 1,
+          status: 'Learning',
+          isDue: earliestNextReview ? earliestNextReview <= new Date() : false,
+          daysUntilReview: earliestNextReview ? Math.max(0, Math.ceil((earliestNextReview.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))) : 0
+        };
+        console.log('SpacedRepetition aggregated from word-level records:', this.spacedRepetition);
       },
       error: (error) => {
-        // Nếu không tìm thấy (404), không tạo mới - chỉ log
-        // Record sẽ được tạo khi người dùng đánh giá lần đầu
-        if (error.status === 404) {
-          console.log('Chưa có SpacedRepetition - sẽ tạo khi đánh giá');
-          this.spacedRepetition = null;
-        } else {
-          console.error('Error loading SpacedRepetition:', error);
-        }
+        console.error('Error loading all repetitions:', error);
+        // Fallback: tạo spaced repetition object với giá trị mặc định
+        this.spacedRepetition = {
+          userSpacedRepetitionId: 0,
+          userId: 0,
+          vocabularyId: null,
+          vocabularyListId: listId,
+          vocabularyListName: this.deck?.title || '',
+          vocabularyWord: null,
+          lastReviewedAt: new Date().toISOString(),
+          nextReviewAt: null,
+          reviewCount: 0,
+          intervals: 1,
+          status: 'Learning',
+          isDue: false,
+          daysUntilReview: 0
+        };
+        console.log('SpacedRepetition created with default values (fallback):', this.spacedRepetition);
       }
     });
   }
@@ -271,9 +339,13 @@ export class DeckDetailComponent implements OnInit {
     this.spacedRepetitionService.reviewVocabulary(request).subscribe({
       next: (response) => {
         if (response.success && response.updatedRepetition) {
-          this.spacedRepetition = response.updatedRepetition;
           this.showReviewButtons = false;
           console.log('Review successful:', response);
+
+          // Reload spaced repetition để cập nhật thống kê tổng hợp
+          if (this.deckId) {
+            this.loadOrCreateSpacedRepetition(this.deckId);
+          }
 
           // Hiển thị thông báo thành công
           alert(`Đã đánh giá thành công! Lần review tiếp theo: ${this.formatNextReviewDate(response.nextReviewAt)}`);

@@ -10,7 +10,7 @@ import { ToastService } from '../../../../Services/Toast/toast.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './report-popup.component.html',
-  styleUrl: './report-popup.component.scss'
+  styleUrls: ['./report-popup.component.scss']
 })
 export class ReportPopupComponent implements AfterViewInit {
   // Visibility controlled by parent via *ngIf; remove internal isDisplay flag

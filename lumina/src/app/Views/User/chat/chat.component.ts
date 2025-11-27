@@ -30,35 +30,6 @@ export class ChatComponent implements OnInit, OnDestroy {
   conversationType = 'general';
   showSaveButton = false;
   generatedVocabularies: GeneratedVocabularyDTO[] = [];
-  showSuggestedQuestions = true;
-
-  // Các loại câu hỏi gợi ý
-  suggestedQuestions: { [key: string]: string[] } = {
-    vocabulary: [
-      "Từ 'acquire' nghĩa là gì?",
-      "Tạo 10 từ vựng về Business",
-      "Phân biệt 'affect' và 'effect'",
-      "Từ vựng TOEIC Part 5 thường gặp"
-    ],
-    grammar: [
-      "Khi nào dùng Present Perfect?",
-      "Phân biệt 'since' và 'for'",
-      "Cách dùng Passive Voice",
-      "Thì quá khứ đơn và quá khứ hoàn thành"
-    ],
-    toeic_strategy: [
-      "Mẹo làm Part 5 nhanh",
-      "Chiến lược làm Part 7",
-      "Cách cải thiện Listening",
-      "Quản lý thời gian trong TOEIC"
-    ],
-    practice: [
-      "Tạo bài tập ngữ pháp",
-      "Luyện tập từ vựng yếu",
-      "Đề thi thử TOEIC",
-      "Cách ôn tập hiệu quả"
-    ]
-  };
 
   constructor(
     private chatService: ChatService,
@@ -68,20 +39,8 @@ export class ChatComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Chỉ thêm tin nhắn chào mừng nếu chưa có messages từ input
-    if (this.messages.length === 0) {
-      this.messages.push({
-        type: 'ai',
-        content: '**Xin chào! Tôi là AI Assistant**\n\nTôi có thể giúp bạn:\n\n**Tư vấn & Hỗ trợ:**\n• Cách học TOEIC hiệu quả?\n• Giải thích cấu trúc câu này\n\n**Tips**: Mô tả càng chi tiết, kết quả càng tốt!\n\nBạn muốn tôi giúp gì nào? 😊',
-        timestamp: new Date(),
-        conversationType: 'general',
-        suggestions: [
-          'Tư vấn học TOEIC',
-          'Giải thích ngữ pháp',
-          'Chiến lược làm bài'
-        ]
-      });
-    }
+    // Không thêm welcome message ở đây nữa vì đã được quản lý bởi FloatingChatComponent
+    // Messages sẽ được truyền vào qua @Input từ FloatingChatComponent
   }
 
   ngOnDestroy(): void {
@@ -157,26 +116,10 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
   }
 
-  selectSuggestedQuestion(question: string): void {
-    this.currentMessage = question;
-  }
-
   setConversationType(type: string): void {
-    // Nếu click vào cùng tab đang active, ẩn hoàn toàn suggested questions
-    if (this.conversationType === type) {
-      this.showSuggestedQuestions = false;
-    } else {
-      // Nếu click vào tab khác, đổi conversation type và hiển thị suggested questions
-      this.conversationType = type;
-      this.showSuggestedQuestions = true;
-    }
-    
+    this.conversationType = type;
     this.showSaveButton = false;
     this.generatedVocabularies = [];
-  }
-
-  toggleSuggestedQuestions(): void {
-    this.showSuggestedQuestions = !this.showSuggestedQuestions;
   }
 
   async saveVocabularies(): Promise<void> {
@@ -202,21 +145,29 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.generatedVocabularies = [];
 
         // Thêm tin nhắn xác nhận
-        this.messages.push({
+        const confirmMessage: ChatMessage = {
           type: 'ai',
           content: response.message,
-          timestamp: new Date()
-        });
+          timestamp: new Date(),
+          conversationType: this.conversationType
+        };
+        
+        this.messages.push(confirmMessage);
+        // Emit tin nhắn để lưu vào savedMessages của FloatingChatComponent
+        this.messageAdded.emit(confirmMessage);
 
         // Điều hướng đến trang Từ vựng và highlight folder mới tạo
-        try {
-          const listId = response.vocabularyListId;
-          if (listId) {
-            this.router.navigate(['/vocabulary'], { queryParams: { highlight: listId } });
-          } else {
-            this.router.navigate(['/vocabulary']);
-          }
-        } catch {}
+        // Delay một chút để đảm bảo message được emit trước khi navigate
+        setTimeout(() => {
+          try {
+            const listId = response.vocabularyListId;
+            if (listId) {
+              this.router.navigate(['/vocabulary'], { queryParams: { highlight: listId } });
+            } else {
+              this.router.navigate(['/vocabulary']);
+            }
+          } catch {}
+        }, 100);
       }
 
     } catch (error) {
