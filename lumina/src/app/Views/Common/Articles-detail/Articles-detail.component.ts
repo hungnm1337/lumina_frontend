@@ -145,8 +145,8 @@ export class BlogDetailComponent implements OnInit {
       this.completedSections.add(i);
     }
 
-    // Set current section to first uncompleted section
-    this.currentSectionIndex = completedCount < totalSections ? completedCount : totalSections - 1;
+    // Always start from the first section (index 0) regardless of completion status
+    this.currentSectionIndex = 0;
     if (this.article) {
       this.currentSectionId = this.article.sections[this.currentSectionIndex]?.sectionId || 0;
     }

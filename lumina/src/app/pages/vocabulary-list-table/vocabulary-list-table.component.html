@@ -3,16 +3,21 @@
 <div class="vocabulary-list-container">
   <!-- Header Section -->
   <div class="header-section">
-    <button (click)="goBack()" class="back-button">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"
-        class="back-icon">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-      </svg>
-      <span>Quay lại</span>
-    </button>
     <div class="header-content">
-      <h1 class="page-title">Danh Sách Từ Vựng Spaced Repetition</h1>
-      <p class="page-subtitle">Theo dõi chi tiết tiến độ học tập của từng từ vựng</p>
+      <button (click)="goBack()" class="back-button">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"
+          class="back-icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+        <span>Quay lại</span>
+      </button>
+      <div class="title-wrapper">
+        <h1 class="page-title">
+          <span class="toeic-badge">TOEIC</span>
+          Danh Sách Từ Vựng Spaced Repetition
+        </h1>
+        <p class="page-subtitle">Theo dõi chi tiết tiến độ học tập của từng từ vựng</p>
+      </div>
     </div>
   </div>
 

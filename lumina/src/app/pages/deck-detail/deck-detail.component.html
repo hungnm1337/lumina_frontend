@@ -184,3 +184,26 @@
     <p>Bộ thẻ này chưa có nội dung để học.</p>
   </div>
 </div>
+
+<!-- Custom Alert Modal -->
+<div class="custom-modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="custom-modal" (click)="$event.stopPropagation()" [class.modal-success]="modalType === 'success'" [class.modal-error]="modalType === 'error'" [class.modal-info]="modalType === 'info'">
+    <div class="modal-icon">
+      <svg *ngIf="modalType === 'success'" width="48" height="48" viewBox="0 0 24 24" fill="none">
+        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <svg *ngIf="modalType === 'error'" width="48" height="48" viewBox="0 0 24 24" fill="none">
+        <path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <svg *ngIf="modalType === 'info'" width="48" height="48" viewBox="0 0 24 24" fill="none">
+        <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="modal-content">
+      <p class="modal-message">{{ modalMessage }}</p>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn" (click)="closeModal()" type="button">OK</button>
+    </div>
+  </div>
+</div>

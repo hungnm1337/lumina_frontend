@@ -117,22 +117,19 @@ export class SpacedRepetitionDashboardComponent implements OnInit {
           return r.status === 'Mastered';
         });
 
-        // 3. Tính "Cần học sắp tới": các từ vựng có nextReviewAt từ ngày mai trở đi
-        // KHÔNG TÍNH CÁC TỪ CẦN REVIEW HÔM NAY
+        // 3. Tính "Cần học sắp tới": TẤT CẢ các từ đang trong quá trình học
+        // Bao gồm: New + Learning (không tính Mastered, không tính từ cần review hôm nay)
         const upcoming = reviewedRepetitions.filter(r => {
           if (!r.vocabularyId || r.vocabularyId === null || r.vocabularyId === undefined) return false;
-          if (!r.nextReviewAt) return false;
-
-          const reviewDate = new Date(r.nextReviewAt);
-          reviewDate.setHours(0, 0, 0, 0);
-
-          // nextReviewAt phải từ ngày mai trở đi (KHÔNG bao gồm hôm nay)
-          const isUpcoming = reviewDate >= tomorrow;
 
           // Chỉ tính những từ đang trong quá trình học (New hoặc Learning)
           const isActive = r.status === 'New' || r.status === 'Learning';
 
-          return isUpcoming && isActive;
+          // Không tính các từ cần review hôm nay (đã được tính ở "Cần review")
+          // Kiểm tra xem từ này có trong danh sách dueToday không
+          const isDueToday = dueToday.some(d => d.vocabularyId === r.vocabularyId);
+
+          return isActive && !isDueToday;
         });
 
         this.spacedRepetitionStats = {

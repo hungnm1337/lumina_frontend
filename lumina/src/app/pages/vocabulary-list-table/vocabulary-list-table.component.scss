@@ -1,16 +1,28 @@
+// TOEIC Color Palette
+$toeic-primary: #f59e0b;
+$toeic-secondary: #d97706;
+$toeic-blue: #3b82f6;
+$toeic-blue-dark: #2563eb;
+$toeic-green: #10b981;
+$toeic-green-dark: #059669;
+$toeic-gray: #64748b;
+$toeic-gray-light: #f1f5f9;
+$toeic-gray-border: #e2e8f0;
+
 .vocabulary-list-container {
     min-height: 100vh;
-    background: #f8fafc;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
     padding-bottom: 40px;
 }
 
-// Header Section
+// Header Section - TOEIC Style
 .header-section {
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-    padding: 32px 24px;
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    padding: 28px 24px;
     color: white;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 4px 20px rgba(37, 99, 235, 0.2);
 
     &::before {
         content: '';
@@ -21,53 +33,106 @@
         height: 300px;
         background: rgba(255, 255, 255, 0.1);
         border-radius: 50%;
+        opacity: 0.5;
+    }
+
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -5%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 50%;
     }
 
     .back-button {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: rgba(255, 255, 255, 0.2);
-        border: none;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.2);
         color: white;
-        padding: 10px 16px;
-        border-radius: 8px;
+        padding: 10px 18px;
+        border-radius: 10px;
         cursor: pointer;
-        transition: all 0.2s ease;
-        margin-bottom: 16px;
-        font-size: 14px;
-        font-weight: 500;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
 
         &:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.25);
             transform: translateX(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .back-icon {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
         }
     }
 
     .header-content {
         position: relative;
         z-index: 1;
+        max-width: 1400px;
+        margin: 0 auto;
+
+        .title-wrapper {
+            margin-top: 8px;
+        }
 
         .page-title {
-            font-size: 2.5rem;
+            font-size: 1.875rem;
             font-weight: 700;
             margin: 0 0 8px 0;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            
+            @media (max-width: 768px) {
+                font-size: 1.375rem;
+                gap: 8px;
+            }
+
+            .toeic-badge {
+                background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%);
+                color: white;
+                padding: 6px 14px;
+                border-radius: 20px;
+                font-size: 0.875rem;
+                font-weight: 700;
+                letter-spacing: 1px;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                backdrop-filter: blur(10px);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                
+                @media (max-width: 768px) {
+                    font-size: 0.75rem;
+                    padding: 5px 12px;
+                }
+            }
         }
 
         .page-subtitle {
-            font-size: 1.1rem;
-            opacity: 0.9;
+            font-size: 0.9375rem;
+            opacity: 0.95;
             margin: 0;
+            font-weight: 500;
+            
+            @media (max-width: 768px) {
+                font-size: 0.8125rem;
+            }
         }
     }
 }
 
-// Filters Section
+// Filters Section - TOEIC Style
 .filters-section {
     padding: 24px;
     max-width: 1400px;
@@ -76,10 +141,11 @@
     .filters-container {
         background: white;
         border-radius: 16px;
-        padding: 24px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px 24px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border: 1px solid $toeic-gray-border;
         display: flex;
-        gap: 20px;
+        gap: 16px;
         flex-wrap: wrap;
         align-items: center;
     }
@@ -91,29 +157,31 @@
 
         i {
             position: absolute;
-            left: 16px;
+            left: 14px;
             top: 50%;
             transform: translateY(-50%);
-            color: #9ca3af;
-            font-size: 1rem;
+            color: $toeic-gray;
+            font-size: 0.9375rem;
         }
 
         .search-input {
             width: 100%;
-            padding: 12px 16px 12px 48px;
-            border: 2px solid #e5e7eb;
+            padding: 11px 16px 11px 44px;
+            border: 2px solid $toeic-gray-border;
             border-radius: 10px;
-            font-size: 1rem;
-            transition: all 0.2s ease;
+            font-size: 0.9375rem;
+            transition: all 0.3s ease;
+            background: #fafafa;
 
             &:focus {
                 outline: none;
-                border-color: #6366f1;
-                box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+                border-color: $toeic-blue;
+                background: white;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
             }
 
             &::placeholder {
-                color: #9ca3af;
+                color: #94a3b8;
             }
         }
     }
@@ -121,34 +189,41 @@
     .filter-group {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
 
         .filter-label {
             font-weight: 600;
-            color: #4b5563;
+            color: #374151;
             white-space: nowrap;
+            font-size: 0.875rem;
         }
 
         .filter-select {
-            padding: 10px 16px;
-            border: 2px solid #e5e7eb;
+            padding: 10px 14px;
+            border: 2px solid $toeic-gray-border;
             border-radius: 10px;
-            font-size: 0.95rem;
+            font-size: 0.875rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             background: white;
+            color: #374151;
 
             &:focus {
                 outline: none;
-                border-color: #6366f1;
+                border-color: $toeic-blue;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+
+            &:hover {
+                border-color: #cbd5e0;
             }
         }
     }
 
     .stats-summary {
         display: flex;
-        gap: 16px;
+        gap: 12px;
         margin-left: auto;
 
         .stat-item {
@@ -156,23 +231,25 @@
             align-items: center;
             gap: 8px;
             padding: 10px 16px;
-            background: #f3f4f6;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
             border-radius: 10px;
+            border: 1px solid $toeic-gray-border;
 
             i {
-                font-size: 1.1rem;
-                color: #6366f1;
+                font-size: 1rem;
+                color: $toeic-blue;
             }
 
             .stat-value {
-                font-size: 1.25rem;
+                font-size: 1.125rem;
                 font-weight: 700;
-                color: #1f2937;
+                color: #1a202c;
             }
 
             .stat-label {
-                font-size: 0.9rem;
-                color: #6b7280;
+                font-size: 0.8125rem;
+                color: $toeic-gray;
+                font-weight: 500;
             }
         }
     }
@@ -185,11 +262,12 @@
     margin: 0 auto;
 }
 
-// Desktop Table
+// Desktop Table - TOEIC Style
 .desktop-table {
     background: white;
     border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid $toeic-gray-border;
     overflow: hidden;
 
     @media (max-width: 1024px) {
@@ -201,14 +279,14 @@
         border-collapse: collapse;
 
         thead {
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
             color: white;
 
             th {
-                padding: 16px;
+                padding: 14px 16px;
                 text-align: left;
                 font-weight: 600;
-                font-size: 0.9rem;
+                font-size: 0.8125rem;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
                 border-bottom: 2px solid rgba(255, 255, 255, 0.2);
@@ -216,10 +294,10 @@
                 &.sortable {
                     cursor: pointer;
                     user-select: none;
-                    transition: background 0.2s ease;
+                    transition: background 0.3s ease;
 
                     &:hover {
-                        background: rgba(255, 255, 255, 0.1);
+                        background: rgba(255, 255, 255, 0.15);
                     }
                 }
 
@@ -229,8 +307,9 @@
                     gap: 8px;
 
                     i {
-                        opacity: 0.7;
-                        font-size: 0.8rem;
+                        opacity: 0.8;
+                        font-size: 0.75rem;
+                        transition: opacity 0.2s ease;
                     }
                 }
             }
@@ -238,14 +317,14 @@
 
         tbody {
             tr {
-                border-bottom: 1px solid #e5e7eb;
-                transition: all 0.2s ease;
+                border-bottom: 1px solid $toeic-gray-border;
+                transition: all 0.3s ease;
                 cursor: pointer;
 
                 &:hover {
-                    background: #f9fafb;
-                    transform: scale(1.01);
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+                    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+                    transform: translateY(-1px);
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
                 }
 
                 &:last-child {
@@ -253,8 +332,8 @@
                 }
 
                 td {
-                    padding: 16px;
-                    font-size: 0.95rem;
+                    padding: 14px 16px;
+                    font-size: 0.875rem;
                     vertical-align: middle;
                 }
             }
@@ -277,13 +356,14 @@
 
         .category-badge {
             display: inline-block;
-            padding: 2px 8px;
-            background: #dbeafe;
+            padding: 3px 10px;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
             color: #1e40af;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 0.75rem;
             font-weight: 600;
             width: fit-content;
+            border: 1px solid rgba(37, 99, 235, 0.2);
         }
     }
 }
@@ -320,30 +400,36 @@
 .status-cell {
     .status-badge {
         display: inline-block;
-        padding: 6px 12px;
+        padding: 6px 14px;
         border-radius: 12px;
         font-size: 0.75rem;
         font-weight: 700;
         text-transform: uppercase;
+        letter-spacing: 0.3px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
         &.status-new {
-            background: #e0e7ff;
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
             color: #4338ca;
+            border: 1px solid rgba(67, 56, 202, 0.2);
         }
 
         &.status-learning {
-            background: #dbeafe;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
             color: #1e40af;
+            border: 1px solid rgba(30, 64, 175, 0.2);
         }
 
         &.status-mastered {
-            background: #d1fae5;
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
             color: #065f46;
+            border: 1px solid rgba(6, 95, 70, 0.2);
         }
 
         &.status-default {
-            background: #f3f4f6;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
             color: #6b7280;
+            border: 1px solid rgba(107, 114, 128, 0.2);
         }
     }
 }
@@ -376,25 +462,30 @@
 
         .quality-bar-container {
             width: 80px;
-            height: 8px;
-            background: #e5e7eb;
-            border-radius: 4px;
+            height: 10px;
+            background: $toeic-gray-light;
+            border-radius: 6px;
             overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 
             .quality-bar {
                 height: 100%;
                 transition: width 0.3s ease;
+                border-radius: 6px;
 
                 &.quality-high {
-                    background: linear-gradient(90deg, #10b981, #059669);
+                    background: linear-gradient(90deg, $toeic-green 0%, $toeic-green-dark 100%);
+                    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
                 }
 
                 &.quality-medium {
-                    background: linear-gradient(90deg, #f59e0b, #d97706);
+                    background: linear-gradient(90deg, $toeic-primary 0%, $toeic-secondary 100%);
+                    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
                 }
 
                 &.quality-low {
-                    background: linear-gradient(90deg, #ef4444, #dc2626);
+                    background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+                    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
                 }
 
                 &.quality-none {
@@ -421,10 +512,12 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        color: #4b5563;
+        color: #374151;
+        font-weight: 500;
 
         i {
-            color: #8b5cf6;
+            color: $toeic-blue;
+            font-size: 0.875rem;
         }
     }
 }
@@ -441,25 +534,29 @@
         }
 
         .days-until {
-            font-size: 0.8rem;
-            padding: 2px 8px;
-            border-radius: 6px;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 8px;
             width: fit-content;
             font-weight: 600;
+            border: 1px solid transparent;
 
             &.overdue {
-                background: #fee2e2;
+                background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
                 color: #dc2626;
+                border-color: rgba(220, 38, 38, 0.2);
             }
 
             &.due-soon {
-                background: #fef3c7;
+                background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
                 color: #d97706;
+                border-color: rgba(217, 119, 6, 0.2);
             }
 
             &.upcoming {
-                background: #dbeafe;
+                background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
                 color: #1e40af;
+                border-color: rgba(30, 64, 175, 0.2);
             }
         }
     }
@@ -504,13 +601,18 @@
 
 .folder-cell {
     .folder-name {
-        color: #6b7280;
-        font-size: 0.9rem;
-        font-style: italic;
+        color: $toeic-gray;
+        font-size: 0.875rem;
+        font-weight: 500;
+        padding: 4px 10px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 8px;
+        display: inline-block;
+        border: 1px solid $toeic-gray-border;
     }
 }
 
-// Mobile Cards
+// Mobile Cards - TOEIC Style
 .mobile-cards {
     display: none;
 
@@ -524,13 +626,15 @@
         background: white;
         border-radius: 12px;
         padding: 20px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border: 1px solid $toeic-gray-border;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
 
         &:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            border-color: $toeic-blue;
         }
 
         .card-header {
@@ -582,43 +686,48 @@
     }
 }
 
-// Pagination
+// Pagination - TOEIC Style
 .pagination-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-top: 24px;
-    padding: 20px;
+    padding: 18px 24px;
     background: white;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid $toeic-gray-border;
 
     .pagination-btn {
         display: flex;
         align-items: center;
         gap: 8px;
-        padding: 10px 20px;
-        border: 2px solid #e5e7eb;
+        padding: 10px 18px;
+        border: 2px solid $toeic-gray-border;
         background: white;
-        color: #4b5563;
-        border-radius: 8px;
+        color: #374151;
+        border-radius: 10px;
         font-weight: 600;
+        font-size: 0.875rem;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
 
         &:hover:not(:disabled) {
-            border-color: #6366f1;
-            color: #6366f1;
+            border-color: $toeic-blue;
+            color: $toeic-blue;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
         }
 
         &:disabled {
-            opacity: 0.5;
+            opacity: 0.4;
             cursor: not-allowed;
+            background: #f9fafb;
         }
 
         i {
-            font-size: 0.9rem;
+            font-size: 0.875rem;
         }
     }
 
@@ -628,17 +737,17 @@
         align-items: center;
         gap: 4px;
         font-weight: 600;
-        color: #1f2937;
+        color: #1a202c;
 
         .total-items {
-            font-size: 0.85rem;
-            color: #6b7280;
+            font-size: 0.8125rem;
+            color: $toeic-gray;
             font-weight: 500;
         }
     }
 }
 
-// Loading State
+// Loading State - TOEIC Style
 .loading-state {
     display: flex;
     flex-direction: column;
@@ -650,20 +759,21 @@
     .loading-spinner {
         width: 60px;
         height: 60px;
-        border: 4px solid #e5e7eb;
-        border-top-color: #6366f1;
+        border: 4px solid $toeic-gray-light;
+        border-top-color: $toeic-blue;
         border-radius: 50%;
         animation: spin 1s linear infinite;
         margin-bottom: 20px;
     }
 
     p {
-        font-size: 1.1rem;
-        color: #6b7280;
+        font-size: 1rem;
+        color: $toeic-gray;
+        font-weight: 500;
     }
 }
 
-// Empty State
+// Empty State - TOEIC Style
 .empty-state {
     display: flex;
     flex-direction: column;
@@ -671,22 +781,30 @@
     justify-content: center;
     padding: 80px 24px;
     text-align: center;
+    background: white;
+    border-radius: 16px;
+    border: 2px dashed $toeic-gray-border;
+    margin: 24px;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
 
     .empty-icon {
         font-size: 4rem;
         margin-bottom: 20px;
+        opacity: 0.6;
     }
 
     h3 {
-        font-size: 1.5rem;
+        font-size: 1.375rem;
         font-weight: 700;
-        color: #1f2937;
+        color: #1a202c;
         margin: 0 0 8px 0;
     }
 
     p {
-        font-size: 1rem;
-        color: #6b7280;
+        font-size: 0.9375rem;
+        color: $toeic-gray;
         margin: 0;
     }
 }
