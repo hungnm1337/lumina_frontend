@@ -302,23 +302,42 @@ export class ArticlesComponent implements OnInit {
       // Add sections từ dữ liệu có sẵn
       if (article.sections && article.sections.length > 0) {
         article.sections.forEach(sectionData => {
-          // Extract YouTube URL from content if it's a YouTube link
-          let youtubeUrl = '';
           let content = sectionData.content || '';
           
-          // Check if content contains YouTube URL
-          const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-          const match = content.match(youtubeRegex);
-          if (match) {
-            youtubeUrl = content;
-            content = ''; // Clear content if YouTube URL is found
+          // If section type is video, check if content contains YouTube URL
+          // If it's a video section, we need to extract and preserve the YouTube URL in content
+          if (sectionData.type === 'video') {
+            // Enhanced regex to match various YouTube URL formats:
+            // - https://www.youtube.com/watch?v=VIDEO_ID
+            // - https://youtube.com/watch?v=VIDEO_ID
+            // - https://youtu.be/VIDEO_ID
+            // - http://www.youtube.com/watch?v=VIDEO_ID
+            // - Also matches URLs in HTML/iframe tags
+            const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/;
+            
+            // Check if content is a plain YouTube URL
+            const plainUrlMatch = content.trim().match(youtubeRegex);
+            if (plainUrlMatch) {
+              // Content is already a plain YouTube URL, keep it
+              content = content.trim();
+            } else {
+              // Content might be HTML (from Quill or iframe embed), try to extract YouTube URL
+              const htmlMatch = content.match(youtubeRegex);
+              if (htmlMatch) {
+                // Extract the YouTube URL from HTML
+                // Reconstruct the full YouTube watch URL
+                const videoId = htmlMatch[1];
+                content = `https://www.youtube.com/watch?v=${videoId}`;
+              }
+              // If no YouTube URL found, keep original content (might be empty or invalid)
+            }
           }
           
           this.sections.push(this.fb.group({
             type: [sectionData.type || 'đoạn văn', Validators.required],
             content: [content, Validators.required],
             sectionTitle: [sectionData.sectionTitle || '', Validators.required],
-            youtubeUrl: [youtubeUrl]
+            youtubeUrl: [''] // Keep for backward compatibility, but not used
           }));
         });
       } else {
