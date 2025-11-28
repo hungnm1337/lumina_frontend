@@ -57,6 +57,13 @@ export class ArticlesComponent implements OnInit {
 
   // Upload state
   uploadingImages: { [key: number]: boolean } = {}; // Track upload state per section index
+
+  // Confirmation Modal Properties
+  showConfirmModal = false;
+  confirmTitle = '';
+  confirmMessage = '';
+  confirmType: 'delete' | 'approval' | 'reject' = 'delete';
+  pendingAction: (() => void) | null = null;
   
   // Quill editor instances - store references to each editor
   quillEditors: Map<number, any> = new Map(); // Map section index to Quill instance
@@ -442,9 +449,15 @@ export class ArticlesComponent implements OnInit {
 
     if (this.editingArticle) {
       // Update existing article
+      const wasPublished = this.editingArticle.status === 'published';
+      
       this.articleService.updateArticle(this.editingArticle.id, articlePayload).subscribe({
-        next: () => {
-          this.toastService.success('Cập nhật bài viết thành công!');
+        next: (response: any) => {
+          if (wasPublished && response?.status === 'pending') {
+            this.toastService.warning('Bài viết đã được cập nhật và chuyển về trạng thái chờ duyệt. Vui lòng đợi manager duyệt lại.');
+          } else {
+            this.toastService.success('Cập nhật bài viết thành công!');
+          }
           this.finalizeSave();
         },
         error: (err) => this.handleSaveError(err, 'cập nhật')
@@ -467,33 +480,42 @@ export class ArticlesComponent implements OnInit {
   }
 
   deleteArticle(id: number): void {
-    if (confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
+    const article = this.filteredArticles.find(a => a.id === id);
+    this.confirmType = 'delete';
+    this.confirmTitle = 'Xác nhận xóa';
+    this.confirmMessage = `Bạn có chắc chắn muốn xóa bài viết "${article?.title || 'này'}"?`;
+    this.pendingAction = () => {
       this.isLoading = true;
       this.articleService.deleteArticle(id).subscribe({
         next: () => {
           this.toastService.success('Xóa bài viết thành công!');
           this.loadArticles();
+          this.closeConfirmModal();
         },
         error: (error) => {
           this.toastService.error('Không thể xóa bài viết.');
           this.isLoading = false;
+          this.closeConfirmModal();
         }
       });
-    }
+    };
+    this.showConfirmModal = true;
   }
 
   submitForApproval(id: number): void {
-    if (confirm('Bạn có chắc muốn gửi bài viết này để phê duyệt?')) {
+    const article = this.filteredArticles.find(a => a.id === id);
+    const isResubmission = article?.rejectionReason;
+    this.confirmType = 'approval';
+    this.confirmTitle = isResubmission ? 'Xác nhận gửi lại' : 'Xác nhận gửi phê duyệt';
+    this.confirmMessage = isResubmission 
+      ? `Bạn có chắc muốn gửi lại bài viết "${article?.title || 'này'}" để phê duyệt?`
+      : `Bạn có chắc muốn gửi bài viết "${article?.title || 'này'}" để phê duyệt?`;
+    this.pendingAction = () => {
       this.isLoading = true;
       this.articleService.requestApproval(id).subscribe({
         next: () => {
-          // Check if this is a resubmission (article has rejection reason)
-          const article = this.filteredArticles.find(a => a.id === id);
-          const isResubmission = article?.rejectionReason;
-          
           if (isResubmission) {
             this.toastService.success('Bài viết đã được gửi lại để duyệt!');
-            // Clear rejection reason after successful resubmission
             if (article) {
               article.rejectionReason = undefined;
             }
@@ -505,14 +527,17 @@ export class ArticlesComponent implements OnInit {
             article.status = 'pending';
           }
           this.isLoading = false;
+          this.closeConfirmModal();
         },
         error: (err) => {
           console.error("Error submitting for approval:", err);
           this.toastService.error('Gửi yêu cầu thất bại.');
           this.isLoading = false;
+          this.closeConfirmModal();
         }
       });
-    }
+    };
+    this.showConfirmModal = true;
   }
 
   // ===== MANAGER-ONLY OPERATIONS =====
@@ -541,18 +566,38 @@ export class ArticlesComponent implements OnInit {
       return;
     }
     
-    if (confirm('Bạn có chắc muốn từ chối và trả bài viết này về trạng thái Nháp?')) {
+    const article = this.filteredArticles.find(a => a.id === id);
+    this.confirmType = 'reject';
+    this.confirmTitle = 'Xác nhận từ chối';
+    this.confirmMessage = `Bạn có chắc muốn từ chối và trả bài viết "${article?.title || 'này'}" về trạng thái Nháp?`;
+    this.pendingAction = () => {
       this.isLoading = true;
       this.articleService.reviewArticle(id, false).subscribe({
         next: () => {
           this.toastService.info('Đã từ chối và trả lại bài viết.');
           this.loadArticles();
+          this.closeConfirmModal();
         },
         error: () => {
           this.toastService.error('Từ chối thất bại.');
           this.isLoading = false;
+          this.closeConfirmModal();
         }
       });
+    };
+    this.showConfirmModal = true;
+  }
+
+  closeConfirmModal(): void {
+    this.showConfirmModal = false;
+    this.confirmTitle = '';
+    this.confirmMessage = '';
+    this.pendingAction = null;
+  }
+
+  confirmAction(): void {
+    if (this.pendingAction) {
+      this.pendingAction();
     }
   }
 

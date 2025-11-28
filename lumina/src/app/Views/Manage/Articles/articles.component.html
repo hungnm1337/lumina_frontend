@@ -113,32 +113,17 @@
               </span>
             </div>
             
-            <div class="card-actions">
-              <div class="action-buttons">
-                <button 
-                  class="btn-action btn-view" 
-                  (click)="viewArticle(article)"
-                  title="View details">
-                  <i class="fas fa-eye"></i>
-                </button>
-                
-                <button 
-                  *ngIf="article.status === 'pending'"
-                  class="btn-action btn-approve" 
-                  (click)="approveArticle(article)"
-                  title="Approve & publish">
-                  <i class="fas fa-check"></i>
-                </button>
-                
-                <button 
-                  *ngIf="article.status === 'pending'"
-                  class="btn-action btn-reject" 
-                  (click)="rejectArticle(article)"
-                  title="Reject article">
-                  <i class="fas fa-times"></i>
-                </button>
-              </div>
-            </div>
+            <button 
+  *ngIf="article.status === 'published'"
+  class="btn-action" 
+  [class.btn-hide]="!article.isPublished"
+  [class.btn-show]="article.isPublished"
+  (click)="toggleHideArticle(article)"
+  [title]="article.isPublished ? 'Ẩn bài viết' : 'Hiển thị bài viết'">
+  
+  <i class="fas" [ngClass]="article.isPublished ? 'fa-eye' : 'fa-eye-slash'"></i>
+
+</button>
           </div>
 
           <!-- Card Content -->
