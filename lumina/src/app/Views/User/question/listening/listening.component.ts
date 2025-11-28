@@ -576,11 +576,17 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       expectedTimeSeconds: expectedTimeSeconds,
     };
 
-    console.log('📊 Calculating leaderboard score for Listening:', request);
+    console.log('📊 [Listening] Calculating leaderboard score:', request);
+    console.log('   - AttemptId:', this.attemptId);
+    console.log('   - CorrectAnswers:', this.correctCount);
+    console.log('   - TotalQuestions:', this.questions.length);
+    console.log('   - ExamPartId:', examPartId);
 
     this.leaderboardService.calculateScore(request).subscribe({
       next: (response) => {
-        console.log('✅ Leaderboard score calculated:', response);
+        console.log('✅ [Listening] Leaderboard score calculated successfully:', response);
+        console.log('   - SeasonScore:', response.seasonScore);
+        console.log('   - TotalAccumulatedScore:', response.totalAccumulatedScore);
 
         // Hiển thị thông báo TOEIC
         if (response.toeicMessage) {
@@ -598,7 +604,8 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        console.error('❌ Error calculating leaderboard score:', error);
+        console.error('❌ [Listening] Error calculating leaderboard score:', error);
+        console.error('   - Error details:', JSON.stringify(error, null, 2));
         // Không block user flow nếu API lỗi
       },
     });

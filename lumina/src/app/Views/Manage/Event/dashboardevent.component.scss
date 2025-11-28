@@ -358,6 +358,108 @@ $toeic-gray: #6b7280;
         }
       }
     }
+
+    // Pagination Section
+    .pagination-section {
+      margin-top: 24px;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+      .pagination-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+
+        .pagination-stats {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #666;
+          font-size: 14px;
+
+          i {
+            color: $toeic-primary;
+          }
+        }
+
+        .pagination-page-info {
+          color: #666;
+          font-size: 14px;
+          font-weight: 500;
+        }
+      }
+
+      .pagination-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+
+        .btn-page {
+          padding: 8px 16px;
+          background: #f5f5f5;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          transition: all 0.2s;
+          font-size: 14px;
+          font-weight: 500;
+          color: #333;
+
+          &:hover:not(:disabled) {
+            background: $toeic-primary;
+            color: white;
+            border-color: $toeic-primary;
+          }
+
+          &:disabled,
+          &.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+        }
+
+        .page-numbers {
+          display: flex;
+          gap: 4px;
+
+          .page-number {
+            min-width: 40px;
+            height: 40px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 14px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &:hover:not(.active) {
+              background: #f5f5f5;
+              border-color: #bbb;
+            }
+
+            &.active {
+              background: $toeic-primary;
+              color: white;
+              border-color: $toeic-primary;
+              font-weight: 600;
+            }
+          }
+        }
+      }
+    }
   }
 
   // Sidebar

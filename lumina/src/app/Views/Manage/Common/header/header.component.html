@@ -9,9 +9,15 @@
       <div class="flex items-center space-x-6">
           <!-- Nút thông báo -->
           <div class="relative">
-              <button class="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
+              <button 
+                (click)="goToNotifications()"
+                class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors">
                   <i class="fas fa-bell text-lg"></i>
-                  <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center border-2 border-white">3</span>
+                  <span 
+                    *ngIf="unreadNotificationCount > 0"
+                    class="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-red-500 text-white text-xs rounded-full flex items-center justify-center border-2 border-white">
+                    {{ unreadNotificationCount > 99 ? '99+' : unreadNotificationCount }}
+                  </span>
               </button>
           </div>
 
