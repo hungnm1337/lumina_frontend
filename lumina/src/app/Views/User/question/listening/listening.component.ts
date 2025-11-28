@@ -27,6 +27,7 @@ import { ExamAttemptDetailComponent } from '../../ExamAttempt/exam-attempt-detai
 import { QuotaService } from '../../../../Services/Quota/quota.service';
 import { QuotaLimitModalComponent } from '../../quota-limit-modal/quota-limit-modal.component';
 import { LeaderboardService } from '../../../../Services/Leaderboard/leaderboard.service';
+import { PopupComponent } from '../../../Common/popup/popup.component';
 
 @Component({
   selector: 'app-listening',
@@ -38,12 +39,22 @@ import { LeaderboardService } from '../../../../Services/Leaderboard/leaderboard
     ExamAttemptDetailComponent,
     QuotaLimitModalComponent,
     ReportPopupComponent,
+    PopupComponent,
   ],
   templateUrl: './listening.component.html',
   styleUrl: './listening.component.scss',
 })
 export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   showReportPopup = false;
+  showSubmitPopup = false;
+  submitPopupMessage = '';
+  submitPopupTitle = '';
+
+  // TOEIC Notification Popup
+  showToeicPopup = false;
+  toeicPopupMessage = '';
+  toeicPopupTitle = 'Kết quả TOEIC ước tính';
+
   get examId(): number | null {
     return this.partInfo?.examId ?? null;
   }
@@ -72,7 +83,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   // Audio
   @ViewChild('audioPlayer', { static: false })
   audioPlayer?: ElementRef<HTMLAudioElement>;
-  audioPlayCount = 0;
+  private audioPlayCounts = new Map<number, number>(); // ✅ Track play count per questionId
   maxPlays = 2;
   isAudioPlaying = false;
   currentAudioUrl = '';
@@ -81,6 +92,12 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   audioCurrentTime = 0;
   audioDuration = 0;
   audioProgress = 0;
+
+  // ✅ Getter for current question's play count
+  get audioPlayCount(): number {
+    const currentQuestionId = this.questions[this.currentIndex]?.questionId;
+    return this.audioPlayCounts.get(currentQuestionId) || 0;
+  }
 
   // Exam history
   examAttemptDetails: ExamAttemptDetailResponseDTO | null = null;
@@ -108,11 +125,21 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     this.loadAttemptId();
     this.incrementQuotaOnStart();
     this.examStartTime = new Date(); // Track start time for leaderboard
+    this.clearCachedAudioState(); // ✅ Clear any cached audio state from previous sessions
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['questions'] && this.questions?.length > 0) {
       this.resetQuiz();
+    }
+
+    // ✅ Reset audio state when navigating between questions
+    if (changes['currentIndex'] && !changes['currentIndex'].firstChange) {
+      this.resetAudioState();
+      console.log(
+        '[Listening] ✅ Audio reset on question change - audioPlayCount:',
+        this.audioPlayCount
+      );
     }
   }
 
@@ -221,7 +248,9 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     const currentQuestion = this.questions[this.currentIndex];
 
     // ✅ Check if this question was already answered
-    const previousAnswer = this.answeredQuestions.get(currentQuestion.questionId);
+    const previousAnswer = this.answeredQuestions.get(
+      currentQuestion.questionId
+    );
     const isUpdatingAnswer = previousAnswer !== undefined;
 
     this.isSubmitting = true;
@@ -232,7 +261,12 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       selectedOptionId: selectedOptionId,
     };
 
-    console.log(isUpdatingAnswer ? 'Updating listening answer:' : 'Submitting listening answer:', model);
+    console.log(
+      isUpdatingAnswer
+        ? 'Updating listening answer:'
+        : 'Submitting listening answer:',
+      model
+    );
 
     this.examAttemptService.submitListeningAnswer(model).subscribe({
       next: (response) => {
@@ -327,6 +361,9 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     if (this.audioPlayer) {
       const audio = this.audioPlayer.nativeElement;
 
+      const currentQuestionId = this.questions[this.currentIndex]?.questionId;
+      const currentCount = this.audioPlayCounts.get(currentQuestionId) || 0;
+
       // ✅ Pause audio hiện tại nếu đang phát
       if (!audio.paused) {
         audio.pause();
@@ -335,8 +372,8 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       // ✅ Reset về đầu
       audio.currentTime = 0;
 
-      // ✅ Tăng counter trước khi phát
-      this.audioPlayCount++;
+      // ✅ Tăng counter cho question hiện tại
+      this.audioPlayCounts.set(currentQuestionId, currentCount + 1);
       this.isAudioPlaying = true;
 
       // ✅ Phát audio từ đầu
@@ -344,13 +381,15 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
         .play()
         .then(() => {
           console.log(
-            `[Listening] Audio playing (${this.audioPlayCount}/${this.maxPlays})`
+            `[Listening] 🔊 Audio playing Q${currentQuestionId} (${this.audioPlayCounts.get(
+              currentQuestionId
+            )}/${this.maxPlays})`
           );
         })
         .catch((error) => {
           console.error('[Listening] Error playing audio:', error);
           // ✅ Nếu lỗi, giảm counter lại
-          this.audioPlayCount--;
+          this.audioPlayCounts.set(currentQuestionId, currentCount);
           this.isAudioPlaying = false;
           alert('Không thể phát audio. Vui lòng thử lại.');
         });
@@ -412,7 +451,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   private resetAudioState(): void {
-    this.audioPlayCount = 0;
+    // ✅ Don't reset audioPlayCounts - it's managed per question now
     this.isAudioPlaying = false;
     this.audioCurrentTime = 0;
     this.audioDuration = 0;
@@ -423,7 +462,30 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       audio.pause();
       audio.currentTime = 0;
       audio.load();
-      console.log('[Listening] Audio state reset');
+      const currentQuestionId = this.questions[this.currentIndex]?.questionId;
+      console.log(
+        `[Listening] 🔄 Audio state reset for Q${currentQuestionId} - Play count: ${this.audioPlayCount}/${this.maxPlays}`
+      );
+    }
+  }
+
+  // ✅ Clear any cached audio state from localStorage or previous sessions
+  private clearCachedAudioState(): void {
+    try {
+      const keys = Object.keys(localStorage);
+      keys.forEach((key) => {
+        if (
+          key.startsWith('audioPlayCount_') ||
+          key.startsWith('listening_audio_')
+        ) {
+          localStorage.removeItem(key);
+        }
+      });
+      console.log(
+        '[Listening] ✅ Cleared cached audio state from localStorage'
+      );
+    } catch (error) {
+      console.error('[Listening] Error clearing cached audio state:', error);
     }
   }
 
@@ -434,21 +496,26 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     const totalQuestions = this.questions.length;
     const unansweredCount = totalQuestions - answeredCount;
 
-    let message = 'Bạn có chắc chắn muốn nộp bài thi Listening không?\n\n';
-    message += `Số câu đã trả lời: ${answeredCount}/${totalQuestions}\n`;
+    this.submitPopupTitle = 'Xác nhận nộp bài';
+    let message = `Bạn có chắc chắn muốn nộp bài thi ${
+      this.partInfo?.partCode || 'Listening'
+    } không?\nSố câu đã trả lời: ${answeredCount}/${totalQuestions}`;
 
     if (unansweredCount > 0) {
-      message += `Số câu chưa trả lời: ${unansweredCount}\n`;
-      message += `Các câu chưa trả lời sẽ không được tính điểm!\n\n`;
+      message += `\nSố câu chưa trả lời: ${unansweredCount}\nCác câu chưa trả lời sẽ không được tính điểm!`;
     }
 
-    message += 'Chọn "OK" để nộp bài hoặc "Cancel" để tiếp tục làm bài.';
+    this.submitPopupMessage = message;
+    this.showSubmitPopup = true;
+  }
 
-    const confirmResult = confirm(message);
+  onSubmitConfirmed(): void {
+    this.showSubmitPopup = false;
+    this.finishQuiz();
+  }
 
-    if (confirmResult) {
-      this.finishQuiz();
-    }
+  onSubmitCancelled(): void {
+    this.showSubmitPopup = false;
   }
 
   private finishQuiz(): void {
@@ -487,7 +554,9 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
 
   private calculateLeaderboardScore(): void {
     if (!this.attemptId || !this.partInfo) {
-      console.log('⚠️ Missing attemptId or partInfo for leaderboard calculation');
+      console.log(
+        '⚠️ Missing attemptId or partInfo for leaderboard calculation'
+      );
       return;
     }
 
@@ -504,7 +573,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       correctAnswers: this.correctCount,
       totalQuestions: this.questions.length,
       timeSpentSeconds: timeSpentSeconds,
-      expectedTimeSeconds: expectedTimeSeconds
+      expectedTimeSeconds: expectedTimeSeconds,
     };
 
     console.log('📊 Calculating leaderboard score for Listening:', request);
@@ -520,7 +589,10 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
 
         // Thông báo nếu làm lần đầu
         if (response.isFirstAttempt) {
-          console.log('🎯 Lần đầu làm đề này! TOEIC đã được cập nhật:', response.estimatedTOEIC);
+          console.log(
+            '🎯 Lần đầu làm đề này! TOEIC đã được cập nhật:',
+            response.estimatedTOEIC
+          );
         } else {
           console.log('🔄 Làm lại đề cũ. Điểm tích lũy tăng, TOEIC giữ nguyên');
         }
@@ -528,7 +600,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       error: (error) => {
         console.error('❌ Error calculating leaderboard score:', error);
         // Không block user flow nếu API lỗi
-      }
+      },
     });
   }
 
@@ -547,21 +619,41 @@ ${response.toeicMessage}
 • Tổng điểm tích lũy: ${response.totalAccumulatedScore}
 • TOEIC ước tính: ${response.estimatedTOEIC}
 • Trình độ: ${response.toeicLevel}
-${response.isFirstAttempt ? '\n🎯 Lần đầu làm đề này!' : '\n🔄 Làm lại đề - TOEIC giữ nguyên'}
+${
+  response.isFirstAttempt
+    ? '\n🎯 Lần đầu làm đề này!'
+    : '\n🔄 Làm lại đề - TOEIC giữ nguyên'
+}
     `.trim();
 
-    alert(message);
+    this.toeicPopupMessage = message;
+    this.showToeicPopup = true;
   }
 
-  private showLevelUpNotification(newLevel: string, previousLevel?: string): void {
+  closeToeicPopup(): void {
+    this.showToeicPopup = false;
+  }
+
+  private showLevelUpNotification(
+    newLevel: string,
+    previousLevel?: string
+  ): void {
     const levelText = this.leaderboardService.getTOEICLevelText(newLevel);
     const icon = this.leaderboardService.getTOEICLevelIcon(newLevel);
 
-    alert(`${icon} CHÚC MẬNG!\n\nBạn đã lên cấp độ: ${levelText}\n${previousLevel ? `Từ: ${this.leaderboardService.getTOEICLevelText(previousLevel)}` : ''}\n\nHãy tiếp tục phát huy!`);
+    alert(
+      `${icon} CHÚC MẬNG!\n\nBạn đã lên cấp độ: ${levelText}\n${
+        previousLevel
+          ? `Từ: ${this.leaderboardService.getTOEICLevelText(previousLevel)}`
+          : ''
+      }\n\nHãy tiếp tục phát huy!`
+    );
   }
 
   private showMilestoneNotification(milestone: number): void {
-    alert(`🎯 THÀNH TÍCH MỚI!\n\nBạn đã đạt mốc ${milestone} điểm TOEIC ước tính!\n\nChúc mừng bạn!`);
+    alert(
+      `🎯 THÀNH TÍCH MỚI!\n\nBạn đã đạt mốc ${milestone} điểm TOEIC ước tính!\n\nChúc mừng bạn!`
+    );
   }
 
   // ============= EXAM HISTORY =============

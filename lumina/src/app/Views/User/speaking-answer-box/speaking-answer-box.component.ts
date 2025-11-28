@@ -313,9 +313,33 @@ export class SpeakingAnswerBoxComponent
         this.isActivelyProcessing = false;
         this.audioBlob = null; // ✅ Don't show draft UI when submitted
       } else if (savedState.state === 'has_recording') {
-        this.state = 'idle'; // Show the recording is ready to submit
-        this.isActivelyProcessing = false;
-        this.audioBlob = savedState.audioBlob; // ✅ Keep audioBlob - user can submit/re-record
+        // ✅ FIX: Validate audioBlob before restoring
+        if (savedState.audioBlob && savedState.audioBlob.size > 0) {
+          this.state = 'idle'; // Show the recording is ready to submit
+          this.isActivelyProcessing = false;
+          this.audioBlob = savedState.audioBlob; // ✅ Keep audioBlob - user can submit/re-record
+          console.log(
+            '[SpeakingAnswerBox] ✅ Restored valid recording from state service:',
+            {
+              blobSize: savedState.audioBlob.size,
+              recordingTime: savedState.recordingTime,
+            }
+          );
+        } else {
+          // Invalid blob - clear it
+          console.warn(
+            '[SpeakingAnswerBox] ⚠️ Found invalid blob in state service, clearing...',
+            {
+              hasBlob: !!savedState.audioBlob,
+              blobSize: savedState.audioBlob?.size || 0,
+            }
+          );
+          this.state = 'idle';
+          this.isActivelyProcessing = false;
+          this.audioBlob = null;
+          // Clear from state service too
+          this.speakingStateService.clearRecording(this.questionId);
+        }
       } else if (savedState.state === 'scoring') {
         // ✅ FIX: CRITICAL - When navigating to a question that's scoring in background,
         // DON'T show processing spinner UI. Show as submitted instead.
@@ -327,9 +351,26 @@ export class SpeakingAnswerBoxComponent
         this.isActivelyProcessing = false; // Not actively processing in THIS component
         this.audioBlob = null; // ✅ Don't show draft UI when submitted
       } else if (savedState.state === 'in_progress') {
-        this.state = 'idle'; // Reset to idle if was in progress
-        this.isActivelyProcessing = false;
-        this.audioBlob = savedState.audioBlob; // Restore if exists
+        // ✅ FIX: Validate audioBlob before restoring
+        if (savedState.audioBlob && savedState.audioBlob.size > 0) {
+          this.state = 'idle'; // Reset to idle if was in progress
+          this.isActivelyProcessing = false;
+          this.audioBlob = savedState.audioBlob; // Restore if exists
+          console.log(
+            '[SpeakingAnswerBox] ✅ Restored in-progress recording:',
+            {
+              blobSize: savedState.audioBlob.size,
+            }
+          );
+        } else {
+          console.warn(
+            '[SpeakingAnswerBox] ⚠️ Invalid blob in in_progress state, clearing...'
+          );
+          this.state = 'idle';
+          this.isActivelyProcessing = false;
+          this.audioBlob = null;
+          this.speakingStateService.clearRecording(this.questionId);
+        }
       } else {
         this.state = 'idle';
         this.isActivelyProcessing = false;
