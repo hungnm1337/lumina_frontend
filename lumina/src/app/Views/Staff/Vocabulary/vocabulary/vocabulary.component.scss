@@ -312,6 +312,18 @@ $toeic-purple: #8b5cf6;
     border-left: 4px solid #f59e0b;
   }
 
+  &.rejected-card {
+    border-left: 4px solid $toeic-red;
+    border-color: #fecaca;
+    background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+  }
+
+  &.rejected-card {
+    border-left: 4px solid $toeic-red;
+    border-color: #fecaca;
+    background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+  }
+
   .card-header {
     display: flex;
     justify-content: space-between;
@@ -2140,6 +2152,85 @@ $toeic-purple: #8b5cf6;
   color: #dc2626;
   border: 1px solid #fca5a5;
   box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+}
+
+// Rejection Alert Styles
+.rejection-alert-wrapper {
+  padding: 0 20px;
+  margin: 8px 0;
+}
+
+.rejection-alert {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  padding: 8px;
+  box-shadow: 0 1px 3px rgba(239, 68, 68, 0.1);
+  transition: all 0.3s ease;
+
+  .alert-header {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 6px;
+
+    i {
+      color: $toeic-red;
+      font-size: 11px;
+      flex-shrink: 0;
+      background: rgba(239, 68, 68, 0.1);
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+    }
+
+    .alert-title {
+      font-weight: 600;
+      color: #dc2626;
+      font-size: 11px;
+      letter-spacing: 0.1px;
+    }
+  }
+
+  .alert-content {
+    .rejection-reason {
+      color: #7f1d1d;
+      font-size: 11px;
+      line-height: 1.4;
+      margin: 0 0 5px 0;
+      padding: 5px 8px;
+      background: white;
+      border-radius: 4px;
+      border-left: 2px solid $toeic-red;
+      font-weight: 500;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .rejection-hint {
+      color: #6b7280;
+      font-size: 10px;
+      margin: 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 4px;
+      font-style: italic;
+      line-height: 1.4;
+      padding: 4px 6px;
+      background: rgba(59, 130, 246, 0.05);
+      border-radius: 4px;
+      border-left: 2px solid $toeic-blue;
+
+      i {
+        color: $toeic-blue;
+        font-size: 10px;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+    }
+  }
 }
 
 .rejection-reason {

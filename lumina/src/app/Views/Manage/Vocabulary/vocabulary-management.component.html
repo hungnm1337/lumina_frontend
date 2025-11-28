@@ -104,29 +104,6 @@
             <div class="card-actions">
               <div class="action-buttons">
                 <button 
-                  class="btn-action btn-view" 
-                  (click)="selectList(list)"
-                  title="View details">
-                  <i class="fas fa-eye"></i>
-                </button>
-                
-                <button 
-                  *ngIf="canReview(list)"
-                  class="btn-action btn-approve" 
-                  (click)="approveList(list)"
-                  title="Duyệt">
-                  <i class="fas fa-check"></i>
-                </button>
-                
-                <button 
-                  *ngIf="canReview(list)"
-                  class="btn-action btn-reject" 
-                  (click)="rejectList(list)"
-                  title="Từ chối">
-                  <i class="fas fa-times"></i>
-                </button>
-                
-                <button 
                   *ngIf="canSendBackToStaff(list)"
                   class="btn-action btn-undo" 
                   (click)="sendBackToStaff(list)"

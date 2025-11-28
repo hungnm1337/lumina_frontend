@@ -220,6 +220,23 @@ export class ArticlesComponent implements OnInit {
     this.router.navigate(['/manager/manage-posts', article.id]);
   }
 
+  // Toggle hide/show article - Uses IsPublished field
+  toggleHideArticle(article: Article) {
+    // Toggle IsPublished: true = hiển thị, false = ẩn
+    const newPublishedStatus = !article.isPublished;
+    this.articleService.toggleHideArticle(article.id, newPublishedStatus).subscribe({
+      next: (response) => {
+        article.isPublished = newPublishedStatus;
+        this.toastr.success(newPublishedStatus ? 'Bài viết đã được hiển thị' : 'Bài viết đã được ẩn');
+        this.loadArticles(); // Reload to update list
+      },
+      error: (error) => {
+        console.error('Lỗi khi ẩn/hiện bài viết:', error);
+        this.toastr.error('Có lỗi xảy ra khi ẩn/hiện bài viết');
+      }
+    });
+  }
+
   // Clear search
   clearSearch() {
     this.searchTerm = '';

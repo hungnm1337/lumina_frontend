@@ -107,6 +107,20 @@ export class VocabularyComponent implements OnInit {
     this.loadVocabularies(list.vocabularyListId);
   }
 
+  // Reload selected list để cập nhật status
+  reloadSelectedList() {
+    if (this.selectedList) {
+      this.vocabularyService.getVocabularyLists(this.searchTerm).subscribe({
+        next: (lists) => {
+          const updatedList = lists.find(l => l.vocabularyListId === this.selectedList?.vocabularyListId);
+          if (updatedList) {
+            this.selectedList = updatedList;
+          }
+        }
+      });
+    }
+  }
+
   showListView() {
     this.currentView = 'lists';
     this.selectedList = null;
@@ -247,9 +261,18 @@ export class VocabularyComponent implements OnInit {
         example: formData.example
       };
       console.log('Updating vocabulary:', updateData);
+      const wasPublished = this.selectedList.status?.toLowerCase() === 'published';
       this.vocabularyService.updateVocabulary(this.editingVocabulary.id, updateData).subscribe({
-        next: () => {
-          this.toastService.success('Cập nhật từ vựng thành công!');
+        next: (response: any) => {
+          if (response.statusChanged || wasPublished) {
+            this.toastService.warning('Từ vựng đã được cập nhật thành công. Danh sách đã được chuyển về trạng thái chờ duyệt. Vui lòng đợi manager duyệt lại.');
+          } else {
+            this.toastService.success('Cập nhật từ vựng thành công!');
+          }
+          // Reload cả vocabulary list để cập nhật status
+          this.loadVocabularyLists();
+          // Reload selected list để cập nhật status hiển thị
+          this.reloadSelectedList();
           this.loadVocabularies(this.selectedList!.vocabularyListId);
           this.closeModal();
           this.isSubmitting = false;
@@ -272,9 +295,18 @@ export class VocabularyComponent implements OnInit {
         example: formData.example
       };
       console.log('Creating vocabulary:', vocabularyData);
+      const wasPublished = this.selectedList.status?.toLowerCase() === 'published';
       this.vocabularyService.createVocabulary(vocabularyData).subscribe({
-        next: () => {
-          this.toastService.success('Tạo từ vựng thành công!');
+        next: (response: any) => {
+          if (response.statusChanged || wasPublished) {
+            this.toastService.warning('Từ vựng đã được thêm thành công. Danh sách đã được chuyển về trạng thái chờ duyệt. Vui lòng đợi manager duyệt lại.');
+          } else {
+            this.toastService.success('Tạo từ vựng thành công!');
+          }
+          // Reload cả vocabulary list để cập nhật status
+          this.loadVocabularyLists();
+          // Reload selected list để cập nhật status hiển thị
+          this.reloadSelectedList();
           this.loadVocabularies(this.selectedList!.vocabularyListId);
           this.closeModal();
           this.isSubmitting = false;

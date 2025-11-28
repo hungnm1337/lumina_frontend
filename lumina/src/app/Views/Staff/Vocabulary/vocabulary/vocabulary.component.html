@@ -50,6 +50,7 @@
            class="folder-card" 
            [class.featured]="list.status?.toLowerCase() === 'published'"
            [class.pending-card]="list.status?.toLowerCase() === 'pending'"
+           [class.rejected-card]="list.rejectionReason"
            (click)="selectList(list)">
         <div class="card-header">
           <div class="list-icon-section">
@@ -81,6 +82,24 @@
             </div>
           </div>
         </div>
+        
+        <!-- Rejection Reason Alert -->
+        <div *ngIf="list.rejectionReason" class="rejection-alert-wrapper">
+          <div class="rejection-alert">
+            <div class="alert-header">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span class="alert-title">Danh sách từ vựng đã bị từ chối</span>
+            </div>
+            <div class="alert-content">
+              <p class="rejection-reason">{{ list.rejectionReason }}</p>
+              <p class="rejection-hint">
+                <i class="fas fa-info-circle"></i>
+                Vui lòng sửa lại danh sách theo góp ý và gửi lại để duyệt.
+              </p>
+            </div>
+          </div>
+        </div>
+        
         <div class="folder-footer">
           <button *ngIf="list.status?.toLowerCase() === 'published'" class="btn-published" (click)="$event.stopPropagation()">
             ĐÃ XUẤT BẢN
