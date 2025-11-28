@@ -50,7 +50,7 @@
       <img
         [src]="getCurrentQuestion()?.prompt?.referenceImageUrl"
         [alt]="'Question ' + (currentIndex + 1) + ' image'"
-        class="max-w-full w-8/12 mx-auto h-auto rounded-lg border border-gray-200"
+        class="max-w-full w-4/12 mx-auto h-auto rounded-lg border border-gray-200"
       />
     </div>
 
@@ -254,10 +254,10 @@
       <i class="fas fa-flag mr-2"></i>Báo cáo bài thi
     </button>
     @if (showReportPopup) {
-      <app-report-popup
-        [type]="'Exam - ' + examId"
-        (close)="onReportPopupClose()"
-      ></app-report-popup>
+    <app-report-popup
+      [type]="'Exam - ' + examId"
+      (close)="onReportPopupClose()"
+    ></app-report-popup>
     }
   </div>
 </div>
