@@ -62,9 +62,9 @@
         [disabled]="audioPlayCount >= maxPlays"
         class="px-4 py-2 rounded transition-colors"
         [ngClass]="{
-          'bg-gray-200 text-gray-700 hover:bg-gray-300':
+          'bg-gray-400 text-gray-700 hover:bg-gray-300':
             !isAudioPlaying && audioPlayCount < maxPlays,
-          'bg-green-600 text-white':
+          'bg-gray-400 text-gray-700 hover:bg-gray-300':
             isAudioPlaying && audioPlayCount < maxPlays,
           'bg-gray-400 text-gray-700 cursor-not-allowed':
             audioPlayCount >= maxPlays
