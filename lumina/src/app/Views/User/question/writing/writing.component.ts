@@ -1,3 +1,4 @@
+import { PopupComponent } from '../../../Common/popup/popup.component';
 import {
   Component,
   Input,
@@ -42,11 +43,25 @@ import {
     TimeComponent,
     QuotaLimitModalComponent,
     ReportPopupComponent,
+    PopupComponent,
   ],
   templateUrl: './writing.component.html',
   styleUrl: './writing.component.scss',
 })
 export class WritingComponent implements OnChanges, OnDestroy, OnInit {
+      // Popup state cho xác nhận nộp bài và lưu tiến trình
+      showPopup = false;
+      popupMessage = '';
+      popupTitle = '';
+      popupOkHandler: (() => void) | null = null;
+      popupCancelHandler: (() => void) | null = null;
+
+      onPopupOk() {
+        if (this.popupOkHandler) this.popupOkHandler();
+      }
+      onPopupCancel() {
+        if (this.popupCancelHandler) this.popupCancelHandler();
+      }
     // Show report popup state
     showReportPopup: boolean = false;
 
@@ -806,14 +821,11 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
         .length || 0;
 
     // ✅ Nếu thi standalone, hiển thị confirm như cũ
-    const confirmFinish = confirm(
-      'Bạn có chắc chắn muốn nộp bài thi Writing không?\n\n' +
-        `Số câu đã nộp: ${submittedCount}/${totalQuestions}`
-    );
-
-    if (confirmFinish) {
-      this.finishExam();
-    }
+    this.showPopup = true;
+    this.popupTitle = 'Xác nhận nộp bài';
+    this.popupMessage = 'Bạn có chắc chắn muốn nộp bài thi Writing không?\n\nSố câu đã nộp: ' + submittedCount + '/' + totalQuestions;
+    this.popupOkHandler = () => { this.showPopup = false; this.finishExam(); };
+    this.popupCancelHandler = () => { this.showPopup = false; };
   }
 
   // ============= EXIT HANDLING (NEW) =============
@@ -841,15 +853,12 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   confirmExit(): void {
-    const confirmResult = confirm(
-      'Bạn có muốn lưu tiến trình và thoát không?\n\n' +
-        '- Chọn "OK" để lưu và thoát\n' +
-        '- Chọn "Cancel" để tiếp tục làm bài'
-    );
-
-    if (confirmResult) {
-      this.saveProgressAndExit();
-    }
+    this.showPopup = true;
+    this.popupTitle = 'Xác nhận thoát';
+    this.popupMessage = 'Bạn có muốn lưu tiến trình và thoát không?\n\n- Chọn "OK" để lưu và thoát\n- Chọn "Cancel" để tiếp tục làm bài';
+    this.popupOkHandler = () => { this.showPopup = false; this.saveProgressAndExit(); };
+    this.popupCancelHandler = () => { this.showPopup = false; };
+    // Popup component should only be in the template, not here
   }
 
   private saveProgressAndExit(): void {

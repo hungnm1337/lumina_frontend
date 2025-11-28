@@ -51,15 +51,17 @@
         <div *ngIf="currentQuestion.prompt" class="prompt-section">
           <h3>{{ currentQuestion.prompt.title }}</h3>
           <p class="prompt-content">{{ currentQuestion.prompt.contentText }}</p>
-          <div class="prompt-media">
+          <div class="prompt-media" style="display:flex;flex-direction:column;align-items:center;">
             <img *ngIf="currentQuestion.prompt.referenceImageUrl"
-                 [src]="currentQuestion.prompt.referenceImageUrl"
-                 alt="Reference Image"
-                 class="reference-image">
+              [src]="currentQuestion.prompt.referenceImageUrl"
+              alt="Reference Image"
+              class="reference-image"
+              style="max-width:360px;width:100%;height:auto;display:block;margin:0 auto;border-radius:6px;">
             <audio *ngIf="currentQuestion.prompt.referenceAudioUrl"
-                   [src]="currentQuestion.prompt.referenceAudioUrl"
-                   controls
-                   class="reference-audio"></audio>
+                [src]="currentQuestion.prompt.referenceAudioUrl"
+                controls
+                class="reference-audio"
+                style="width:360px;max-width:100%;margin-top:8px;"></audio>
           </div>
         </div>
 

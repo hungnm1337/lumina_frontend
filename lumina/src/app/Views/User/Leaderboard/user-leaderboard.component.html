@@ -78,7 +78,7 @@
               </td>
               <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
-                  <img [src]="rank.avatarUrl || '/assets/default-avatar.png'"
+                     <img [src]="rank.avatarUrl ? rank.avatarUrl : 'https://www.svgrepo.com/show/452030/avatar-default.svg'"
                        alt="avatar"
                        class="w-10 h-10 rounded-full object-cover border-2 border-gray-200">
                   <div>

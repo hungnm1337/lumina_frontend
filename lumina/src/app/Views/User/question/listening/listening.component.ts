@@ -556,7 +556,7 @@ ${response.isFirstAttempt ? '\n🎯 Lần đầu làm đề này!' : '\n🔄 Là
   private showLevelUpNotification(newLevel: string, previousLevel?: string): void {
     const levelText = this.leaderboardService.getTOEICLevelText(newLevel);
     const icon = this.leaderboardService.getTOEICLevelIcon(newLevel);
-    
+
     alert(`${icon} CHÚC MẬNG!\n\nBạn đã lên cấp độ: ${levelText}\n${previousLevel ? `Từ: ${this.leaderboardService.getTOEICLevelText(previousLevel)}` : ''}\n\nHãy tiếp tục phát huy!`);
   }
 
