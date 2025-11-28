@@ -9,6 +9,17 @@
   ></app-popup>
   }
 
+  <!-- TOEIC Notification Popup -->
+  @if (showToeicPopup) {
+  <app-popup
+    [title]="toeicPopupTitle"
+    [message]="toeicPopupMessage"
+    [showCancelButton]="false"
+    textAlign="left"
+    (okClicked)="closeToeicPopup()"
+  ></app-popup>
+  }
+
   <!-- Quota Limit Modal -->
   <app-quota-limit-modal
     [isVisible]="showQuotaModal"

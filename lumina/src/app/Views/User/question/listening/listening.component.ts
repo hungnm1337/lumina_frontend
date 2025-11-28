@@ -49,6 +49,12 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   showSubmitPopup = false;
   submitPopupMessage = '';
   submitPopupTitle = '';
+
+  // TOEIC Notification Popup
+  showToeicPopup = false;
+  toeicPopupMessage = '';
+  toeicPopupTitle = 'Kết quả TOEIC ước tính';
+
   get examId(): number | null {
     return this.partInfo?.examId ?? null;
   }
@@ -499,7 +505,6 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       message += `\nSố câu chưa trả lời: ${unansweredCount}\nCác câu chưa trả lời sẽ không được tính điểm!`;
     }
 
-
     this.submitPopupMessage = message;
     this.showSubmitPopup = true;
   }
@@ -621,7 +626,12 @@ ${
 }
     `.trim();
 
-    alert(message);
+    this.toeicPopupMessage = message;
+    this.showToeicPopup = true;
+  }
+
+  closeToeicPopup(): void {
+    this.showToeicPopup = false;
   }
 
   private showLevelUpNotification(

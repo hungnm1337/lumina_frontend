@@ -157,6 +157,17 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    // ✅ FIX: Check if need to clear speaking states (from console script)
+    const shouldClearStates = sessionStorage.getItem('clearSpeakingStates');
+    if (shouldClearStates === 'true') {
+      console.log(
+        '[SpeakingComponent] 🧹 Clearing all speaking states as requested'
+      );
+      this.speakingStateService.resetAllStates();
+      sessionStorage.removeItem('clearSpeakingStates');
+      console.log('[SpeakingComponent] ✅ All speaking states cleared');
+    }
+
     this.loadAttemptId();
     this.checkQuotaAccess();
 

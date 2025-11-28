@@ -9,7 +9,10 @@
     </h2>
     <div class="bg-white px-7 pb-7 pt-5 rounded-b-xl">
       <p
-        class="text-gray-900 text-center mb-6 text-base leading-relaxed whitespace-pre-line"
+        class="text-gray-900 mb-6 text-base leading-relaxed whitespace-pre-line"
+        [class.text-center]="textAlign === 'center'"
+        [class.text-left]="textAlign === 'left'"
+        [class.text-right]="textAlign === 'right'"
       >
         {{ message }}
       </p>
@@ -20,12 +23,14 @@
         >
           OK
         </button>
+        @if (showCancelButton) {
         <button
           class="flex-1 bg-gray-100 text-gray-700 font-semibold py-2 rounded-lg shadow hover:bg-gray-200 transition-colors duration-150 border border-gray-300"
           (click)="onCancel()"
         >
           Cancel
         </button>
+        }
       </div>
     </div>
   </div>
