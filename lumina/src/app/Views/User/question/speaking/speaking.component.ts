@@ -171,8 +171,10 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       if (!canProceed) {
         const conflicting = this.examCoordination.getConflictingSession();
         const confirmTakeover = confirm(
-          `Bài thi này đang được mở ở tab khác (bắt đầu lúc ${new Date(conflicting!.startTime).toLocaleString()}).\n\n` +
-          `Tiếp tục có thể gây xung đột dữ liệu. Bạn có chắc chắn muốn tiếp tục?`
+          `Bài thi này đang được mở ở tab khác (bắt đầu lúc ${new Date(
+            conflicting!.startTime
+          ).toLocaleString()}).\n\n` +
+            `Tiếp tục có thể gây xung đột dữ liệu. Bạn có chắc chắn muốn tiếp tục?`
         );
 
         if (confirmTakeover) {
@@ -184,7 +186,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       }
 
       // Subscribe to conflict detection during exam
-      this.examCoordination.conflictDetected$.subscribe(hasConflict => {
+      this.examCoordination.conflictDetected$.subscribe((hasConflict) => {
         if (hasConflict) {
           this.toastService.warning(
             'Cảnh báo: Bài thi này đang được mở ở tab khác. Có thể xảy ra xung đột dữ liệu!'
@@ -196,10 +198,16 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     // ✅ FIX: Restore audio drafts from IndexedDB
     if (this.attemptId && this.attemptId > 0) {
       try {
-        const drafts = await this.offlineStorage.getAllAudioDrafts(this.attemptId);
-        console.log('[Speaking] ✅ Restored', drafts.length, 'audio drafts from IndexedDB');
+        const drafts = await this.offlineStorage.getAllAudioDrafts(
+          this.attemptId
+        );
+        console.log(
+          '[Speaking] ✅ Restored',
+          drafts.length,
+          'audio drafts from IndexedDB'
+        );
 
-        drafts.forEach(draft => {
+        drafts.forEach((draft) => {
           this.speakingStateService.saveRecording(
             draft.questionId,
             draft.audioBlob,
@@ -215,10 +223,15 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     try {
       const pendingCount = await this.offlineSync.getPendingCount();
       if (pendingCount > 0) {
-        this.toastService.info(`Có ${pendingCount} bài chưa đồng bộ. Đang xử lý...`);
+        this.toastService.info(
+          `Có ${pendingCount} bài chưa đồng bộ. Đang xử lý...`
+        );
       }
     } catch (error) {
-      console.error('[Speaking] ❌ Failed to check pending submissions:', error);
+      console.error(
+        '[Speaking] ❌ Failed to check pending submissions:',
+        error
+      );
     }
   }
 
@@ -739,8 +752,8 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       if (hasPending) {
         const confirmFinish = confirm(
           'Bạn còn bài làm chưa được đồng bộ lên server (có thể do mất mạng trước đó).\n\n' +
-          'Nếu kết thúc bài thi ngay, những bài này sẽ không được chấm điểm.\n\n' +
-          'Bạn có muốn đợi đồng bộ trước khi kết thúc?'
+            'Nếu kết thúc bài thi ngay, những bài này sẽ không được chấm điểm.\n\n' +
+            'Bạn có muốn đợi đồng bộ trước khi kết thúc?'
         );
 
         if (confirmFinish) {
@@ -750,7 +763,9 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
           // Check again
           const stillPending = await this.offlineSync.hasPendingSubmissions();
           if (stillPending) {
-            this.toastService.error('Vẫn còn bài chưa đồng bộ được. Vui lòng kiểm tra kết nối mạng.');
+            this.toastService.error(
+              'Vẫn còn bài chưa đồng bộ được. Vui lòng kiểm tra kết nối mạng.'
+            );
             return;
           }
 
@@ -760,7 +775,10 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         }
       }
     } catch (error) {
-      console.error('[Speaking] ❌ Failed to check pending submissions:', error);
+      console.error(
+        '[Speaking] ❌ Failed to check pending submissions:',
+        error
+      );
     }
 
     // ✅ Chỉ check all questions completed khi thi standalone
@@ -808,7 +826,10 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         try {
           if (this.attemptId) {
             await this.offlineStorage.clearAttemptData(this.attemptId);
-            console.log('[Speaking] ✅ Cleared offline data for attempt:', this.attemptId);
+            console.log(
+              '[Speaking] ✅ Cleared offline data for attempt:',
+              this.attemptId
+            );
           }
         } catch (error) {
           console.error('[Speaking] ⚠️ Failed to clear offline data:', error);
@@ -894,7 +915,11 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     }
   }
   closeSpeakingSummary(): void {
+    console.log('[Speaking] 🔒 Closing summary modal and cleaning up session');
     this.showSpeakingSummary = false;
+
+    // ✅ FIX: Cleanup session để tránh cache khi quay lại
+    this.cleanupSpeakingSession();
   }
 
   onRetrySpeakingTest(): void {
