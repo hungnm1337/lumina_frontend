@@ -35,8 +35,8 @@
       </div>
 
       <!-- Events Grid -->
-      <div *ngIf="!isLoading && filteredEvents.length > 0">
-        <div *ngFor="let event of filteredEvents" class="vocabulary-item">
+      <div *ngIf="!isLoading && pagedEvents.length > 0">
+        <div *ngFor="let event of pagedEvents" class="vocabulary-item">
           <!-- Event Header -->
           <div class="word-header">
             <div class="word-title">
@@ -103,6 +103,54 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="!isLoading && filteredEvents.length > 0 && totalPages > 1" class="pagination-section" style="margin-top: 24px; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <div class="pagination-info" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div class="pagination-stats" style="display: flex; align-items: center; gap: 8px; color: #666; font-size: 14px;">
+            <i class="fas fa-info-circle"></i>
+            <span>Hiển thị {{ getStartIndex() }} - {{ getEndIndex() }} trong tổng số {{ filteredEvents.length }} sự kiện</span>
+          </div>
+          <div class="pagination-page-info" style="color: #666; font-size: 14px;">
+            <span>Trang {{ currentPage }} / {{ totalPages }}</span>
+          </div>
+        </div>
+        <div class="pagination-controls" style="display: flex; justify-content: center; align-items: center; gap: 8px;">
+          <button 
+            class="btn-page btn-prev" 
+            [disabled]="currentPage <= 1" 
+            (click)="previousPage()"
+            style="padding: 8px 16px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;"
+            [style.opacity]="currentPage <= 1 ? '0.5' : '1'"
+            [style.cursor]="currentPage <= 1 ? 'not-allowed' : 'pointer'">
+            <i class="fas fa-chevron-left"></i>
+            <span>Trước</span>
+          </button>
+          <div class="page-numbers" style="display: flex; gap: 4px;">
+            <button 
+              *ngFor="let pageNum of getPageNumbers()" 
+              class="page-number" 
+              [class.active]="pageNum === currentPage"
+              (click)="goToPage(pageNum)"
+              style="min-width: 40px; height: 40px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; transition: all 0.2s; font-weight: 500;"
+              [style.background]="pageNum === currentPage ? '#f59e0b' : 'white'"
+              [style.color]="pageNum === currentPage ? 'white' : '#333'"
+              [style.border-color]="pageNum === currentPage ? '#f59e0b' : '#ddd'">
+              {{ pageNum }}
+            </button>
+          </div>
+          <button 
+            class="btn-page btn-next" 
+            [disabled]="currentPage >= totalPages" 
+            (click)="nextPage()"
+            style="padding: 8px 16px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;"
+            [style.opacity]="currentPage >= totalPages ? '0.5' : '1'"
+            [style.cursor]="currentPage >= totalPages ? 'not-allowed' : 'pointer'">
+            <span>Sau</span>
+            <i class="fas fa-chevron-right"></i>
+          </button>
         </div>
       </div>
     </div>

@@ -38,6 +38,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   // Notification badge
   unreadNotificationCount = 0;
   private signalRSubscription?: Subscription;
+  private unreadCountSubscription?: Subscription;
 
   constructor(
     private authService: AuthService,
@@ -73,11 +74,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.checkPremiumStatus();
     this.loadUnreadNotificationCount();
 
-    // ✅ Listen for realtime notifications
+    // ✅ Subscribe to unread count updates from NotificationService
+    this.unreadCountSubscription = this.notificationService.unreadCount$.subscribe(
+      count => {
+        this.unreadNotificationCount = count;
+        console.log('📢 Unread count updated in header:', count);
+      }
+    );
+
+    // ✅ Listen for realtime notifications and refresh count
     this.signalRSubscription = this.signalRService.notificationReceived$.subscribe(
       (notification) => {
-        console.log('📢 New notification in header:', notification);
-        this.unreadNotificationCount++;
+        console.log('📢 New notification received in header:', notification);
+        // Refresh unread count from server when new notification arrives
+        this.loadUnreadNotificationCount();
       }
     );
   }
@@ -85,6 +95,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.signalRSubscription) {
       this.signalRSubscription.unsubscribe();
+    }
+    if (this.unreadCountSubscription) {
+      this.unreadCountSubscription.unsubscribe();
     }
   }
 

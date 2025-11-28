@@ -15,12 +15,18 @@ export class ManageEventsDashboardComponent implements OnInit {
   errorMessage: string | null = null;
   events: EventDTO[] = [];
   filteredEvents: EventDTO[] = [];
+  pagedEvents: EventDTO[] = []; // Events cho trang hiện tại
 
   // search and filter
   searchTerm: string = '';
   filterStatus: string = 'all';
   sortBy: string = 'startDate';
   sortOrder: string = 'asc';
+
+  // Pagination
+  currentPage: number = 1;
+  pageSize: number = 5; // Mỗi trang 5 sự kiện
+  totalPages: number = 1;
 
   // modal state
   showModal = false;
@@ -74,14 +80,17 @@ export class ManageEventsDashboardComponent implements OnInit {
 
   // ===== SEARCH AND FILTER =====
   onSearchChange(): void {
+    this.currentPage = 1; // Reset về trang 1 khi search
     this.applyFilters();
   }
 
   onFilterChange(): void {
+    this.currentPage = 1; // Reset về trang 1 khi filter
     this.applyFilters();
   }
 
   onSortChange(): void {
+    this.currentPage = 1; // Reset về trang 1 khi sort
     this.applyFilters();
   }
 
@@ -90,6 +99,7 @@ export class ManageEventsDashboardComponent implements OnInit {
     this.filterStatus = 'all';
     this.sortBy = 'startDate';
     this.sortOrder = 'asc';
+    this.currentPage = 1; // Reset về trang 1 khi clear
     this.applyFilters();
   }
 
@@ -145,6 +155,70 @@ export class ManageEventsDashboardComponent implements OnInit {
     });
 
     this.filteredEvents = filtered;
+    
+    // Tính toán pagination sau khi filter
+    this.updatePagination();
+  }
+
+  // ===== PAGINATION =====
+  updatePagination(): void {
+    this.totalPages = Math.ceil(this.filteredEvents.length / this.pageSize);
+    if (this.currentPage > this.totalPages && this.totalPages > 0) {
+      this.currentPage = this.totalPages;
+    }
+    if (this.currentPage < 1) {
+      this.currentPage = 1;
+    }
+
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.pagedEvents = this.filteredEvents.slice(startIndex, endIndex);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePagination();
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.goToPage(this.currentPage + 1);
+    }
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.goToPage(this.currentPage - 1);
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, this.currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(this.totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage < maxPagesToShow - 1) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  }
+
+  getStartIndex(): number {
+    return (this.currentPage - 1) * this.pageSize + 1;
+  }
+
+  getEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.filteredEvents.length);
   }
 
   // ===== MODAL METHODS =====

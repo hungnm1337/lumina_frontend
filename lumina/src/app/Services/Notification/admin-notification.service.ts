@@ -16,6 +16,8 @@ export interface CreateNotificationDTO {
   title: string;
   content: string;
   isActive: boolean;
+  roleIds?: number[];
+  userIds?: number[];
 }
 
 export interface UpdateNotificationDTO {

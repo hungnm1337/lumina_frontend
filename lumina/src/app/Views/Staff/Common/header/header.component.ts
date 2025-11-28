@@ -1,10 +1,11 @@
-import { Component, EventEmitter, Output, OnInit, Input, ElementRef, HostListener } from '@angular/core';
+import { Component, EventEmitter, Output, OnInit, Input, ElementRef, HostListener, OnDestroy } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter, map, mergeMap } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './../../../../Services/Auth/auth.service';
 import { UserService } from './../../../../Services/User/user.service';
-import { Observable } from 'rxjs';
+import { NotificationService } from './../../../../Services/Notification/notification.service';
+import { Observable, Subscription } from 'rxjs';
 import { AuthUserResponse } from './../../../../Interfaces/auth.interfaces';
 
 @Component({
@@ -13,25 +14,34 @@ import { AuthUserResponse } from './../../../../Interfaces/auth.interfaces';
   imports: [CommonModule],
   templateUrl: './header.component.html',
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
   @Output() sidebarToggle = new EventEmitter();
   @Input() sidebarOpen = true;
 
   pageTitle = 'Bài viết'; // Default title
   currentUser$!: Observable<AuthUserResponse | null>;
   isDropdownOpen = false;
+  unreadNotificationCount = 0;
+  private unreadCountSubscription?: Subscription;
 
   constructor(
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private authService: AuthService,
     private userService: UserService,
+    private notificationService: NotificationService,
     private elementRef: ElementRef
   ) {}
 
   ngOnInit() {
     this.currentUser$ = this.authService.currentUser$;
     this.loadUserProfile();
+    this.loadUnreadCount();
+
+    // Subscribe to unread count updates
+    this.unreadCountSubscription = this.notificationService.unreadCount$.subscribe(
+      count => this.unreadNotificationCount = count
+    );
 
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd),
@@ -47,6 +57,25 @@ export class HeaderComponent implements OnInit {
       // Set title from route data, or use default if not provided
       this.pageTitle = data['title'] || this.getPageTitleFromUrl();
     });
+  }
+
+  ngOnDestroy(): void {
+    this.unreadCountSubscription?.unsubscribe();
+  }
+
+  loadUnreadCount(): void {
+    this.notificationService.getUnreadCount().subscribe({
+      next: (response) => {
+        this.unreadNotificationCount = response.unreadCount;
+      },
+      error: (err) => {
+        console.error('Failed to load unread count:', err);
+      }
+    });
+  }
+
+  goToNotifications(): void {
+    this.router.navigate(['/staff/notifications']);
   }
 
   loadUserProfile(): void {

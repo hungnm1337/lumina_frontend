@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject, interval } from 'rxjs';
 import { tap, switchMap, startWith } from 'rxjs/operators';
+import { SignalRService } from '../SignalR/signalr.service';
 import { environment } from '../../../environments/environment';
 
 export interface UserNotificationDTO {
@@ -31,7 +32,10 @@ export class NotificationService {
     });
   }
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private signalRService: SignalRService
+  ) {
     // Load unread count on init
     this.loadUnreadCount();
     
@@ -39,6 +43,12 @@ export class NotificationService {
     interval(30000)
       .pipe(startWith(0))
       .subscribe(() => this.loadUnreadCount());
+
+    // ✅ Listen for realtime notifications and refresh count
+    this.signalRService.notificationReceived$.subscribe(() => {
+      console.log('📢 Notification received in NotificationService, refreshing count...');
+      this.loadUnreadCount();
+    });
   }
 
   // Get all notifications for current user
@@ -69,9 +79,20 @@ export class NotificationService {
   // Load and update unread count
   private loadUnreadCount(): void {
     this.getUnreadCount().subscribe({
-      next: (response) => this.unreadCountSubject.next(response.unreadCount),
-      error: (error) => console.error('Error loading unread count:', error)
+      next: (response) => {
+        console.log('📢 [NotificationService] Unread count loaded from server:', response.unreadCount);
+        this.unreadCountSubject.next(response.unreadCount);
+      },
+      error: (error) => {
+        console.error('❌ [NotificationService] Error loading unread count:', error);
+      }
     });
+  }
+
+  // Public method to force refresh unread count
+  public refreshUnreadCount(): void {
+    console.log('📢 [NotificationService] Force refreshing unread count...');
+    this.loadUnreadCount();
   }
 
   // Helper methods

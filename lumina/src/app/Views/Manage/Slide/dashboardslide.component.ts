@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SlideService, CreateSlideDTO } from '../../../Services/Slide/slide.service';
 import { SlideDTO } from '../../../Interfaces/slide.interface';
+import { UserService } from '../../../Services/User/user.service';
 
 @Component({
   selector: 'app-dashboard-slide',
@@ -14,6 +15,7 @@ import { SlideDTO } from '../../../Interfaces/slide.interface';
 export class DashboardSlideComponent implements OnInit {
   slides: SlideDTO[] = [];
   filteredSlides: SlideDTO[] = [];
+  pagedSlides: SlideDTO[] = []; // Slides cho trang hiện tại
   selectedSlide: SlideDTO | null = null;
   isModalOpen = false;
   isEditMode = false;
@@ -24,6 +26,11 @@ export class DashboardSlideComponent implements OnInit {
   // Search and filter
   searchKeyword = '';
   filterActive: boolean | null = null;
+
+  // Pagination
+  currentPage: number = 1;
+  pageSize: number = 5; // Mỗi trang 5 slide
+  totalPages: number = 1;
 
   // Form data
   formData: SlideDTO = {
@@ -37,7 +44,13 @@ export class DashboardSlideComponent implements OnInit {
   // File upload
   selectedFile: File | null = null;
 
-  constructor(private slideService: SlideService) {}
+  // User name cache
+  private userNameCache: Map<number, string> = new Map();
+
+  constructor(
+    private slideService: SlideService,
+    private userService: UserService
+  ) {}
 
   ngOnInit(): void {
     this.loadSlides();
@@ -56,9 +69,11 @@ export class DashboardSlideComponent implements OnInit {
   loadSlides(): void {
     this.isLoading = true;
     this.slideService.getAllSlides().subscribe({
-      next: (data) => {
+      next: async (data) => {
         this.slides = data;
-        this.applyFilters();
+        // Load user names for all unique createBy IDs and wait for completion
+        await this.loadUserNames(data);
+        this.applyFilters(); // applyFilters sẽ gọi updatePagination
         this.isLoading = false;
       },
       error: (error) => {
@@ -69,30 +84,156 @@ export class DashboardSlideComponent implements OnInit {
     });
   }
 
+  // Load user names for all unique createBy IDs
+  private async loadUserNames(slides: SlideDTO[]): Promise<void> {
+    const uniqueUserIds = new Set<number>();
+    slides.forEach(slide => {
+      if (slide.createBy && slide.createBy > 0 && !this.userNameCache.has(slide.createBy)) {
+        uniqueUserIds.add(slide.createBy);
+      }
+    });
+
+    if (uniqueUserIds.size === 0) {
+      return;
+    }
+
+    // Load all user names in parallel
+    const loadPromises = Array.from(uniqueUserIds).map(userId => {
+      return new Promise<void>((resolve) => {
+        console.log(`📢 [Slide] Loading user name for userId: ${userId}`);
+        this.userService.getUserById(userId).subscribe({
+          next: (user) => {
+            console.log(`📢 [Slide] User ${userId} response:`, user);
+            // Backend returns FullName (capital F, capital N) - check both cases
+            const fullName = user?.FullName || user?.fullName || user?.name || null;
+            console.log(`📢 [Slide] Extracted fullName for ${userId}:`, fullName);
+            
+            if (fullName && typeof fullName === 'string' && fullName.trim()) {
+              this.userNameCache.set(userId, fullName.trim());
+              console.log(`✅ [Slide] Loaded user name: ${userId} -> "${fullName.trim()}"`);
+            } else {
+              this.userNameCache.set(userId, `User ${userId}`);
+              console.warn(`⚠️ [Slide] User ${userId} has no fullName. Response keys:`, Object.keys(user || {}));
+            }
+            resolve();
+          },
+          error: (error) => {
+            console.error(`❌ [Slide] Error loading user ${userId}:`, error);
+            console.error(`   Status:`, error?.status);
+            console.error(`   Message:`, error?.message);
+            console.error(`   Full error:`, JSON.stringify(error, null, 2));
+            this.userNameCache.set(userId, `User ${userId}`);
+            resolve();
+          }
+        });
+      });
+    });
+
+    // Wait for all user names to load before continuing
+    await Promise.all(loadPromises);
+    console.log(`✅ All ${uniqueUserIds.size} user names loaded successfully`);
+  }
+
   // ===== FILTER & SEARCH =====
   applyFilters(): void {
     this.filteredSlides = this.slides.filter(slide => {
       const matchesSearch = !this.searchKeyword ||
-        slide.slideName.toLowerCase().includes(this.searchKeyword.toLowerCase()) ||
-        slide.slideUrl.toLowerCase().includes(this.searchKeyword.toLowerCase());
+        slide.slideName.toLowerCase().includes(this.searchKeyword.toLowerCase());
       
       const matchesStatus = this.filterActive === null || slide.isActive === this.filterActive;
       
       return matchesSearch && matchesStatus;
     });
+
+    // Tính toán pagination sau khi filter
+    this.updatePagination();
+  }
+
+  // ===== PAGINATION =====
+  updatePagination(): void {
+    // Đảm bảo totalPages ít nhất là 1 nếu có dữ liệu
+    this.totalPages = Math.max(1, Math.ceil(this.filteredSlides.length / this.pageSize));
+    
+    // Điều chỉnh currentPage nếu vượt quá totalPages
+    if (this.currentPage > this.totalPages && this.totalPages > 0) {
+      this.currentPage = this.totalPages;
+    }
+    if (this.currentPage < 1) {
+      this.currentPage = 1;
+    }
+
+    // Tính toán pagedSlides
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.pagedSlides = this.filteredSlides.slice(startIndex, endIndex);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePagination();
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.goToPage(this.currentPage + 1);
+    }
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.goToPage(this.currentPage - 1);
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, this.currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(this.totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage < maxPagesToShow - 1) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  }
+
+  getStartIndex(): number {
+    if (this.filteredSlides.length === 0) {
+      return 0;
+    }
+    return (this.currentPage - 1) * this.pageSize + 1;
+  }
+
+  getEndIndex(): number {
+    if (this.filteredSlides.length === 0) {
+      return 0;
+    }
+    return Math.min(this.currentPage * this.pageSize, this.filteredSlides.length);
   }
 
   onSearchChange(): void {
+    this.currentPage = 1; // Reset về trang 1 khi search
     this.applyFilters();
   }
 
   onFilterChange(): void {
+    this.currentPage = 1; // Reset về trang 1 khi filter
     this.applyFilters();
   }
 
   clearFilters(): void {
     this.searchKeyword = '';
     this.filterActive = null;
+    this.currentPage = 1; // Reset về trang 1 khi clear
     this.applyFilters();
   }
 
@@ -268,5 +409,56 @@ export class DashboardSlideComponent implements OnInit {
   clearMessages(): void {
     this.errorMessage = '';
     this.successMessage = '';
+  }
+
+  // Copy Cloudinary URL to clipboard
+  copyCloudinaryUrl(url: string): void {
+    navigator.clipboard.writeText(url).then(() => {
+      this.successMessage = 'Đã copy link ảnh vào clipboard!';
+      setTimeout(() => this.clearMessages(), 2000);
+    }).catch(err => {
+      console.error('Failed to copy:', err);
+      this.errorMessage = 'Không thể copy link. Vui lòng copy thủ công.';
+      setTimeout(() => this.clearMessages(), 3000);
+    });
+  }
+
+  // Get user name from cache or return default
+  getUserName(userId: number | undefined): string {
+    if (!userId || userId <= 0) return 'N/A';
+    
+    // Check cache first - this should be populated after loadSlides completes
+    if (this.userNameCache.has(userId)) {
+      const cachedName = this.userNameCache.get(userId)!;
+      console.log(`📢 [Slide] getUserName(${userId}) from cache: "${cachedName}"`);
+      return cachedName;
+    }
+    
+    // If not in cache, try to load it (for edge cases like new slides)
+    // But return a temporary value immediately
+    console.log(`📢 [Slide] getUserName(${userId}) not in cache, loading...`);
+    this.userService.getUserById(userId).subscribe({
+      next: (user) => {
+        console.log(`📢 [Slide] getUserName(${userId}) response:`, user);
+        // Backend returns FullName (capital F, capital N) - check multiple variations
+        const fullName = user?.FullName || user?.fullName || user?.name || null;
+        console.log(`📢 [Slide] getUserName(${userId}) extracted:`, fullName);
+        
+        if (fullName && typeof fullName === 'string' && fullName.trim()) {
+          this.userNameCache.set(userId, fullName.trim());
+          console.log(`✅ [Slide] getUserName(${userId}) cached: "${fullName.trim()}"`);
+        } else {
+          this.userNameCache.set(userId, `User ${userId}`);
+          console.warn(`⚠️ [Slide] getUserName(${userId}) no name found. Response:`, user);
+        }
+      },
+      error: (error) => {
+        console.error(`❌ [Slide] getUserName(${userId}) error:`, error);
+        this.userNameCache.set(userId, `User ${userId}`);
+      }
+    });
+    
+    // Return temporary value while loading
+    return `User ${userId}`;
   }
 }
