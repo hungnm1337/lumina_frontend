@@ -153,6 +153,14 @@ export class DeckDetailComponent implements OnInit {
     }
   }
 
+  handleImageError(event: Event, termIndex: number): void {
+    // Mark term as having image error
+    if (this.terms[termIndex]) {
+      this.terms[termIndex].imageError = true;
+      console.warn(`Failed to load image for term: ${this.terms[termIndex].question}`, event);
+    }
+  }
+
   toggleFlip(): void {
     this.isFlipped = !this.isFlipped;
   }

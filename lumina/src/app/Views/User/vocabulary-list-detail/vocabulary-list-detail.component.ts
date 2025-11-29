@@ -15,6 +15,8 @@ export interface VocabularyItem {
   audioUrl?: string;
   example?: string; // Example usage of the word
   liked?: boolean; // Add field to mark as favorite
+  imageUrl?: string; // URL ảnh từ Cloudinary cho từng vocabulary
+  imageError?: boolean; // Flag để track lỗi load ảnh
 }
 
 
@@ -152,7 +154,8 @@ export class VocabularyListDetailComponent implements OnInit {
                     answer: w.definition || '',
                     topic: w.category,
                     audioUrl: w.audioUrl,
-                    example: w.example
+                    example: w.example,
+                    imageUrl: w.imageUrl // Lấy imageUrl từ API response
                   };
                 })
               } as VocabularyListDetail;
@@ -210,7 +213,8 @@ export class VocabularyListDetailComponent implements OnInit {
                   topic: w.category,
                   level: undefined,
                   audioUrl: w.audioUrl,
-                  example: w.example
+                  example: w.example,
+                  imageUrl: w.imageUrl // Lấy imageUrl từ API response
                 };
                 
                 console.log('✅ Mapped word:', mapped);
@@ -263,7 +267,8 @@ export class VocabularyListDetailComponent implements OnInit {
                       answer: w.definition || '',
                       topic: w.category,
                       audioUrl: w.audioUrl,
-                      example: w.example
+                      example: w.example,
+                      imageUrl: w.imageUrl // Lấy imageUrl từ API response
                     };
                   })
                 } as VocabularyListDetail;
@@ -356,6 +361,12 @@ export class VocabularyListDetailComponent implements OnInit {
     return pages;
   }
 
+
+  handleImageError(event: Event, vocab: VocabularyItem): void {
+    // Mark vocabulary as having image error
+    vocab.imageError = true;
+    console.warn(`Failed to load image for vocabulary: ${vocab.question}`, event);
+  }
 
   // Update playAudio function to support Text-to-Speech
   playAudio(audioUrl?: string, word?: string) {
@@ -521,7 +532,8 @@ export class VocabularyListDetailComponent implements OnInit {
                     topic: w.category,
                     level: undefined,
                     audioUrl: w.audioUrl,
-                    example: w.example
+                    example: w.example,
+                    imageUrl: w.imageUrl // Lấy imageUrl từ API response
                   };
                 });
                 this.vocabularyList.vocabularyCount = this.vocabularyList.words.length;
@@ -553,6 +565,7 @@ export class VocabularyListDetailComponent implements OnInit {
                 id: wordId,
                 question: w.word || w.question || '',
                 answer: w.definition || w.answer || '',
+                imageUrl: w.imageUrl, // Lấy imageUrl từ API response
                 topic: w.category || w.topic,
                 level: w.level,
                 audioUrl: w.audioUrl,
@@ -588,7 +601,8 @@ export class VocabularyListDetailComponent implements OnInit {
                   answer: w.definition || '',
                   topic: w.category,
                   audioUrl: w.audioUrl,
-                  example: w.example
+                  example: w.example,
+                  imageUrl: w.imageUrl // Lấy imageUrl từ API response
                 };
               });
               this.vocabularyList.vocabularyCount = this.vocabularyList.words.length;
