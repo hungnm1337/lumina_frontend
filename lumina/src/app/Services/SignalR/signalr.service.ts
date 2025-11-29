@@ -73,6 +73,7 @@ export class SignalRService {
     this.hubConnection.onreconnected((connectionId) => {
       console.log('✅ SignalR reconnected:', connectionId);
       this.connectionEstablished.next(true);
+      this.registerListeners(); // Re-register listeners after reconnection
     });
 
     this.hubConnection.onclose((error) => {

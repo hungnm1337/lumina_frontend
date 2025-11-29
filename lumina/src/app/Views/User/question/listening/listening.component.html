@@ -1,4 +1,25 @@
 <div class="w-full bg-white rounded-lg shadow-md p-6">
+  <!-- Submit Popup -->
+  @if (showSubmitPopup) {
+  <app-popup
+    [title]="submitPopupTitle"
+    [message]="submitPopupMessage"
+    (okClicked)="onSubmitConfirmed()"
+    (cancelClicked)="onSubmitCancelled()"
+  ></app-popup>
+  }
+
+  <!-- TOEIC Notification Popup -->
+  @if (showToeicPopup) {
+  <app-popup
+    [title]="toeicPopupTitle"
+    [message]="toeicPopupMessage"
+    [showCancelButton]="false"
+    textAlign="left"
+    (okClicked)="closeToeicPopup()"
+  ></app-popup>
+  }
+
   <!-- Quota Limit Modal -->
   <app-quota-limit-modal
     [isVisible]="showQuotaModal"
@@ -25,7 +46,7 @@
   </div> -->
 
   <!-- Audio Player -->
-  <div class="mb-6 p-4 bg-red-50 rounded-lg">
+  <div class="mb-6 p-4 bg-white rounded-lg border border-gray-200">
     <audio
       #audioPlayer
       [src]="getCurrentAudioUrl()"
@@ -41,9 +62,9 @@
         [disabled]="audioPlayCount >= maxPlays"
         class="px-4 py-2 rounded transition-colors"
         [ngClass]="{
-          'bg-red-600 text-white hover:bg-red-700':
+          'bg-gray-400 text-gray-700 hover:bg-gray-300':
             !isAudioPlaying && audioPlayCount < maxPlays,
-          'bg-green-600 text-white':
+          'bg-gray-400 text-gray-700':
             isAudioPlaying && audioPlayCount < maxPlays,
           'bg-gray-400 text-gray-700 cursor-not-allowed':
             audioPlayCount >= maxPlays

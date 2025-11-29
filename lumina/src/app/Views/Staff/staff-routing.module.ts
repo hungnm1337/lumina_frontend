@@ -65,6 +65,14 @@ const routes: Routes = [
         path: 'reports',
         component: ReportListComponent,
         data: { title: 'Báo cáo' }
+      },
+      {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./Notifications/notifications.component').then(
+            (m) => m.StaffNotificationsComponent
+          ),
+        data: { title: 'Thông báo' }
       }
     ]
   }

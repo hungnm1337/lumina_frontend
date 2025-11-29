@@ -58,6 +58,7 @@
           </td>
           <td>
             <span class="badge" [class.badge-active]="notification.isActive" [class.badge-inactive]="!notification.isActive">
+              <i class="fas" [class.fa-check-circle]="notification.isActive" [class.fa-times-circle]="!notification.isActive"></i>
               {{ notification.isActive ? 'Hiển thị' : 'Ẩn' }}
             </span>
           </td>
@@ -121,7 +122,7 @@
 
 <!-- CREATE MODAL -->
 <div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
-  <div class="modal" (click)="$event.stopPropagation()">
+  <div class="modal modal-large" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Tạo Thông Báo Mới</h2>
       <button class="btn-close" (click)="closeCreateModal()">
@@ -151,9 +152,143 @@
         ></textarea>
         <small>{{ createForm.content.length }}/2000 ký tự</small>
       </div>
-      <div class="info-box">
+      <!-- Recipient Selection -->
+      <div class="form-group">
+        <label>Gửi đến <span class="required">*</span></label>
+        <div class="recipient-type-selector">
+          <label class="radio-option" [class.selected]="recipientType === 'all'">
+            <input
+              type="radio"
+              name="recipientType"
+              value="all"
+              [(ngModel)]="recipientType"
+              (change)="onRecipientTypeChange()"
+            />
+            <span class="radio-title">Tất cả người dùng</span>
+            <span class="radio-desc">Gửi đến toàn bộ hệ thống</span>
+          </label>
+          <label class="radio-option" [class.selected]="recipientType === 'roles'">
+            <input
+              type="radio"
+              name="recipientType"
+              value="roles"
+              [(ngModel)]="recipientType"
+              (change)="onRecipientTypeChange()"
+            />
+            <span class="radio-title">Chọn theo vai trò</span>
+            <span class="radio-desc">Gửi đến các vai trò cụ thể</span>
+          </label>
+          <label class="radio-option" [class.selected]="recipientType === 'users'">
+            <input
+              type="radio"
+              name="recipientType"
+              value="users"
+              [(ngModel)]="recipientType"
+              (change)="onRecipientTypeChange()"
+            />
+            <span class="radio-title">Chọn người dùng cụ thể</span>
+            <span class="radio-desc">Gửi đến từng người dùng</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Role Selection -->
+      <div class="form-group" *ngIf="recipientType === 'roles'">
+        <label>Chọn vai trò <span class="required">*</span></label>
+        <div class="selection-container" *ngIf="!loadingRoles">
+          <div
+            class="selection-item"
+            *ngFor="let role of allRoles"
+            (click)="toggleRoleSelection(role.id)"
+            [class.selected]="isRoleSelected(role.id)">
+            <input
+              type="checkbox"
+              [checked]="isRoleSelected(role.id)"
+              (change)="toggleRoleSelection(role.id)"
+              (click)="$event.stopPropagation()"
+            />
+            <span>{{ role.name }}</span>
+          </div>
+          <div *ngIf="allRoles.length === 0" class="empty-selection">
+            Không có vai trò nào
+          </div>
+        </div>
+        <div *ngIf="loadingRoles" class="loading-small">
+          <i class="fas fa-spinner fa-spin"></i> Đang tải...
+        </div>
+        <small *ngIf="selectedRoleIds.length > 0">
+          Đã chọn: {{ selectedRoleIds.length }} vai trò
+        </small>
+      </div>
+
+      <!-- User Selection -->
+      <div class="form-group" *ngIf="recipientType === 'users'">
+        <label>Chọn người dùng <span class="required">*</span></label>
+        <div class="user-search">
+          <input
+            type="text"
+            [(ngModel)]="userSearchTerm"
+            placeholder="Tìm kiếm theo tên hoặc email..."
+            (keyup.enter)="searchUsers()"
+            class="form-control"
+          />
+          <button class="btn btn-sm btn-secondary" (click)="searchUsers()" [disabled]="loadingUsers">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+        <div class="selection-container user-selection" *ngIf="!loadingUsers">
+          <div
+            class="selection-item"
+            *ngFor="let user of allUsers"
+            (click)="toggleUserSelection(user.userId)"
+            [class.selected]="isUserSelected(user.userId)">
+            <input
+              type="checkbox"
+              [checked]="isUserSelected(user.userId)"
+              (change)="toggleUserSelection(user.userId)"
+              (click)="$event.stopPropagation()"
+            />
+            <div class="user-avatar">
+              <i class="fas fa-user"></i>
+            </div>
+            <div class="user-info">
+              <span class="user-name">{{ user.fullName }}</span>
+              <span class="user-email">{{ user.email }}</span>
+              <span class="user-role">
+                <i class="fas fa-tag"></i> {{ user.roleName }}
+              </span>
+            </div>
+          </div>
+          <div *ngIf="allUsers.length === 0" class="empty-selection">
+            Không tìm thấy người dùng nào
+          </div>
+          <button
+            *ngIf="userCurrentPage < userTotalPages"
+            class="btn btn-sm btn-secondary load-more-btn"
+            (click)="loadMoreUsers()"
+            [disabled]="loadingUsers">
+            <i class="fas fa-chevron-down"></i> Tải thêm
+          </button>
+        </div>
+        <div *ngIf="loadingUsers" class="loading-small">
+          <i class="fas fa-spinner fa-spin"></i> Đang tải...
+        </div>
+        <small *ngIf="selectedUserIds.length > 0">
+          Đã chọn: {{ selectedUserIds.length }} người dùng
+        </small>
+      </div>
+
+      <div class="info-box" *ngIf="recipientType === 'all'">
         <i class="fas fa-info-circle"></i>
         <span>Thông báo sẽ được gửi đến <strong>tất cả người dùng</strong> trong hệ thống ngay lập tức.</span>
+      </div>
+      <div class="info-box" *ngIf="recipientType === 'roles' && selectedRoleIds.length > 0">
+        <i class="fas fa-info-circle"></i>
+        <span>Thông báo sẽ được gửi đến tất cả người dùng có <strong>{{ selectedRoleIds.length }} vai trò</strong> đã chọn.</span>
+      </div>
+      <div class="info-box" *ngIf="recipientType === 'users' && selectedUserIds.length > 0">
+        <i class="fas fa-info-circle"></i>
+        <span>Thông báo sẽ được gửi đến <strong>{{ selectedUserIds.length }} người dùng</strong> đã chọn.</span>
       </div>
     </div>
     <div class="modal-footer">
@@ -163,7 +298,7 @@
       <button
         class="btn btn-primary"
         (click)="createNotification()"
-        [disabled]="loading || !createForm.title || !createForm.content">
+        [disabled]="loading || !createForm.title || !createForm.content || (recipientType === 'roles' && selectedRoleIds.length === 0) || (recipientType === 'users' && selectedUserIds.length === 0)">
         <i class="fas fa-paper-plane"></i> Gửi Thông Báo
       </button>
     </div>

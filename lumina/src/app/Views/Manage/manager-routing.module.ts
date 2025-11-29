@@ -26,8 +26,15 @@ const routes: Routes = [
       { path: 'manage-posts', component: ArticlesComponent, data: { title: 'Quản lý bài viết' } },
       { path: 'manage-posts/:id', component: ArticleDetailComponent, data: { title: 'Chi tiết bài viết' } },
       { path: 'vocabulary', component: VocabularyManagementComponent, data: { title: 'Quản lý từ vựng' } },
-      { path: 'reporting', component: ReportingOverviewComponent, data: { title: 'Báo cáo & Thống kê' } },
-      { path: 'user-reports', component: ReportListComponent, data: { title: 'Báo cáo người dùng' } }
+      { path: 'user-reports', component: ReportListComponent, data: { title: 'Báo cáo người dùng' } },
+      {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./Notifications/notifications.component').then(
+            (m) => m.ManagerNotificationsComponent
+          ),
+        data: { title: 'Thông báo' }
+      }
     ]
   }
 ];
