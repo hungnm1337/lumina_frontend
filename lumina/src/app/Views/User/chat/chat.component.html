@@ -4,7 +4,10 @@
   <!-- Chat Messages -->
   <div class="chat-messages">
     <div *ngFor="let message of messages" class="message" [ngClass]="message.type">
-      <div class="message-content" [innerHTML]="formatMessageContent(message.content)">
+      <!-- Chỉ hiển thị content nếu không có vocabularies (để tránh trùng lặp) -->
+      <div *ngIf="!message.vocabularies || message.vocabularies.length === 0" 
+           class="message-content" 
+           [innerHTML]="formatMessageContent(message.content)">
       </div>
       
       <!-- Hiển thị examples nếu có -->
@@ -27,23 +30,50 @@
 
       <!-- Hiển thị từ vựng được tạo -->
       <div *ngIf="message.vocabularies && message.vocabularies.length > 0" class="vocabulary-list">
-        <h4>📚 Từ vựng được tạo:</h4>
-        <div *ngFor="let vocab of message.vocabularies" class="vocabulary-item">
-          <div class="vocab-header">
-            <strong>{{ vocab.word }}</strong> 
-            <span class="word-type">({{ vocab.typeOfWord }})</span>
-            <span class="category">{{ vocab.category }}</span>
+        <div class="vocabulary-header">
+          <h4>📚 Từ vựng được tạo</h4>
+          <span class="vocab-count">{{ message.vocabularies.length }} từ</span>
+        </div>
+        
+        <div class="vocabulary-grid">
+          <div *ngFor="let vocab of message.vocabularies" class="vocabulary-item">
+            <!-- Hiển thị ảnh cho từng từ vựng nếu có -->
+            <div *ngIf="vocab.imageUrl" class="vocab-image">
+              <img 
+                [src]="vocab.imageUrl" 
+                [alt]="'Image for ' + vocab.word" 
+                loading="lazy"
+                (error)="handleImageError($event, vocab)"
+                [class.image-error]="vocab.imageError" />
+              <div *ngIf="vocab.imageError" class="image-placeholder">
+                <i class="fas fa-image"></i>
+                <span>Image for {{ vocab.word }}</span>
+              </div>
+            </div>
+            
+            <div class="vocab-content">
+              <div class="vocab-header">
+                <strong class="vocab-word">{{ vocab.word }}</strong> 
+                <div class="vocab-badges">
+                  <span class="word-type">{{ vocab.typeOfWord }}</span>
+                  <span class="category">{{ vocab.category }}</span>
+                </div>
+              </div>
+              <p class="definition">{{ vocab.definition }}</p>
+              <div class="example-box">
+                <em class="example">{{ vocab.example }}</em>
+              </div>
+            </div>
           </div>
-          <p class="definition">{{ vocab.definition }}</p>
-          <em class="example">{{ vocab.example }}</em>
         </div>
       </div>
       
 
       <!-- Nút lưu từ vựng -->
-      <div *ngIf="message.hasSaveOption" class="save-actions">
-        <button (click)="saveVocabularies()" class="save-btn">
-          💾 Lưu vào folder
+      <div *ngIf="message.hasSaveOption && message.vocabularies && message.vocabularies.length > 0" class="save-actions">
+        <button (click)="saveVocabularies(message.vocabularies!)" class="save-btn">
+          <i class="fas fa-save"></i>
+          <span>Lưu vào folder</span>
         </button>
       </div>
     </div>

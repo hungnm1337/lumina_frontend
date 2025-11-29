@@ -9,6 +9,7 @@ export interface VocabularyWord {
   definition: string;
   example?: string;
   audioUrl?: string; // Thêm trường này
+  imageUrl?: string; // URL ảnh từ Cloudinary cho từng vocabulary
 }
 
 export interface VocabularyListCreate {

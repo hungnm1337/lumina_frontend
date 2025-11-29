@@ -13,6 +13,8 @@ export interface ChatResponseDTO {
   hasSaveOption: boolean;
   saveAction?: string;
   vocabularies?: GeneratedVocabularyDTO[];
+  imageDescription?: string; // Mô tả ảnh để tạo ảnh tự động
+  imageUrl?: string; // URL ảnh đã được tạo (Pollinations AI)
   // Thêm properties cho out_of_scope
   isOutOfScope?: boolean;
   scopeMessage?: string;
@@ -24,12 +26,16 @@ export interface GeneratedVocabularyDTO {
   example: string;
   typeOfWord: string;
   category: string;
+  imageDescription?: string; // Mô tả ảnh cho từng từ vựng
+  imageUrl?: string; // URL ảnh đã được tạo (Pollinations AI)
+  imageError?: boolean; // Flag để track lỗi load ảnh
 }
 
 export interface SaveVocabularyRequestDTO {
   userId: number;
   folderName: string;
   vocabularies: GeneratedVocabularyDTO[];
+  imageUrl?: string; // URL ảnh từ Pollinations AI hoặc Cloudinary
 }
 
 export interface SaveVocabularyResponseDTO {
@@ -49,4 +55,5 @@ export interface ChatMessage {
   relatedWords?: string[];
   vocabularies?: GeneratedVocabularyDTO[];
   hasSaveOption?: boolean;
+  imageUrl?: string; // URL ảnh từ Pollinations AI hoặc Cloudinary
 }

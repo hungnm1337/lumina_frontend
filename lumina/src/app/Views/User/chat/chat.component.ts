@@ -30,6 +30,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   conversationType = 'general';
   showSaveButton = false;
   generatedVocabularies: GeneratedVocabularyDTO[] = [];
+  vocabularyImageUrl: string | null = null; // URL ảnh từ AI
 
   constructor(
     private chatService: ChatService,
@@ -79,8 +80,25 @@ export class ChatComponent implements OnInit, OnDestroy {
           this.toastService.info('Tôi chỉ hỗ trợ về TOEIC và học tiếng Anh thôi nhé!');
         }
         
-        // Format câu trả lời AI
-        const formattedContent = this.formatAIResponse(response.answer);
+        // Xử lý answer text - đảm bảo không có raw JSON
+        // Backend đã parse JSON rồi, nên không cần parse lại ở đây
+        let answerText = response.answer || '';
+        
+        // Nếu có vocabularies, không cần hiển thị answer text (sẽ hiển thị trong vocabulary list)
+        if (response.vocabularies && response.vocabularies.length > 0) {
+          // Set answer text rỗng để chỉ hiển thị vocabulary list
+          answerText = '';
+        } else {
+          // Loại bỏ bất kỳ JSON fragments nào còn sót lại (phòng trường hợp backend chưa xử lý hết)
+          if (answerText.includes('"word"') || answerText.includes('"definition"') || 
+              answerText.includes('"example"') || answerText.includes('"typeOfWord"') ||
+              answerText.includes('"vocabularies"') || answerText.trim().startsWith('{')) {
+            answerText = ''; // Nếu có vẻ như là JSON, set rỗng
+          }
+        }
+        
+        // Format câu trả lời AI (chỉ format nếu có text)
+        const formattedContent = answerText ? this.formatAIResponse(answerText) : '';
         
         // Thêm tin nhắn AI
         const aiMessage: ChatMessage = {
@@ -92,7 +110,8 @@ export class ChatComponent implements OnInit, OnDestroy {
           examples: response.examples,
           relatedWords: response.relatedWords,
           vocabularies: response.vocabularies,
-          hasSaveOption: response.hasSaveOption
+          hasSaveOption: response.hasSaveOption,
+          imageUrl: response.imageUrl // Lưu URL ảnh vào message
         };
         
         this.messages.push(aiMessage);
@@ -103,8 +122,28 @@ export class ChatComponent implements OnInit, OnDestroy {
 
         // Nếu có từ vựng được tạo
         if (response.vocabularies && response.vocabularies.length > 0) {
+          console.log(`✅ Received ${response.vocabularies.length} vocabularies from backend`);
+          
+          // Log số lượng vocabularies có imageUrl
+          const vocabWithImage = response.vocabularies.filter(v => v.imageUrl && v.imageUrl.trim() !== '').length;
+          const vocabWithoutImage = response.vocabularies.length - vocabWithImage;
+          console.log(`📊 Vocabularies with images: ${vocabWithImage}, without: ${vocabWithoutImage}`);
+          
+          // Log một vài vocabularies để kiểm tra
+          if (response.vocabularies.length > 0) {
+            console.log('Sample vocabulary:', {
+              word: response.vocabularies[0].word,
+              hasImageUrl: !!response.vocabularies[0].imageUrl,
+              imageUrl: response.vocabularies[0].imageUrl?.substring(0, 50) + '...'
+            });
+          }
+          
           this.generatedVocabularies = response.vocabularies;
+          this.vocabularyImageUrl = response.imageUrl || null; // Lưu URL ảnh từ AI
           this.showSaveButton = true;
+        } else {
+          console.warn('⚠️ No vocabularies in response or empty array');
+          console.log('Response:', response);
         }
       }
 
@@ -120,20 +159,58 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.conversationType = type;
     this.showSaveButton = false;
     this.generatedVocabularies = [];
+    this.vocabularyImageUrl = null; // Reset image URL
   }
 
-  async saveVocabularies(): Promise<void> {
-    if (this.generatedVocabularies.length === 0) return;
+  async saveVocabularies(vocabularies?: GeneratedVocabularyDTO[]): Promise<void> {
+    // Sử dụng vocabularies từ parameter hoặc từ this.generatedVocabularies
+    const vocabToSave = vocabularies || this.generatedVocabularies;
+    
+    if (!vocabToSave || vocabToSave.length === 0) {
+      this.toastService.warning('Không có từ vựng để lưu!');
+      return;
+    }
 
     const folderName = prompt('Nhập tên folder cho từ vựng:', 'Vocabulary Folder');
-    if (!folderName) return;
+    if (!folderName || folderName.trim() === '') {
+      return;
+    }
 
     try {
+      const userId = this.authService.getCurrentUserId();
+      if (!userId) {
+        this.toastService.error('Vui lòng đăng nhập để lưu từ vựng!');
+        return;
+      }
+
+      // Log vocabularies trước khi gửi
+      const vocabWithImage = vocabToSave.filter(v => v.imageUrl && v.imageUrl.trim() !== '').length;
+      const vocabWithoutImage = vocabToSave.length - vocabWithImage;
+      console.log(`💾 Preparing to save ${vocabToSave.length} vocabularies`);
+      console.log(`📊 Vocabularies with images: ${vocabWithImage}, without: ${vocabWithoutImage}`);
+      
+      // Log sample vocabulary để kiểm tra
+      if (vocabToSave.length > 0) {
+        console.log('Sample vocabulary to save:', {
+          word: vocabToSave[0].word,
+          hasImageUrl: !!vocabToSave[0].imageUrl,
+          imageUrl: vocabToSave[0].imageUrl?.substring(0, 50) + '...'
+        });
+      }
+
       const request: SaveVocabularyRequestDTO = {
-        userId: this.authService.getCurrentUserId(),
-        folderName: folderName,
-        vocabularies: this.generatedVocabularies
+        userId: userId,
+        folderName: folderName.trim(),
+        vocabularies: vocabToSave, // Mỗi vocabulary đã có imageUrl riêng (Cloudinary URL)
+        imageUrl: this.vocabularyImageUrl || undefined // Gửi URL ảnh folder nếu có (deprecated, giữ để backward compatibility)
       };
+
+      console.log('Saving vocabularies request:', {
+        userId: request.userId,
+        folderName: request.folderName,
+        vocabulariesCount: request.vocabularies.length,
+        sampleVocab: request.vocabularies[0]
+      });
 
       const response = await this.chatService.saveVocabularies(request).toPromise();
 
@@ -143,6 +220,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         // Ẩn nút lưu
         this.showSaveButton = false;
         this.generatedVocabularies = [];
+        this.vocabularyImageUrl = null; // Reset image URL
 
         // Thêm tin nhắn xác nhận
         const confirmMessage: ChatMessage = {
@@ -166,13 +244,18 @@ export class ChatComponent implements OnInit, OnDestroy {
             } else {
               this.router.navigate(['/vocabulary']);
             }
-          } catch {}
+          } catch (err) {
+            console.error('Navigation error:', err);
+          }
         }, 100);
+      } else {
+        this.toastService.error('Lưu từ vựng thất bại. Vui lòng thử lại!');
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving vocabularies:', error);
-      this.toastService.error('Lỗi khi lưu từ vựng!');
+      const errorMessage = error?.error?.message || error?.message || 'Lỗi khi lưu từ vựng!';
+      this.toastService.error(errorMessage);
     }
   }
 
@@ -255,6 +338,12 @@ export class ChatComponent implements OnInit, OnDestroy {
     formatted = formatted.replace(/(Tóm lại|Kết luận|Chúc bạn)/g, '🎉 **$1**');
 
     return formatted;
+  }
+
+  handleImageError(event: Event, vocab: GeneratedVocabularyDTO): void {
+    // Mark vocabulary as having image error
+    vocab.imageError = true;
+    console.warn(`Failed to load image for vocabulary: ${vocab.word}`, event);
   }
 
   formatMessageContent(content: string): string {
