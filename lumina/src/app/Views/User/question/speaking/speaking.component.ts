@@ -88,6 +88,9 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   private isRecordingInProgress = false; // ✅ Track recording status
   isAutoAdvancing = false; // ✅ NEW: Track if auto-advance is in progress
 
+  // Auto-submit flag
+  private isAutoSubmitting = false;
+
   constructor(
     private router: Router,
     private baseQuestionService: BaseQuestionService,
@@ -118,6 +121,29 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
           console.log(
             '[SpeakingComponent] ⚠️ Skipping UI update - recording in progress'
           );
+        }
+        // ✅ NEW: Auto-submit when ALL questions are SCORED
+        if (
+          !this.isAutoSubmitting &&
+          !this.showSpeakingSummary &&
+          this.hasSpeakingQuestions()
+        ) {
+          const allScored = this.questions.every((q) => {
+            const s = this.speakingStateService.getQuestionState(q.questionId);
+            return s && s.state === 'scored';
+          });
+
+          if (allScored) {
+            console.log(
+              '[SpeakingComponent] ✅ All questions SCORED - Auto-submitting exam...'
+            );
+            this.isAutoSubmitting = true;
+            
+            // Add a small delay for better UX
+            setTimeout(() => {
+              this.finishSpeakingExam();
+            }, 1000);
+          }
         }
       });
   }
