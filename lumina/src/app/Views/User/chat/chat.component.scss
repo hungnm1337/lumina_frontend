@@ -241,56 +241,171 @@
       }
 
       .vocabulary-list {
-        .vocabulary-item {
+        margin-top: 12px;
+        
+        .vocabulary-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
           margin-bottom: 16px;
-          padding: 12px;
-          background: white;
-          border-radius: 8px;
-          border: 1px solid #e5e7eb;
+          padding-bottom: 12px;
+          border-bottom: 2px solid #e5e7eb;
 
-          .vocab-header {
+          h4 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+          }
+
+          .vocab-count {
+            font-size: 14px;
+            color: #6b7280;
+            background: #f3f4f6;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+          }
+        }
+
+        .vocabulary-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 16px;
+
+          @media (max-width: 768px) {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        .vocabulary-item {
+          background: white;
+          border-radius: 12px;
+          border: 1px solid #e5e7eb;
+          overflow: hidden;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+          &:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+          }
+
+          .vocab-image {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
+            justify-content: center;
+            position: relative;
 
-            strong {
-              font-size: 16px;
+            img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+              display: block;
+              
+              &.image-error {
+                display: none;
+              }
+            }
+
+            .image-placeholder {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              gap: 8px;
+              color: #9ca3af;
+              font-size: 14px;
+              
+              i {
+                font-size: 32px;
+                opacity: 0.5;
+              }
+              
+              span {
+                font-size: 12px;
+                text-align: center;
+                padding: 0 16px;
+              }
+            }
+          }
+
+          .vocab-content {
+            padding: 16px;
+          }
+
+          .vocab-header {
+            margin-bottom: 12px;
+
+            .vocab-word {
+              display: block;
+              font-size: 20px;
+              font-weight: 700;
               color: #1f2937;
+              margin-bottom: 8px;
+              background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+              background-clip: text;
+            }
+
+            .vocab-badges {
+              display: flex;
+              gap: 8px;
+              flex-wrap: wrap;
             }
 
             .word-type {
-              font-size: 12px;
+              font-size: 11px;
               color: #6b7280;
               background: #f3f4f6;
-              padding: 2px 6px;
-              border-radius: 4px;
+              padding: 4px 10px;
+              border-radius: 12px;
+              font-weight: 600;
+              text-transform: uppercase;
             }
 
             .category {
-              font-size: 12px;
+              font-size: 11px;
               color: #3b82f6;
               background: #dbeafe;
-              padding: 2px 6px;
-              border-radius: 4px;
+              padding: 4px 10px;
+              border-radius: 12px;
+              font-weight: 600;
             }
           }
 
           .definition {
-            margin: 8px 0;
+            margin: 0 0 12px 0;
             color: #4b5563;
             font-size: 14px;
+            line-height: 1.6;
+            font-weight: 500;
           }
 
-          .example {
-            display: block;
-            font-style: italic;
-            color: #6b7280;
-            font-size: 13px;
-            background: #f9fafb;
-            padding: 8px;
-            border-radius: 4px;
-            border-left: 3px solid #3b82f6;
+          .example-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #f59e0b;
+            margin-top: 12px;
+
+            .example {
+              display: block;
+              font-style: italic;
+              color: #92400e;
+              font-size: 13px;
+              line-height: 1.5;
+              margin: 0;
+            }
           }
         }
       }
@@ -333,21 +448,37 @@
       }
 
       .save-actions {
-        margin-top: 12px;
+        margin-top: 20px;
+        text-align: center;
+        padding-top: 16px;
+        border-top: 2px solid #e5e7eb;
         
         .save-btn {
-          padding: 8px 16px;
-          background: #10b981;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 24px;
+          background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
           color: white;
           border: none;
-          border-radius: 6px;
+          border-radius: 10px;
+          font-size: 15px;
+          font-weight: 600;
           cursor: pointer;
-          font-size: 14px;
-          font-weight: 500;
-          transition: all 0.2s;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
           
           &:hover {
-            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+          }
+
+          &:active {
+            transform: translateY(0);
+          }
+
+          i {
+            font-size: 16px;
           }
         }
       }

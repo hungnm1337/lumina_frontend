@@ -22,15 +22,19 @@
     <div class="flex items-center space-x-4">
       <!-- Notification Bell -->
       <div class="relative">
-        <button class="relative p-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 transition-all duration-200 group border border-gray-200/50">
+        <button 
+          (click)="goToNotifications()"
+          class="relative p-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 transition-all duration-200 group border border-gray-200/50">
           <svg class="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors" 
                fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                   d="M15 17h5l-3.5-3.5a5.06 5.06 0 10-7.07 0L5 17h5m5 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
           </svg>
           <!-- Enhanced Notification Badge -->
-          <span class="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full flex items-center justify-center border-2 border-white shadow-lg animate-pulse">
-            3
+          <span 
+            *ngIf="unreadNotificationCount > 0"
+            class="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full flex items-center justify-center border-2 border-white shadow-lg">
+            {{ unreadNotificationCount > 99 ? '99+' : unreadNotificationCount }}
           </span>
         </button>
       </div>

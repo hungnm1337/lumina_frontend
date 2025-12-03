@@ -101,4 +101,9 @@ export class PromptComponent implements OnChanges {
     ];
     return listeningTypes.includes(this.questionType);
   }
+
+  isWritingQuestion(): boolean {
+    const writingTypes = ['WRITING', 'WRITE_OPINION', 'WRITE_EMAIL'];
+    return writingTypes.includes(this.questionType);
+  }
 }

@@ -2,6 +2,20 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminNotificationService, NotificationDTO, CreateNotificationDTO, UpdateNotificationDTO } from '../../../Services/Notification/admin-notification.service';
+import { RoleService } from '../../../Services/Role/role.service';
+import { UserService } from '../../../Services/User/user.service';
+
+interface Role {
+  id: number;
+  name: string;
+}
+
+interface User {
+  userId: number;
+  fullName: string;
+  email: string;
+  roleName: string;
+}
 
 @Component({
   selector: 'app-notification-management',
@@ -47,10 +61,27 @@ export class NotificationManagementComponent implements OnInit {
   // Tab
   activeTab: 'all' = 'all';
 
-  constructor(private notificationService: AdminNotificationService) { }
+  // Recipient selection
+  recipientType: 'all' | 'roles' | 'users' = 'all';
+  allRoles: Role[] = [];
+  allUsers: User[] = [];
+  selectedRoleIds: number[] = [];
+  selectedUserIds: number[] = [];
+  loadingRoles = false;
+  loadingUsers = false;
+  userSearchTerm = '';
+  userCurrentPage = 1;
+  userTotalPages = 1;
+
+  constructor(
+    private notificationService: AdminNotificationService,
+    private roleService: RoleService,
+    private userService: UserService
+  ) { }
 
   ngOnInit(): void {
     this.loadNotifications();
+    this.loadRoles();
   }
 
   // ==================== LOAD DATA ====================
@@ -97,6 +128,92 @@ export class NotificationManagementComponent implements OnInit {
     }
   }
 
+  // ==================== LOAD ROLES & USERS ====================
+
+  loadRoles(): void {
+    this.loadingRoles = true;
+    this.roleService.getAllRoles().subscribe({
+      next: (roles) => {
+        this.allRoles = roles.map((r: any) => ({ id: r.id, name: r.name }));
+        this.loadingRoles = false;
+      },
+      error: (err) => {
+        console.error('Error loading roles:', err);
+        this.loadingRoles = false;
+      }
+    });
+  }
+
+  loadUsers(): void {
+    this.loadingUsers = true;
+    this.userService.getNonAdminUsersPaged(this.userCurrentPage, this.userSearchTerm, '').subscribe({
+      next: (response) => {
+        this.allUsers = response.data;
+        this.userTotalPages = response.totalPages;
+        this.loadingUsers = false;
+      },
+      error: (err) => {
+        console.error('Error loading users:', err);
+        this.loadingUsers = false;
+      }
+    });
+  }
+
+  searchUsers(): void {
+    this.userCurrentPage = 1;
+    this.loadUsers();
+  }
+
+  loadMoreUsers(): void {
+    if (this.userCurrentPage < this.userTotalPages) {
+      this.userCurrentPage++;
+      this.userService.getNonAdminUsersPaged(this.userCurrentPage, this.userSearchTerm, '').subscribe({
+        next: (response) => {
+          this.allUsers = [...this.allUsers, ...response.data];
+          this.userTotalPages = response.totalPages;
+        },
+        error: (err) => {
+          console.error('Error loading more users:', err);
+        }
+      });
+    }
+  }
+
+  toggleRoleSelection(roleId: number): void {
+    const index = this.selectedRoleIds.indexOf(roleId);
+    if (index > -1) {
+      this.selectedRoleIds.splice(index, 1);
+    } else {
+      this.selectedRoleIds.push(roleId);
+    }
+  }
+
+  toggleUserSelection(userId: number): void {
+    const index = this.selectedUserIds.indexOf(userId);
+    if (index > -1) {
+      this.selectedUserIds.splice(index, 1);
+    } else {
+      this.selectedUserIds.push(userId);
+    }
+  }
+
+  isRoleSelected(roleId: number): boolean {
+    return this.selectedRoleIds.includes(roleId);
+  }
+
+  isUserSelected(userId: number): boolean {
+    return this.selectedUserIds.includes(userId);
+  }
+
+  onRecipientTypeChange(): void {
+    if (this.recipientType === 'users' && this.allUsers.length === 0) {
+      this.loadUsers();
+    }
+    // Reset selections when changing type
+    this.selectedRoleIds = [];
+    this.selectedUserIds = [];
+  }
+
   // ==================== CREATE ====================
 
   openCreateModal(): void {
@@ -105,6 +222,11 @@ export class NotificationManagementComponent implements OnInit {
       content: '',
       isActive: true
     };
+    this.recipientType = 'all';
+    this.selectedRoleIds = [];
+    this.selectedUserIds = [];
+    this.userSearchTerm = '';
+    this.userCurrentPage = 1;
     this.showCreateModal = true;
     this.error = '';
     this.success = '';
@@ -112,6 +234,11 @@ export class NotificationManagementComponent implements OnInit {
 
   closeCreateModal(): void {
     this.showCreateModal = false;
+    this.recipientType = 'all';
+    this.selectedRoleIds = [];
+    this.selectedUserIds = [];
+    this.userSearchTerm = '';
+    this.userCurrentPage = 1;
   }
 
   createNotification(): void {
@@ -120,12 +247,45 @@ export class NotificationManagementComponent implements OnInit {
       return;
     }
 
+    // Validate recipient selection
+    if (this.recipientType === 'roles' && this.selectedRoleIds.length === 0) {
+      this.error = 'Vui lòng chọn ít nhất một vai trò';
+      return;
+    }
+
+    if (this.recipientType === 'users' && this.selectedUserIds.length === 0) {
+      this.error = 'Vui lòng chọn ít nhất một người dùng';
+      return;
+    }
+
+    // Prepare form data based on recipient type
+    const formData: CreateNotificationDTO = {
+      title: this.createForm.title,
+      content: this.createForm.content,
+      isActive: this.createForm.isActive
+    };
+
+    if (this.recipientType === 'roles') {
+      formData.roleIds = this.selectedRoleIds;
+    } else if (this.recipientType === 'users') {
+      formData.userIds = this.selectedUserIds;
+    }
+    // If 'all', don't set roleIds or userIds (will send to all users)
+
     this.loading = true;
     this.error = '';
 
-    this.notificationService.create(this.createForm).subscribe({
+    this.notificationService.create(formData).subscribe({
       next: () => {
-        this.success = 'Tạo thông báo thành công! Thông báo đã được gửi đến tất cả người dùng.';
+        let successMessage = 'Tạo thông báo thành công! ';
+        if (this.recipientType === 'all') {
+          successMessage += 'Thông báo đã được gửi đến tất cả người dùng.';
+        } else if (this.recipientType === 'roles') {
+          successMessage += `Thông báo đã được gửi đến ${this.selectedRoleIds.length} vai trò đã chọn.`;
+        } else {
+          successMessage += `Thông báo đã được gửi đến ${this.selectedUserIds.length} người dùng đã chọn.`;
+        }
+        this.success = successMessage;
         this.closeCreateModal();
         this.loadNotifications();
         this.loading = false;

@@ -11,6 +11,8 @@ export interface Term {
   answer: string;
   options?: string[]; 
   audioUrl?: string; // URL của audio file hoặc undefined nếu không có
+  imageUrl?: string; // URL ảnh từ Cloudinary cho từng vocabulary
+  imageError?: boolean; // Flag để track lỗi load ảnh
   // Dành cho câu hỏi trắc nghiệm
 }
 
@@ -137,7 +139,8 @@ export class FlashcardService {
         question: vocab.word || '',
         answer: vocab.definition || '',
         options: vocab.example ? [vocab.example] : undefined,
-        audioUrl: vocab.audioUrl || undefined
+        audioUrl: vocab.audioUrl || undefined,
+        imageUrl: vocab.imageUrl || undefined // Lấy imageUrl từ API response
       }))
     };
   }
@@ -158,7 +161,8 @@ export class FlashcardService {
             id: vocab.id,
             question: vocab.word,
             answer: vocab.definition,
-            options: vocab.example ? [vocab.example] : undefined
+            options: vocab.example ? [vocab.example] : undefined,
+            imageUrl: vocab.imageUrl || undefined // Lấy imageUrl từ API response
           }));
         }
         // Nếu không có, return null để trigger fallback
@@ -177,7 +181,8 @@ export class FlashcardService {
               id: vocab.id,
               question: vocab.word,
               answer: vocab.definition,
-              options: vocab.example ? [vocab.example] : undefined
+              options: vocab.example ? [vocab.example] : undefined,
+              imageUrl: vocab.imageUrl || undefined // Lấy imageUrl từ API response
             }))
           ),
           catchError(fallbackError => {
@@ -195,7 +200,8 @@ export class FlashcardService {
               id: vocab.id,
               question: vocab.word,
               answer: vocab.definition,
-              options: vocab.example ? [vocab.example] : undefined
+              options: vocab.example ? [vocab.example] : undefined,
+              imageUrl: vocab.imageUrl || undefined // Lấy imageUrl từ API response
             }))
           ),
           catchError(fallbackError => {

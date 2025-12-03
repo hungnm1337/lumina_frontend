@@ -54,6 +54,7 @@ export interface Article {
   tags: string[];
   sections: ArticleSection[];
   rejectionReason?: string;
+  isPublished?: boolean | null;
 }
 
 export interface ArticleSection {

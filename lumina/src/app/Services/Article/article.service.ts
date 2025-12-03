@@ -135,7 +135,18 @@ requestApproval(id: number): Observable<any> {
   return this.http.post(`${this.apiUrl}/${id}/request-approval`, {}, { headers });
 }
 // Duyệt bài viết
-reviewArticle(id: number, isApproved: boolean, comment?: string): Observable<any> {
+  // Toggle hide/show article (Manager only) - Uses IsPublished field
+  toggleHideArticle(id: number, isPublished: boolean): Observable<any> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.put(`${this.apiUrl}/${id}/toggle-hide`, { isPublished }, { headers });
+  }
+
+  reviewArticle(id: number, isApproved: boolean, comment?: string): Observable<any> {
   const token = localStorage.getItem('lumina_token');
   const headers = new HttpHeaders({
     'Authorization': `Bearer ${token}`,
@@ -190,7 +201,8 @@ reviewArticle(id: number, isApproved: boolean, comment?: string): Observable<any
         content: section.sectionContent,
         sectionTitle: section.sectionTitle
       })),
-      rejectionReason: response.rejectionReason || undefined
+      rejectionReason: response.rejectionReason || undefined,
+      isPublished: response.isPublished ?? false
     };
   }
 

@@ -31,8 +31,6 @@ import { ExamAttemptService } from '../../../../Services/ExamAttempt/exam-attemp
 import { QuotaService } from '../../../../Services/Quota/quota.service';
 import { QuotaLimitModalComponent } from '../../quota-limit-modal/quota-limit-modal.component';
 import { ExamCoordinationService } from '../../../../Services/exam-coordination.service';
-import { OfflineSyncService } from '../../../../Services/offline-sync.service';
-import { OfflineStorageService } from '../../../../Services/offline-storage.service';
 import { ToastService } from '../../../../Services/Toast/toast.service';
 
 interface QuestionResult {
@@ -98,8 +96,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone,
     private examCoordination: ExamCoordinationService,
-    private offlineSync: OfflineSyncService,
-    private offlineStorage: OfflineStorageService,
     private toastService: ToastService
   ) {
     // Subscribe to state changes
@@ -157,6 +153,17 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    // ✅ FIX: Check if need to clear speaking states (from console script)
+    const shouldClearStates = sessionStorage.getItem('clearSpeakingStates');
+    if (shouldClearStates === 'true') {
+      console.log(
+        '[SpeakingComponent] 🧹 Clearing all speaking states as requested'
+      );
+      this.speakingStateService.resetAllStates();
+      sessionStorage.removeItem('clearSpeakingStates');
+      console.log('[SpeakingComponent] ✅ All speaking states cleared');
+    }
+
     this.loadAttemptId();
     this.checkQuotaAccess();
 
@@ -171,8 +178,10 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       if (!canProceed) {
         const conflicting = this.examCoordination.getConflictingSession();
         const confirmTakeover = confirm(
-          `Bài thi này đang được mở ở tab khác (bắt đầu lúc ${new Date(conflicting!.startTime).toLocaleString()}).\n\n` +
-          `Tiếp tục có thể gây xung đột dữ liệu. Bạn có chắc chắn muốn tiếp tục?`
+          `Bài thi này đang được mở ở tab khác (bắt đầu lúc ${new Date(
+            conflicting!.startTime
+          ).toLocaleString()}).\n\n` +
+            `Tiếp tục có thể gây xung đột dữ liệu. Bạn có chắc chắn muốn tiếp tục?`
         );
 
         if (confirmTakeover) {
@@ -184,41 +193,13 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       }
 
       // Subscribe to conflict detection during exam
-      this.examCoordination.conflictDetected$.subscribe(hasConflict => {
+      this.examCoordination.conflictDetected$.subscribe((hasConflict) => {
         if (hasConflict) {
           this.toastService.warning(
             'Cảnh báo: Bài thi này đang được mở ở tab khác. Có thể xảy ra xung đột dữ liệu!'
           );
         }
       });
-    }
-
-    // ✅ FIX: Restore audio drafts from IndexedDB
-    if (this.attemptId && this.attemptId > 0) {
-      try {
-        const drafts = await this.offlineStorage.getAllAudioDrafts(this.attemptId);
-        console.log('[Speaking] ✅ Restored', drafts.length, 'audio drafts from IndexedDB');
-
-        drafts.forEach(draft => {
-          this.speakingStateService.saveRecording(
-            draft.questionId,
-            draft.audioBlob,
-            draft.recordingTime
-          );
-        });
-      } catch (error) {
-        console.error('[Speaking] ❌ Failed to restore audio drafts:', error);
-      }
-    }
-
-    // ✅ FIX: Show pending sync status
-    try {
-      const pendingCount = await this.offlineSync.getPendingCount();
-      if (pendingCount > 0) {
-        this.toastService.info(`Có ${pendingCount} bài chưa đồng bộ. Đang xử lý...`);
-      }
-    } catch (error) {
-      console.error('[Speaking] ❌ Failed to check pending submissions:', error);
     }
   }
 
@@ -733,36 +714,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       return;
     }
 
-    // ✅ FIX: Check for pending offline submissions
-    try {
-      const hasPending = await this.offlineSync.hasPendingSubmissions();
-      if (hasPending) {
-        const confirmFinish = confirm(
-          'Bạn còn bài làm chưa được đồng bộ lên server (có thể do mất mạng trước đó).\n\n' +
-          'Nếu kết thúc bài thi ngay, những bài này sẽ không được chấm điểm.\n\n' +
-          'Bạn có muốn đợi đồng bộ trước khi kết thúc?'
-        );
-
-        if (confirmFinish) {
-          this.toastService.info('Đang đồng bộ dữ liệu...');
-          await this.offlineSync.manualSync();
-
-          // Check again
-          const stillPending = await this.offlineSync.hasPendingSubmissions();
-          if (stillPending) {
-            this.toastService.error('Vẫn còn bài chưa đồng bộ được. Vui lòng kiểm tra kết nối mạng.');
-            return;
-          }
-
-          this.toastService.success('Đã đồng bộ xong!');
-        } else {
-          return; // User canceled
-        }
-      }
-    } catch (error) {
-      console.error('[Speaking] ❌ Failed to check pending submissions:', error);
-    }
-
     // ✅ Chỉ check all questions completed khi thi standalone
     const allCompleted = this.speakingStateService.areAllQuestionsCompleted();
 
@@ -792,7 +743,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     // ✅ Nếu thi standalone, gọi API và hiển thị summary như cũ
     this.callEndExamAPI();
     this.examAttemptService.finalizeAttempt(this.attemptId).subscribe({
-      next: async (summary) => {
+      next: (summary) => {
         console.log('Speaking exam finalized:', summary);
 
         // Update scores from backend if available
@@ -804,16 +755,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         this.showSpeakingSummary = true;
         this.baseQuestionService.finishQuiz();
 
-        // ✅ FIX: Clear offline data
-        try {
-          if (this.attemptId) {
-            await this.offlineStorage.clearAttemptData(this.attemptId);
-            console.log('[Speaking] ✅ Cleared offline data for attempt:', this.attemptId);
-          }
-        } catch (error) {
-          console.error('[Speaking] ⚠️ Failed to clear offline data:', error);
-        }
-
         // End coordination
         this.examCoordination.endExamSession();
 
@@ -821,20 +762,11 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         // Chỉ cleanup localStorage, để results hiển thị trong modal
         localStorage.removeItem('currentExamAttempt');
       },
-      error: async (error) => {
+      error: (error) => {
         console.error('Error finalizing speaking exam:', error);
         // Still show summary even if API fails
         this.showSpeakingSummary = true;
         this.baseQuestionService.finishQuiz();
-
-        // ✅ FIX: Clear offline data even on error
-        try {
-          if (this.attemptId) {
-            await this.offlineStorage.clearAttemptData(this.attemptId);
-          }
-        } catch (err) {
-          console.error('[Speaking] ⚠️ Failed to clear offline data:', err);
-        }
 
         // End coordination
         this.examCoordination.endExamSession();
@@ -894,7 +826,11 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     }
   }
   closeSpeakingSummary(): void {
+    console.log('[Speaking] 🔒 Closing summary modal and cleaning up session');
     this.showSpeakingSummary = false;
+
+    // ✅ FIX: Cleanup session để tránh cache khi quay lại
+    this.cleanupSpeakingSession();
   }
 
   onRetrySpeakingTest(): void {

@@ -57,6 +57,13 @@ export class ArticlesComponent implements OnInit {
 
   // Upload state
   uploadingImages: { [key: number]: boolean } = {}; // Track upload state per section index
+
+  // Confirmation Modal Properties
+  showConfirmModal = false;
+  confirmTitle = '';
+  confirmMessage = '';
+  confirmType: 'delete' | 'approval' | 'reject' = 'delete';
+  pendingAction: (() => void) | null = null;
   
   // Quill editor instances - store references to each editor
   quillEditors: Map<number, any> = new Map(); // Map section index to Quill instance
@@ -295,23 +302,42 @@ export class ArticlesComponent implements OnInit {
       // Add sections từ dữ liệu có sẵn
       if (article.sections && article.sections.length > 0) {
         article.sections.forEach(sectionData => {
-          // Extract YouTube URL from content if it's a YouTube link
-          let youtubeUrl = '';
           let content = sectionData.content || '';
           
-          // Check if content contains YouTube URL
-          const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-          const match = content.match(youtubeRegex);
-          if (match) {
-            youtubeUrl = content;
-            content = ''; // Clear content if YouTube URL is found
+          // If section type is video, check if content contains YouTube URL
+          // If it's a video section, we need to extract and preserve the YouTube URL in content
+          if (sectionData.type === 'video') {
+            // Enhanced regex to match various YouTube URL formats:
+            // - https://www.youtube.com/watch?v=VIDEO_ID
+            // - https://youtube.com/watch?v=VIDEO_ID
+            // - https://youtu.be/VIDEO_ID
+            // - http://www.youtube.com/watch?v=VIDEO_ID
+            // - Also matches URLs in HTML/iframe tags
+            const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/;
+            
+            // Check if content is a plain YouTube URL
+            const plainUrlMatch = content.trim().match(youtubeRegex);
+            if (plainUrlMatch) {
+              // Content is already a plain YouTube URL, keep it
+              content = content.trim();
+            } else {
+              // Content might be HTML (from Quill or iframe embed), try to extract YouTube URL
+              const htmlMatch = content.match(youtubeRegex);
+              if (htmlMatch) {
+                // Extract the YouTube URL from HTML
+                // Reconstruct the full YouTube watch URL
+                const videoId = htmlMatch[1];
+                content = `https://www.youtube.com/watch?v=${videoId}`;
+              }
+              // If no YouTube URL found, keep original content (might be empty or invalid)
+            }
           }
           
           this.sections.push(this.fb.group({
             type: [sectionData.type || 'đoạn văn', Validators.required],
             content: [content, Validators.required],
             sectionTitle: [sectionData.sectionTitle || '', Validators.required],
-            youtubeUrl: [youtubeUrl]
+            youtubeUrl: [''] // Keep for backward compatibility, but not used
           }));
         });
       } else {
@@ -442,9 +468,15 @@ export class ArticlesComponent implements OnInit {
 
     if (this.editingArticle) {
       // Update existing article
+      const wasPublished = this.editingArticle.status === 'published';
+      
       this.articleService.updateArticle(this.editingArticle.id, articlePayload).subscribe({
-        next: () => {
-          this.toastService.success('Cập nhật bài viết thành công!');
+        next: (response: any) => {
+          if (wasPublished && response?.status === 'pending') {
+            this.toastService.warning('Bài viết đã được cập nhật và chuyển về trạng thái chờ duyệt. Vui lòng đợi manager duyệt lại.');
+          } else {
+            this.toastService.success('Cập nhật bài viết thành công!');
+          }
           this.finalizeSave();
         },
         error: (err) => this.handleSaveError(err, 'cập nhật')
@@ -467,33 +499,42 @@ export class ArticlesComponent implements OnInit {
   }
 
   deleteArticle(id: number): void {
-    if (confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
+    const article = this.filteredArticles.find(a => a.id === id);
+    this.confirmType = 'delete';
+    this.confirmTitle = 'Xác nhận xóa';
+    this.confirmMessage = `Bạn có chắc chắn muốn xóa bài viết "${article?.title || 'này'}"?`;
+    this.pendingAction = () => {
       this.isLoading = true;
       this.articleService.deleteArticle(id).subscribe({
         next: () => {
           this.toastService.success('Xóa bài viết thành công!');
           this.loadArticles();
+          this.closeConfirmModal();
         },
         error: (error) => {
           this.toastService.error('Không thể xóa bài viết.');
           this.isLoading = false;
+          this.closeConfirmModal();
         }
       });
-    }
+    };
+    this.showConfirmModal = true;
   }
 
   submitForApproval(id: number): void {
-    if (confirm('Bạn có chắc muốn gửi bài viết này để phê duyệt?')) {
+    const article = this.filteredArticles.find(a => a.id === id);
+    const isResubmission = article?.rejectionReason;
+    this.confirmType = 'approval';
+    this.confirmTitle = isResubmission ? 'Xác nhận gửi lại' : 'Xác nhận gửi phê duyệt';
+    this.confirmMessage = isResubmission 
+      ? `Bạn có chắc muốn gửi lại bài viết "${article?.title || 'này'}" để phê duyệt?`
+      : `Bạn có chắc muốn gửi bài viết "${article?.title || 'này'}" để phê duyệt?`;
+    this.pendingAction = () => {
       this.isLoading = true;
       this.articleService.requestApproval(id).subscribe({
         next: () => {
-          // Check if this is a resubmission (article has rejection reason)
-          const article = this.filteredArticles.find(a => a.id === id);
-          const isResubmission = article?.rejectionReason;
-          
           if (isResubmission) {
             this.toastService.success('Bài viết đã được gửi lại để duyệt!');
-            // Clear rejection reason after successful resubmission
             if (article) {
               article.rejectionReason = undefined;
             }
@@ -505,14 +546,17 @@ export class ArticlesComponent implements OnInit {
             article.status = 'pending';
           }
           this.isLoading = false;
+          this.closeConfirmModal();
         },
         error: (err) => {
           console.error("Error submitting for approval:", err);
           this.toastService.error('Gửi yêu cầu thất bại.');
           this.isLoading = false;
+          this.closeConfirmModal();
         }
       });
-    }
+    };
+    this.showConfirmModal = true;
   }
 
   // ===== MANAGER-ONLY OPERATIONS =====
@@ -541,18 +585,38 @@ export class ArticlesComponent implements OnInit {
       return;
     }
     
-    if (confirm('Bạn có chắc muốn từ chối và trả bài viết này về trạng thái Nháp?')) {
+    const article = this.filteredArticles.find(a => a.id === id);
+    this.confirmType = 'reject';
+    this.confirmTitle = 'Xác nhận từ chối';
+    this.confirmMessage = `Bạn có chắc muốn từ chối và trả bài viết "${article?.title || 'này'}" về trạng thái Nháp?`;
+    this.pendingAction = () => {
       this.isLoading = true;
       this.articleService.reviewArticle(id, false).subscribe({
         next: () => {
           this.toastService.info('Đã từ chối và trả lại bài viết.');
           this.loadArticles();
+          this.closeConfirmModal();
         },
         error: () => {
           this.toastService.error('Từ chối thất bại.');
           this.isLoading = false;
+          this.closeConfirmModal();
         }
       });
+    };
+    this.showConfirmModal = true;
+  }
+
+  closeConfirmModal(): void {
+    this.showConfirmModal = false;
+    this.confirmTitle = '';
+    this.confirmMessage = '';
+    this.pendingAction = null;
+  }
+
+  confirmAction(): void {
+    if (this.pendingAction) {
+      this.pendingAction();
     }
   }
 

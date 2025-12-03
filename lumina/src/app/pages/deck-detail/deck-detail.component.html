@@ -61,17 +61,35 @@
       <div class="flashcard-content" [class.flipped]="isFlipped">
         <!-- Front: Question -->
         <div class="flashcard-face front">
-          <div class="card-text">{{ terms[currentTermIndex].question }}</div>
-          <button class="audio-btn" (click)="playAudio($event)" type="button">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
+          <!-- Image Section -->
+          <div *ngIf="terms[currentTermIndex].imageUrl" class="flashcard-image-container">
+            <img 
+              [src]="terms[currentTermIndex].imageUrl" 
+              [alt]="'Image for ' + terms[currentTermIndex].question" 
+              class="flashcard-image"
+              loading="lazy"
+              (error)="handleImageError($event, currentTermIndex)"
+              [class.image-error]="terms[currentTermIndex].imageError" />
+            <div *ngIf="terms[currentTermIndex].imageError" class="flashcard-image-placeholder">
+              <i class="fas fa-image"></i>
+            </div>
+          </div>
+          
+          <div class="card-text-wrapper">
+            <div class="card-text">{{ terms[currentTermIndex].question }}</div>
+            <button class="audio-btn" (click)="playAudio($event)" type="button">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
         </div>
 
         <!-- Back: Answer -->
         <div class="flashcard-face back">
-          <div class="card-text">{{ terms[currentTermIndex].answer }}</div>
+          <div class="card-text-wrapper">
+            <div class="card-text">{{ terms[currentTermIndex].answer }}</div>
+          </div>
         </div>
       </div>
     </div>
