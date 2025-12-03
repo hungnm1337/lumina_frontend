@@ -1157,4 +1157,26 @@
       </div>
     </div>
   </div>
+
+  <!-- Delete Prompt Confirmation Popup -->
+  <app-popup
+    *ngIf="showDeletePromptPopup"
+    [title]="deletePromptTitle"
+    [message]="deletePromptMessage"
+    [showCancelButton]="true"
+    [textAlign]="'left'"
+    (okClicked)="onConfirmDeletePrompt()"
+    (cancelClicked)="onCancelDeletePrompt()">
+  </app-popup>
+
+  <!-- Delete Question Confirmation Popup -->
+  <app-popup
+    *ngIf="showDeleteQuestionPopup"
+    [title]="deleteQuestionTitle"
+    [message]="deleteQuestionMessage"
+    [showCancelButton]="true"
+    [textAlign]="'left'"
+    (okClicked)="onConfirmDeleteQuestion()"
+    (cancelClicked)="onCancelDeleteQuestion()">
+  </app-popup>
 </div>

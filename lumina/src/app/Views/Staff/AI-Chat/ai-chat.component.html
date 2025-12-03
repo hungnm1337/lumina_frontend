@@ -1,4 +1,11 @@
 <div class="ai-chat-container">
+  <!-- ✅ Global Loading Overlay - Phủ toàn màn hình -->
+  <div class="global-loading-overlay" *ngIf="isSaving" (click)="$event.stopPropagation()">
+    <div class="spinner"></div>
+    <p>💾 Đang lưu đề thi...</p>
+    <small>Vui lòng chờ trong giây lát</small>
+  </div>
+
   <!-- Nút mở chat (floating) -->
   <button class="chat-button" (click)="toggleChat()" *ngIf="!isOpen">
     <i class="fas fa-robot"></i>
@@ -55,7 +62,8 @@
       <div class="preview-body">
         <app-preview-panel 
           *ngIf="previewData"
-          [previewData]="previewData">
+          [previewData]="previewData"
+          (savingStateChange)="onSavingStateChange($event)">
         </app-preview-panel>
         
         <div *ngIf="!previewData" style="text-align: center; color: #94a3b8; padding: 40px 20px;">
