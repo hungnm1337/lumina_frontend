@@ -49,11 +49,11 @@
         </div>
 
         @if (getCurrentQuestion()?.prompt?.referenceImageUrl) {
-        <div class="w-full">
+        <div class="flex justify-center">
           <img
             [src]="getCurrentQuestion()?.prompt?.referenceImageUrl"
             [alt]="'Question ' + (currentIndex + 1) + ' image'"
-            class="w-full h-auto rounded-lg border border-gray-200"
+            class="max-w-xs w-full h-auto rounded-lg border border-gray-200"
           />
         </div>
 
