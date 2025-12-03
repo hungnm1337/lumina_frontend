@@ -84,7 +84,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   @ViewChild('audioPlayer', { static: false })
   audioPlayer?: ElementRef<HTMLAudioElement>;
   private audioPlayCounts = new Map<number, number>(); // ✅ Track play count per questionId
-  maxPlays = 2;
+  maxPlays = 1;
   isAudioPlaying = false;
   currentAudioUrl = '';
   playbackSpeed = 1.0;
@@ -126,6 +126,13 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     this.incrementQuotaOnStart();
     this.examStartTime = new Date(); // Track start time for leaderboard
     this.clearCachedAudioState(); // ✅ Clear any cached audio state from previous sessions
+
+    // ✅ Auto-play first question after component initializes
+    setTimeout(() => {
+      if (this.questions?.length > 0) {
+        this.autoPlayAudio();
+      }
+    }, 500);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -313,6 +320,8 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       this.currentIndex--;
       this.updateExplainState();
       this.resetAudioState();
+      // ✅ Auto-play audio when navigating
+      this.autoPlayAudio();
     }
   }
 
@@ -320,6 +329,9 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     if (this.currentIndex < this.questions.length - 1) {
       this.currentIndex++;
       this.updateExplainState();
+      this.resetAudioState();
+      // ✅ Auto-play audio when navigating
+      this.autoPlayAudio();
     } else {
       // Nếu là câu cuối, hỏi có muốn nộp bài không
       const confirmFinish = confirm(
@@ -338,6 +350,8 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       this.currentIndex = index;
       this.updateExplainState();
       this.resetAudioState();
+      // ✅ Auto-play audio when navigating
+      this.autoPlayAudio();
     }
   }
 
@@ -368,8 +382,14 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     }
 
     // ✅ Nếu đã dừng và có progress -> TIẾP TỤC phát (không tăng count)
-    if (audio.paused && audio.currentTime > 0 && audio.currentTime < audio.duration) {
-      audio.play()
+    // Cho phép resume ngay cả khi đang ở lần nghe thứ 2
+    if (
+      audio.paused &&
+      audio.currentTime > 0 &&
+      audio.currentTime < audio.duration
+    ) {
+      audio
+        .play()
         .then(() => {
           this.isAudioPlaying = true;
           console.log(`[Listening] ▶️ Audio resumed Q${currentQuestionId}`);
@@ -381,7 +401,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       return;
     }
 
-    // ✅ Nếu đã hết lượt nghe
+    // ✅ Nếu muốn PHÁT MỚI nhưng đã hết lượt
     if (currentCount >= this.maxPlays) {
       alert(`Bạn chỉ được nghe tối đa ${this.maxPlays} lần!`);
       return;
@@ -392,7 +412,8 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     this.audioPlayCounts.set(currentQuestionId, currentCount + 1);
     this.isAudioPlaying = true;
 
-    audio.play()
+    audio
+      .play()
       .then(() => {
         console.log(
           `[Listening] 🔊 Audio playing Q${currentQuestionId} (${this.audioPlayCounts.get(
@@ -479,6 +500,19 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       console.log(
         `[Listening] 🔄 Audio state reset for Q${currentQuestionId} - Play count: ${this.audioPlayCount}/${this.maxPlays}`
       );
+    }
+  }
+
+  // ✅ Auto-play audio when navigating to a new question
+  private autoPlayAudio(): void {
+    const currentQuestionId = this.questions[this.currentIndex]?.questionId;
+    const currentCount = this.audioPlayCounts.get(currentQuestionId) || 0;
+
+    // Chỉ tự động phát nếu chưa từng nghe câu này
+    if (currentCount === 0) {
+      setTimeout(() => {
+        this.playAudio();
+      }, 300); // Delay nhỏ để đảm bảo audio đã load
     }
   }
 
@@ -597,9 +631,15 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
 
     this.leaderboardService.calculateScore(request).subscribe({
       next: (response) => {
-        console.log('✅ [Listening] Leaderboard score calculated successfully:', response);
+        console.log(
+          '✅ [Listening] Leaderboard score calculated successfully:',
+          response
+        );
         console.log('   - SeasonScore:', response.seasonScore);
-        console.log('   - TotalAccumulatedScore:', response.totalAccumulatedScore);
+        console.log(
+          '   - TotalAccumulatedScore:',
+          response.totalAccumulatedScore
+        );
 
         // Hiển thị thông báo TOEIC
         if (response.toeicMessage) {
@@ -617,7 +657,10 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        console.error('❌ [Listening] Error calculating leaderboard score:', error);
+        console.error(
+          '❌ [Listening] Error calculating leaderboard score:',
+          error
+        );
         console.error('   - Error details:', JSON.stringify(error, null, 2));
         // Không block user flow nếu API lỗi
       },
