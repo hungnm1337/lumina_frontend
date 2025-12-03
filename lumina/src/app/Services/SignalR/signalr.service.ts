@@ -27,7 +27,7 @@ export class SignalRService {
     const token = localStorage.getItem('lumina_token');
     
     if (!token) {
-      console.warn('⚠️ No token found, cannot connect to SignalR');
+      // console.warn('No token found, cannot connect to SignalR');
       return;
     }
 
@@ -38,7 +38,7 @@ export class SignalRService {
         transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.ServerSentEvents | signalR.HttpTransportType.LongPolling
       })
       .withAutomaticReconnect([0, 1000, 2000, 5000, 10000]) // Faster retry
-      .configureLogging(signalR.LogLevel.Information)
+      .configureLogging(signalR.LogLevel.Error)
       .build();
 
     this.hubConnection.serverTimeoutInMilliseconds = 30000; // 30 seconds
@@ -47,42 +47,42 @@ export class SignalRService {
     this.hubConnection
       .start()
       .then(() => {
-        console.log('✅ SignalR Connected to NotificationHub');
-        console.log('🔗 Connection ID:', this.hubConnection?.connectionId);
-        console.log('🚀 Transport:', (this.hubConnection as any)?.connection?.transport?.name);
+        // console.log('SignalR Connected');
+        // console.log('Connection ID:', this.hubConnection?.connectionId);
+        // console.log('Transport:', (this.hubConnection as any)?.connection?.transport?.name);
         this.connectionEstablished.next(true);
         this.registerListeners();
       })
       .catch(err => {
-        console.error('❌ Error connecting to SignalR:', err);
+        // console.error('Error connecting to SignalR:', err);
         this.connectionEstablished.next(false);
         
         // Retry after 5 seconds
         setTimeout(() => {
-          console.log('🔄 Retrying SignalR connection...');
+          // console.log('Retrying SignalR connection...');
           this.startConnection();
         }, 5000);
       });
 
     // Handle reconnection
     this.hubConnection.onreconnecting((error) => {
-      console.warn('⚠️ SignalR reconnecting...', error);
+      // console.warn('SignalR reconnecting...', error);
       this.connectionEstablished.next(false);
     });
 
     this.hubConnection.onreconnected((connectionId) => {
-      console.log('✅ SignalR reconnected:', connectionId);
+      // console.log('SignalR reconnected:', connectionId);
       this.connectionEstablished.next(true);
       this.registerListeners(); // Re-register listeners after reconnection
     });
 
     this.hubConnection.onclose((error) => {
-      console.error('❌ SignalR connection closed:', error);
+      // console.error('SignalR connection closed:', error);
       this.connectionEstablished.next(false);
       
       // Auto-reconnect
       setTimeout(() => {
-        console.log('🔄 Attempting to reconnect SignalR...');
+        // console.log('Attempting to reconnect...');
         this.startConnection();
       }, 5000);
     });
@@ -92,7 +92,7 @@ export class SignalRService {
     if (!this.hubConnection) return;
 
     this.hubConnection.on('ReceiveNotification', (notification: RealtimeNotification) => {
-      console.log('📢 New notification received:', notification);
+      // console.log('New notification received:', notification);
       this.notificationReceived.next(notification);
     });
   }
@@ -101,10 +101,10 @@ export class SignalRService {
     if (this.hubConnection) {
       this.hubConnection.stop()
         .then(() => {
-          console.log('🛑 SignalR connection stopped');
+          // console.log('SignalR connection stopped');
           this.connectionEstablished.next(false);
         })
-        .catch(err => console.error('Error stopping SignalR:', err));
+        .catch(err => {});
     }
   }
 

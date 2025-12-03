@@ -24,7 +24,7 @@ import {
   ExamPartDTO,
   SpeakingScoringResult,
 } from '../../../../Interfaces/exam.interfaces';
-import { QuestionState } from '../../../../Services/Exam/Speaking/speaking-question-state.service';
+import { QuestionState, SpeakingQuestionTiming } from '../../../../Services/Exam/Speaking/speaking-question-state.service';
 import { BaseQuestionService } from '../../../../Services/Question/base-question.service';
 import { SpeakingQuestionStateService } from '../../../../Services/Exam/Speaking/speaking-question-state.service';
 import { ExamAttemptService } from '../../../../Services/ExamAttempt/exam-attempt.service';
@@ -86,6 +86,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   isProcessingQueue = false;
   resetCounter = 0; // Force trigger resetAt changes
   private isRecordingInProgress = false; // ✅ Track recording status
+  isAutoAdvancing = false; // ✅ NEW: Track if auto-advance is in progress
 
   constructor(
     private router: Router,
@@ -102,10 +103,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     this.stateSubscription = this.speakingStateService
       .getStates()
       .subscribe((states) => {
-        console.log('[SpeakingComponent] 🔄 State change detected:', {
-          statesCount: states.size,
-          isRecordingInProgress: this.isRecordingInProgress,
-        });
+        // console.log('[SpeakingComponent] State change detected');
 
         this.updateSpeakingResults(states);
 
@@ -134,18 +132,16 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['questions']) {
-      console.log('SpeakingComponent - Questions changed:', this.questions);
-      console.log(
-        'SpeakingComponent - Questions length:',
-        this.questions?.length || 0
-      );
+      // console.log('SpeakingComponent - Questions changed:', this.questions.length);
 
-      // Initialize speaking question states
-      if (this.hasSpeakingQuestions()) {
-        this.questions.forEach((q) => {
-          this.speakingStateService.initializeQuestion(q.questionId);
-        });
-      }
+      // ✅ REMOVED: Không cần init lại questions ở đây
+      // Mỗi speaking-answer-box component sẽ tự init questionId của nó trong ngOnInit
+      // Việc init từ parent component có thể gây race conditions và side effects
+      // if (this.hasSpeakingQuestions()) {
+      //   this.questions.forEach((q) => {
+      //     this.speakingStateService.initializeQuestion(q.questionId);
+      //   });
+      // }
 
       // Initialize base service
       this.baseQuestionService.initializeQuestions(this.questions);
@@ -450,14 +446,12 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   onSpeakingSubmitting(isSubmitting: boolean): void {
     this.isSpeakingSubmitting = isSubmitting;
-    console.log('[SpeakingComponent] Speaking submitting:', isSubmitting);
+    // console.log('[SpeakingComponent] Speaking submitting:', isSubmitting);
 
     // For speaking: don't auto-advance after submission
     // User will manually navigate using Previous/Next buttons
     if (!isSubmitting) {
-      console.log(
-        '[SpeakingComponent] Speaking submission completed - staying on current question'
-      );
+      // console.log('[SpeakingComponent] Speaking submission completed - staying on current question');
     }
   }
 
@@ -484,12 +478,63 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   onTimeout(): void {
     // For speaking questions: only show warning, don't trigger any action
     if (this.isSpeakingPart()) {
-      console.log(
-        '[SpeakingComponent] Timer timeout for speaking question - no action taken'
-      );
+      // console.log('[SpeakingComponent] Timer timeout for speaking question - no action taken');
       return;
     }
   }
+
+  /**
+   * ✅ NEW: Get timing configuration for current question
+   */
+  getCurrentQuestionTiming(): SpeakingQuestionTiming {
+    const currentQuestion = this.questions[this.currentIndex];
+    if (!currentQuestion) {
+      return {
+        questionNumber: 0,
+        partNumber: 0,
+        preparationTime: 0,
+        recordingTime: 0,
+      };
+    }
+
+    // Map questionId to question number (1-11 for full speaking test)
+    const questionNumber = this.getQuestionNumber(currentQuestion.questionId);
+    return this.speakingStateService.getQuestionTiming(questionNumber);
+  }
+
+  /**
+   * ✅ NEW: Map questionId to question number (1-11)
+   * This is a simple 1-based index for now
+   */
+  private getQuestionNumber(questionId: number): number {
+    const index = this.questions.findIndex((q) => q.questionId === questionId);
+    return index >= 0 ? index + 1 : 1;
+  }
+
+  /**
+   * ✅ NEW: Handle auto-advance to next question
+   */
+  onAutoAdvanceNext(): void {
+    // console.log('[SpeakingComponent] Auto-advancing to next question');
+    this.isAutoAdvancing = true;
+
+    // Small delay for UX
+    setTimeout(() => {
+      if (this.currentIndex < this.questions.length - 1) {
+        const nextIndex = this.currentIndex + 1;
+        this.baseQuestionService.navigateToQuestion(nextIndex);
+        this.resetCounter++;
+      } else {
+        // Last question - finish exam
+        // console.log('[SpeakingComponent] Last question completed, finishing exam');
+        this.finishSpeakingExam();
+      }
+      
+      this.isAutoAdvancing = false;
+      this.cdr.markForCheck();
+    }, 1500); // 1.5 second delay for better UX
+  }
+
 
   onPictureCaption(caption: string): void {
     this.latestPictureCaption = caption || '';
