@@ -46,76 +46,91 @@
 
   <div class="mt-2">
     @if (isSpeakingQuestion()) {
+    <!-- Part 4 Information Panel (shown for all Part 4 questions) -->
+    @if (getCurrentQuestionTiming().partNumber === 4) {
+    <div class="mb-4 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
+      <div class="flex items-center justify-between mb-2">
+        <h4 class="font-bold text-gray-800">
+          <i class="fas fa-info-circle mr-2"></i>
+          Thông tin tham khảo (Part 4)
+        </h4>
+      </div>
+
+      <div
+        class="prose max-w-none text-sm"
+        [innerHTML]="questions[currentIndex].prompt"
+      ></div>
+    </div>
+    }
+
     <!-- ✅ FIX Bug #18: Force component recreation on questionId change -->
     <!-- Using @for with single item to leverage trackBy and force Angular to destroy/recreate component -->
     @for (question of [questions[currentIndex]]; track question.questionId) {
     <app-speaking-answer-box
       [questionId]="question.questionId"
-      [disabled]="showExplain"
+      [disabled]="showExplain || isAutoAdvancing"
       [resetAt]="resetCounter"
       [questionTime]="question.time"
+      [preparationTime]="getCurrentQuestionTiming().preparationTime"
+      [recordingTime]="getCurrentQuestionTiming().recordingTime"
+      [showInfoPhase]="getCurrentQuestionTiming().showInfoPhase || false"
+      [infoReadTime]="getCurrentQuestionTiming().infoReadTime || 0"
       [attemptId]="attemptId ?? 0"
+      [isLastQuestion]="currentIndex === questions.length - 1"
       (answered)="onSpeakingAnswered($event)"
       (scoringResult)="onSpeakingResult($event)"
       (submitting)="onSpeakingSubmitting($event)"
       (recordingStatusChange)="onRecordingStatusChange($event)"
+      (autoAdvanceNext)="onAutoAdvanceNext()"
     ></app-speaking-answer-box>
-    }
-    }
+    } }
 
     <!-- Navigation for Speaking Questions -->
     <div class="mt-6">
-      <!-- Navigation Controls -->
-      <div class="flex items-center justify-between mb-4">
-        <button
-          (click)="previousQuestion()"
-          [disabled]="currentIndex === 0"
-          class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <i class="fas fa-arrow-left mr-2"></i>Câu trước
-        </button>
+      <!-- Auto-Advance Indicator -->
+      @if (isAutoAdvancing && currentIndex < questions.length - 1) {
+      <div
+        class="fixed top-4 right-4 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-2xl z-50 animate-pulse"
+      >
+        <i class="fas fa-spinner fa-spin mr-2"></i>
+        Đang chuyển câu tiếp theo...
+      </div>
+      }
 
-        <div class="flex gap-2">
-          <!-- Chỉ hiển thị nút Nộp bài khi KHÔNG trong mock test -->
-          @if (!isInMockTest) {
-          <button
-            (click)="finishSpeakingExam()"
-            class="px-4 py-2 rounded bg-orange-600 text-white hover:bg-orange-700"
-          >
-            Nộp bài
-          </button>
-          }
-        </div>
-
-        <!-- Nút Câu sau/Hoàn thành Part -->
-        @if (isInMockTest && currentIndex === questions.length - 1) {
-        <!-- Nếu đang trong mock test và ở câu cuối -->
+      <!-- Navigation Controls - Auto Mode Only -->
+      <div class="flex items-center justify-center mb-4">
+        <!-- Chỉ hiển thị nút Nộp bài khi KHÔNG trong mock test -->
+        @if (!isInMockTest) {
         <button
           (click)="finishSpeakingExam()"
-          class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
+          [disabled]="isAutoAdvancing"
+          class="px-6 py-3 rounded-lg bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg"
+        >
+          <i class="fas fa-paper-plane mr-2"></i>
+          Nộp bài
+        </button>
+        } @else if (isInMockTest && currentIndex === questions.length - 1) {
+        <!-- Mock test: chỉ hiển thị nút Hoàn thành Part ở câu cuối -->
+        <button
+          (click)="finishSpeakingExam()"
+          [disabled]="isAutoAdvancing"
+          class="px-6 py-3 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg"
         >
           Hoàn thành Part<i class="fas fa-check ml-2"></i>
         </button>
-        } @else {
-        <!-- Nút Câu sau bình thường -->
-        <button
-          (click)="nextQuestionManual()"
-          [disabled]="currentIndex === questions.length - 1"
-          class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Câu sau<i class="fas fa-arrow-right ml-2"></i>
-        </button>
         }
       </div>
-
-      <!-- Question Navigator -->
+      <!-- ============================================ -->
+      <!-- NAVIGATOR - DISABLED (Not in real TOEIC test) -->
+      <!-- ============================================ -->
+      <!--
       <div class="p-4 bg-gray-50 rounded-lg">
         <h4 class="text-sm font-semibold text-gray-600 mb-3">Navigator</h4>
         <div class="grid grid-cols-10 gap-2">
-          @for (question of questions; track question.questionId; let i =
-          $index) {
+          @for (question of questions; track question.questionId; let i = $index) {
           <button
             (click)="navigateToQuestion(i)"
+            [disabled]="isAutoAdvancing"
             [class]="
               getQuestionState(question.questionId) === 'scored'
                 ? 'w-10 h-10 rounded-lg bg-green-600 text-white font-semibold' +
@@ -129,7 +144,7 @@
                   (i === currentIndex ? ' ring-4 ring-blue-400' : '')
                 : i === currentIndex
                 ? 'w-10 h-10 rounded-lg bg-blue-600 text-white font-semibold'
-                : 'w-10 h-10 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300'
+                : 'w-10 h-10 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed'
             "
             [title]="getQuestionStateText(question.questionId)"
           >
@@ -138,7 +153,6 @@
           }
         </div>
 
-        <!-- ✅ Legend - Chú thích màu sắc -->
         <div class="mt-4 flex items-center gap-4 text-xs text-gray-600">
           <div class="flex items-center gap-1">
             <div class="w-4 h-4 bg-gray-200 rounded"></div>
@@ -162,6 +176,7 @@
           </div>
         </div>
       </div>
+      -->
     </div>
   </div>
 
@@ -228,16 +243,17 @@
   class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
 >
   <div
-    class="bg-white rounded-lg shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto"
+    class="bg-white rounded-lg shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col"
   >
     <!-- Modal Header -->
     <div
-      class="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center z-10"
+      class="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center z-10 flex-shrink-0"
     >
       <h2 class="text-2xl font-bold text-gray-800">
         📊 Kết quả TOEIC Speaking Test
       </h2>
-      <button (click)="showReportPopup = true"
+      <button
+        (click)="showReportPopup = true"
         class="px-6 py-4 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 font-semibold shadow-lg"
       >
         <i class="fas fa-flag mr-2"></i>Báo cáo bài thi
@@ -257,7 +273,7 @@
     </div>
 
     <!-- Modal Body -->
-    <div class="p-6">
+    <div class="p-6 overflow-y-auto flex-1">
       <app-speaking-summary
         [results]="speakingQuestionResults"
         (tryOtherTest)="onTryOtherSpeakingTest()"

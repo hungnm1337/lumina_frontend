@@ -13,8 +13,9 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReportPopupComponent } from '../../Report/report-popup/report-popup.component';
-import { Router } from '@angular/router';
+import { Router, NavigationStart } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { PromptComponent } from '../../prompt/prompt.component';
 import { TimeComponent } from '../../time/time.component';
 import { SpeakingAnswerBoxComponent } from '../../speaking-answer-box/speaking-answer-box.component';
@@ -24,7 +25,10 @@ import {
   ExamPartDTO,
   SpeakingScoringResult,
 } from '../../../../Interfaces/exam.interfaces';
-import { QuestionState } from '../../../../Services/Exam/Speaking/speaking-question-state.service';
+import {
+  QuestionState,
+  SpeakingQuestionTiming,
+} from '../../../../Services/Exam/Speaking/speaking-question-state.service';
 import { BaseQuestionService } from '../../../../Services/Question/base-question.service';
 import { SpeakingQuestionStateService } from '../../../../Services/Exam/Speaking/speaking-question-state.service';
 import { ExamAttemptService } from '../../../../Services/ExamAttempt/exam-attempt.service';
@@ -82,10 +86,18 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   // Speaking navigation and state management
   private stateSubscription: Subscription = new Subscription();
+  private routerSubscription: Subscription | null = null; // ✅ NEW: Track router navigation
   scoringQueue: number[] = [];
   isProcessingQueue = false;
   resetCounter = 0; // Force trigger resetAt changes
   private isRecordingInProgress = false; // ✅ Track recording status
+  isAutoAdvancing = false; // ✅ NEW: Track if auto-advance is in progress
+
+  // Auto-submit flag
+  private isAutoSubmitting = false;
+
+  // ✅ FIX: Flag to track if we're waiting for scoring to complete
+  private isWaitingForAllScored = false;
 
   constructor(
     private router: Router,
@@ -102,10 +114,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     this.stateSubscription = this.speakingStateService
       .getStates()
       .subscribe((states) => {
-        console.log('[SpeakingComponent] 🔄 State change detected:', {
-          statesCount: states.size,
-          isRecordingInProgress: this.isRecordingInProgress,
-        });
+        // console.log('[SpeakingComponent] State change detected');
 
         this.updateSpeakingResults(states);
 
@@ -121,6 +130,49 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
             '[SpeakingComponent] ⚠️ Skipping UI update - recording in progress'
           );
         }
+        // ✅ FIX: Auto-submit ONLY when ALL questions are SCORED (not scoring/submitted)
+        if (
+          !this.isAutoSubmitting &&
+          !this.showSpeakingSummary &&
+          this.hasSpeakingQuestions()
+        ) {
+          // Check states of all questions
+          const questionStates = this.questions.map((q) => {
+            const s = this.speakingStateService.getQuestionState(q.questionId);
+            return {
+              questionId: q.questionId,
+              state: s?.state || 'not_started',
+            };
+          });
+
+          const allScored = questionStates.every((qs) => qs.state === 'scored');
+          const hasScoringInProgress = questionStates.some(
+            (qs) => qs.state === 'scoring' || qs.state === 'submitted'
+          );
+
+          // Log current states for debugging
+          if (hasScoringInProgress && !this.isWaitingForAllScored) {
+            console.log(
+              '[SpeakingComponent] ⏳ Waiting for scoring to complete...',
+              questionStates
+            );
+            this.isWaitingForAllScored = true;
+          }
+
+          if (allScored) {
+            console.log(
+              '[SpeakingComponent] ✅ All questions SCORED - Auto-submitting exam...',
+              questionStates
+            );
+            this.isAutoSubmitting = true;
+            this.isWaitingForAllScored = false;
+
+            // Add a small delay for better UX
+            setTimeout(() => {
+              this.finishSpeakingExam();
+            }, 1000);
+          }
+        }
       });
   }
 
@@ -134,18 +186,16 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['questions']) {
-      console.log('SpeakingComponent - Questions changed:', this.questions);
-      console.log(
-        'SpeakingComponent - Questions length:',
-        this.questions?.length || 0
-      );
+      // console.log('SpeakingComponent - Questions changed:', this.questions.length);
 
-      // Initialize speaking question states
-      if (this.hasSpeakingQuestions()) {
-        this.questions.forEach((q) => {
-          this.speakingStateService.initializeQuestion(q.questionId);
-        });
-      }
+      // ✅ REMOVED: Không cần init lại questions ở đây
+      // Mỗi speaking-answer-box component sẽ tự init questionId của nó trong ngOnInit
+      // Việc init từ parent component có thể gây race conditions và side effects
+      // if (this.hasSpeakingQuestions()) {
+      //   this.questions.forEach((q) => {
+      //     this.speakingStateService.initializeQuestion(q.questionId);
+      //   });
+      // }
 
       // Initialize base service
       this.baseQuestionService.initializeQuestions(this.questions);
@@ -166,6 +216,20 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
     this.loadAttemptId();
     this.checkQuotaAccess();
+
+    // ✅ NEW: Listen to router navigation to cleanup when user navigates away
+    this.routerSubscription = this.router.events
+      .pipe(filter((event) => event instanceof NavigationStart))
+      .subscribe((event: NavigationStart) => {
+        // Only cleanup if NOT finishing exam normally (not going to summary)
+        if (!this.showSpeakingSummary && !this.finished) {
+          console.log(
+            '[Speaking] 🚪 User navigating away - cleaning up session...',
+            event.url
+          );
+          this.cleanupSpeakingSessionOnExit();
+        }
+      });
 
     // ✅ FIX: Start exam coordination
     if (this.attemptId && this.attemptId > 0) {
@@ -204,11 +268,24 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   ngOnDestroy(): void {
+    console.log('[Speaking] 🔄 Component destroying...');
+
     this.stateSubscription.unsubscribe();
+
+    // ✅ Unsubscribe router events
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
+
     if (this.advanceTimer) {
       clearTimeout(this.advanceTimer);
     }
-    this.saveProgressOnExit();
+
+    // ✅ Cleanup session if not finished
+    if (!this.finished && !this.showSpeakingSummary) {
+      console.log('[Speaking] 🧹 Cleaning up incomplete session on destroy...');
+      this.cleanupSpeakingSessionOnExit();
+    }
 
     // ✅ FIX: End exam coordination
     this.examCoordination.endExamSession();
@@ -450,14 +527,12 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   onSpeakingSubmitting(isSubmitting: boolean): void {
     this.isSpeakingSubmitting = isSubmitting;
-    console.log('[SpeakingComponent] Speaking submitting:', isSubmitting);
+    // console.log('[SpeakingComponent] Speaking submitting:', isSubmitting);
 
     // For speaking: don't auto-advance after submission
     // User will manually navigate using Previous/Next buttons
     if (!isSubmitting) {
-      console.log(
-        '[SpeakingComponent] Speaking submission completed - staying on current question'
-      );
+      // console.log('[SpeakingComponent] Speaking submission completed - staying on current question');
     }
   }
 
@@ -484,11 +559,61 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   onTimeout(): void {
     // For speaking questions: only show warning, don't trigger any action
     if (this.isSpeakingPart()) {
-      console.log(
-        '[SpeakingComponent] Timer timeout for speaking question - no action taken'
-      );
+      // console.log('[SpeakingComponent] Timer timeout for speaking question - no action taken');
       return;
     }
+  }
+
+  /**
+   * ✅ NEW: Get timing configuration for current question
+   */
+  getCurrentQuestionTiming(): SpeakingQuestionTiming {
+    const currentQuestion = this.questions[this.currentIndex];
+    if (!currentQuestion) {
+      return {
+        questionNumber: 0,
+        partNumber: 0,
+        preparationTime: 0,
+        recordingTime: 0,
+      };
+    }
+
+    // Map questionId to question number (1-11 for full speaking test)
+    const questionNumber = this.getQuestionNumber(currentQuestion.questionId);
+    return this.speakingStateService.getQuestionTiming(questionNumber);
+  }
+
+  /**
+   * ✅ NEW: Map questionId to question number (1-11)
+   * This is a simple 1-based index for now
+   */
+  private getQuestionNumber(questionId: number): number {
+    const index = this.questions.findIndex((q) => q.questionId === questionId);
+    return index >= 0 ? index + 1 : 1;
+  }
+
+  /**
+   * ✅ NEW: Handle auto-advance to next question
+   */
+  onAutoAdvanceNext(): void {
+    // console.log('[SpeakingComponent] Auto-advancing to next question');
+    this.isAutoAdvancing = true;
+
+    // Small delay for UX
+    setTimeout(() => {
+      if (this.currentIndex < this.questions.length - 1) {
+        const nextIndex = this.currentIndex + 1;
+        this.baseQuestionService.navigateToQuestion(nextIndex);
+        this.resetCounter++;
+      } else {
+        // Last question - finish exam
+        // console.log('[SpeakingComponent] Last question completed, finishing exam');
+        this.finishSpeakingExam();
+      }
+
+      this.isAutoAdvancing = false;
+      this.cdr.markForCheck();
+    }, 1500); // 1.5 second delay for better UX
   }
 
   onPictureCaption(caption: string): void {
@@ -700,6 +825,14 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   // Line 436-465: finishSpeakingExam()
   async finishSpeakingExam(): Promise<void> {
+    // ✅ FIX: Guard against multiple calls - if already showing summary, don't proceed
+    if (this.showSpeakingSummary) {
+      console.log(
+        '[Speaking] ⚠️ Already showing summary, skipping finishSpeakingExam'
+      );
+      return;
+    }
+
     if (!this.hasSpeakingQuestions()) {
       return;
     }
@@ -714,16 +847,39 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       return;
     }
 
-    // ✅ Chỉ check all questions completed khi thi standalone
-    const allCompleted = this.speakingStateService.areAllQuestionsCompleted();
+    // ✅ FIX: Check if any question is still being scored - if so, don't proceed yet
+    const questionStates = this.questions.map((q) => {
+      const s = this.speakingStateService.getQuestionState(q.questionId);
+      return { questionId: q.questionId, state: s?.state || 'not_started' };
+    });
 
-    if (!allCompleted) {
-      // Show warning about incomplete questions
+    const hasScoringInProgress = questionStates.some(
+      (qs) => qs.state === 'scoring' || qs.state === 'submitted'
+    );
+
+    if (hasScoringInProgress) {
+      console.log(
+        '[Speaking] ⏳ Scoring still in progress, waiting...',
+        questionStates
+      );
+      // Don't show popup, just wait - the subscription will call this again when all scored
+      this.isAutoSubmitting = false; // Reset flag so it can be triggered again
+      return;
+    }
+
+    // ✅ Check if ALL questions are scored (not just submitted)
+    const allScored = questionStates.every((qs) => qs.state === 'scored');
+
+    if (!allScored) {
+      // Show warning about incomplete questions (only those not started or has_recording)
       const incompleteQuestions = this.questions.filter((q) => {
-        if (!q.questionType || !this.isSpeakingQuestion(q.questionType))
-          return false;
         const state = this.speakingStateService.getQuestionState(q.questionId);
-        return state?.state !== 'scored' && state?.state !== 'submitted';
+        // Only count as incomplete if not_started, in_progress, or has_recording
+        return (
+          state?.state !== 'scored' &&
+          state?.state !== 'scoring' &&
+          state?.state !== 'submitted'
+        );
       });
 
       if (incompleteQuestions.length > 0) {
@@ -734,11 +890,22 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       }
     }
 
+    // ✅ FIX: Check attemptId BEFORE making API calls
     if (this.attemptId === null || this.attemptId <= 0) {
-      console.error('[Speaking] ❌ Invalid attemptId:', this.attemptId);
-      alert('Lỗi hệ thống: Không tìm thấy ID bài thi. Vui lòng thử lại.');
-      return;
+      // Try to reload from localStorage
+      this.loadAttemptId();
+
+      if (this.attemptId === null || this.attemptId <= 0) {
+        console.error('[Speaking] ❌ Invalid attemptId:', this.attemptId);
+        // Still show summary with local results even if API fails
+        this.showSpeakingSummary = true;
+        this.baseQuestionService.finishQuiz();
+        return;
+      }
     }
+
+    // ✅ FIX: Set flag BEFORE API calls to prevent re-entry
+    this.isAutoSubmitting = true;
 
     // ✅ Nếu thi standalone, gọi API và hiển thị summary như cũ
     this.callEndExamAPI();
@@ -873,8 +1040,13 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   @HostListener('window:beforeunload', ['$event'])
   unloadNotification($event: any): void {
-    if (!this.finished && this.attemptId) {
-      $event.returnValue = 'Bạn có muốn lưu tiến trình và thoát không?';
+    if (!this.finished && !this.showSpeakingSummary && this.attemptId) {
+      // ✅ Cleanup session data when user closes/refreshes browser
+      console.log('[Speaking] 🌐 Browser unload - cleaning up session...');
+      this.cleanupSpeakingSessionOnExit();
+
+      // Show confirmation dialog
+      $event.returnValue = 'Bạn có chắc muốn thoát? Dữ liệu bài thi sẽ bị xóa.';
     }
   }
 
@@ -936,9 +1108,9 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     });
   }
 
-  // ✅ FIX Bug #10: Centralized cleanup method
+  // ✅ FIX Bug #10: Centralized cleanup method (called after finishing exam normally)
   private cleanupSpeakingSession(): void {
-    console.log('[Speaking] 🧹 Cleaning up session...');
+    console.log('[Speaking] 🧹 Cleaning up session (normal finish)...');
 
     // 1. Remove localStorage
     localStorage.removeItem('currentExamAttempt');
@@ -951,5 +1123,31 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     this.speakingQuestionResults = [];
 
     console.log('[Speaking] ✅ Cleanup completed');
+  }
+
+  // ✅ NEW: Cleanup method when user exits mid-exam (navigate away, close browser, etc.)
+  private cleanupSpeakingSessionOnExit(): void {
+    console.log('[Speaking] 🚨 Cleaning up session (EXIT/ABORT)...');
+
+    // 1. Remove localStorage
+    localStorage.removeItem('currentExamAttempt');
+
+    // 2. Clear service state (includes audio blobs, results, etc.)
+    this.speakingStateService.resetAllStates();
+
+    // 3. Clear component-level caches
+    this.speakingResults.clear();
+    this.speakingQuestionResults = [];
+
+    // 4. Clear session storage related to this exam
+    if (this.attemptId) {
+      // Remove any submission locks
+      this.questions.forEach((q) => {
+        const submissionKey = `speaking_submitting_${q.questionId}_${this.attemptId}`;
+        sessionStorage.removeItem(submissionKey);
+      });
+    }
+
+    console.log('[Speaking] ✅ Exit cleanup completed - all exam data cleared');
   }
 }

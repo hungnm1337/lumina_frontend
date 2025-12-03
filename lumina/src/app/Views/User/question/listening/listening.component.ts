@@ -353,47 +353,60 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   playAudio(): void {
-    if (this.audioPlayCount >= this.maxPlays) {
+    if (!this.audioPlayer) return;
+
+    const audio = this.audioPlayer.nativeElement;
+    const currentQuestionId = this.questions[this.currentIndex]?.questionId;
+    const currentCount = this.audioPlayCounts.get(currentQuestionId) || 0;
+
+    // ✅ Nếu đang phát -> DỪNG LẠI (pause)
+    if (!audio.paused && this.isAudioPlaying) {
+      audio.pause();
+      this.isAudioPlaying = false;
+      console.log(`[Listening] ⏸️ Audio paused Q${currentQuestionId}`);
+      return;
+    }
+
+    // ✅ Nếu đã dừng và có progress -> TIẾP TỤC phát (không tăng count)
+    if (audio.paused && audio.currentTime > 0 && audio.currentTime < audio.duration) {
+      audio.play()
+        .then(() => {
+          this.isAudioPlaying = true;
+          console.log(`[Listening] ▶️ Audio resumed Q${currentQuestionId}`);
+        })
+        .catch((error) => {
+          console.error('[Listening] Error resuming audio:', error);
+          alert('Không thể tiếp tục phát audio. Vui lòng thử lại.');
+        });
+      return;
+    }
+
+    // ✅ Nếu đã hết lượt nghe
+    if (currentCount >= this.maxPlays) {
       alert(`Bạn chỉ được nghe tối đa ${this.maxPlays} lần!`);
       return;
     }
 
-    if (this.audioPlayer) {
-      const audio = this.audioPlayer.nativeElement;
+    // ✅ PHÁT MỚI từ đầu (tăng count)
+    audio.currentTime = 0;
+    this.audioPlayCounts.set(currentQuestionId, currentCount + 1);
+    this.isAudioPlaying = true;
 
-      const currentQuestionId = this.questions[this.currentIndex]?.questionId;
-      const currentCount = this.audioPlayCounts.get(currentQuestionId) || 0;
-
-      // ✅ Pause audio hiện tại nếu đang phát
-      if (!audio.paused) {
-        audio.pause();
-      }
-
-      // ✅ Reset về đầu
-      audio.currentTime = 0;
-
-      // ✅ Tăng counter cho question hiện tại
-      this.audioPlayCounts.set(currentQuestionId, currentCount + 1);
-      this.isAudioPlaying = true;
-
-      // ✅ Phát audio từ đầu
-      audio
-        .play()
-        .then(() => {
-          console.log(
-            `[Listening] 🔊 Audio playing Q${currentQuestionId} (${this.audioPlayCounts.get(
-              currentQuestionId
-            )}/${this.maxPlays})`
-          );
-        })
-        .catch((error) => {
-          console.error('[Listening] Error playing audio:', error);
-          // ✅ Nếu lỗi, giảm counter lại
-          this.audioPlayCounts.set(currentQuestionId, currentCount);
-          this.isAudioPlaying = false;
-          alert('Không thể phát audio. Vui lòng thử lại.');
-        });
-    }
+    audio.play()
+      .then(() => {
+        console.log(
+          `[Listening] 🔊 Audio playing Q${currentQuestionId} (${this.audioPlayCounts.get(
+            currentQuestionId
+          )}/${this.maxPlays})`
+        );
+      })
+      .catch((error) => {
+        console.error('[Listening] Error playing audio:', error);
+        // ✅ Nếu lỗi, giảm counter lại
+        this.audioPlayCounts.set(currentQuestionId, currentCount);
+        this.isAudioPlaying = false;
+        alert('Không thể phát audio. Vui lòng thử lại.');
+      });
   }
 
   onAudioPlay(): void {

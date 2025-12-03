@@ -17,6 +17,10 @@ import {
 } from '../../../Services/Exam/Speaking/speaking.service';
 import { ToastService } from '../../../Services/Toast/toast.service';
 import { SpeakingQuestionStateService } from '../../../Services/Exam/Speaking/speaking-question-state.service';
+import {
+  SpeakingTimerService,
+  TimerPhase,
+} from '../../../Services/Exam/Speaking/speaking-timer.service';
 type RecordingState =
   | 'idle'
   | 'recording'
@@ -38,18 +42,27 @@ export class SpeakingAnswerBoxComponent
   @Input() questionId: number = 0;
   @Input() disabled: boolean = false;
   @Input() resetAt: number = 0;
-  @Input() questionTime: number = 0; // Time limit for this question
-  @Input() attemptId: number = 0; // ✅ THÊM: Attempt ID của lượt thi hiện tại
+  @Input() questionTime: number = 0; // DEPRECATED: Use preparationTime & recordingTime instead
+  @Input() attemptId: number = 0;
+  @Input() isLastQuestion: boolean = false; // ✅ NEW: Để biết có phải câu cuối không
+
+  // NEW: Auto-timer inputs
+  @Input() preparationTime: number = 0; // Preparation time in seconds
+  @Input() recordingTime: number = 0; // Recording time in seconds
+  @Input() showInfoPhase: boolean = false; // Part 4 Q8 only
+  @Input() infoReadTime: number = 0; // Part 4 Q8 only (5 seconds)
+
   @Output() answered = new EventEmitter<boolean>();
   @Output() scoringResult = new EventEmitter<{
     questionId: number;
     result: SpeakingScoringResult;
-  }>(); // ✅ FIX: Emit questionId với result
-  @Output() submitting = new EventEmitter<boolean>(); // New: Notify parent về trạng thái submit
-  @Output() recordingStatusChange = new EventEmitter<boolean>(); // ✅ NEW: Notify parent khi bắt đầu/kết thúc recording
+  }>();
+  @Output() submitting = new EventEmitter<boolean>();
+  @Output() recordingStatusChange = new EventEmitter<boolean>();
+  @Output() autoAdvanceNext = new EventEmitter<void>(); // NEW: Trigger auto-advance to next question
 
   state: RecordingState = 'idle';
-  recordingTime: number = 0;
+  recordingElapsed: number = 0; // Renamed from recordingTime to avoid conflict with @Input
   private mediaRecorder: MediaRecorder | null = null;
   private audioChunks: Blob[] = [];
   private recordingTimer: any = null;
@@ -69,6 +82,9 @@ export class SpeakingAnswerBoxComponent
   // Cache for audio URL to prevent ExpressionChangedAfterItHasBeenCheckedError
   private audioUrl: string | null = null;
 
+  // ✅ FIX: Promise to wait for onstop event completion
+  private onStopPromiseResolve: (() => void) | null = null;
+
   // ✅ FIX Bug #9: Accurate timer với Page Visibility API
   private recordingStartTime: number = 0; // Timestamp khi bắt đầu record
   private pausedTime: number = 0; // Tổng thời gian bị pause (khi user chuyển tab)
@@ -78,24 +94,20 @@ export class SpeakingAnswerBoxComponent
     private speakingService: SpeakingService,
     private toastService: ToastService,
     private speakingStateService: SpeakingQuestionStateService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public timerService: SpeakingTimerService // NEW: Inject timer service (public for template access)
   ) {
     // Initialize with idle state
     this.state = 'idle';
 
-    console.log(
-      '[SpeakingAnswerBox] 🏗️ Constructor called - Component created'
-    );
+    // console.log('[SpeakingAnswerBox] 🏗️ Constructor called - Component created');
 
     // ✅ FIX Bug #9: Setup Page Visibility API
     this.setupVisibilityHandler();
   }
 
   ngOnInit(): void {
-    console.log('[SpeakingAnswerBox] 🎬 ngOnInit called:', {
-      questionId: this.questionId,
-      initialState: this.state,
-    });
+    // console.log('[SpeakingAnswerBox] ngOnInit', this.questionId);
 
     // ✅ FIX Bug #15: Set current displayed questionId
     this.currentDisplayedQuestionId = this.questionId;
@@ -104,19 +116,338 @@ export class SpeakingAnswerBoxComponent
     if (this.questionId) {
       this.speakingStateService.initializeQuestion(this.questionId);
       this.restoreStateFromService();
+
+      // ✅ NEW: Auto-start timer flow based on question state
+      const state = this.speakingStateService.getQuestionState(this.questionId);
+      if (!state || state.state === 'not_started') {
+        // Fresh question - start timer flow
+        if (this.showInfoPhase && this.infoReadTime > 0) {
+          // Part 4 Q8: Start with information phase
+          // console.log('[SpeakingAnswerBox] Starting information phase:', this.infoReadTime, 's');
+          this.timerService.startInformationReading(this.infoReadTime);
+        } else if (this.preparationTime > 0) {
+          // Normal flow: Start with preparation
+          // console.log('[SpeakingAnswerBox] Starting preparation phase:', this.preparationTime, 's');
+          this.timerService.startPreparation(this.preparationTime);
+        }
+      }
+
+      // ✅ NEW: Subscribe to timer phase transitions
+      this.subscribeToTimerEvents();
+
       // ✅ FIX: Force change detection với OnPush strategy
       this.cdr.markForCheck();
     }
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    console.log('[SpeakingAnswerBox] 🔍 ngOnChanges called:', {
-      questionId: this.questionId,
-      currentDisplayedQuestionId: this.currentDisplayedQuestionId,
-      currentState: this.state,
-      changes: Object.keys(changes),
-      changeDetails: changes,
+  /**
+   * Subscribe to timer service events for phase transitions
+   */
+  private subscribeToTimerEvents(): void {
+    // Information phase ends -> Start preparation
+    this.timerService.onInformationEnd$.subscribe(() => {
+      // console.log('[SpeakingAnswerBox] Information phase ended, starting preparation');
+      if (this.preparationTime > 0) {
+        this.timerService.startPreparation(this.preparationTime);
+      }
     });
+
+    // Preparation phase ends -> Auto-start recording
+    this.timerService.onPreparationEnd$.subscribe(() => {
+      // console.log('[SpeakingAnswerBox] Preparation phase ended, auto-starting recording');
+      this.startRecordingAutomatic();
+    });
+
+    // Recording phase ends -> Auto-stop and auto-submit
+    this.timerService.onRecordingEnd$.subscribe(async () => {
+      // console.log('[SpeakingAnswerBox] Recording phase ended, auto-submitting');
+      await this.handleRecordingEnd();
+    });
+  }
+
+  /**
+   * Auto-start recording (triggered by timer)
+   */
+  private async startRecordingAutomatic(): Promise<void> {
+    try {
+      await this.initializeMediaRecorder();
+
+      // Start recording timer
+      if (this.recordingTime > 0) {
+        this.timerService.startRecording(this.recordingTime); // Fixed typo
+      }
+    } catch (error) {
+      console.error(
+        '[SpeakingAnswerBox] Failed to auto-start recording:',
+        error
+      );
+      this.errorMessage = 'Không thể bắt đầu ghi âm. Vui lòng thử lại.';
+      this.state = 'error';
+      this.toastService.error(this.errorMessage);
+    }
+  }
+
+  /**
+   * Initialize MediaRecorder with microphone stream
+   * Extracted from startRecording() for reuse
+   */
+  private async initializeMediaRecorder(): Promise<void> {
+    // Request microphone permission
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        sampleRate: 16000,
+      },
+    });
+
+    // console.log('[SpeakingAnswerBox] MediaStream obtained');
+
+    // Setup track end handler
+    stream.getTracks().forEach((track) => {
+      track.onended = () => {
+        console.error('[SpeakingAnswerBox] 🔴 TRACK ENDED unexpectedly');
+        if (this.state === 'recording') {
+          this.stopRecording();
+          this.state = 'error';
+          this.errorMessage = 'Microphone bị ngắt kết nối';
+          this.toastService.error('Microphone bị ngắt kết nối!');
+          this.cdr.markForCheck();
+        }
+      };
+    });
+
+    // Create MediaRecorder
+    const mimeType = this.getSupportedMimeType();
+    this.mediaRecorder = new MediaRecorder(stream, { mimeType });
+    this.audioChunks = [];
+
+    // Setup event handlers
+    this.mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        this.audioChunks.push(event.data);
+      }
+    };
+
+    this.mediaRecorder.onerror = (event: any) => {
+      console.error('[SpeakingAnswerBox] ❌ MediaRecorder ERROR:', event);
+      this.state = 'error';
+      this.errorMessage = 'Lỗi khi ghi âm';
+      this.clearTimer();
+      this.recordingStatusChange.emit(false);
+    };
+
+    this.mediaRecorder.onstop = async () => {
+      console.log(
+        '[SpeakingAnswerBox] 📽️ MediaRecorder stopped (initializeMediaRecorder)',
+        {
+          questionId: this.questionId,
+          audioChunksCount: this.audioChunks.length,
+          totalSize: this.audioChunks.reduce(
+            (acc, chunk) => acc + chunk.size,
+            0
+          ),
+        }
+      );
+
+      // ✅ FIX: ALWAYS create audioBlob first, before any state checks
+      this.audioBlob = new Blob(this.audioChunks, { type: mimeType });
+      console.log(
+        '[SpeakingAnswerBox] ✅ audioBlob created:',
+        this.audioBlob.size,
+        'bytes'
+      );
+
+      stream.getTracks().forEach((track) => track.stop());
+
+      // Clear previous audio URL
+      if (this.audioUrl) {
+        URL.revokeObjectURL(this.audioUrl);
+        this.audioUrl = null;
+      }
+
+      // ✅ FIX: Save to state service BEFORE checking protected states
+      // This ensures audioBlob is persisted even if we skip UI update
+      if (this.audioBlob && this.audioBlob.size > 0) {
+        const currentState = this.speakingStateService.getQuestionState(
+          this.questionId
+        );
+        const protectedStates: Array<'submitted' | 'scoring' | 'scored'> = [
+          'submitted',
+          'scoring',
+          'scored',
+        ];
+
+        if (
+          currentState &&
+          protectedStates.includes(currentState.state as any)
+        ) {
+          console.log(
+            `[SpeakingAnswerBox] ⚠️ Question in protected state: ${currentState.state} - saving blob but not updating state`
+          );
+          // ✅ Still save blob to state service for recovery, but don't change state
+          // Use internal map update instead of full state update
+        } else {
+          // Normal flow - save recording with state update
+          this.speakingStateService.saveRecording(
+            this.questionId,
+            this.audioBlob,
+            this.recordingElapsed
+          );
+        }
+        this.cdr.markForCheck();
+      } else {
+        console.error(
+          '[SpeakingAnswerBox] ❌ audioBlob is null or empty after onstop!'
+        );
+      }
+
+      this.recordingStatusChange.emit(false);
+
+      // ✅ FIX: Resolve the Promise if handleRecordingEnd is waiting
+      if (this.onStopPromiseResolve) {
+        console.log('[SpeakingAnswerBox] 🔓 Resolving onstop Promise');
+        this.onStopPromiseResolve();
+        this.onStopPromiseResolve = null;
+      }
+    };
+
+    // Start recording
+    this.mediaRecorder.start();
+    this.state = 'recording';
+    this.recordingElapsed = 0;
+
+    // console.log('[SpeakingAnswerBox] Recording started');
+    this.toastService.info('Đang ghi âm...');
+    this.recordingStatusChange.emit(true);
+
+    // ✅ FIX: Only update to in_progress if not already in a completed state
+    const currentState = this.speakingStateService.getQuestionState(
+      this.questionId
+    );
+    if (
+      currentState &&
+      !['scored', 'scoring', 'submitted'].includes(currentState.state)
+    ) {
+      this.speakingStateService.updateQuestionState(this.questionId, {
+        state: 'in_progress',
+      });
+    }
+  }
+
+  /**
+   * Handle recording end - stop, submit in background, and trigger auto-advance immediately
+   */
+  private async handleRecordingEnd(): Promise<void> {
+    console.log('[SpeakingAnswerBox] 🎬 Handling recording end:', {
+      questionId: this.questionId,
+      mediaRecorderState: this.mediaRecorder?.state,
+      currentState: this.state,
+    });
+
+    // Stop MediaRecorder and wait for onstop event
+    if (this.mediaRecorder && this.state === 'recording') {
+      // ✅ FIX: Create Promise to wait for onstop event properly
+      const onStopPromise = new Promise<void>((resolve) => {
+        this.onStopPromiseResolve = resolve;
+
+        // ✅ Safety timeout: resolve after 3 seconds max to prevent hanging
+        setTimeout(() => {
+          if (this.onStopPromiseResolve) {
+            console.warn(
+              '[SpeakingAnswerBox] ⚠️ onstop event timeout - resolving anyway'
+            );
+            this.onStopPromiseResolve = null;
+            resolve();
+          }
+        }, 3000);
+      });
+
+      this.mediaRecorder.stop();
+      this.clearTimer();
+
+      // ✅ FIX: Wait for onstop event to actually fire (not fixed timeout)
+      console.log('[SpeakingAnswerBox] ⏳ Waiting for onstop event...');
+      await onStopPromise;
+      console.log(
+        '[SpeakingAnswerBox] ✅ onstop event completed, audioBlob:',
+        this.audioBlob ? `${this.audioBlob.size} bytes` : 'NULL'
+      );
+
+      // ✅ FIX: Try to recover audioBlob from state service if local is null
+      if (!this.audioBlob || this.audioBlob.size === 0) {
+        console.warn(
+          '[SpeakingAnswerBox] ⚠️ audioBlob null/empty, trying to recover from state service...'
+        );
+        const savedState = this.speakingStateService.getQuestionState(
+          this.questionId
+        );
+        if (savedState?.audioBlob && savedState.audioBlob.size > 0) {
+          this.audioBlob = savedState.audioBlob;
+          console.log(
+            '[SpeakingAnswerBox] ✅ Recovered audioBlob from state service:',
+            this.audioBlob.size,
+            'bytes'
+          );
+        }
+      }
+
+      // Auto-submit if we have a recording
+      if (this.audioBlob && this.audioBlob.size > 0) {
+        console.log(
+          '[SpeakingAnswerBox] 📤 Submitting recording:',
+          this.audioBlob.size,
+          'bytes',
+          '| isLastQuestion:',
+          this.isLastQuestion
+        );
+
+        // ✅ Logic phân biệt câu cuối và các câu khác
+        if (this.isLastQuestion) {
+          // Câu cuối: Submit và ĐỢI chấm điểm xong, KHÔNG auto-advance
+          console.log(
+            '[SpeakingAnswerBox] 📝 Last question - waiting for scoring to complete'
+          );
+          this.submitRecording().catch((error) => {
+            console.error('[SpeakingAnswerBox] ❌ Submission failed:', error);
+          });
+          // KHÔNG emit autoAdvanceNext cho câu cuối
+        } else {
+          // Các câu khác: Submit trong background, auto-advance NGAY LẬP TỨC
+          console.log(
+            '[SpeakingAnswerBox] 🚀 Not last question - auto-advancing immediately'
+          );
+
+          // Submit in background WITHOUT waiting
+          this.submitRecording().catch((error) => {
+            console.error(
+              '[SpeakingAnswerBox] ❌ Background submission failed:',
+              error
+            );
+          });
+
+          // Trigger auto-advance IMMEDIATELY without waiting for submission
+          this.autoAdvanceNext.emit();
+        }
+      } else {
+        console.error(
+          '[SpeakingAnswerBox] ❌ No audioBlob available for submission!',
+          {
+            audioBlob: this.audioBlob,
+            audioChunksCount: this.audioChunks.length,
+            questionId: this.questionId,
+          }
+        );
+        this.toastService.error('Không có bản ghi âm. Vui lòng thử lại.');
+        this.state = 'error';
+        this.errorMessage = 'Không có bản ghi âm để nộp';
+        this.cdr.markForCheck();
+      }
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // console.log('[SpeakingAnswerBox] ngOnChanges:', this.questionId);
 
     // ✅ CRITICAL FIX: Block ALL changes when recording OR processing
     // This prevents cross-component interference when other questions complete scoring
@@ -144,7 +475,7 @@ export class SpeakingAnswerBoxComponent
       changes['resetAt'].currentValue !== changes['resetAt'].previousValue;
 
     if (!hasQuestionIdChange && !hasResetChange) {
-      console.log('[SpeakingAnswerBox] ℹ️ No actual value changes - ignoring');
+      // console.log('[SpeakingAnswerBox] No actual value changes - ignoring');
       return;
     }
 
@@ -249,7 +580,7 @@ export class SpeakingAnswerBoxComponent
       }
 
       // ✅ FIX: Restore basic data (but NOT audioBlob yet - will set conditionally)
-      this.recordingTime = savedState.recordingTime;
+      this.recordingElapsed = savedState.recordingTime;
       this.result = savedState.result;
       this.errorMessage = savedState.errorMessage;
 
@@ -286,7 +617,7 @@ export class SpeakingAnswerBoxComponent
             '[SpeakingAnswerBox] ✅ Restored valid recording from state service:',
             {
               blobSize: savedState.audioBlob.size,
-              recordingTime: savedState.recordingTime,
+              recordingElapsed: savedState.recordingTime,
             }
           );
         } else {
@@ -366,6 +697,15 @@ export class SpeakingAnswerBoxComponent
         isRecording: this.state === 'recording',
       }
     );
+
+    // ✅ FIX: Resolve any pending onstop promise before destroy
+    if (this.onStopPromiseResolve) {
+      console.log(
+        '[SpeakingAnswerBox] 🔓 Resolving pending onstop Promise on destroy'
+      );
+      this.onStopPromiseResolve();
+      this.onStopPromiseResolve = null;
+    }
 
     this.stopRecording();
     this.clearTimer();
@@ -526,14 +866,28 @@ export class SpeakingAnswerBoxComponent
       };
 
       this.mediaRecorder.onstop = async () => {
-        console.log('[SpeakingAnswerBox] 📽️ mediaRecorder.onstop fired:', {
-          questionId: this.questionId,
-          currentState: this.state,
-          audioChunksCount: this.audioChunks.length,
-          recorderState: this.mediaRecorder?.state,
-        });
+        console.log(
+          '[SpeakingAnswerBox] 📽️ mediaRecorder.onstop fired (startRecording):',
+          {
+            questionId: this.questionId,
+            currentState: this.state,
+            audioChunksCount: this.audioChunks.length,
+            totalSize: this.audioChunks.reduce(
+              (acc, chunk) => acc + chunk.size,
+              0
+            ),
+            recorderState: this.mediaRecorder?.state,
+          }
+        );
 
+        // ✅ FIX: ALWAYS create audioBlob first, before any state checks
         this.audioBlob = new Blob(this.audioChunks, { type: mimeType });
+        console.log(
+          '[SpeakingAnswerBox] ✅ audioBlob created:',
+          this.audioBlob.size,
+          'bytes'
+        );
+
         stream.getTracks().forEach((track) => track.stop());
 
         // Clear previous audio URL cache
@@ -548,20 +902,50 @@ export class SpeakingAnswerBoxComponent
           '[SpeakingAnswerBox] 📡 Emitted recordingStatusChange(false) from onstop'
         );
 
-        // Save recording to state service as draft
-        if (this.audioBlob) {
-          console.log(
-            `[SpeakingAnswerBox] Saving recording to state service, size:`,
-            this.audioBlob.size
+        // ✅ FIX: Save to state service BEFORE checking protected states
+        if (this.audioBlob && this.audioBlob.size > 0) {
+          const currentState = this.speakingStateService.getQuestionState(
+            this.questionId
           );
-          this.speakingStateService.saveRecording(
-            this.questionId,
-            this.audioBlob,
-            this.recordingTime
-          );
+          const protectedStates: Array<'submitted' | 'scoring' | 'scored'> = [
+            'submitted',
+            'scoring',
+            'scored',
+          ];
 
+          if (
+            currentState &&
+            protectedStates.includes(currentState.state as any)
+          ) {
+            console.log(
+              `[SpeakingAnswerBox] ⚠️ Question in protected state: ${currentState.state} - blob created but not saving to state`
+            );
+            // ✅ audioBlob is still available locally for submission
+          } else {
+            // Normal flow - save recording with state update
+            console.log(
+              `[SpeakingAnswerBox] 💾 Saving recording to state service, size:`,
+              this.audioBlob.size
+            );
+            this.speakingStateService.saveRecording(
+              this.questionId,
+              this.audioBlob,
+              this.recordingTime
+            );
+          }
           // ✅ FIX: Trigger change detection after saving
           this.cdr.markForCheck();
+        } else {
+          console.error(
+            '[SpeakingAnswerBox] ❌ audioBlob is null or empty after onstop!'
+          );
+        }
+
+        // ✅ FIX: Resolve the Promise if handleRecordingEnd is waiting
+        if (this.onStopPromiseResolve) {
+          console.log('[SpeakingAnswerBox] 🔓 Resolving onstop Promise');
+          this.onStopPromiseResolve();
+          this.onStopPromiseResolve = null;
         }
       };
 
@@ -579,10 +963,18 @@ export class SpeakingAnswerBoxComponent
       this.recordingStatusChange.emit(true);
       console.log('[SpeakingAnswerBox] 📡 Emitted recordingStatusChange(true)');
 
-      // Update state service
-      this.speakingStateService.updateQuestionState(this.questionId, {
-        state: 'in_progress',
-      });
+      // ✅ FIX: Only update to in_progress if not already in a completed state
+      const currentState = this.speakingStateService.getQuestionState(
+        this.questionId
+      );
+      if (
+        currentState &&
+        !['scored', 'scoring', 'submitted'].includes(currentState.state)
+      ) {
+        this.speakingStateService.updateQuestionState(this.questionId, {
+          state: 'in_progress',
+        });
+      }
     } catch (error) {
       console.error('Error accessing microphone:', error);
       this.errorMessage =
@@ -631,13 +1023,48 @@ export class SpeakingAnswerBoxComponent
       return;
     }
 
-    if (!this.audioBlob || this.disabled) {
-      this.toastService.error('Không có bản ghi âm để nộp');
+    // ✅ FIX Bug #17: Capture questionId at submission time
+    const submittedQuestionId = this.questionId;
+
+    // ✅ FIX: Enhanced audioBlob validation with recovery attempt
+    if (!this.audioBlob || this.audioBlob.size === 0) {
+      console.warn(
+        '[SpeakingAnswerBox] ⚠️ audioBlob null/empty, attempting recovery...'
+      );
+
+      // Try to recover from state service
+      const savedState =
+        this.speakingStateService.getQuestionState(submittedQuestionId);
+      if (savedState?.audioBlob && savedState.audioBlob.size > 0) {
+        this.audioBlob = savedState.audioBlob;
+        console.log(
+          '[SpeakingAnswerBox] ✅ Recovered audioBlob from state service:',
+          this.audioBlob.size,
+          'bytes'
+        );
+      } else {
+        console.error(
+          '[SpeakingAnswerBox] ❌ Cannot recover audioBlob - no valid recording found'
+        );
+        this.toastService.error(
+          'Không có bản ghi âm để nộp. Vui lòng ghi âm lại.'
+        );
+        this.state = 'error';
+        this.errorMessage = 'Không có bản ghi âm để nộp';
+        this.cdr.markForCheck();
+        return;
+      }
+    }
+
+    if (this.disabled) {
       return;
     }
 
-    // ✅ FIX Bug #17: Capture questionId at submission time
-    const submittedQuestionId = this.questionId;
+    console.log('[SpeakingAnswerBox] 📤 submitRecording called:', {
+      questionId: submittedQuestionId,
+      audioBlobSize: this.audioBlob?.size,
+      attemptId: this.attemptId,
+    });
 
     console.log('[SpeakingAnswerBox] 🔍 DEBUG attemptId:', {
       attemptId: this.attemptId,
@@ -752,12 +1179,13 @@ export class SpeakingAnswerBoxComponent
       oldState: this.state,
     });
     this.state = 'idle';
-    this.recordingTime = 0;
+    this.recordingElapsed = 0;
     this.audioBlob = null;
     this.audioChunks = [];
     this.result = null;
     this.errorMessage = '';
     this.isActivelyProcessing = false; // ✅ FIX: Clear flag
+    this.onStopPromiseResolve = null; // ✅ FIX: Clear pending promise resolver
     this.clearTimer();
     if (this.audioUrl) {
       URL.revokeObjectURL(this.audioUrl);
@@ -782,14 +1210,14 @@ export class SpeakingAnswerBoxComponent
       const elapsed = Math.floor(
         (Date.now() - this.recordingStartTime - this.pausedTime) / 1000
       );
-      this.recordingTime = elapsed;
+      this.recordingElapsed = elapsed;
 
       // ✅ FIX: Trigger change detection để cập nhật UI khi dùng OnPush strategy
       this.cdr.markForCheck();
 
       // Auto-stop based on question time limit (if set) or default 120 seconds
       const timeLimit = this.questionTime > 0 ? this.questionTime : 120;
-      if (this.recordingTime >= timeLimit) {
+      if (this.recordingElapsed >= timeLimit) {
         this.stopRecording();
         this.toastService.warning(
           'Hết thời gian ghi âm! Bản ghi đã được lưu như bản nháp.'
@@ -876,8 +1304,8 @@ export class SpeakingAnswerBoxComponent
   }
 
   get formattedTime(): string {
-    const minutes = Math.floor(this.recordingTime / 60);
-    const seconds = this.recordingTime % 60;
+    const minutes = Math.floor(this.recordingElapsed / 60);
+    const seconds = this.recordingElapsed % 60;
     return `${minutes.toString().padStart(2, '0')}:${seconds
       .toString()
       .padStart(2, '0')}`;
