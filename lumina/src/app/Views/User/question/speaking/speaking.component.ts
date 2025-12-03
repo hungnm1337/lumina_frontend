@@ -49,7 +49,7 @@ interface QuestionResult {
   imports: [
     CommonModule,
     PromptComponent,
-    TimeComponent,
+    
     SpeakingAnswerBoxComponent,
     SpeakingSummaryComponent,
     QuotaLimitModalComponent,
