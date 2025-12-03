@@ -24,7 +24,10 @@ import {
   ExamPartDTO,
   SpeakingScoringResult,
 } from '../../../../Interfaces/exam.interfaces';
-import { QuestionState, SpeakingQuestionTiming } from '../../../../Services/Exam/Speaking/speaking-question-state.service';
+import {
+  QuestionState,
+  SpeakingQuestionTiming,
+} from '../../../../Services/Exam/Speaking/speaking-question-state.service';
 import { BaseQuestionService } from '../../../../Services/Question/base-question.service';
 import { SpeakingQuestionStateService } from '../../../../Services/Exam/Speaking/speaking-question-state.service';
 import { ExamAttemptService } from '../../../../Services/ExamAttempt/exam-attempt.service';
@@ -90,7 +93,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   // Auto-submit flag
   private isAutoSubmitting = false;
-  
+
   // ✅ FIX: Flag to track if we're waiting for scoring to complete
   private isWaitingForAllScored = false;
 
@@ -134,17 +137,23 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
           // Check states of all questions
           const questionStates = this.questions.map((q) => {
             const s = this.speakingStateService.getQuestionState(q.questionId);
-            return { questionId: q.questionId, state: s?.state || 'not_started' };
+            return {
+              questionId: q.questionId,
+              state: s?.state || 'not_started',
+            };
           });
-          
+
           const allScored = questionStates.every((qs) => qs.state === 'scored');
           const hasScoringInProgress = questionStates.some(
             (qs) => qs.state === 'scoring' || qs.state === 'submitted'
           );
-          
+
           // Log current states for debugging
           if (hasScoringInProgress && !this.isWaitingForAllScored) {
-            console.log('[SpeakingComponent] ⏳ Waiting for scoring to complete...', questionStates);
+            console.log(
+              '[SpeakingComponent] ⏳ Waiting for scoring to complete...',
+              questionStates
+            );
             this.isWaitingForAllScored = true;
           }
 
@@ -155,7 +164,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
             );
             this.isAutoSubmitting = true;
             this.isWaitingForAllScored = false;
-            
+
             // Add a small delay for better UX
             setTimeout(() => {
               this.finishSpeakingExam();
@@ -572,12 +581,11 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         // console.log('[SpeakingComponent] Last question completed, finishing exam');
         this.finishSpeakingExam();
       }
-      
+
       this.isAutoAdvancing = false;
       this.cdr.markForCheck();
     }, 1500); // 1.5 second delay for better UX
   }
-
 
   onPictureCaption(caption: string): void {
     this.latestPictureCaption = caption || '';
@@ -790,10 +798,12 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   async finishSpeakingExam(): Promise<void> {
     // ✅ FIX: Guard against multiple calls - if already showing summary, don't proceed
     if (this.showSpeakingSummary) {
-      console.log('[Speaking] ⚠️ Already showing summary, skipping finishSpeakingExam');
+      console.log(
+        '[Speaking] ⚠️ Already showing summary, skipping finishSpeakingExam'
+      );
       return;
     }
-    
+
     if (!this.hasSpeakingQuestions()) {
       return;
     }
@@ -813,18 +823,21 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       const s = this.speakingStateService.getQuestionState(q.questionId);
       return { questionId: q.questionId, state: s?.state || 'not_started' };
     });
-    
+
     const hasScoringInProgress = questionStates.some(
       (qs) => qs.state === 'scoring' || qs.state === 'submitted'
     );
-    
+
     if (hasScoringInProgress) {
-      console.log('[Speaking] ⏳ Scoring still in progress, waiting...', questionStates);
+      console.log(
+        '[Speaking] ⏳ Scoring still in progress, waiting...',
+        questionStates
+      );
       // Don't show popup, just wait - the subscription will call this again when all scored
       this.isAutoSubmitting = false; // Reset flag so it can be triggered again
       return;
     }
-    
+
     // ✅ Check if ALL questions are scored (not just submitted)
     const allScored = questionStates.every((qs) => qs.state === 'scored');
 
@@ -833,9 +846,11 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       const incompleteQuestions = this.questions.filter((q) => {
         const state = this.speakingStateService.getQuestionState(q.questionId);
         // Only count as incomplete if not_started, in_progress, or has_recording
-        return state?.state !== 'scored' && 
-               state?.state !== 'scoring' && 
-               state?.state !== 'submitted';
+        return (
+          state?.state !== 'scored' &&
+          state?.state !== 'scoring' &&
+          state?.state !== 'submitted'
+        );
       });
 
       if (incompleteQuestions.length > 0) {
@@ -850,7 +865,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     if (this.attemptId === null || this.attemptId <= 0) {
       // Try to reload from localStorage
       this.loadAttemptId();
-      
+
       if (this.attemptId === null || this.attemptId <= 0) {
         console.error('[Speaking] ❌ Invalid attemptId:', this.attemptId);
         // Still show summary with local results even if API fails
@@ -859,7 +874,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         return;
       }
     }
-    
+
     // ✅ FIX: Set flag BEFORE API calls to prevent re-entry
     this.isAutoSubmitting = true;
 

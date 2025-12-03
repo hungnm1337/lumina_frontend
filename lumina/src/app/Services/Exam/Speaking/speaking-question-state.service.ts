@@ -28,7 +28,6 @@ export interface SpeakingQuestionTiming {
   infoReadTime?: number; // Part 4 Q8 only (5 seconds)
 }
 
-
 @Injectable({
   providedIn: 'root',
 })
@@ -193,17 +192,52 @@ export class SpeakingQuestionStateService {
   getQuestionTiming(questionNumber: number): SpeakingQuestionTiming {
     const timings: Record<number, SpeakingQuestionTiming> = {
       // Part 1: Read aloud (Q1-2)
-      1: { questionNumber: 1, partNumber: 1, preparationTime: 10, recordingTime: 10 },
-      2: { questionNumber: 2, partNumber: 1, preparationTime: 10, recordingTime: 10 },
+      1: {
+        questionNumber: 1,
+        partNumber: 1,
+        preparationTime: 10,
+        recordingTime: 10,
+      },
+      2: {
+        questionNumber: 2,
+        partNumber: 1,
+        preparationTime: 10,
+        recordingTime: 10,
+      },
 
       // Part 2: Describe picture (Q3-4)
-      3: { questionNumber: 3, partNumber: 2, preparationTime: 45, recordingTime: 30 },
-      4: { questionNumber: 4, partNumber: 2, preparationTime: 45, recordingTime: 30 },
+      3: {
+        questionNumber: 3,
+        partNumber: 2,
+        preparationTime: 45,
+        recordingTime: 30,
+      },
+      4: {
+        questionNumber: 4,
+        partNumber: 2,
+        preparationTime: 45,
+        recordingTime: 30,
+      },
 
       // Part 3: Respond to questions (Q5-7)
-      5: { questionNumber: 5, partNumber: 3, preparationTime: 3, recordingTime: 15 },
-      6: { questionNumber: 6, partNumber: 3, preparationTime: 3, recordingTime: 15 },
-      7: { questionNumber: 7, partNumber: 3, preparationTime: 3, recordingTime: 30 },
+      5: {
+        questionNumber: 5,
+        partNumber: 3,
+        preparationTime: 3,
+        recordingTime: 15,
+      },
+      6: {
+        questionNumber: 6,
+        partNumber: 3,
+        preparationTime: 3,
+        recordingTime: 15,
+      },
+      7: {
+        questionNumber: 7,
+        partNumber: 3,
+        preparationTime: 3,
+        recordingTime: 30,
+      },
 
       // Part 4: Respond using information (Q8-10)
       8: {
@@ -214,11 +248,26 @@ export class SpeakingQuestionStateService {
         showInfoPhase: true,
         infoReadTime: 5,
       },
-      9: { questionNumber: 9, partNumber: 4, preparationTime: 3, recordingTime: 15 },
-      10: { questionNumber: 10, partNumber: 4, preparationTime: 3, recordingTime: 30 },
+      9: {
+        questionNumber: 9,
+        partNumber: 4,
+        preparationTime: 3,
+        recordingTime: 15,
+      },
+      10: {
+        questionNumber: 10,
+        partNumber: 4,
+        preparationTime: 3,
+        recordingTime: 30,
+      },
 
       // Part 5: Express an opinion (Q11)
-      11: { questionNumber: 11, partNumber: 5, preparationTime: 30, recordingTime: 60 },
+      11: {
+        questionNumber: 11,
+        partNumber: 5,
+        preparationTime: 30,
+        recordingTime: 60,
+      },
     };
 
     const timing = timings[questionNumber];
@@ -237,7 +286,6 @@ export class SpeakingQuestionStateService {
     return timing;
   }
 
-
   // Submit recording and persist state even if component is destroyed
   async submitAnswerAndStore(
     questionId: number,
@@ -246,22 +294,26 @@ export class SpeakingQuestionStateService {
   ): Promise<SpeakingScoringResult> {
     // ✅ FIX: Validate audioBlob before processing
     if (!audioBlob) {
-      console.error(`[SpeakingStateService] ❌ audioBlob is null for question ${questionId}`);
+      console.error(
+        `[SpeakingStateService] ❌ audioBlob is null for question ${questionId}`
+      );
       throw new Error('No audio recording available');
     }
-    
+
     if (audioBlob.size === 0) {
-      console.error(`[SpeakingStateService] ❌ audioBlob is empty (0 bytes) for question ${questionId}`);
+      console.error(
+        `[SpeakingStateService] ❌ audioBlob is empty (0 bytes) for question ${questionId}`
+      );
       throw new Error('Audio recording is empty');
     }
-    
+
     console.log(`[SpeakingStateService] 📤 submitAnswerAndStore called:`, {
       questionId,
       attemptId,
       blobSize: audioBlob.size,
       blobType: audioBlob.type,
     });
-    
+
     // ✅ FIX Bug #11: Check if already submitting
     const existingSubmission = this.pendingSubmissions.get(questionId);
     if (existingSubmission) {
