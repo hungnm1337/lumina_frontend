@@ -45,7 +45,7 @@
     </span>
   </div> -->
 
-  <!-- Audio Player -->
+  <!-- Audio Player - Auto-play only, no controls -->
   <div
     class="mb-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200"
   >
@@ -59,31 +59,26 @@
     ></audio>
 
     <div class="flex items-center gap-3">
-      <button
-        (click)="playAudio()"
-        [disabled]="audioPlayCount >= maxPlays && !isAudioPlaying"
-        class="px-3 py-1.5 rounded-md transition-colors text-sm font-medium shadow-sm whitespace-nowrap"
-        [ngClass]="{
-          'bg-blue-600 text-white hover:bg-blue-700':
-            !isAudioPlaying && audioPlayCount < maxPlays,
-          'bg-yellow-500 text-white hover:bg-yellow-600':
-            isAudioPlaying && audioPlayCount <= maxPlays,
-          'bg-gray-400 text-gray-700 cursor-not-allowed':
-            audioPlayCount >= maxPlays && !isAudioPlaying
-        }"
+      <!-- Audio status indicator -->
+      <div
+        class="px-4 py-2 rounded-md bg-white border border-gray-300 text-sm font-medium"
       >
         <i
-          [class]="isAudioPlaying ? 'fas fa-pause mr-2' : 'fas fa-play mr-2'"
+          [class]="
+            isAudioPlaying
+              ? 'fas fa-volume-up text-green-600 mr-2'
+              : 'fas fa-volume-mute text-gray-400 mr-2'
+          "
         ></i>
         {{
           isAudioPlaying
-            ? "Dừng"
-            : audioCurrentTime > 0 && audioCurrentTime < audioDuration
-            ? "Tiếp tục"
-            : "Nghe"
+            ? "Đang phát..."
+            : audioPlayCount >= maxPlays
+            ? "Đã phát"
+            : "Chưa phát"
         }}
         ({{ audioPlayCount }}/{{ maxPlays }})
-      </button>
+      </div>
 
       <!-- Audio Progress Bar -->
       <div class="flex-1">
@@ -97,27 +92,13 @@
           <div
             class="h-full rounded-full transition-all duration-200"
             [ngClass]="{
-              'bg-red-500': !isAudioPlaying,
+              'bg-gray-400': audioPlayCount === 0,
+              'bg-red-500': audioPlayCount > 0 && !isAudioPlaying,
               'bg-green-500': isAudioPlaying
             }"
             [style.width.%]="audioProgress"
           ></div>
         </div>
-      </div>
-
-      <div class="flex gap-1.5">
-        <button
-          (click)="changePlaybackSpeed()"
-          class="px-2.5 py-1.5 rounded-md bg-white border border-gray-300 hover:bg-gray-50 text-sm font-medium shadow-sm"
-        >
-          {{ playbackSpeed }}x
-        </button>
-        <button
-          (click)="toggleVolume()"
-          class="px-2.5 py-1.5 rounded-md bg-white border border-gray-300 hover:bg-gray-50 shadow-sm"
-        >
-          <i [class]="isMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up'"></i>
-        </button>
       </div>
     </div>
   </div>

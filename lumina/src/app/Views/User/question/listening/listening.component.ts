@@ -466,24 +466,6 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
 
-  changePlaybackSpeed(): void {
-    if (this.playbackSpeed === 1.0) this.playbackSpeed = 1.25;
-    else if (this.playbackSpeed === 1.25) this.playbackSpeed = 1.5;
-    else if (this.playbackSpeed === 1.5) this.playbackSpeed = 0.75;
-    else this.playbackSpeed = 1.0;
-
-    if (this.audioPlayer) {
-      this.audioPlayer.nativeElement.playbackRate = this.playbackSpeed;
-    }
-  }
-
-  toggleVolume(): void {
-    this.isMuted = !this.isMuted;
-    if (this.audioPlayer) {
-      this.audioPlayer.nativeElement.muted = this.isMuted;
-    }
-  }
-
   private resetAudioState(): void {
     // ✅ Don't reset audioPlayCounts - it's managed per question now
     this.isAudioPlaying = false;
