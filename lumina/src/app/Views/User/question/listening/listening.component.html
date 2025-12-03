@@ -59,23 +59,23 @@
     <div class="flex items-center justify-between mb-3">
       <button
         (click)="playAudio()"
-        [disabled]="audioPlayCount >= maxPlays"
+        [disabled]="audioPlayCount >= maxPlays && !isAudioPlaying"
         class="px-4 py-2 rounded transition-colors"
         [ngClass]="{
-          'bg-gray-400 text-gray-700 hover:bg-gray-300':
+          'bg-blue-500 text-white hover:bg-blue-600':
             !isAudioPlaying && audioPlayCount < maxPlays,
-          'bg-gray-400 text-gray-700':
-            isAudioPlaying && audioPlayCount < maxPlays,
+          'bg-yellow-500 text-white hover:bg-yellow-600':
+            isAudioPlaying && audioPlayCount <= maxPlays,
           'bg-gray-400 text-gray-700 cursor-not-allowed':
-            audioPlayCount >= maxPlays
+            audioPlayCount >= maxPlays && !isAudioPlaying
         }"
       >
         <i
           [class]="
-            isAudioPlaying ? 'fas fa-spinner fa-spin mr-2' : 'fas fa-play mr-2'
+            isAudioPlaying ? 'fas fa-pause mr-2' : 'fas fa-play mr-2'
           "
         ></i>
-        {{ isAudioPlaying ? "Đang phát..." : "Nghe" }} ({{ audioPlayCount }}/{{
+        {{ isAudioPlaying ? "Dừng" : (audioCurrentTime > 0 && audioCurrentTime < audioDuration ? "Tiếp tục" : "Nghe") }} ({{ audioPlayCount }}/{{
           maxPlays
         }})
       </button>

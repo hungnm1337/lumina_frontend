@@ -119,16 +119,7 @@
           Hoàn thành Part<i class="fas fa-check ml-2"></i>
         </button>
         }
-
-        <!-- INFO: Tự động chuyển câu -->
-        <div
-          class="ml-4 text-sm text-gray-600 bg-blue-50 px-4 py-2 rounded-lg border border-blue-200"
-        >
-          <i class="fas fa-info-circle mr-1 text-blue-600"></i>
-          Tự động chuyển sang câu tiếp theo sau khi ghi âm xong
-        </div>
       </div>
-
       <!-- ============================================ -->
       <!-- NAVIGATOR - DISABLED (Not in real TOEIC test) -->
       <!-- ============================================ -->
@@ -252,11 +243,11 @@
   class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
 >
   <div
-    class="bg-white rounded-lg shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto"
+    class="bg-white rounded-lg shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col"
   >
     <!-- Modal Header -->
     <div
-      class="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center z-10"
+      class="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center z-10 flex-shrink-0"
     >
       <h2 class="text-2xl font-bold text-gray-800">
         📊 Kết quả TOEIC Speaking Test
@@ -282,7 +273,7 @@
     </div>
 
     <!-- Modal Body -->
-    <div class="p-6">
+    <div class="p-6 overflow-y-auto flex-1">
       <app-speaking-summary
         [results]="speakingQuestionResults"
         (tryOtherTest)="onTryOtherSpeakingTest()"

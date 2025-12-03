@@ -13,8 +13,9 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReportPopupComponent } from '../../Report/report-popup/report-popup.component';
-import { Router } from '@angular/router';
+import { Router, NavigationStart } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { PromptComponent } from '../../prompt/prompt.component';
 import { TimeComponent } from '../../time/time.component';
 import { SpeakingAnswerBoxComponent } from '../../speaking-answer-box/speaking-answer-box.component';
@@ -85,6 +86,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   // Speaking navigation and state management
   private stateSubscription: Subscription = new Subscription();
+  private routerSubscription: Subscription | null = null; // ✅ NEW: Track router navigation
   scoringQueue: number[] = [];
   isProcessingQueue = false;
   resetCounter = 0; // Force trigger resetAt changes
@@ -215,6 +217,20 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     this.loadAttemptId();
     this.checkQuotaAccess();
 
+    // ✅ NEW: Listen to router navigation to cleanup when user navigates away
+    this.routerSubscription = this.router.events
+      .pipe(filter((event) => event instanceof NavigationStart))
+      .subscribe((event: NavigationStart) => {
+        // Only cleanup if NOT finishing exam normally (not going to summary)
+        if (!this.showSpeakingSummary && !this.finished) {
+          console.log(
+            '[Speaking] 🚪 User navigating away - cleaning up session...',
+            event.url
+          );
+          this.cleanupSpeakingSessionOnExit();
+        }
+      });
+
     // ✅ FIX: Start exam coordination
     if (this.attemptId && this.attemptId > 0) {
       const canProceed = await this.examCoordination.startExamSession(
@@ -252,11 +268,24 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   ngOnDestroy(): void {
+    console.log('[Speaking] 🔄 Component destroying...');
+
     this.stateSubscription.unsubscribe();
+
+    // ✅ Unsubscribe router events
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
+
     if (this.advanceTimer) {
       clearTimeout(this.advanceTimer);
     }
-    this.saveProgressOnExit();
+
+    // ✅ Cleanup session if not finished
+    if (!this.finished && !this.showSpeakingSummary) {
+      console.log('[Speaking] 🧹 Cleaning up incomplete session on destroy...');
+      this.cleanupSpeakingSessionOnExit();
+    }
 
     // ✅ FIX: End exam coordination
     this.examCoordination.endExamSession();
@@ -1011,8 +1040,13 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   @HostListener('window:beforeunload', ['$event'])
   unloadNotification($event: any): void {
-    if (!this.finished && this.attemptId) {
-      $event.returnValue = 'Bạn có muốn lưu tiến trình và thoát không?';
+    if (!this.finished && !this.showSpeakingSummary && this.attemptId) {
+      // ✅ Cleanup session data when user closes/refreshes browser
+      console.log('[Speaking] 🌐 Browser unload - cleaning up session...');
+      this.cleanupSpeakingSessionOnExit();
+
+      // Show confirmation dialog
+      $event.returnValue = 'Bạn có chắc muốn thoát? Dữ liệu bài thi sẽ bị xóa.';
     }
   }
 
@@ -1074,9 +1108,9 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     });
   }
 
-  // ✅ FIX Bug #10: Centralized cleanup method
+  // ✅ FIX Bug #10: Centralized cleanup method (called after finishing exam normally)
   private cleanupSpeakingSession(): void {
-    console.log('[Speaking] 🧹 Cleaning up session...');
+    console.log('[Speaking] 🧹 Cleaning up session (normal finish)...');
 
     // 1. Remove localStorage
     localStorage.removeItem('currentExamAttempt');
@@ -1089,5 +1123,31 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     this.speakingQuestionResults = [];
 
     console.log('[Speaking] ✅ Cleanup completed');
+  }
+
+  // ✅ NEW: Cleanup method when user exits mid-exam (navigate away, close browser, etc.)
+  private cleanupSpeakingSessionOnExit(): void {
+    console.log('[Speaking] 🚨 Cleaning up session (EXIT/ABORT)...');
+
+    // 1. Remove localStorage
+    localStorage.removeItem('currentExamAttempt');
+
+    // 2. Clear service state (includes audio blobs, results, etc.)
+    this.speakingStateService.resetAllStates();
+
+    // 3. Clear component-level caches
+    this.speakingResults.clear();
+    this.speakingQuestionResults = [];
+
+    // 4. Clear session storage related to this exam
+    if (this.attemptId) {
+      // Remove any submission locks
+      this.questions.forEach((q) => {
+        const submissionKey = `speaking_submitting_${q.questionId}_${this.attemptId}`;
+        sessionStorage.removeItem(submissionKey);
+      });
+    }
+
+    console.log('[Speaking] ✅ Exit cleanup completed - all exam data cleared');
   }
 }
