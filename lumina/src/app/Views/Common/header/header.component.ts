@@ -23,10 +23,7 @@ import { NotificationService } from '../../../Services/Notification/notification
 export class HeaderComponent implements OnInit, OnDestroy {
   currentUser$!: Observable<AuthUserResponse | null>;
 
-  moveToMocktest() {
-    console.log('Navigating to Mock Test Exams');
-    this.router.navigate(['homepage/mocktest/exams']);
-  }
+  
   isDropdownOpen = false;
   isPremium = false;
   showUpgradeModal = false;

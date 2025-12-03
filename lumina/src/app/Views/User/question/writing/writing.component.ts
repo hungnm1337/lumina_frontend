@@ -378,14 +378,9 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     }
   }
 
-  onAnswerSubmitted(questionId: number, isCorrect: boolean): void {
-    if (isCorrect) {
-      const question = this.questions?.find((q) => q.questionId === questionId);
-      if (question) {
-        this.totalScore += question.scoreWeight ?? 0;
-        this.correctCount += 1;
-      }
-    }
+  onAnswerSubmitted(questionId: number, score: number): void {
+    // Nhận điểm từng câu từ writing-answer-box
+    this.totalScore += typeof score === 'number' ? score : 0;
   }
 
   generateCaption(questionIndex: number): void {
@@ -495,6 +490,9 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     this.showExplain = true;
     this.callEndExamAPI();
 
+    // Xóa dữ liệu bài làm trong localStorage sau khi nộp bài
+    this.clearSavedData();
+
     // After submit, fetch feedback for all questions and save to localStorage
     this.fetchAllFeedbackAndFinalize();
   }
@@ -516,7 +514,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
         examPartId: attemptData.examPartId || null,
         startTime: attemptData.startTime,
         endTime: new Date().toISOString(),
-        score: 0,
+        score: this.totalScore,
         status: 'Completed',
       };
 

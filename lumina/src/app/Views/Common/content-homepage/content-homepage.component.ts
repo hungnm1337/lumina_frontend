@@ -71,7 +71,10 @@ export class ContentHomepageComponent implements OnInit {
       originalPriceMultiplier: 2
     }
   ];
-
+moveToMocktest() {
+    console.log('Navigating to Mock Test Exams');
+    this.router.navigate(['homepage/mocktest/exams']);
+  }
   constructor(
     private router: Router,
     private packagesService: PackagesService
