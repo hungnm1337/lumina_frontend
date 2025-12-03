@@ -244,6 +244,24 @@ export class SpeakingQuestionStateService {
     audioBlob: Blob,
     attemptId?: number // ✅ THÊM: attemptId parameter
   ): Promise<SpeakingScoringResult> {
+    // ✅ FIX: Validate audioBlob before processing
+    if (!audioBlob) {
+      console.error(`[SpeakingStateService] ❌ audioBlob is null for question ${questionId}`);
+      throw new Error('No audio recording available');
+    }
+    
+    if (audioBlob.size === 0) {
+      console.error(`[SpeakingStateService] ❌ audioBlob is empty (0 bytes) for question ${questionId}`);
+      throw new Error('Audio recording is empty');
+    }
+    
+    console.log(`[SpeakingStateService] 📤 submitAnswerAndStore called:`, {
+      questionId,
+      attemptId,
+      blobSize: audioBlob.size,
+      blobType: audioBlob.type,
+    });
+    
     // ✅ FIX Bug #11: Check if already submitting
     const existingSubmission = this.pendingSubmissions.get(questionId);
     if (existingSubmission) {
@@ -257,7 +275,7 @@ export class SpeakingQuestionStateService {
     this.markAsScoring(questionId);
 
     console.log(
-      `[SpeakingStateService] Submitting answer for question ${questionId}, attemptId: ${attemptId}`
+      `[SpeakingStateService] 🔄 Submitting answer for question ${questionId}, attemptId: ${attemptId}`
     );
 
     // ✅ FIX Bug #11: Create promise với timeout và error handling
