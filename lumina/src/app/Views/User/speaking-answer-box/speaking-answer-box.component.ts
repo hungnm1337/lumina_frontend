@@ -44,6 +44,7 @@ export class SpeakingAnswerBoxComponent
   @Input() resetAt: number = 0;
   @Input() questionTime: number = 0; // DEPRECATED: Use preparationTime & recordingTime instead
   @Input() attemptId: number = 0;
+  @Input() isLastQuestion: boolean = false; // ✅ NEW: Để biết có phải câu cuối không
 
   // NEW: Auto-timer inputs
   @Input() preparationTime: number = 0; // Preparation time in seconds
@@ -394,23 +395,40 @@ export class SpeakingAnswerBoxComponent
       // Auto-submit if we have a recording
       if (this.audioBlob && this.audioBlob.size > 0) {
         console.log(
-          '[SpeakingAnswerBox] 📤 Submitting recording in background:',
+          '[SpeakingAnswerBox] 📤 Submitting recording:',
           this.audioBlob.size,
-          'bytes'
+          'bytes',
+          '| isLastQuestion:',
+          this.isLastQuestion
         );
 
-        // ✅ Submit in background WITHOUT waiting
-        // This allows immediate auto-advance for seamless flow
-        this.submitRecording().catch((error) => {
-          console.error(
-            '[SpeakingAnswerBox] ❌ Background submission failed:',
-            error
+        // ✅ Logic phân biệt câu cuối và các câu khác
+        if (this.isLastQuestion) {
+          // Câu cuối: Submit và ĐỢI chấm điểm xong, KHÔNG auto-advance
+          console.log(
+            '[SpeakingAnswerBox] 📝 Last question - waiting for scoring to complete'
           );
-        });
+          this.submitRecording().catch((error) => {
+            console.error('[SpeakingAnswerBox] ❌ Submission failed:', error);
+          });
+          // KHÔNG emit autoAdvanceNext cho câu cuối
+        } else {
+          // Các câu khác: Submit trong background, auto-advance NGAY LẬP TỨC
+          console.log(
+            '[SpeakingAnswerBox] 🚀 Not last question - auto-advancing immediately'
+          );
 
-        // ✅ Trigger auto-advance IMMEDIATELY without waiting for submission
-        console.log('[SpeakingAnswerBox] 🚀 Triggering immediate auto-advance');
-        this.autoAdvanceNext.emit();
+          // Submit in background WITHOUT waiting
+          this.submitRecording().catch((error) => {
+            console.error(
+              '[SpeakingAnswerBox] ❌ Background submission failed:',
+              error
+            );
+          });
+
+          // Trigger auto-advance IMMEDIATELY without waiting for submission
+          this.autoAdvanceNext.emit();
+        }
       } else {
         console.error(
           '[SpeakingAnswerBox] ❌ No audioBlob available for submission!',
@@ -1039,7 +1057,6 @@ export class SpeakingAnswerBoxComponent
     }
 
     if (this.disabled) {
-      this.toastService.error('Không thể nộp bài lúc này');
       return;
     }
 

@@ -48,19 +48,21 @@
     @if (isSpeakingQuestion()) {
     <!-- Part 4 Information Panel (shown for all Part 4 questions) -->
     @if (getCurrentQuestionTiming().partNumber === 4) {
-      <div class="mb-4 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
-        <div class="flex items-center justify-between mb-2">
-          <h4 class="font-bold text-gray-800">
-            <i class="fas fa-info-circle mr-2"></i>
-            Thông tin tham khảo (Part 4)
-          </h4>
-        </div>
-        
-        <div class="prose max-w-none text-sm" [innerHTML]="questions[currentIndex].prompt">
-        </div>
+    <div class="mb-4 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
+      <div class="flex items-center justify-between mb-2">
+        <h4 class="font-bold text-gray-800">
+          <i class="fas fa-info-circle mr-2"></i>
+          Thông tin tham khảo (Part 4)
+        </h4>
       </div>
+
+      <div
+        class="prose max-w-none text-sm"
+        [innerHTML]="questions[currentIndex].prompt"
+      ></div>
+    </div>
     }
-    
+
     <!-- ✅ FIX Bug #18: Force component recreation on questionId change -->
     <!-- Using @for with single item to leverage trackBy and force Angular to destroy/recreate component -->
     @for (question of [questions[currentIndex]]; track question.questionId) {
@@ -74,25 +76,27 @@
       [showInfoPhase]="getCurrentQuestionTiming().showInfoPhase || false"
       [infoReadTime]="getCurrentQuestionTiming().infoReadTime || 0"
       [attemptId]="attemptId ?? 0"
+      [isLastQuestion]="currentIndex === questions.length - 1"
       (answered)="onSpeakingAnswered($event)"
       (scoringResult)="onSpeakingResult($event)"
       (submitting)="onSpeakingSubmitting($event)"
       (recordingStatusChange)="onRecordingStatusChange($event)"
       (autoAdvanceNext)="onAutoAdvanceNext()"
     ></app-speaking-answer-box>
-    }
-    }
+    } }
 
     <!-- Navigation for Speaking Questions -->
     <div class="mt-6">
       <!-- Auto-Advance Indicator -->
-      @if (isAutoAdvancing) {
-        <div class="fixed top-4 right-4 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-2xl z-50 animate-pulse">
-          <i class="fas fa-spinner fa-spin mr-2"></i>
-          Đang chuyển câu tiếp theo...
-        </div>
+      @if (isAutoAdvancing && currentIndex < questions.length - 1) {
+      <div
+        class="fixed top-4 right-4 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-2xl z-50 animate-pulse"
+      >
+        <i class="fas fa-spinner fa-spin mr-2"></i>
+        Đang chuyển câu tiếp theo...
+      </div>
       }
-      
+
       <!-- Navigation Controls - Auto Mode Only -->
       <div class="flex items-center justify-center mb-4">
         <!-- Chỉ hiển thị nút Nộp bài khi KHÔNG trong mock test -->
@@ -115,9 +119,11 @@
           Hoàn thành Part<i class="fas fa-check ml-2"></i>
         </button>
         }
-        
+
         <!-- INFO: Tự động chuyển câu -->
-        <div class="ml-4 text-sm text-gray-600 bg-blue-50 px-4 py-2 rounded-lg border border-blue-200">
+        <div
+          class="ml-4 text-sm text-gray-600 bg-blue-50 px-4 py-2 rounded-lg border border-blue-200"
+        >
           <i class="fas fa-info-circle mr-1 text-blue-600"></i>
           Tự động chuyển sang câu tiếp theo sau khi ghi âm xong
         </div>
@@ -255,7 +261,8 @@
       <h2 class="text-2xl font-bold text-gray-800">
         📊 Kết quả TOEIC Speaking Test
       </h2>
-      <button (click)="showReportPopup = true"
+      <button
+        (click)="showReportPopup = true"
         class="px-6 py-4 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 font-semibold shadow-lg"
       >
         <i class="fas fa-flag mr-2"></i>Báo cáo bài thi
