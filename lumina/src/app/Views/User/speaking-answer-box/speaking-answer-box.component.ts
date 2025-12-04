@@ -1,4 +1,3 @@
-
 import {
   Component,
   Input,
@@ -74,6 +73,7 @@ export class SpeakingAnswerBoxComponent
 
   result: SpeakingScoringResult | null = null;
   errorMessage: string = '';
+  cancelledByTabSwitch: boolean = false; // New flag for tab switch cancellation
 
   private audioUrl: string | null = null;
 
@@ -277,11 +277,9 @@ export class SpeakingAnswerBoxComponent
 
       if (this.audioBlob && this.audioBlob.size > 0) {
         if (this.isLastQuestion) {
-          this.submitRecording().catch((error) => {
-          });
+          this.submitRecording().catch((error) => {});
         } else {
-          this.submitRecording().catch((error) => {
-          });
+          this.submitRecording().catch((error) => {});
 
           this.autoAdvanceNext.emit();
         }
@@ -414,13 +412,36 @@ export class SpeakingAnswerBoxComponent
   }
 
   ngOnDestroy(): void {
+    // Stop all timers first
+    this.timerService.reset();
+    this.clearTimer();
+
+    // Stop recording immediately
+    if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+      try {
+        this.mediaRecorder.stop();
+        // Stop all media tracks
+        if (this.mediaRecorder.stream) {
+          this.mediaRecorder.stream
+            .getTracks()
+            .forEach((track) => track.stop());
+        }
+      } catch (error) {
+        console.error('Error stopping media recorder:', error);
+      }
+    }
+
+    this.mediaRecorder = null;
+    this.state = 'idle';
+
+    // Cancel any pending operations
     if (this.onStopPromiseResolve) {
       this.onStopPromiseResolve();
       this.onStopPromiseResolve = null;
     }
 
-    this.stopRecording();
-    this.clearTimer();
+    // Clear toast messages
+    this.toastService.clear();
 
     if (this.audioUrl) {
       URL.revokeObjectURL(this.audioUrl);
@@ -689,21 +710,6 @@ export class SpeakingAnswerBoxComponent
     }
   }
 
-  cancelRecording(): void {
-    this.stopRecording();
-    this.audioBlob = null;
-    this.audioChunks = [];
-
-    if (this.audioUrl) {
-      URL.revokeObjectURL(this.audioUrl);
-      this.audioUrl = null;
-    }
-
-    this.resetComponent();
-
-    this.speakingStateService.clearRecording(this.questionId);
-  }
-
   private resetComponent(): void {
     this.state = 'idle';
     this.recordingElapsed = 0;
@@ -711,6 +717,7 @@ export class SpeakingAnswerBoxComponent
     this.audioChunks = [];
     this.result = null;
     this.errorMessage = '';
+    this.cancelledByTabSwitch = false; // Reset flag
     this.isActivelyProcessing = false;
     this.onStopPromiseResolve = null;
     this.clearTimer();
@@ -753,36 +760,30 @@ export class SpeakingAnswerBoxComponent
   }
 
   private setupVisibilityHandler(): void {
-    let hiddenStartTime = 0;
-
-    this.visibilityChangeHandler = () => {
-      if (document.hidden && this.state === 'recording') {
-        hiddenStartTime = Date.now();
-
-        const currentElapsed =
-          Date.now() - this.recordingStartTime - this.pausedTime;
-        this.pausedTime += currentElapsed;
-      } else if (!document.hidden && this.state === 'recording') {
-        const hiddenDuration = Date.now() - hiddenStartTime;
-
-        if (hiddenDuration > 120000) {
-          this.toastService.warning(
-            'Tab đã bị ẩn quá lâu (> 2 phút). Bản ghi có thể không chính xác. Khuyến nghị dừng và ghi lại.'
+    this.visibilityChangeHandler = async () => {
+      if (document.hidden) {
+        // 🚨 ANTI-CHEAT: Tự động hủy khi người dùng chuyển tab
+        if (this.state === 'recording') {
+          console.warn(
+            '[ANTI-CHEAT] User switched tab while recording - cancelling'
           );
+
+          // Dừng ghi âm ngay lập tức
+          if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+            this.mediaRecorder.stop();
+            this.clearTimer();
+
+            // Set error state với flag đặc biệt
+            this.state = 'error';
+            this.cancelledByTabSwitch = true;
+
+            // Clear audio data
+            this.audioBlob = null;
+            this.audioChunks = [];
+
+            this.cdr.markForCheck();
+          }
         }
-
-        if (this.mediaRecorder?.state !== 'recording') {
-          this.stopRecording();
-          this.state = 'error';
-          this.errorMessage =
-            'Ghi âm bị gián đoạn do tab bị ẩn quá lâu. Vui lòng ghi lại.';
-          this.toastService.error(this.errorMessage);
-
-          this.cdr.markForCheck();
-          return;
-        }
-
-        this.recordingStartTime = Date.now();
       }
     };
 
@@ -861,12 +862,5 @@ export class SpeakingAnswerBoxComponent
       this.state === 'error' &&
       this.currentDisplayedQuestionId === this.questionId
     );
-  }
-
-  getAudioUrl(): string | null {
-    if (this.audioBlob && !this.audioUrl) {
-      this.audioUrl = URL.createObjectURL(this.audioBlob);
-    }
-    return this.audioUrl;
   }
 }

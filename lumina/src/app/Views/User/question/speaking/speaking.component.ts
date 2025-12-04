@@ -36,6 +36,7 @@ import { QuotaService } from '../../../../Services/Quota/quota.service';
 import { QuotaLimitModalComponent } from '../../quota-limit-modal/quota-limit-modal.component';
 import { ExamCoordinationService } from '../../../../Services/exam-coordination.service';
 import { ToastService } from '../../../../Services/Toast/toast.service';
+import { SidebarService } from '../../../../Services/sidebar.service';
 
 interface QuestionResult {
   questionNumber: number;
@@ -49,7 +50,7 @@ interface QuestionResult {
   imports: [
     CommonModule,
     PromptComponent,
-    
+
     SpeakingAnswerBoxComponent,
     SpeakingSummaryComponent,
     QuotaLimitModalComponent,
@@ -103,12 +104,12 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone,
     private examCoordination: ExamCoordinationService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private sidebarService: SidebarService
   ) {
     this.stateSubscription = this.speakingStateService
       .getStates()
       .subscribe((states) => {
-
         this.updateSpeakingResults(states);
 
         if (!this.isRecordingInProgress) {
@@ -116,7 +117,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
             this.cdr.detectChanges();
           }, 0);
         }
-        
+
         if (
           !this.isAutoSubmitting &&
           !this.showSpeakingSummary &&
@@ -171,6 +172,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
     this.loadAttemptId();
     this.checkQuotaAccess();
+    this.sidebarService.hideSidebar(); // Ẩn sidebar khi bắt đầu làm bài
 
     this.routerSubscription = this.router.events
       .pipe(filter((event) => event instanceof NavigationStart))
@@ -215,6 +217,10 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   ngOnDestroy(): void {
+    // Stop all timers and clear toasts first
+    this.toastService.clear(); // Clear all toast messages
+
+    // Unsubscribe from observables
     this.stateSubscription.unsubscribe();
 
     if (this.routerSubscription) {
@@ -223,13 +229,19 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
     if (this.advanceTimer) {
       clearTimeout(this.advanceTimer);
+      this.advanceTimer = null;
     }
 
+    // Cleanup speaking session
     if (!this.finished && !this.showSpeakingSummary) {
       this.cleanupSpeakingSessionOnExit();
     }
 
+    // End exam session
     this.examCoordination.endExamSession();
+
+    // Show sidebar after everything is cleaned up
+    this.sidebarService.showSidebar();
   }
 
   private loadAttemptId(): void {
@@ -487,74 +499,14 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     return this.isSpeakingPart();
   }
 
-  previousQuestion(): void {
-    if (this.currentIndex > 0) {
-      this.navigateToQuestion(this.currentIndex - 1);
-    }
-  }
-
-  nextQuestionManual(): void {
-    if (this.currentIndex < this.questions.length - 1) {
-      this.navigateToQuestion(this.currentIndex + 1);
-    }
-  }
-
   navigateToQuestion(index: number): void {
     if (index < 0 || index >= this.questions.length) return;
-
-    const currentQuestion = this.questions[this.currentIndex];
-
-    if (this.isSpeakingPart() && currentQuestion) {
-      this.handleSpeakingNavigation(currentQuestion.questionId);
-    }
 
     this.baseQuestionService.navigateToQuestion(index);
     this.showExplain = false;
     this.latestPictureCaption = '';
 
     this.resetCounter++;
-  }
-
-  private handleSpeakingNavigation(questionId: number): void {
-    const state = this.speakingStateService.getQuestionState(questionId);
-    if (state?.state === 'submitted') {
-      this.addToScoringQueue(questionId);
-    }
-  }
-
-  private addToScoringQueue(questionId: number): void {
-    if (!this.scoringQueue.includes(questionId)) {
-      this.scoringQueue.push(questionId);
-      this.speakingStateService.markAsScoring(questionId);
-      this.processScoringQueue();
-    }
-  }
-
-  private async processScoringQueue(): Promise<void> {
-    if (this.isProcessingQueue || this.scoringQueue.length === 0) {
-      return;
-    }
-
-    this.isProcessingQueue = true;
-
-    while (this.scoringQueue.length > 0) {
-      const questionId = this.scoringQueue.shift()!;
-      await this.scoreQuestion(questionId);
-    }
-
-    this.isProcessingQueue = false;
-  }
-
-  private async scoreQuestion(questionId: number): Promise<void> {
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    } catch (error) {
-      console.error(
-        `[SpeakingComponent] Error processing score for question ${questionId}:`,
-        error
-      );
-      this.speakingStateService.setError(questionId, 'Lỗi khi chấm điểm');
-    }
   }
 
   private updateSpeakingResults(states: Map<number, any>): void {
@@ -708,7 +660,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     this.callEndExamAPI();
     this.examAttemptService.finalizeAttempt(this.attemptId).subscribe({
       next: (summary) => {
-
         if (summary.totalScore !== undefined) {
           this.baseQuestionService.setTotalScore(summary.totalScore);
         }
@@ -755,8 +706,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       };
 
       this.examAttemptService.endExam(endExamRequest).subscribe({
-        next: (response) => {
-        },
+        next: (response) => {},
         error: (error) => {
           console.error('[Speaking]  Error ending speaking exam:', error);
           console.error('[Speaking]  Error details:', {
@@ -787,6 +737,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   goToExams(): void {
+    this.sidebarService.showSidebar(); // Hiển thị lại sidebar
     this.router.navigate(['homepage/user-dashboard/exams']);
   }
 
@@ -857,7 +808,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
     this.examAttemptService.saveProgress(model).subscribe({
       next: () => {
-
         this.cleanupSpeakingSession();
 
         this.router.navigate(['homepage/user-dashboard/exams']);
@@ -873,7 +823,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   private cleanupSpeakingSession(): void {
-
     localStorage.removeItem('currentExamAttempt');
 
     this.speakingStateService.resetAllStates();
@@ -883,7 +832,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   private cleanupSpeakingSessionOnExit(): void {
-
     localStorage.removeItem('currentExamAttempt');
 
     this.speakingStateService.resetAllStates();

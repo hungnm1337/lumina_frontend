@@ -1,8 +1,11 @@
 <div class="flex bg-gray-50 min-h-[calc(100vh-4rem)]">
-  <div class="w-1/5">
+  <div class="w-1/5" *ngIf="sidebarVisible$ | async">
     <app-menu></app-menu>
   </div>
-  <div class="w-4/5 overflow-auto px-1 scrollbar-hide">
+  <div
+    [ngClass]="(sidebarVisible$ | async) ? 'w-4/5' : 'w-full'"
+    class="overflow-auto px-1 scrollbar-hide"
+  >
     <router-outlet></router-outlet>
   </div>
 </div>
