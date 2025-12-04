@@ -369,14 +369,53 @@
         ></textarea>
       </div>
 
+      <!-- Image Upload -->
+      <div class="form-group full-width">
+        <label for="vocab-image">Image (optional)</label>
+        
+        <!-- Current Image Preview -->
+        <div *ngIf="imagePreview" class="image-preview-container">
+          <img [src]="imagePreview" alt="Vocabulary image" class="image-preview" />
+          <button type="button" class="btn-remove-image" (click)="removeImage()" title="Remove image">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Image Upload Controls -->
+        <div class="image-upload-controls">
+          <input
+            type="file"
+            id="vocab-image-input"
+            accept="image/*"
+            (change)="onImageSelected($event)"
+            class="image-input"
+            [disabled]="isUploadingImage || isSubmitting"
+          />
+          <label for="vocab-image-input" class="btn-upload-image" [class.disabled]="isUploadingImage || isSubmitting">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span>{{ imagePreview ? 'Change Image' : 'Select Image' }}</span>
+          </label>
+        </div>
+        
+        <p class="image-upload-hint">Chọn ảnh để upload lên Cloudinary khi lưu (tối đa 5MB)</p>
+      </div>
+
       <!-- Actions -->
       <div class="modal-actions">
         <button type="button" class="btn-secondary" (click)="closeModal()">
           Cancel
         </button>
-        <button type="submit" class="btn-primary" [disabled]="vocabularyForm.invalid || isSubmitting">
-          <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin"></i>
-          {{ editingVocabulary ? 'Update Word' : 'Add Word' }}
+        <button type="submit" class="btn-primary" [disabled]="vocabularyForm.invalid || isSubmitting || isUploadingImage">
+          <i *ngIf="isSubmitting || isUploadingImage" class="fas fa-spinner fa-spin"></i>
+          <span *ngIf="!isSubmitting && !isUploadingImage">{{ editingVocabulary ? 'Update Word' : 'Add Word' }}</span>
+          <span *ngIf="isUploadingImage && !isSubmitting">Uploading image...</span>
+          <span *ngIf="isSubmitting && !isUploadingImage">{{ editingVocabulary ? 'Updating...' : 'Saving...' }}</span>
         </button>
       </div>
     </form>

@@ -55,6 +55,7 @@ export class VocabularyService {
     definition: string;
     example?: string;
     category?: string; // Loại từ
+    imageUrl?: string; // URL ảnh từ Cloudinary
   }): Observable<any> {
     const token = localStorage.getItem('lumina_token');
     const headers = new HttpHeaders({
@@ -83,6 +84,7 @@ export class VocabularyService {
     definition: string;
     category?: string;
     example?: string;
+    imageUrl?: string;
   }): Observable<any> {
     const token = localStorage.getItem('lumina_token');
     const headers = new HttpHeaders({
@@ -242,7 +244,8 @@ export class VocabularyService {
       createdDate: new Date().toLocaleDateString('vi-VN'),
       createdBy: 'System', // Default creator
       status: 'active' as 'active' | 'inactive', // Default status
-      audioUrl: vocabulary.audioUrl
+      audioUrl: vocabulary.audioUrl,
+      imageUrl: vocabulary.imageUrl // Map imageUrl từ VocabularyWord sang Vocabulary
     };
     
     console.log('Converted result:', converted);

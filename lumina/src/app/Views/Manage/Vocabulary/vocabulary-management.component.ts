@@ -345,6 +345,14 @@ export class VocabularyManagementComponent implements OnInit {
     }
   }
 
+  handleImageError(event: Event, vocab: Vocabulary): void {
+    // Hide image on error
+    const img = event.target as HTMLImageElement;
+    if (img) {
+      img.style.display = 'none';
+    }
+  }
+
   canReview(list: VocabularyListResponse): boolean {
     return list.status?.toLowerCase() === 'pending';
   }

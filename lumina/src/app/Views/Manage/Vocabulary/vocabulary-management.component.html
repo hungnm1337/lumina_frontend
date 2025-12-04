@@ -192,6 +192,16 @@
             *ngFor="let vocab of pagedVocabularies" 
             class="word-card">
             
+            <!-- Image Section -->
+            <div *ngIf="vocab.imageUrl" class="word-image-container">
+              <img 
+                [src]="vocab.imageUrl" 
+                [alt]="'Image for ' + vocab.word" 
+                class="word-image"
+                loading="lazy"
+                (error)="handleImageError($event, vocab)" />
+            </div>
+
             <div class="word-header">
               <h4 class="word-text">{{ vocab.word }}</h4>
               <span class="part-of-speech" [ngClass]="getPartOfSpeechClass(vocab.partOfSpeech)">
