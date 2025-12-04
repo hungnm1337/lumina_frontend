@@ -1,7 +1,7 @@
-<div class="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-2">
+<div class="bg-gray-50 border border-gray-200 rounded-lg p-2 space-y-1.5">
   <!-- Prompt Text ở trên cùng -->
   @if (prompt?.title) {
-  <h4 class="text-base font-semibold text-gray-800">
+  <h4 class="text-sm font-semibold text-gray-800">
     {{ prompt?.title }}
   </h4>
   } @if (prompt?.contentText) {
@@ -14,11 +14,11 @@
 
   <!-- Image ở dưới prompt text -->
   @if(prompt?.referenceImageUrl) {
-  <div class="flex justify-center pt-2 border-t border-gray-200">
+  <div class="flex justify-center pt-1.5 border-t border-gray-200">
     <img
       src="{{ prompt?.referenceImageUrl }}"
       alt="Reference Image"
-      class="max-w-xs w-full h-auto rounded-md object-cover shadow-sm"
+      class="max-w-[240px] w-full h-auto rounded-md object-cover shadow-sm"
     />
   </div>
   @if (isWritingQuestion()) {

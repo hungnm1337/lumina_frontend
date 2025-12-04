@@ -33,6 +33,10 @@ import {
   WritingQuestionStateData,
 } from '../../../../Services/Exam/Writing/writing-question-state.service';
 import { SidebarService } from '../../../../Services/sidebar.service';
+import {
+  QuestionNavigatorComponent,
+  NavigatorLegendItem,
+} from '../../question-navigator/question-navigator.component';
 
 @Component({
   selector: 'app-writing',
@@ -45,6 +49,7 @@ import { SidebarService } from '../../../../Services/sidebar.service';
     QuotaLimitModalComponent,
     ReportPopupComponent,
     PopupComponent,
+    QuestionNavigatorComponent,
   ],
   templateUrl: './writing.component.html',
   styleUrl: './writing.component.scss',
@@ -100,6 +105,25 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   showQuotaModal = false;
   quotaMessage =
     'Kỹ năng Writing chỉ dành cho tài khoản Premium. Vui lòng nâng cấp để sử dụng tính năng này!';
+
+  // Navigator configuration
+  navigatorLegendItems: NavigatorLegendItem[] = [
+    { color: 'bg-gray-200', label: 'Chưa làm' },
+    { color: 'bg-orange-500', label: 'Đã làm' },
+    { color: 'bg-purple-500', label: 'Đã nộp' },
+    { color: 'bg-yellow-500', label: 'Đang chấm', animated: true },
+    { color: 'bg-green-600', label: 'Đã chấm xong' },
+    { color: 'bg-blue-600', label: 'Đang làm' },
+  ];
+
+  getQuestionStatus = (questionId: number, index: number): string => {
+    if (this.hasQuestionFeedback(questionId)) return 'answered-green-600';
+    if (this.isQuestionSubmitting(questionId)) return 'submitting';
+    if (this.isQuestionSubmitted(questionId)) return 'submitted';
+    if (this.hasAnswer(questionId)) return 'has-answer';
+    if (index === this.currentIndex) return 'current';
+    return 'unanswered';
+  };
 
   constructor(
     private router: Router,

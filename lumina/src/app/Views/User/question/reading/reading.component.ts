@@ -28,6 +28,10 @@ import { QuotaService } from '../../../../Services/Quota/quota.service';
 import { QuotaLimitModalComponent } from '../../quota-limit-modal/quota-limit-modal.component';
 import { LeaderboardService } from '../../../../Services/Leaderboard/leaderboard.service';
 import { SidebarService } from '../../../../Services/sidebar.service';
+import {
+  QuestionNavigatorComponent,
+  NavigatorLegendItem,
+} from '../../question-navigator/question-navigator.component';
 
 @Component({
   selector: 'app-reading',
@@ -40,6 +44,7 @@ import { SidebarService } from '../../../../Services/sidebar.service';
     QuotaLimitModalComponent,
     ReportPopupComponent,
     PopupComponent,
+    QuestionNavigatorComponent,
   ],
   templateUrl: './reading.component.html',
   styleUrls: ['./reading.component.scss'],
@@ -91,6 +96,19 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
   // Quota modal
   showQuotaModal = false;
   quotaMessage = '';
+
+  // Navigator configuration
+  navigatorLegendItems: NavigatorLegendItem[] = [
+    { color: 'bg-gray-200', label: 'Chưa làm' },
+    { color: 'bg-green-600', label: 'Đã làm' },
+    { color: 'bg-blue-600', label: 'Đang làm' },
+  ];
+
+  getQuestionStatus = (questionId: number, index: number): string => {
+    if (index === this.currentIndex) return 'current';
+    if (this.answeredQuestions.has(questionId)) return 'answered-green-600';
+    return 'unanswered';
+  };
 
   constructor(
     private router: Router,
