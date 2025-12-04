@@ -3,7 +3,7 @@ import { BehaviorSubject, Subject, Observable } from 'rxjs';
 
 export enum TimerPhase {
   IDLE = 'idle',
-  INFORMATION = 'information', // Part 4 Q8 only
+  INFORMATION = 'information',
   PREPARATION = 'preparation',
   RECORDING = 'recording',
   COMPLETED = 'completed',
@@ -13,18 +13,15 @@ export enum TimerPhase {
   providedIn: 'root',
 })
 export class SpeakingTimerService implements OnDestroy {
-  // State observables
   private phaseSubject = new BehaviorSubject<TimerPhase>(TimerPhase.IDLE);
   private prepTimeSubject = new BehaviorSubject<number>(0);
   private recordTimeSubject = new BehaviorSubject<number>(0);
   private infoTimeSubject = new BehaviorSubject<number>(0);
 
-  // Event subjects
   private prepEndSubject = new Subject<void>();
   private recordEndSubject = new Subject<void>();
   private infoEndSubject = new Subject<void>();
 
-  // Public observables
   phase$ = this.phaseSubject.asObservable();
   prepTimeRemaining$ = this.prepTimeSubject.asObservable();
   recordTimeRemaining$ = this.recordTimeSubject.asObservable();
@@ -33,59 +30,40 @@ export class SpeakingTimerService implements OnDestroy {
   onRecordingEnd$ = this.recordEndSubject.asObservable();
   onInformationEnd$ = this.infoEndSubject.asObservable();
 
-  // Timer state
   private timerId: any = null;
   private startTime: number = 0;
   private pausedTime: number = 0;
   private isPaused: boolean = false;
 
-  // Page Visibility API handler
   private visibilityChangeHandler: (() => void) | null = null;
 
   constructor() {
     this.setupVisibilityHandler();
-    // console.log('[SpeakingTimerService] Service initialized');
   }
 
   ngOnDestroy(): void {
     this.cleanup();
   }
 
-  /**
-   * Start information reading phase (Part 4 Q8 only)
-   */
   startInformationReading(seconds: number): void {
-    // console.log(`[SpeakingTimerService] Starting information reading: ${seconds}s`);
     this.reset();
     this.phaseSubject.next(TimerPhase.INFORMATION);
     this.startCountdown(seconds, this.infoTimeSubject, this.infoEndSubject);
   }
 
-  /**
-   * Start preparation phase
-   */
   startPreparation(seconds: number): void {
-    // console.log(`[SpeakingTimerService] Starting preparation: ${seconds}s`);
     this.clearTimer();
     this.phaseSubject.next(TimerPhase.PREPARATION);
     this.startCountdown(seconds, this.prepTimeSubject, this.prepEndSubject);
   }
 
-  /**
-   * Start recording phase
-   */
   startRecording(seconds: number): void {
-    // console.log(`[SpeakingTimerService] Starting recording: ${seconds}s`);
     this.clearTimer();
     this.phaseSubject.next(TimerPhase.RECORDING);
     this.startCountdown(seconds, this.recordTimeSubject, this.recordEndSubject);
   }
 
-  /**
-   * Reset timer to idle state
-   */
   reset(): void {
-    // console.log('[SpeakingTimerService] Resetting timer');
     this.clearTimer();
     this.phaseSubject.next(TimerPhase.IDLE);
     this.prepTimeSubject.next(0);
@@ -95,25 +73,6 @@ export class SpeakingTimerService implements OnDestroy {
     this.pausedTime = 0;
   }
 
-  /**
-   * Stop all timers and reset completely
-   */
-  stopAll(): void {
-    this.clearTimer();
-    this.reset();
-  }
-
-  /**
-   * Get current phase
-   */
-  getCurrentPhase(): TimerPhase {
-    return this.phaseSubject.value;
-  }
-
-  /**
-   * Core countdown logic
-   * Uses Date.now() for accuracy instead of incrementing counter
-   */
   private startCountdown(
     duration: number,
     subject: BehaviorSubject<number>,
@@ -124,12 +83,9 @@ export class SpeakingTimerService implements OnDestroy {
     this.isPaused = false;
     subject.next(duration);
 
-    // console.log(`[SpeakingTimerService] Countdown started: ${duration}s`);
-
-    // Update every 100ms for smooth UI
     this.timerId = setInterval(() => {
       if (this.isPaused) {
-        return; // Don't update while paused
+        return;
       }
 
       const elapsed = Math.floor(
@@ -139,13 +95,7 @@ export class SpeakingTimerService implements OnDestroy {
 
       subject.next(remaining);
 
-      // Log removed - too verbose
-      // if (elapsed > 0 && elapsed % 1 === 0) {
-      //   console.log(`[SpeakingTimerService] ${this.phaseSubject.value} - ${remaining}s remaining`);
-      // }
-
       if (remaining === 0) {
-        // console.log(`[SpeakingTimerService] ${this.phaseSubject.value} phase completed`);
         this.clearTimer();
         this.phaseSubject.next(TimerPhase.COMPLETED);
         endEvent.next();
@@ -153,44 +103,24 @@ export class SpeakingTimerService implements OnDestroy {
     }, 100);
   }
 
-  /**
-   * Clear current timer interval
-   */
   private clearTimer(): void {
     if (this.timerId) {
       clearInterval(this.timerId);
       this.timerId = null;
-      // console.log('[SpeakingTimerService] Timer cleared');
     }
   }
 
-  /**
-   * Setup Page Visibility API
-   * KHÔNG pause timer để tránh gian lận - timer sẽ tiếp tục chạy ngầm
-   * Recording component sẽ tự động dừng ghi âm khi phát hiện chuyển tab
-   */
   private setupVisibilityHandler(): void {
     this.visibilityChangeHandler = () => {
       if (document.hidden) {
-        // Timer continues running in background - NO PAUSE
-        // Recording will be auto-stopped by the component
-        console.log(
-          '[SpeakingTimerService] Tab hidden - timer continues running'
-        );
       } else {
-        // User returned to tab
-        console.log('[SpeakingTimerService] Tab visible again');
       }
     };
 
     document.addEventListener('visibilitychange', this.visibilityChangeHandler);
   }
 
-  /**
-   * Cleanup resources
-   */
   private cleanup(): void {
-    // console.log('[SpeakingTimerService] Cleaning up');
     this.clearTimer();
 
     if (this.visibilityChangeHandler) {
@@ -201,7 +131,6 @@ export class SpeakingTimerService implements OnDestroy {
       this.visibilityChangeHandler = null;
     }
 
-    // Complete all subjects
     this.prepEndSubject.complete();
     this.recordEndSubject.complete();
     this.infoEndSubject.complete();

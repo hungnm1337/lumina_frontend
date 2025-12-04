@@ -710,21 +710,6 @@ export class SpeakingAnswerBoxComponent
     }
   }
 
-  cancelRecording(): void {
-    this.stopRecording();
-    this.audioBlob = null;
-    this.audioChunks = [];
-
-    if (this.audioUrl) {
-      URL.revokeObjectURL(this.audioUrl);
-      this.audioUrl = null;
-    }
-
-    this.resetComponent();
-
-    this.speakingStateService.clearRecording(this.questionId);
-  }
-
   private resetComponent(): void {
     this.state = 'idle';
     this.recordingElapsed = 0;
@@ -877,12 +862,5 @@ export class SpeakingAnswerBoxComponent
       this.state === 'error' &&
       this.currentDisplayedQuestionId === this.questionId
     );
-  }
-
-  getAudioUrl(): string | null {
-    if (this.audioBlob && !this.audioUrl) {
-      this.audioUrl = URL.createObjectURL(this.audioBlob);
-    }
-    return this.audioUrl;
   }
 }

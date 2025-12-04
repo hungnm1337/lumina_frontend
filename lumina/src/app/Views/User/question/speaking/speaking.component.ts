@@ -499,74 +499,14 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     return this.isSpeakingPart();
   }
 
-  previousQuestion(): void {
-    if (this.currentIndex > 0) {
-      this.navigateToQuestion(this.currentIndex - 1);
-    }
-  }
-
-  nextQuestionManual(): void {
-    if (this.currentIndex < this.questions.length - 1) {
-      this.navigateToQuestion(this.currentIndex + 1);
-    }
-  }
-
   navigateToQuestion(index: number): void {
     if (index < 0 || index >= this.questions.length) return;
-
-    const currentQuestion = this.questions[this.currentIndex];
-
-    if (this.isSpeakingPart() && currentQuestion) {
-      this.handleSpeakingNavigation(currentQuestion.questionId);
-    }
 
     this.baseQuestionService.navigateToQuestion(index);
     this.showExplain = false;
     this.latestPictureCaption = '';
 
     this.resetCounter++;
-  }
-
-  private handleSpeakingNavigation(questionId: number): void {
-    const state = this.speakingStateService.getQuestionState(questionId);
-    if (state?.state === 'submitted') {
-      this.addToScoringQueue(questionId);
-    }
-  }
-
-  private addToScoringQueue(questionId: number): void {
-    if (!this.scoringQueue.includes(questionId)) {
-      this.scoringQueue.push(questionId);
-      this.speakingStateService.markAsScoring(questionId);
-      this.processScoringQueue();
-    }
-  }
-
-  private async processScoringQueue(): Promise<void> {
-    if (this.isProcessingQueue || this.scoringQueue.length === 0) {
-      return;
-    }
-
-    this.isProcessingQueue = true;
-
-    while (this.scoringQueue.length > 0) {
-      const questionId = this.scoringQueue.shift()!;
-      await this.scoreQuestion(questionId);
-    }
-
-    this.isProcessingQueue = false;
-  }
-
-  private async scoreQuestion(questionId: number): Promise<void> {
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    } catch (error) {
-      console.error(
-        `[SpeakingComponent] Error processing score for question ${questionId}:`,
-        error
-      );
-      this.speakingStateService.setError(questionId, 'Lỗi khi chấm điểm');
-    }
   }
 
   private updateSpeakingResults(states: Map<number, any>): void {
