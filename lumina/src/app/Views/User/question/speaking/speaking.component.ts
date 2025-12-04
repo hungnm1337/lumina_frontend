@@ -217,8 +217,11 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   ngOnDestroy(): void {
+    // Stop all timers and clear toasts first
+    this.toastService.clear(); // Clear all toast messages
+
+    // Unsubscribe from observables
     this.stateSubscription.unsubscribe();
-    this.sidebarService.showSidebar(); // Hiển thị lại sidebar
 
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
@@ -226,13 +229,19 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
     if (this.advanceTimer) {
       clearTimeout(this.advanceTimer);
+      this.advanceTimer = null;
     }
 
+    // Cleanup speaking session
     if (!this.finished && !this.showSpeakingSummary) {
       this.cleanupSpeakingSessionOnExit();
     }
 
+    // End exam session
     this.examCoordination.endExamSession();
+
+    // Show sidebar after everything is cleaned up
+    this.sidebarService.showSidebar();
   }
 
   private loadAttemptId(): void {

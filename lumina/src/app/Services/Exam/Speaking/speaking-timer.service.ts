@@ -6,11 +6,11 @@ export enum TimerPhase {
   INFORMATION = 'information', // Part 4 Q8 only
   PREPARATION = 'preparation',
   RECORDING = 'recording',
-  COMPLETED = 'completed'
+  COMPLETED = 'completed',
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SpeakingTimerService implements OnDestroy {
   // State observables
@@ -91,6 +91,16 @@ export class SpeakingTimerService implements OnDestroy {
     this.prepTimeSubject.next(0);
     this.recordTimeSubject.next(0);
     this.infoTimeSubject.next(0);
+    this.isPaused = false;
+    this.pausedTime = 0;
+  }
+
+  /**
+   * Stop all timers and reset completely
+   */
+  stopAll(): void {
+    this.clearTimer();
+    this.reset();
   }
 
   /**
@@ -155,24 +165,21 @@ export class SpeakingTimerService implements OnDestroy {
   }
 
   /**
-   * Setup Page Visibility API to pause timer when user switches tabs
+   * Setup Page Visibility API
+   * KHÔNG pause timer để tránh gian lận - timer sẽ tiếp tục chạy ngầm
+   * Recording component sẽ tự động dừng ghi âm khi phát hiện chuyển tab
    */
   private setupVisibilityHandler(): void {
     this.visibilityChangeHandler = () => {
       if (document.hidden) {
-        // User switched away from tab - pause timer
-        if (this.timerId && !this.isPaused) {
-          // console.log('[SpeakingTimerService] Page hidden - pausing timer');
-          this.isPaused = true;
-          this.pausedTime += Date.now() - this.startTime;
-        }
+        // Timer continues running in background - NO PAUSE
+        // Recording will be auto-stopped by the component
+        console.log(
+          '[SpeakingTimerService] Tab hidden - timer continues running'
+        );
       } else {
-        // User returned to tab - resume timer
-        if (this.timerId && this.isPaused) {
-          // console.log('[SpeakingTimerService] Page visible - resuming timer');
-          this.isPaused = false;
-          this.startTime = Date.now();
-        }
+        // User returned to tab
+        console.log('[SpeakingTimerService] Tab visible again');
       }
     };
 

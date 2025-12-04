@@ -12,7 +12,7 @@ import { FormsModule } from '@angular/forms';
   imports: [CommonModule, FormsModule],
   providers: [DatePipe],
   templateUrl: './exam-attempt-list.component.html',
-  styleUrl: './exam-attempt-list.component.scss'
+  styleUrl: './exam-attempt-list.component.scss',
 })
 export class ExamAttemptListComponent implements OnInit {
   examAttempts: ExamAttemptResponseDTO[] = [];
@@ -44,26 +44,28 @@ export class ExamAttemptListComponent implements OnInit {
 
   private loadExamAttempts(): void {
     this.isLoading = true;
-    this.examAttemptService.getUserAttempts(Number(this.authService.getCurrentUser()?.id)).subscribe({
-      next: (attempts) => {
-        this.examAttempts = attempts;
-        this.extractUniqueValues();
-        this.applyFilters();
-        this.isLoading = false;
-        console.log('Exam attempts loaded:', attempts);
-      },
-      error: (error) => {
-        console.error('Error fetching exam attempts:', error);
-        this.isLoading = false;
-      },
-    });
+    this.examAttemptService
+      .getUserAttempts(Number(this.authService.getCurrentUser()?.id))
+      .subscribe({
+        next: (attempts) => {
+          this.examAttempts = attempts;
+          this.extractUniqueValues();
+          this.applyFilters();
+          this.isLoading = false;
+          console.log('Exam attempts loaded:', attempts);
+        },
+        error: (error) => {
+          console.error('Error fetching exam attempts:', error);
+          this.isLoading = false;
+        },
+      });
   }
 
   private extractUniqueValues(): void {
     const examNames = new Set<string>();
     const partNames = new Set<string>();
 
-    this.examAttempts.forEach(attempt => {
+    this.examAttempts.forEach((attempt) => {
       if (attempt.examName) examNames.add(attempt.examName);
       if (attempt.examPartName) partNames.add(attempt.examPartName);
     });
@@ -78,16 +80,19 @@ export class ExamAttemptListComponent implements OnInit {
     // Apply search filter
     if (this.searchTerm) {
       const search = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(attempt =>
-        attempt.examName?.toLowerCase().includes(search) ||
-        attempt.examPartName?.toLowerCase().includes(search) ||
-        attempt.userName?.toLowerCase().includes(search)
+      filtered = filtered.filter(
+        (attempt) =>
+          attempt.examName?.toLowerCase().includes(search) ||
+          attempt.examPartName?.toLowerCase().includes(search) ||
+          attempt.userName?.toLowerCase().includes(search)
       );
     }
 
     // Apply status filter
     if (this.filterStatus !== 'all') {
-      filtered = filtered.filter(attempt => attempt.status === this.filterStatus);
+      filtered = filtered.filter(
+        (attempt) => attempt.status === this.filterStatus
+      );
     }
 
     // Apply sort
@@ -96,7 +101,9 @@ export class ExamAttemptListComponent implements OnInit {
     this.filteredAttempts = filtered;
   }
 
-  private sortAttempts(attempts: ExamAttemptResponseDTO[]): ExamAttemptResponseDTO[] {
+  private sortAttempts(
+    attempts: ExamAttemptResponseDTO[]
+  ): ExamAttemptResponseDTO[] {
     const sorted = [...attempts];
 
     switch (this.sortBy) {
@@ -125,7 +132,21 @@ export class ExamAttemptListComponent implements OnInit {
 
   formatDate(date: any): string {
     if (!date) return 'N/A';
-    return this.datePipe.transform(date, 'dd/MM/yyyy HH:mm') || 'N/A';
+
+    // If server sends UTC datetime without 'Z', add it to ensure proper conversion
+    let dateStr = typeof date === 'string' ? date : date.toISOString();
+
+    // Add 'Z' if not present and doesn't already have timezone info
+    if (
+      !dateStr.endsWith('Z') &&
+      !dateStr.includes('+') &&
+      !dateStr.includes('-', 10)
+    ) {
+      dateStr = dateStr + 'Z';
+    }
+
+    const localDate = new Date(dateStr);
+    return this.datePipe.transform(localDate, 'dd/MM/yyyy HH:mm') || 'N/A';
   }
 
   formatDuration(startTime: any, endTime: any): string {
@@ -187,9 +208,11 @@ export class ExamAttemptListComponent implements OnInit {
 
   getAverageScore(): number {
     const scores = this.filteredAttempts
-      .map(a => a.score)
-      .filter(s => s !== null && s !== undefined);
+      .map((a) => a.score)
+      .filter((s) => s !== null && s !== undefined);
     if (scores.length === 0) return 0;
-    return Math.round(scores.reduce((a, b) => (a || 0) + (b || 0), 0) / scores.length);
+    return Math.round(
+      scores.reduce((a, b) => (a || 0) + (b || 0), 0) / scores.length
+    );
   }
 }
