@@ -130,11 +130,18 @@ export class ExamPartComponent {
   }
 
   startPart(partId: number): void {
-    //kiểm tra currentExamAttempt trong localstorage nếu có thì xóa đi để bắt đầu attempt mới
-    localStorage.removeItem('currentExamAttempt');
+    // Kiểm tra đăng nhập trước
+    const token = localStorage.getItem('lumina_token');
+    if (!token) {
+      console.warn('⚠️ User not logged in, redirecting to login...');
+      this.router.navigate(['/login']);
+      return;
+    }
+
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser?.id) {
-      console.error('No user ID found');
+      console.error('No user ID found, redirecting to login...');
+      this.router.navigate(['/login']);
       return;
     }
 
@@ -142,6 +149,9 @@ export class ExamPartComponent {
       console.error('No exam ID found');
       return;
     }
+
+    // Xóa attempt cũ để bắt đầu attempt mới
+    localStorage.removeItem('currentExamAttempt');
 
     this.examattemptRequestDTO = {
       attemptID: 0,
@@ -159,13 +169,13 @@ export class ExamPartComponent {
         // Lưu thông tin attempt vào localStorage
         localStorage.setItem('currentExamAttempt', JSON.stringify(response));
         console.log('Exam attempt started successfully:', response);
+        // Chuyển hướng đến trang làm bài
+        this.router.navigate(['/homepage/user-dashboard/part', partId]);
       },
       error: (error) => {
         console.error('Error starting exam attempt:', error);
       },
     });
-
-    this.router.navigate(['/homepage/user-dashboard/part', partId]);
   }
 
   goBack(): void {
