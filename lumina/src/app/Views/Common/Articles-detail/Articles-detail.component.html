@@ -4,7 +4,7 @@
 <div class="back-to-blog">
   <button (click)="goBackToBlog()" class="back-btn">
     <i class="fas fa-arrow-left"></i>
-    Back to articles
+    Quay lại bài viết
   </button>
 </div>
 
@@ -19,11 +19,11 @@
       <!-- Completion Indicator -->
       <span class="completion-indicator" *ngIf="articleProgress && articleProgress.status === 'completed'">
         <i class="fas fa-check-circle"></i>
-        Completed
+        Đã hoàn thành
       </span>
       <span class="progress-indicator" *ngIf="articleProgress && articleProgress.status === 'in_progress'">
         <i class="fas fa-clock"></i>
-        {{ articleProgress.progressPercent }}% read
+        {{ articleProgress.progressPercent }}% đã đọc
       </span>
     </div>
 
@@ -38,7 +38,7 @@
         </div>
         <div class="author-details">
           <h3 class="author-name">{{ article.authorName }}</h3>
-          <p class="author-title">Content Creator</p>
+          <p class="author-title">Tác giả</p>
         </div>
       </div>
     </div>
@@ -66,7 +66,7 @@
         <div class="section-card"
              [class.completed]="isSectionCompleted(currentSectionIndex)"
              [class.active]="true">
-          
+
           <div class="section-header">
             <div class="section-number">
               <span class="section-current">{{ currentSectionIndex + 1 }}</span>
@@ -86,14 +86,14 @@
 
           <!-- Action Buttons -->
           <div class="section-actions">
-            <button 
+            <button
               *ngIf="isLogin && !isSectionCompleted(currentSectionIndex)"
-              class="btn-mark-done" 
+              class="btn-mark-done"
               (click)="markSectionAsDone()">
               <i class="fas fa-check-circle"></i>
               <span>Đánh dấu hoàn thành</span>
             </button>
-            
+
             <button
               (click)="showReportPopup = true"
               class="btn-report">
@@ -117,14 +117,14 @@
             [disabled]="currentSectionIndex === 0"
             class="nav-btn prev-btn">
             <i class="fas fa-chevron-left"></i>
-            <span>Section trước</span>
+            <span>Phần trước</span>
           </button>
 
           <button
             (click)="nextSection()"
             [disabled]="currentSectionIndex === article.sections.length - 1"
             class="nav-btn next-btn">
-            <span>Section tiếp theo</span>
+            <span>Phần tiếp theo</span>
             <i class="fas fa-chevron-right"></i>
           </button>
         </div>
@@ -134,7 +134,7 @@
           <div class="navigator-header">
             <h4 class="navigator-title">
               <i class="fas fa-list"></i>
-              Danh sách sections
+              Danh sách các phần
             </h4>
           </div>
           <div class="section-buttons">
@@ -152,7 +152,7 @@
           </div>
         </div>
       </div>
-      
+
       <ng-template #noContent>
         <div class="no-content">
           <i class="fas fa-file-alt"></i>

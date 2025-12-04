@@ -127,7 +127,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (url.includes('vocabulary')) return 'Từ vựng';
     if (url.includes('seasons')) return 'Mùa thi đấu';
     if (url.includes('reports')) return 'Báo cáo';
-    return 'Staff Panel';
+    return 'Bảng điều khiển Nhân viên';
   }
 
   logout(): void {

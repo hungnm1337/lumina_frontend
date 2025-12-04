@@ -9,7 +9,7 @@ import { Component } from '@angular/core';
 })
 export class ErrorComponent {
  goHome() {
-    this.showAlert('Navigating to home page...');
+    this.showAlert('Đang chuyển đến trang chủ...');
     setTimeout(() => {
       window.location.href = '/'; // or you can inject Router and do router.navigate
     }, 1000);
@@ -19,17 +19,17 @@ export class ErrorComponent {
     if (window.history.length > 1) {
       window.history.back();
     } else {
-      this.showAlert('No previous page to go back to');
+      this.showAlert('Không có trang trước để quay lại');
     }
   }
 
   performSearch(query: string) {
     query = query.trim();
     if (query) {
-      this.showAlert(`Searching for: "${query}"`);
+      this.showAlert(`Đang tìm kiếm: "${query}"`);
       // Navigate or handle search logic here
     } else {
-      this.showAlert('Please enter a search term');
+      this.showAlert('Vui lòng nhập từ khóa tìm kiếm');
     }
   }
 

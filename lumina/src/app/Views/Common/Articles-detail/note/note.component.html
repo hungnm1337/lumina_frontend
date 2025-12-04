@@ -11,10 +11,10 @@
         <div class="header-content">
           <i class="fas fa-sticky-note"></i>
           <div>
-            <h3>My Notes</h3>
+            <h3>Ghi chú của tôi</h3>
             <div class="note-ids">
-              <span class="note-id-badge">Article #{{ articleId }}</span>
-              <span class="note-id-badge">Section #{{ sectionId }}</span>
+              <span class="note-id-badge">Bài viết #{{ articleId }}</span>
+              <span class="note-id-badge">Phần #{{ sectionId }}</span>
             </div>
           </div>
         </div>
@@ -27,7 +27,7 @@
         <!-- Loading State -->
         <div class="note-loading" *ngIf="isLoading">
           <i class="fas fa-spinner fa-spin"></i>
-          <span>Loading note...</span>
+          <span>Đang tải ghi chú...</span>
         </div>
 
         <!-- Note Editor -->
@@ -35,7 +35,7 @@
           <textarea
             [(ngModel)]="noteContent"
             (ngModelChange)="onNoteContentChange()"
-            placeholder="Write your notes here..."
+            placeholder="Viết ghi chú của bạn tại đây..."
             class="note-textarea"
           ></textarea>
         </div>
@@ -49,7 +49,7 @@
 
       <section class="note-controls">
         <div class="note-footer">
-          <span class="auto-save-text">Auto-save: 30s</span>
+          <span class="auto-save-text">Tự động lưu: 30s</span>
           <div class="note-actions">
 
             <button
@@ -59,7 +59,7 @@
               [disabled]="isSaving || !noteContent.trim()"
             >
               <i class="fas" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
-              {{ isSaving ? 'Saving...' : 'Save' }}
+              {{ isSaving ? 'Đang lưu...' : 'Lưu' }}
             </button>
           </div>
         </div>
