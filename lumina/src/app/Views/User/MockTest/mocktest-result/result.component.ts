@@ -18,7 +18,7 @@ export class ResultComponent implements OnInit {
   attemptId: number | null = null;
   attemptDetails: ExamAttemptDetailResponseDTO | null = null;
   isLoading: boolean = true;
-  
+
   // Feedback properties
   feedback: MocktestFeedbackDTO | null = null;
   isLoadingFeedback: boolean = false;
@@ -174,5 +174,17 @@ export class ResultComponent implements OnInit {
     if (score >= 600) return 'Sơ trung cấp (Pre-Intermediate)';
     if (score >= 500) return 'Sơ cấp (Elementary)';
     return 'Bắt đầu (Beginner)';
+  }
+
+  formatActionPlan(text: string): string {
+    if (!text) return '';
+
+    // Replace **text** with <strong>text</strong>
+    // Replace lines starting with * (bullet points) with indented version
+    // Replace newlines with <br> tags to preserve line breaks
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^\* (.+)$/gm, '<span style="display:block;margin-left:1.5rem;">• $1</span>')
+      .replace(/\n/g, '<br>');
   }
 }

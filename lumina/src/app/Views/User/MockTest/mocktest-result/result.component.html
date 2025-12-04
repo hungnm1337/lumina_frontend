@@ -116,7 +116,7 @@
             </svg>
             Phân tích từ AI
           </h2>
-          <button 
+          <button
             *ngIf="feedbackError || (!isLoadingFeedback && !feedback)"
             (click)="retryFeedback()"
             [disabled]="isLoadingFeedback"
@@ -145,7 +145,7 @@
           </svg>
           <h3 class="text-lg font-semibold text-red-800 mb-2">Không thể tải phản hồi</h3>
           <p class="text-red-600 mb-4">{{ feedbackError }}</p>
-          <button 
+          <button
             (click)="retryFeedback()"
             class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
             Thử lại
@@ -181,7 +181,7 @@
               </div>
               <div class="mt-4">
                 <div class="w-full bg-gray-200 rounded-full h-3">
-                  <div 
+                  <div
                     class="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500"
                     [style.width.%]="(feedback.toeicScore / 990) * 100">
                   </div>
@@ -241,7 +241,9 @@
               Kế hoạch học tập
             </h3>
             <div class="bg-white rounded-lg p-4 border border-indigo-100">
-              <p class="text-gray-700 leading-relaxed whitespace-pre-line">{{ feedback.actionPlan }}</p>
+              <div class="text-gray-700 leading-relaxed formatted-content"
+                   [innerHTML]="formatActionPlan(feedback.actionPlan)">
+              </div>
             </div>
           </div>
         </div>
@@ -249,7 +251,7 @@
     </div>
 
     <!-- Action Buttons -->
-    <div class="action-buttons">
+    <div class="action-buttons m-4">
       <button class="btn btn-secondary" (click)="goToExams()">
         <i class="fas fa-list"></i>
         Danh sách bài thi
