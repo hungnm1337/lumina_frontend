@@ -5,37 +5,37 @@
       <div class="title-section">
         <h1 class="page-title">
           <span class="toeic-badge">TOEIC</span>
-          Article Management
+          Quản lý Bài viết
         </h1>
         <p class="page-subtitle">
-          Create educational content for TOEIC skill development
+          Tạo nội dung giáo dục cho phát triển kỹ năng TOEIC
         </p>
       </div>
       <div class="header-stats">
         <div class="stat-card">
           <div class="stat-number">{{total || 0}}</div>
-          <div class="stat-label">Total Articles</div>
+          <div class="stat-label">Tổng số Bài viết</div>
         </div>
         <div class="stat-card">
           <div class="stat-number">{{categories.length}}</div>
-          <div class="stat-label">Categories</div>
+          <div class="stat-label">Danh mục</div>
         </div>
         <div class="stat-card">
           <div class="stat-number">{{getPublishedCount()}}</div>
-          <div class="stat-label">Published</div>
+          <div class="stat-label">Đã xuất bản</div>
         </div>
       </div>
     </div>
-    
+
     <!-- CREATE BUTTON - STAFF CAN CREATE -->
     <div class="header-actions" *ngIf="isStaff">
       <button class="btn-create-article" (click)="openModal()">
         <i class="fas fa-plus"></i>
-        <span class="btn-text">Create Article</span>
+        <span class="btn-text">Tạo Bài viết</span>
       </button>
-      <button class="btn-add-category" (click)="openAddCategoryModal()" title="Add New Category" type="button">
+      <button class="btn-add-category" (click)="openAddCategoryModal()" title="Thêm Danh mục Mới" type="button">
         <i class="fas fa-plus"></i>
-        <span class="btn-text">Add Category</span>
+        <span class="btn-text">Thêm Danh mục</span>
       </button>
     </div>
   </div>
@@ -49,11 +49,11 @@
           type="text"
           [(ngModel)]="searchTerm"
           (input)="onSearchChange()"
-          placeholder="Search articles, content, categories..."
+          placeholder="Tìm kiếm bài viết, nội dung, danh mục..."
           class="search-input">
-        <button 
-          *ngIf="searchTerm" 
-          (click)="searchTerm = ''; onSearchChange()" 
+        <button
+          *ngIf="searchTerm"
+          (click)="searchTerm = ''; onSearchChange()"
           class="clear-search-btn">
           <i class="fas fa-times"></i>
         </button>
@@ -62,9 +62,9 @@
 
     <div class="filters-section">
       <div class="filter-group">
-        <label>Category</label>
+        <label>Danh mục</label>
         <select [(ngModel)]="selectedCategory" (change)="onCategoryChange()" class="filter-select">
-          <option value="">All Categories</option>
+          <option value="">Tất cả Danh mục</option>
           <option *ngFor="let category of categories" [value]="category.name">
             {{category.name}}
           </option>
@@ -72,32 +72,32 @@
       </div>
 
       <div class="filter-group">
-        <label>Status</label>
+        <label>Trạng thái</label>
         <select [(ngModel)]="selectedStatus" (change)="onStatusChange()" class="filter-select">
-          <option value="">All Status</option>
-          <option value="draft">Draft</option>
-          <option value="pending">Pending</option>
-          <option value="published">Published</option>
+          <option value="">Tất cả Trạng thái</option>
+          <option value="draft">Bản nháp</option>
+          <option value="pending">Chờ duyệt</option>
+          <option value="published">Đã xuất bản</option>
         </select>
       </div>
 
       <div class="filter-group">
-        <label>Sort By</label>
+        <label>Sắp xếp theo</label>
         <select [(ngModel)]="sortBy" (change)="changeSort(sortBy, sortDir)" class="filter-select">
-          <option value="createdAt">Date Created</option>
-          <option value="title">Title</option>
-          <option value="category">Category</option>
+          <option value="createdAt">Ngày tạo</option>
+          <option value="title">Tiêu đề</option>
+          <option value="category">Danh mục</option>
         </select>
       </div>
 
       <div class="filter-actions">
         <button (click)="selectedCategory = ''; selectedStatus = ''; onFilterChange()" class="btn-clear-filters">
           <i class="fas fa-eraser"></i>
-          Clear All
+          Xóa tất cả
         </button>
         <button (click)="loadArticles()" class="btn-refresh">
           <i class="fas fa-sync-alt"></i>
-          Refresh
+          Làm mới
         </button>
       </div>
     </div>
@@ -112,16 +112,16 @@
         <div class="loading-spinner">
           <i class="fas fa-spinner fa-spin"></i>
         </div>
-        <p>Loading articles...</p>
+        <p>Đang tải bài viết...</p>
       </div>
 
       <!-- Articles Grid -->
       <div *ngIf="!isLoading" class="articles-grid">
-        <div 
-          *ngFor="let article of filteredArticles; let i = index" 
+        <div
+          *ngFor="let article of filteredArticles; let i = index"
           class="article-card"
           [class.featured]="article.status === 'published'">
-          
+
           <!-- Card Header -->
           <div class="card-header">
             <div class="article-status-section">
@@ -130,53 +130,53 @@
                 {{getStatusText(article.status)}}
               </span>
             </div>
-            
+
             <div class="card-actions">
               <div class="action-buttons">
                 <!-- STAFF CAN EDIT -->
-                <button 
+                <button
                   *ngIf="isStaff"
-                  class="btn-action btn-edit" 
+                  class="btn-action btn-edit"
                   (click)="openModal(article)"
-                  title="Edit article">
+                  title="Chỉnh sửa bài viết">
                   <i class="fas fa-edit"></i>
                 </button>
-                
+
                 <!-- STAFF CAN SUBMIT FOR APPROVAL -->
-                <button 
-                  *ngIf="article.status === 'draft' && isStaff" 
-                  class="btn-action btn-submit" 
+                <button
+                  *ngIf="article.status === 'draft' && isStaff"
+                  class="btn-action btn-submit"
                   [class.btn-resubmit]="article.rejectionReason"
                   (click)="submitForApproval(article.id)"
-                  [title]="article.rejectionReason ? 'Gửi lại để duyệt' : 'Submit for approval'">
+                  [title]="article.rejectionReason ? 'Gửi lại để duyệt' : 'Gửi phê duyệt'">
                   <i class="fas fa-paper-plane"></i>
-                  
+
                 </button>
-                
+
                 <!-- ONLY MANAGER CAN APPROVE/REJECT -->
                 <ng-container *ngIf="canApproveReject()">
-                  <button 
-                    *ngIf="article.status === 'pending'" 
-                    class="btn-action btn-approve" 
+                  <button
+                    *ngIf="article.status === 'pending'"
+                    class="btn-action btn-approve"
                     (click)="approveArticle(article.id)"
-                    title="Approve & publish">
+                    title="Phê duyệt và xuất bản">
                     <i class="fas fa-check"></i>
                   </button>
-                  <button 
-                    *ngIf="article.status === 'pending'" 
-                    class="btn-action btn-reject" 
+                  <button
+                    *ngIf="article.status === 'pending'"
+                    class="btn-action btn-reject"
                     (click)="rejectArticle(article.id)"
-                    title="Reject article">
+                    title="Từ chối bài viết">
                     <i class="fas fa-times"></i>
                   </button>
                 </ng-container>
-                
+
                 <!-- STAFF CAN DELETE -->
-                <button 
+                <button
                   *ngIf="isStaff"
-                  class="btn-action btn-delete" 
+                  class="btn-action btn-delete"
                   (click)="deleteArticle(article.id)"
-                  title="Delete article">
+                  title="Xóa bài viết">
                   <i class="fas fa-trash"></i>
                 </button>
               </div>
@@ -218,7 +218,7 @@
             <div class="article-info-section">
               <div class="info-item">
                 <i class="fas fa-file-alt"></i>
-                <span>{{getSectionCount(article)}} sections</span>
+                <span>{{getSectionCount(article)}} phần</span>
               </div>
               <div class="info-item">
                 <i class="fas fa-calendar-alt"></i>
@@ -243,7 +243,7 @@
             <div class="toeic-skills-footer">
               <span class="toeic-indicator">
                 <i class="fas fa-star"></i>
-                TOEIC Learning Content
+                Nội dung Học TOEIC
               </span>
             </div>
           </div>
@@ -255,33 +255,33 @@
         <div class="empty-icon">
           <i class="fas fa-file-alt"></i>
         </div>
-        <h3>No articles found</h3>
-        <p>Try changing your filters or create your first article</p>
+        <h3>Không tìm thấy bài viết</h3>
+        <p>Thử thay đổi bộ lọc hoặc tạo bài viết đầu tiên</p>
         <button class="btn-add-first" (click)="openModal()" *ngIf="isStaff">
           <i class="fas fa-plus"></i>
-          Create Your First Article
+          Tạo Bài viết Đầu tiên
         </button>
       </div>
 
       <!-- Pagination -->
       <div *ngIf="!isLoading && total > pageSize" class="pagination-section">
         <div class="pagination-info">
-          Page {{page}} / {{Math.ceil(total / pageSize)}} · Total {{total | number}} articles
+          Trang {{page}} / {{Math.ceil(total / pageSize)}} · Tổng {{total | number}} bài viết
         </div>
         <div class="pagination-controls">
-          <button 
-            class="btn-page" 
-            [disabled]="page <= 1" 
+          <button
+            class="btn-page"
+            [disabled]="page <= 1"
             (click)="prevPage()">
             <i class="fas fa-chevron-left"></i>
-            Previous
+            Trước
           </button>
           <span class="current-page">{{page}}</span>
-          <button 
-            class="btn-page" 
-            [disabled]="page * pageSize >= total" 
+          <button
+            class="btn-page"
+            [disabled]="page * pageSize >= total"
             (click)="nextPage()">
-            Next
+            Tiếp theo
             <i class="fas fa-chevron-right"></i>
           </button>
         </div>
@@ -297,8 +297,8 @@
             <i class="fas fa-user-edit"></i>
           </div>
           <div class="content-title">
-            <h3>Staff Dashboard</h3>
-            <p>Content creation & management</p>
+            <h3>Bảng điều khiển Nhân viên</h3>
+            <p>Tạo và quản lý nội dung</p>
           </div>
         </div>
         <div class="content-stats">
@@ -308,7 +308,7 @@
             </div>
             <div class="stat-details">
               <span class="stat-value">{{getPublishedCount()}}</span>
-              <span class="stat-label">Published</span>
+              <span class="stat-label">Đã xuất bản</span>
             </div>
           </div>
           <div class="stat-item">
@@ -317,7 +317,7 @@
             </div>
             <div class="stat-details">
               <span class="stat-value">{{getPendingCount()}}</span>
-              <span class="stat-label">Pending</span>
+              <span class="stat-label">Chờ duyệt</span>
             </div>
           </div>
           <div class="stat-item">
@@ -326,7 +326,7 @@
             </div>
             <div class="stat-details">
               <span class="stat-value">{{getDraftCount()}}</span>
-              <span class="stat-label">My Drafts</span>
+              <span class="stat-label">Bản nháp của tôi</span>
             </div>
           </div>
         </div>
@@ -336,7 +336,7 @@
       <div class="stats-card">
         <div class="card-header">
           <i class="fas fa-chart-pie"></i>
-          <h3>Category Distribution</h3>
+          <h3>Phân bổ Danh mục</h3>
         </div>
         <div class="category-stats">
           <div *ngFor="let category of categories" class="category-stat-item">
@@ -355,26 +355,26 @@
       <div class="quick-actions-card" *ngIf="isStaff">
         <div class="card-header">
           <i class="fas fa-lightning-bolt"></i>
-          <h3>Staff Actions</h3>
+          <h3>Hành động Nhân viên</h3>
         </div>
         <div class="action-buttons-grid">
           <!-- MAIN CREATE BUTTON -->
           <button class="quick-action-btn create-main" (click)="openModal()">
             <i class="fas fa-plus-circle"></i>
-            <span>Create Article</span>
+            <span>Tạo Bài viết</span>
           </button>
-          
+
           <button class="quick-action-btn drafts" (click)="showMyDrafts()">
             <i class="fas fa-edit"></i>
-            <span>My Drafts</span>
+            <span>Bản nháp của tôi</span>
           </button>
           <button class="quick-action-btn pending" (click)="showPendingReview()">
             <i class="fas fa-clock"></i>
-            <span>Pending Review</span>
+            <span>Chờ xem xét</span>
           </button>
           <button class="quick-action-btn published" (click)="showPublished()">
             <i class="fas fa-globe"></i>
-            <span>Published</span>
+            <span>Đã xuất bản</span>
           </button>
         </div>
       </div>
@@ -392,9 +392,9 @@
         </div>
         <div class="modal-title-section">
           <h2>
-            {{editingArticle ? 'Edit Article' : 'Create New Article'}}
+            {{editingArticle ? 'Chỉnh sửa Bài viết' : 'Tạo Bài viết Mới'}}
           </h2>
-          <p>Build engaging TOEIC learning content</p>
+          <p>Xây dựng nội dung học TOEIC hấp dẫn</p>
         </div>
       </div>
       <button class="btn-close" (click)="closeModal()" type="button">
@@ -405,81 +405,81 @@
     <form [formGroup]="articleForm" (ngSubmit)="saveArticle()" class="modal-form">
       <!-- Basic Information -->
       <div class="form-group">
-        <label for="category">Category</label>
+        <label for="category">Danh mục</label>
         <select id="category" formControlName="category" class="form-select" required>
-          <option value="">Select category...</option>
+          <option value="">Chọn danh mục...</option>
           <option *ngFor="let category of categoryNames" [value]="category">
             {{category}}
           </option>
         </select>
-        <div *ngIf="articleForm.get('category')?.invalid && articleForm.get('category')?.touched" 
+        <div *ngIf="articleForm.get('category')?.invalid && articleForm.get('category')?.touched"
              class="error-message">
-          Category is required
+          Danh mục là bắt buộc
         </div>
       </div>
 
       <div class="form-group">
-        <label for="title">Article Title</label>
+        <label for="title">Tiêu đề Bài viết</label>
         <input
           id="title"
           type="text"
           formControlName="title"
-          placeholder="Enter engaging article title..."
+          placeholder="Nhập tiêu đề bài viết hấp dẫn..."
           class="form-input"
           required>
-        <div *ngIf="articleForm.get('title')?.invalid && articleForm.get('title')?.touched" 
+        <div *ngIf="articleForm.get('title')?.invalid && articleForm.get('title')?.touched"
              class="error-message">
-          Title must be at least 5 characters
+          Tiêu đề phải có ít nhất 5 ký tự
         </div>
       </div>
 
       <div class="form-group">
-        <label for="summary">Summary</label>
+        <label for="summary">Tóm tắt</label>
         <textarea
           id="summary"
           formControlName="summary"
           rows="3"
-          placeholder="Brief description of the article content..."
+          placeholder="Mô tả ngắn gọn về nội dung bài viết..."
           class="form-textarea"
           required></textarea>
-        <div *ngIf="articleForm.get('summary')?.invalid && articleForm.get('summary')?.touched" 
+        <div *ngIf="articleForm.get('summary')?.invalid && articleForm.get('summary')?.touched"
              class="error-message">
-          Summary must be at least 20 characters
+          Tóm tắt phải có ít nhất 20 ký tự
         </div>
       </div>
 
       <!-- Content Sections - FULL FUNCTIONALITY -->
       <div class="sections-container">
         <div class="sections-header">
-          <h3>Article Sections</h3>
-          <p>Create structured content with multiple sections</p>
+          <h3>Các Phần của Bài viết</h3>
+          <p>Tạo nội dung có cấu trúc với nhiều phần</p>
         </div>
 
         <!-- Dynamic Sections -->
         <div formArrayName="sections">
-          <div *ngFor="let sectionGroup of sections.controls; let i = index" 
-               class="section-item" 
+          <div *ngFor="let sectionGroup of sections.controls; let i = index"
+               class="section-item"
                [formGroupName]="i">
-            
+
             <!-- Section Header -->
             <div class="section-header">
               <div class="section-number">{{i + 1}}</div>
-              
+
               <div class="section-form-group">
-                <label>Section Title</label>
+                <label>Tiêu đề Phần</label>
                 <input
                   type="text"
                   formControlName="sectionTitle"
-                  placeholder="Enter section title..."
+                  placeholder="Nhập tiêu đề phần..."
                   class="form-input">
-                <div *ngIf="sectionGroup.get('sectionTitle')?.invalid && sectionGroup.get('sectionTitle')?.touched" 
+                <div *ngIf="sectionGroup.get('sectionTitle')?.invalid && sectionGroup.get('sectionTitle')?.touched"
                      class="error-message">
-                  Section title is required
+                  Tiêu đề phần là bắt buộc
                 </div>
               </div>
-              
+
               <div class="section-type-group">
-                <label>Type</label>
+                <label>Loại</label>
                 <select formControlName="type" class="form-select">
                   <option *ngFor="let type of sectionTypes" [value]="type.value">
                     {{type.label}}
@@ -490,15 +490,15 @@
 
             <!-- Section Content -->
 <div class="section-content">
-  <label>Content</label>
-  
+  <label>Nội dung</label>
+
   <!-- QUILL-EDITOR với Cloudinary upload -->
-  <quill-editor 
+  <quill-editor
     formControlName="content"
-    [placeholder]="sectionGroup.get('type')?.value === 'video' ? 'Paste YouTube video URL here (e.g., https://www.youtube.com/watch?v=...)' : 'Enter section content...'"
+    [placeholder]="sectionGroup.get('type')?.value === 'video' ? 'Dán URL video YouTube tại đây (ví dụ: https://www.youtube.com/watch?v=...)' : 'Nhập nội dung phần...'"
     [modules]="getQuillConfig(i)"
     [styles]="{ 'min-height': '150px' }"
-    (onEditorCreated)="onEditorCreated($event, i)"> 
+    (onEditorCreated)="onEditorCreated($event, i)">
   </quill-editor>
 
   <!-- Upload progress indicator -->
@@ -507,13 +507,13 @@
     <span>Đang upload lên Cloudinary...</span>
   </div>
 
-  <div *ngIf="sectionGroup.get('content')?.invalid && sectionGroup.get('content')?.touched" 
+  <div *ngIf="sectionGroup.get('content')?.invalid && sectionGroup.get('content')?.touched"
        class="error-message">
     <span *ngIf="sectionGroup.get('type')?.value === 'video'">
-      Please paste a YouTube video URL
+      Vui lòng dán URL video YouTube
     </span>
     <span *ngIf="sectionGroup.get('type')?.value !== 'video'">
-      Content is required
+      Nội dung là bắt buộc
     </span>
   </div>
 </div>
@@ -526,7 +526,7 @@
                 (click)="moveSectionUp(i)"
                 [disabled]="i === 0">
                 <i class="fas fa-arrow-up"></i>
-                Up
+                Lên
               </button>
               <button
                 type="button"
@@ -534,7 +534,7 @@
                 (click)="moveSectionDown(i)"
                 [disabled]="i === sections.length - 1">
                 <i class="fas fa-arrow-down"></i>
-                Down
+                Xuống
               </button>
               <button
                 type="button"
@@ -542,7 +542,7 @@
                 (click)="removeSection(i)"
                 [disabled]="sections.length === 1">
                 <i class="fas fa-trash"></i>
-                Remove
+                Xóa
               </button>
             </div>
           </div>
@@ -554,35 +554,35 @@
           class="btn-add-section"
           (click)="addSection()">
           <i class="fas fa-plus"></i>
-          Add Section
+          Thêm Phần
         </button>
       </div>
 
       <!-- Tags -->
       <div class="form-group">
-        <label for="tags">Tags</label>
+        <label for="tags">Thẻ</label>
         <input
           id="tags"
           type="text"
           formControlName="tags"
-          placeholder="Enter tags separated by commas..."
+          placeholder="Nhập thẻ cách nhau bằng dấu phẩy..."
           class="form-input">
-        <small class="form-hint">Separate multiple tags with commas</small>
+        <small class="form-hint">Phân tách nhiều thẻ bằng dấu phẩy</small>
       </div>
 
       <!-- Modal Actions -->
       <div class="modal-actions">
         <button type="button" class="btn-secondary" (click)="closeModal()">
-          Cancel
+          Hủy
         </button>
-        <button 
-          type="submit" 
-          class="btn-primary" 
+        <button
+          type="submit"
+          class="btn-primary"
           [disabled]="articleForm.invalid || isSubmitting">
           <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin"></i>
           <i *ngIf="!isSubmitting && !editingArticle" class="fas fa-plus"></i>
           <i *ngIf="!isSubmitting && editingArticle" class="fas fa-save"></i>
-          {{editingArticle ? 'Update Article' : 'Create Article'}}
+          {{editingArticle ? 'Cập nhật Bài viết' : 'Tạo Bài viết'}}
         </button>
       </div>
     </form>
@@ -598,8 +598,8 @@
           <i class="fas fa-folder-plus"></i>
         </div>
         <div class="modal-title-section">
-          <h2>Add New Category</h2>
-          <p>Create a new category for articles</p>
+          <h2>Thêm Danh mục Mới</h2>
+          <p>Tạo danh mục mới cho bài viết</p>
         </div>
       </div>
       <button class="btn-close" (click)="closeAddCategoryModal()" type="button">
@@ -611,41 +611,41 @@
       <div class="form-group">
         <label for="categoryName">
           <i class="fas fa-tag"></i>
-          Category Name
+          Tên Danh mục
         </label>
         <input
           id="categoryName"
           type="text"
           formControlName="name"
-          placeholder="Enter category name (e.g., Business, Entertainment, Food...)"
+          placeholder="Nhập tên danh mục (ví dụ: Kinh doanh, Giải trí, Ẩm thực...)"
           class="form-input"
           [class.error]="categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched"
           required>
-        <div *ngIf="categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched" 
+        <div *ngIf="categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched"
              class="error-message">
           <i class="fas fa-exclamation-circle"></i>
-          <span *ngIf="categoryForm.get('name')?.errors?.['required']">Category name is required</span>
-          <span *ngIf="categoryForm.get('name')?.errors?.['minlength']">Category name must be at least 2 characters</span>
-          <span *ngIf="categoryForm.get('name')?.errors?.['maxlength']">Category name must not exceed 50 characters</span>
+          <span *ngIf="categoryForm.get('name')?.errors?.['required']">Tên danh mục là bắt buộc</span>
+          <span *ngIf="categoryForm.get('name')?.errors?.['minlength']">Tên danh mục phải có ít nhất 2 ký tự</span>
+          <span *ngIf="categoryForm.get('name')?.errors?.['maxlength']">Tên danh mục không được vượt quá 50 ký tự</span>
         </div>
         <small class="form-hint">
           <i class="fas fa-info-circle"></i>
-          Enter a unique name for the new category. This will be used to organize articles.
+          Nhập tên duy nhất cho danh mục mới. Điều này sẽ được sử dụng để tổ chức các bài viết.
         </small>
       </div>
 
       <div class="modal-actions">
         <button type="button" class="btn-secondary" (click)="closeAddCategoryModal()">
           <i class="fas fa-times"></i>
-          Cancel
+          Hủy
         </button>
-        <button 
-          type="submit" 
-          class="btn-primary" 
+        <button
+          type="submit"
+          class="btn-primary"
           [disabled]="categoryForm.invalid || isSubmittingCategory">
           <i *ngIf="isSubmittingCategory" class="fas fa-spinner fa-spin"></i>
           <i *ngIf="!isSubmittingCategory" class="fas fa-plus"></i>
-          Create Category
+          Tạo Danh mục
         </button>
       </div>
     </form>

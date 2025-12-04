@@ -54,7 +54,7 @@
             <div>
               <h4 class="font-medium text-gray-900 mb-1 text-sm">
                 Question {{ currentIndex + 1 }}:
-                {{ getCurrentQuestion()?.stemText }}
+                {{ getCurrentQuestion()?.stemText || getCurrentQuestion()?.prompt?.title || 'Write a response based on the image and content below' }}
               </h4>
               @if (getCurrentQuestion()?.prompt?.contentText) {
               <div class="font-medium text-gray-600 mb-1 text-sm">

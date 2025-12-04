@@ -511,12 +511,13 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       console.log(
         '[Writing] ✅ Writing part completed in mock test - emitting event'
       );
-      this.isFinished = true;
+      // ❌ KHÔNG set isFinished = true trong mock test để tránh hiển thị kết quả
       this.writingPartCompleted.emit();
       return;
     }
 
     // ✅ Nếu thi standalone, hiển thị kết quả như cũ
+    this.isFinished = true;
     this.showExplain = true;
     this.callEndExamAPI();
 
@@ -661,7 +662,17 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   getCurrentQuestion(): QuestionDTO | null {
     if (!this.questions || this.currentIndex >= this.questions.length)
       return null;
-    return this.questions[this.currentIndex];
+    const question = this.questions[this.currentIndex];
+    // Debug log để kiểm tra stemText
+    if (question && !question.stemText) {
+      console.log('[Writing] ⚠️ Question stemText is empty:', {
+        questionId: question.questionId,
+        stemText: question.stemText,
+        promptTitle: question.prompt?.title,
+        promptContent: question.prompt?.contentText?.substring(0, 50)
+      });
+    }
+    return question;
   }
 
   getSavedAnswer(questionId: number): string {

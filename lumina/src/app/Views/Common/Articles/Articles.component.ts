@@ -77,12 +77,12 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
 
   get latestArticles(): ArticleResponse[] {
     let articles = this.publishedArticles;
-    
+
     // Filter by selected author if any
     if (this.selectedAuthor) {
       articles = articles.filter(a => a.authorName === this.selectedAuthor);
     }
-    
+
     if (!this.showAllLatestArticles) {
       return articles.slice(0, 3);
     }
@@ -94,7 +94,7 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
   }
 
   get totalPages(): number {
-    const articles = this.selectedAuthor 
+    const articles = this.selectedAuthor
       ? this.publishedArticles.filter(a => a.authorName === this.selectedAuthor)
       : this.publishedArticles;
     return Math.ceil(articles.length / this.itemsPerPage);
@@ -115,7 +115,7 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
         authors.set(article.authorName, {
           id: authors.size + 1,
           name: article.authorName,
-          expertise: 'Content Creator',
+          expertise: 'Tác giả',
           avatar: article.authorName.charAt(0).toUpperCase(),
           avatarColor: this.getAuthorAvatarColor(authors.size),
           articlesCount: this.publishedArticles.filter(a => a.authorName === article.authorName).length
@@ -188,7 +188,7 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error loading articles:', error);
-        this.error = 'Unable to load articles. Please try again later.';
+        this.error = 'Không thể tải bài viết. Vui lòng thử lại sau.';
         this.isLoading = false;
       }
     });
@@ -232,9 +232,9 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
   // Get status text
   getStatusText(status: string): string {
     switch(status) {
-      case 'completed': return 'Completed';
-      case 'in_progress': return 'In Progress';
-      default: return 'Not Started';
+      case 'completed': return 'Đã hoàn thành';
+      case 'in_progress': return 'Đang đọc';
+      default: return 'Chưa bắt đầu';
     }
   }
 
@@ -294,7 +294,7 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error filtering articles:', error);
-        this.error = 'Unable to filter articles. Please try again later.';
+        this.error = 'Không thể lọc bài viết. Vui lòng thử lại sau.';
         this.isLoading = false;
       }
     });
@@ -322,7 +322,7 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
     }
     this.currentPage = 1; // Reset to first page
     this.showAllLatestArticles = true; // Show all articles when filtering
-    
+
     // Scroll to latest articles section
     setTimeout(() => {
       const element = document.querySelector('.latest-section');
@@ -377,7 +377,7 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
     const wordsPerMinute = 200;
     const wordCount = content.split(' ').length;
     const minutes = Math.ceil(wordCount / wordsPerMinute);
-    return `${minutes} min read`;
+    return `${minutes} phút đọc`;
   }
 
   onViewMoreLatestArticles(): void {

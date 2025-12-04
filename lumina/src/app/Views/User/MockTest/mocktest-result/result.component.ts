@@ -18,7 +18,7 @@ export class ResultComponent implements OnInit {
   attemptId: number | null = null;
   attemptDetails: ExamAttemptDetailResponseDTO | null = null;
   isLoading: boolean = true;
-  
+
   // Feedback properties
   feedback: MocktestFeedbackDTO | null = null;
   isLoadingFeedback: boolean = false;
@@ -70,6 +70,7 @@ export class ResultComponent implements OnInit {
 
   get totalQuestions(): number {
     let total = 0;
+    if (this.attemptDetails?.listeningAnswers) total += this.attemptDetails.listeningAnswers.length;
     if (this.attemptDetails?.readingAnswers) total += this.attemptDetails.readingAnswers.length;
     if (this.attemptDetails?.writingAnswers) total += this.attemptDetails.writingAnswers.length;
     if (this.attemptDetails?.speakingAnswers) total += this.attemptDetails.speakingAnswers.length;
@@ -78,6 +79,9 @@ export class ResultComponent implements OnInit {
 
   get correctAnswers(): number {
     let correct = 0;
+    if (this.attemptDetails?.listeningAnswers) {
+      correct += this.attemptDetails.listeningAnswers.filter(a => a.isCorrect).length;
+    }
     if (this.attemptDetails?.readingAnswers) {
       correct += this.attemptDetails.readingAnswers.filter(a => a.isCorrect).length;
     }
@@ -101,29 +105,38 @@ export class ResultComponent implements OnInit {
   }
 
   getSkillScore(skillType: string): number {
-    if (skillType === 'reading' && this.attemptDetails?.readingAnswers) {
+    const lowerSkill = skillType.toLowerCase();
+    
+    if (lowerSkill === 'listening' && this.attemptDetails?.listeningAnswers) {
+      return this.attemptDetails.listeningAnswers.filter(a => a.isCorrect).length;
+    }
+    if (lowerSkill === 'reading' && this.attemptDetails?.readingAnswers) {
       return this.attemptDetails.readingAnswers.filter(a => a.isCorrect).length;
     }
-    if (skillType === 'writing' && this.attemptDetails?.writingAnswers) {
-      return this.attemptDetails.writingAnswers.length; // Assuming submitted = scored
+    if (lowerSkill === 'writing' && this.attemptDetails?.writingAnswers) {
+      return this.attemptDetails.writingAnswers.length;
     }
-    if (skillType === 'speaking' && this.attemptDetails?.speakingAnswers) {
-      return this.attemptDetails.speakingAnswers.length; // Assuming submitted = scored
+    if (lowerSkill === 'speaking' && this.attemptDetails?.speakingAnswers) {
+      return this.attemptDetails.speakingAnswers.length;
     }
     return 0;
   }
 
   getSkillTotal(skillType: string): number {
-    if (skillType === 'reading' && this.attemptDetails?.readingAnswers) {
+    const lowerSkill = skillType.toLowerCase();
+    
+    if (lowerSkill === 'listening' && this.attemptDetails?.listeningAnswers) {
+      return this.attemptDetails.listeningAnswers.length;
+    }
+    if (lowerSkill === 'reading' && this.attemptDetails?.readingAnswers) {
       return this.attemptDetails.readingAnswers.length;
     }
-    if (skillType === 'writing' && this.attemptDetails?.writingAnswers) {
+    if (lowerSkill === 'writing' && this.attemptDetails?.writingAnswers) {
       return this.attemptDetails.writingAnswers.length;
     }
-    if (skillType === 'speaking' && this.attemptDetails?.speakingAnswers) {
+    if (lowerSkill === 'speaking' && this.attemptDetails?.speakingAnswers) {
       return this.attemptDetails.speakingAnswers.length;
     }
-    // For listening, we don't have separate data, return 0
     return 0;
   }
 
@@ -174,5 +187,17 @@ export class ResultComponent implements OnInit {
     if (score >= 600) return 'Sơ trung cấp (Pre-Intermediate)';
     if (score >= 500) return 'Sơ cấp (Elementary)';
     return 'Bắt đầu (Beginner)';
+  }
+
+  formatActionPlan(text: string): string {
+    if (!text) return '';
+
+    // Replace **text** with <strong>text</strong>
+    // Replace lines starting with * (bullet points) with indented version
+    // Replace newlines with <br> tags to preserve line breaks
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^\* (.+)$/gm, '<span style="display:block;margin-left:1.5rem;">• $1</span>')
+      .replace(/\n/g, '<br>');
   }
 }

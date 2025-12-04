@@ -16,14 +16,14 @@ import { AuthUserResponse } from './../../../../Interfaces/auth.interfaces';
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   @Output() sidebarToggle = new EventEmitter<void>();
-  pageTitle = 'Manager Panel';
+  pageTitle = 'Bảng quản lý';
   isDropdownOpen = false;
   currentUser$!: Observable<AuthUserResponse | null>;
   unreadNotificationCount = 0;
   private unreadCountSubscription?: Subscription;
 
   constructor(
-    private router: Router, 
+    private router: Router,
     private activatedRoute: ActivatedRoute,
     private authService: AuthService,
     private userService: UserService,
@@ -40,7 +40,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.unreadCountSubscription = this.notificationService.unreadCount$.subscribe(
       count => this.unreadNotificationCount = count
     );
-    
+
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd),
       map(() => this.activatedRoute),
@@ -52,7 +52,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       }),
       mergeMap(route => route.data)
     ).subscribe(data => {
-      this.pageTitle = data['title'] || 'Manager Panel';
+      this.pageTitle = data['title'] || 'Bảng quản lý';
     });
   }
 
@@ -74,7 +74,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   goToNotifications(): void {
     this.router.navigate(['/manager/notifications']);
   }
-  
+
   loadUserProfile(): void {
     const userId = this.authService.getCurrentUserId();
     if (!userId || userId === 0) return;
@@ -82,7 +82,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.userService.getProfile().subscribe({
       next: (profile) => {
         if (profile.avatarUrl) {
-          this.authService.updateCurrentUser({ 
+          this.authService.updateCurrentUser({
             avatarUrl: profile.avatarUrl,
             name: profile.fullName
           });
@@ -93,24 +93,24 @@ export class HeaderComponent implements OnInit, OnDestroy {
       }
     });
   }
-  
+
   toggleDropdown(event: Event): void {
     event.stopPropagation();
     this.isDropdownOpen = !this.isDropdownOpen;
   }
-  
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
     if (!this.elementRef.nativeElement.contains(event.target)) {
       this.isDropdownOpen = false;
     }
   }
-  
+
   goToProfile(): void {
     this.isDropdownOpen = false;
     this.router.navigate(['/profile']);
   }
-  
+
   logout(): void {
     this.isDropdownOpen = false;
     this.authService.logout();

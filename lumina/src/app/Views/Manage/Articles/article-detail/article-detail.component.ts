@@ -18,7 +18,7 @@ export class ArticleDetailComponent implements OnInit {
   article: ArticleResponse | null = null;
   isLoading: boolean = true;
   error: string = '';
-  
+
   // Rejection modal
   showRejectModal = false;
   rejectionReason: string = '';
@@ -41,7 +41,7 @@ export class ArticleDetailComponent implements OnInit {
 
     const articleId = this.route.snapshot.paramMap.get('id');
     if (!articleId) {
-      this.error = 'Article not found';
+      this.error = 'Không tìm thấy bài viết';
       this.isLoading = false;
       return;
     }
@@ -54,7 +54,7 @@ export class ArticleDetailComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading article:', error);
-        this.error = 'Unable to load article. Please try again later.';
+        this.error = 'Không thể tải bài viết. Vui lòng thử lại sau.';
         this.isLoading = false;
       }
     });
@@ -105,7 +105,7 @@ export class ArticleDetailComponent implements OnInit {
       /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
       /youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/
     ];
-    
+
     for (const pattern of patterns) {
       const match = url.match(pattern);
       if (match && match[1]) {
@@ -120,26 +120,26 @@ export class ArticleDetailComponent implements OnInit {
     // Check if content is a YouTube URL
     const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
     const match = content.trim().match(youtubeRegex);
-    
+
     if (match && match[1]) {
       const videoId = match[1];
       // Add necessary parameters to prevent video from stopping
       const embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}&rel=0&modestbranding=1&playsinline=1`;
-      
+
       return `<div class="youtube-embed-container">
-        <iframe 
-          width="100%" 
-          height="400" 
-          src="${embedUrl}" 
-          frameborder="0" 
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+        <iframe
+          width="100%"
+          height="400"
+          src="${embedUrl}"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowfullscreen
           loading="lazy"
           style="max-width: 100%; border-radius: 12px;">
         </iframe>
       </div>`;
     }
-    
+
     return content;
   }
 
@@ -148,13 +148,13 @@ export class ArticleDetailComponent implements OnInit {
     if (!html) {
       return this.sanitizer.bypassSecurityTrustHtml('');
     }
-    
+
     // Check if content is a YouTube URL (plain text)
     if (html.trim().startsWith('http') && (html.includes('youtube.com') || html.includes('youtu.be'))) {
       const embedHtml = this.convertYouTubeUrlToEmbed(html);
       return this.sanitizer.bypassSecurityTrustHtml(embedHtml);
     }
-    
+
     // Check if content is Quill Delta format (JSON string)
     let processedContent = html;
     try {
@@ -167,21 +167,21 @@ export class ArticleDetailComponent implements OnInit {
     } catch (e) {
       // Not JSON, assume it's already HTML
     }
-    
+
     // Check for YouTube URLs in HTML content and convert to embeds
     processedContent = processedContent.replace(
       /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/g,
       (match, videoId) => {
         // Add necessary parameters to prevent video from stopping
         const embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}&rel=0&modestbranding=1&playsinline=1`;
-        
+
         return `<div class="youtube-embed-container">
-          <iframe 
-            width="100%" 
-            height="400" 
-            src="${embedUrl}" 
-            frameborder="0" 
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+          <iframe
+            width="100%"
+            height="400"
+            src="${embedUrl}"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowfullscreen
             loading="lazy"
             style="max-width: 100%; border-radius: 12px;">
@@ -189,7 +189,7 @@ export class ArticleDetailComponent implements OnInit {
         </div>`;
       }
     );
-    
+
     // Ensure img tags have proper attributes for display
     processedContent = processedContent.replace(
       /<img([^>]*)>/gi,
@@ -202,7 +202,7 @@ export class ArticleDetailComponent implements OnInit {
         return match;
       }
     );
-    
+
     // Use bypassSecurityTrustHtml to allow iframes and other content
     // Note: This is safe because content comes from our own database (staff-created articles)
     return this.sanitizer.bypassSecurityTrustHtml(processedContent);
@@ -211,13 +211,13 @@ export class ArticleDetailComponent implements OnInit {
   // Convert Quill Delta to HTML (simplified version)
   private convertDeltaToHtml(delta: any): string {
     if (!delta || !delta.ops) return '';
-    
+
     let html = '';
     for (const op of delta.ops) {
       if (op.insert) {
         if (typeof op.insert === 'string') {
           let text = op.insert.replace(/\n/g, '<br>');
-          
+
           // Apply formatting
           if (op.attributes) {
             if (op.attributes.bold) text = `<strong>${text}</strong>`;
@@ -233,7 +233,7 @@ export class ArticleDetailComponent implements OnInit {
               text = `<ul><li>${text}</li></ul>`;
             }
           }
-          
+
           html += text;
         } else if (op.insert && typeof op.insert === 'object') {
           // Handle embeds (images, videos, etc.)
@@ -243,14 +243,14 @@ export class ArticleDetailComponent implements OnInit {
         }
       }
     }
-    
+
     return html;
   }
 
   // Approve article
   approveArticle() {
     if (!this.article) return;
-    
+
     this.articleService.reviewArticle(this.article.articleId, true).subscribe({
       next: (response) => {
         this.toastr.success('Bài viết đã được duyệt thành công!');
