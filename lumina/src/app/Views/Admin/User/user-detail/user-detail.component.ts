@@ -6,11 +6,12 @@ import { FormsModule } from '@angular/forms';
 import { StatisticService } from '../../../../Services/Statistic/statistic.service';
 import { PackagesService } from '../../../../Services/Packages/packages.service';
 import { RoleService } from '../../../../Services/Role/role.service';
+import { PopupComponent } from '../../../../Views/Common/popup/popup.component';
 
 @Component({
   selector: 'app-user-detail',
   standalone: true,
-  imports: [CommonModule, NgIf, DatePipe, NgFor, FormsModule],
+  imports: [CommonModule, NgIf, DatePipe, NgFor, FormsModule, PopupComponent],
   templateUrl: './user-detail.component.html',
   styleUrls: ['./user-detail.component.scss']
 })
@@ -21,6 +22,11 @@ export class UserDetailComponent implements OnInit {
   isLoading: boolean = false;
   errorMessage: string | null = null;
   proSummary: any = {};
+
+  showPopup: boolean = false;
+  popupTitle: string = '';
+  popupMessage: string = '';
+  currentUserToToggle: any = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -85,16 +91,31 @@ ngOnInit() {
 
   toggleStatus(user: any): void {
     const action = user.isActive ? 'khóa' : 'mở khóa';
-    if (confirm(`Bạn có chắc muốn ${action} tài khoản của ${user.fullName}?`)) {
-      this.userService.toggleUserStatus(user.userId).subscribe({
+    this.currentUserToToggle = user;
+    this.popupTitle = user.isActive ? 'Khóa tài khoản' : 'Mở khóa tài khoản';
+    this.popupMessage = `Bạn có chắc muốn ${action} tài khoản của ${user.fullName}?`;
+    this.showPopup = true;
+  }
+
+  onPopupOk(): void {
+    if (this.currentUserToToggle) {
+      this.userService.toggleUserStatus(this.currentUserToToggle.userId).subscribe({
         next: () => {
-          user.isActive = !user.isActive; // Tự cập nhật trạng thái local cho nhanh UI, load lại trang nếu muốn chắc chắn hơn
+          this.currentUserToToggle.isActive = !this.currentUserToToggle.isActive;
+          this.showPopup = false;
+          this.currentUserToToggle = null;
         },
         error: () => {
-          alert('Có lỗi khi thay đổi trạng thái người dùng!');
+          this.popupTitle = 'Lỗi';
+          this.popupMessage = 'Có lỗi khi thay đổi trạng thái người dùng!';
         }
       });
     }
+  }
+
+  onPopupCancel(): void {
+    this.showPopup = false;
+    this.currentUserToToggle = null;
   }
 
   roles: any[] = [];
@@ -111,29 +132,27 @@ openRoleModal() {
   });
 }
 
-saveRole() {
-  if (this.selectedRoleId === this.user.roleId) {
-    this.showRoleModal = false;
-    return; 
-  }
-
-  this.userService.updateUserRole(this.user.userId, this.selectedRoleId).subscribe({
-    next: () => {
-      this.user.roleId = this.selectedRoleId;
-      const role = this.roles.find(r => r.roleId === this.selectedRoleId);
-      if (role) this.user.roleName = role.roleName;
+  saveRole() {
+    if (this.selectedRoleId === this.user.roleId) {
       this.showRoleModal = false;
-      this.showMessage('Cập nhật quyền thành công!', 'success');
-      this.initData();
-    },
-    error: () => {
-      this.showMessage('Có lỗi khi cập nhật quyền!', 'error');
-      this.showRoleModal = false;
+      return; 
     }
-  });
-}
 
-message: string = '';
+    this.userService.updateUserRole(this.user.userId, this.selectedRoleId).subscribe({
+      next: () => {
+        this.user.roleId = this.selectedRoleId;
+        const role = this.roles.find(r => r.id === this.selectedRoleId);
+        if (role) this.user.roleName = role.name;
+        this.showRoleModal = false;
+        this.showMessage('Cập nhật vai trò thành công!', 'success');
+        this.initData();
+      },
+      error: () => {
+        this.showMessage('Có lỗi khi cập nhật vai trò!', 'error');
+        this.showRoleModal = false;
+      }
+    });
+  }message: string = '';
 messageType: 'success' | 'error' = 'success';
 
 showMessage(msg: string, type: 'success' | 'error' = 'success') {

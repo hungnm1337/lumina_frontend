@@ -3,11 +3,12 @@ import { FormsModule } from '@angular/forms';
 import { StatisticService } from '../../../Services/Statistic/statistic.service';
 import { PackagesService } from '../../../Services/Packages/packages.service';
 import { NgClass, NgIf, CommonModule } from '@angular/common';
+import { PopupComponent } from '../../Common/popup/popup.component';
 
 @Component({
   selector: 'app-system-plans',
   standalone: true,
-  imports: [FormsModule, NgClass, NgIf, CommonModule],
+  imports: [FormsModule, NgClass, NgIf, CommonModule, PopupComponent],
   templateUrl: './system-plans.component.html',
   styleUrls: ['./system-plans.component.scss']
 })
@@ -27,6 +28,11 @@ export class SystemPlansComponent implements OnInit {
 
   message = ''; // thông báo lỗi hoặc thành công
   messageType: 'success' | 'error' = 'success';
+
+  showPopup: boolean = false;
+  popupTitle: string = '';
+  popupMessage: string = '';
+  currentPackageToToggle: any = null;
 
   constructor(
     private statisticService: StatisticService,
@@ -124,20 +130,35 @@ export class SystemPlansComponent implements OnInit {
 
 
   togglePackageStatus(pkg: any) {
-    const confirmMsg = pkg.isActive ? 'Bạn có chắc muốn khóa gói này?' : 'Bạn có chắc muốn mở khóa gói này?';
-    if (!confirm(confirmMsg)) {
-      return;
-    }
+    this.currentPackageToToggle = pkg;
+    this.popupTitle = pkg.isActive ? 'Xác nhận khóa gói' : 'Xác nhận mở khóa gói';
+    this.popupMessage = pkg.isActive ? 'Bạn có chắc muốn khóa gói này?' : 'Bạn có chắc muốn mở khóa gói này?';
+    this.showPopup = true;
+  }
+
+  onPopupOk() {
+    if (!this.currentPackageToToggle) return;
+    
+    const pkg = this.currentPackageToToggle;
     this.packagesService.togglePackageStatus(pkg.packageId).subscribe({
       next: () => {
         pkg.isActive = !pkg.isActive;
         this.showMessage(pkg.isActive ? 'Mở khóa thành công' : 'Khóa thành công', 'success');
+        this.showPopup = false;
+        this.currentPackageToToggle = null;
       },
       error: err => {
         console.error(err);
         this.showMessage('Lỗi khi thay đổi trạng thái', 'error');
+        this.showPopup = false;
+        this.currentPackageToToggle = null;
       }
     });
+  }
+
+  onPopupCancel() {
+    this.showPopup = false;
+    this.currentPackageToToggle = null;
   }
 
   showMessage(msg: string, type: 'success' | 'error') {
@@ -165,7 +186,7 @@ export class SystemPlansComponent implements OnInit {
     );
   }
 
-  // ✅ Format currency VNĐ
+  // ✅ Định dạng tiền tệ VNĐ
   formatCurrency(amount: number): string {
     if (amount >= 1000000000) {
       return (amount / 1000000000).toFixed(1) + ' tỷ';

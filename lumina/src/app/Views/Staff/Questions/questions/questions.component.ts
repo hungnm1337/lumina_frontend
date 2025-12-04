@@ -556,18 +556,26 @@ export class QuestionsComponent implements OnInit {
     this.questionService
       .importQuestionsExcel(this.excelFile, this.importPartId)
       .subscribe({
-        next: () => {
-          alert('Import thành công!');
+        next: (response) => {
+          alert(response?.message || 'Import thành công!');
           this.closeImportModal();
           this.initData();
         },
         error: (err) => {
+          console.error('Import error:', err);
           let errorMsg = 'Lỗi import file excel!';
-          if (err.error && err.error.error) {
+          
+          // Kiểm tra các trường hợp error response
+          if (err.error?.message) {
+            errorMsg = err.error.message;
+          } else if (err.error?.error) {
             errorMsg = err.error.error;
           } else if (err.error && typeof err.error === 'string') {
             errorMsg = err.error;
+          } else if (err.message) {
+            errorMsg = err.message;
           }
+          
           alert('Lỗi: ' + errorMsg);
         },
       });
@@ -838,8 +846,8 @@ export class QuestionsComponent implements OnInit {
 
   deleteQuestion(q: any) {
     this.pendingDeleteQuestion = q;
-    this.deleteQuestionTitle = '🗑️ Delete Question';
-    this.deleteQuestionMessage = `Are you sure you want to delete this question?\n\nThis action cannot be undone.`;
+    this.deleteQuestionTitle = '🗑️ Xác Nhận Xóa Câu Hỏi';
+    this.deleteQuestionMessage = `Bạn có chắc chắn muốn xóa câu hỏi này không?\n\nHành động này không thể hoàn tác.`;
     this.showDeleteQuestionPopup = true;
   }
 
@@ -878,12 +886,12 @@ export class QuestionsComponent implements OnInit {
     const questionCount = prompt.questions?.length || 0;
 
     this.pendingDeletePrompt = prompt;
-    this.deletePromptTitle = '🗑️ Delete Prompt';
+    this.deletePromptTitle = '🗑️ Xác Nhận Xóa Prompt';
     
     if (questionCount > 0) {
-      this.deletePromptMessage = `This prompt contains ${questionCount} question(s).\n\nDeleting this prompt will permanently remove all questions and answers inside.\n\nAre you sure you want to delete?`;
+      this.deletePromptMessage = `Prompt này chứa ${questionCount} câu hỏi.\n\nXóa prompt này sẽ vĩnh viễn xóa tất cả các câu hỏi và câu trả lời bên trong.\n\nBạn có chắc chắn muốn xóa không?`;
     } else {
-      this.deletePromptMessage = `Are you sure you want to delete this prompt?`;
+      this.deletePromptMessage = `Bạn có chắc chắn muốn xóa prompt này không?`;
     }
     
     this.showDeletePromptPopup = true;

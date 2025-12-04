@@ -18,9 +18,9 @@
                     <span class="px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full">{{
                         user.roleName }}</span>
                     <span *ngIf="user.isActive"
-                        class="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">Active</span>
+                        class="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">Hoạt động</span>
                     <span *ngIf="!user.isActive"
-                        class="px-3 py-1 bg-red-100 text-red-800 text-sm font-medium rounded-full">Locked</span>
+                        class="px-3 py-1 bg-red-100 text-red-800 text-sm font-medium rounded-full">Đã khóa</span>
                     <span class="text-sm text-gray-500">ID: #{{ user.userId }}</span>
                 </div>
             </div>
@@ -28,19 +28,19 @@
         <div class="flex items-center space-x-3">
             <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 (click)="openRoleModal()">
-                <i class="fas fa-user-shield mr-2"></i>Update Role
+                <i class="fas fa-user-shield mr-2"></i>Cập nhật vai trò
             </button>
 
-            <button class="bg-red-600 text-white px-4 py-2 rounded-lg hover:text-red-900" *ngIf="user.isActive"
+            <button class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700" *ngIf="user.isActive"
                 (click)="toggleStatus(user)">
                 <i class="fas fa-lock mr-2"></i>
-                Lock Account
+                Khóa tài khoản
             </button>
 
-            <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:text-green-900" *ngIf="!user.isActive"
+            <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700" *ngIf="!user.isActive"
                 (click)="toggleStatus(user)">
                 <i class="fas fa-lock-open mr-1"></i>
-                Unlock Account
+                Mở khóa tài khoản
             </button>
 
         </div>
@@ -50,13 +50,13 @@
             <div class="text-2xl font-bold text-blue-600">
                 {{ proSummary.totalPackages ?? 0 }}
             </div>
-            <div class="text-sm text-gray-600">Pro packages purchased</div>
+            <div class="text-sm text-gray-600">Gói Pro đã mua</div>
         </div>
         <div class="bg-green-50 rounded-lg p-4 text-center">
             <div class="text-2xl font-bold text-green-600">
                 {{ proSummary.remainDays ?? 0 }}
             </div>
-            <div class="text-sm text-gray-600">Days remaining</div>
+            <div class="text-sm text-gray-600">Số ngày còn lại</div>
         </div>
         <div class="bg-purple-50 rounded-lg p-4 text-center">
             <div class="text-2xl font-bold text-purple-600">
@@ -65,13 +65,13 @@
                     }}
                 </div>
             </div>
-            <div class="text-sm text-gray-600">Total spent</div>
+            <div class="text-sm text-gray-600">Tổng số tiền đã chi</div>
         </div>
         <div class="bg-yellow-50 rounded-lg p-4 text-center">
             <div class="text-2xl font-bold text-yellow-600">
                 {{ proSummary.totalDays ?? 0 }} days
             </div>
-            <div class="text-sm text-gray-600">Total days as member</div>
+            <div class="text-sm text-gray-600">Tổng số ngày là thành viên</div>
         </div>
     </div>
 
@@ -83,8 +83,8 @@
         <!-- Personal Info -->
         <div class="bg-white rounded-xl shadow-sm p-6">
             <div class="flex items-center justify-between mb-6">
-                <h4 class="text-lg font-semibold text-gray-800">Personal Information</h4>
-                <span class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">View only</span>
+                <h4 class="text-lg font-semibold text-gray-800">Thông tin cá nhân</h4>
+                <span class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">Chỉ xem</span>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -92,7 +92,7 @@
                 <div class="space-y-1">
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-user text-gray-400 text-sm"></i>
-                        <span class="text-sm font-medium text-gray-500">Username</span>
+                        <span class="text-sm font-medium text-gray-500">Tên đăng nhập</span>
                     </div>
                     <p class="text-gray-800 font-medium pl-6">{{ user.userName }}</p>
                 </div>
@@ -108,7 +108,7 @@
                 <div class="space-y-1">
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-phone text-gray-400 text-sm"></i>
-                        <span class="text-sm font-medium text-gray-500">Phone</span>
+                        <span class="text-sm font-medium text-gray-500">Số điện thoại</span>
                     </div>
                     <p class="text-gray-800 font-medium pl-6">{{ user.phone || '-' }}</p>
                 </div>
@@ -116,22 +116,22 @@
                 <div class="space-y-1">
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-id-badge text-gray-400 text-sm"></i>
-                        <span class="text-sm font-medium text-gray-500">Role</span>
+                        <span class="text-sm font-medium text-gray-500">Vai trò</span>
                     </div>
                     <p class="text-gray-800 font-medium pl-6">{{ user.roleName }}</p>
                 </div>
                 <div class="space-y-1">
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-info-circle text-gray-400 text-sm"></i>
-                        <span class="text-sm font-medium text-gray-500">Status</span>
+                        <span class="text-sm font-medium text-gray-500">Trạng thái</span>
                     </div>
-                    <p class="text-gray-800 font-medium pl-6">{{ user.isActive ? 'Active' : 'Locked' }}</p>
+                    <p class="text-gray-800 font-medium pl-6">{{ user.isActive ? 'Hoạt động' : 'Đã khóa' }}</p>
                 </div>
 
                 <div class="space-y-1">
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-calendar-alt text-gray-400 text-sm"></i>
-                        <span class="text-sm font-medium text-gray-500">Join date</span>
+                        <span class="text-sm font-medium text-gray-500">Ngày tham gia</span>
                     </div>
                     <p class="text-gray-800 font-medium pl-6">{{ user.joinDate | date:'dd/MM/yyyy' }}</p>
                 </div>
@@ -142,7 +142,7 @@
                 <div class="space-y-1">
                     <div class="flex items-center space-x-2">
                         <i class="fas fa-user-secret text-gray-400 text-sm"></i>
-                        <span class="text-sm font-medium text-gray-500">Bio</span>
+                        <span class="text-sm font-medium text-gray-500">Giới thiệu</span>
                     </div>
                     <p class="text-gray-800 font-medium pl-6">{{ user.bio || '-' }}</p>
                 </div>
@@ -154,40 +154,40 @@
     <!-- Sidebar: Package Info & Payment History & Admin Actions -->
     <div class="space-y-6">
         <div class="bg-white rounded-xl shadow-sm p-6">
-            <h4 class="text-lg font-semibold text-gray-800 mb-4">Package Information</h4>
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">Thông tin gói</h4>
             <div *ngIf="activePackage && activePackage.package; else noPackage">
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-600">Current package:</span>
+                        <span class="text-sm text-gray-600">Gói hiện tại:</span>
                         <span class="font-semibold text-purple-600">{{ activePackage.package.packageName }}</span>
                     </div>
                     <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-600">Price:</span>
+                        <span class="text-sm text-gray-600">Giá:</span>
                         <span class="font-semibold text-gray-800">{{ activePackage.package.price ?
                             (activePackage.package.price | currency:'VND':'symbol':'1.0-0':'en-US') : '0' }}</span>
 
                     </div>
                     <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-600">Start date:</span>
+                        <span class="text-sm text-gray-600">Ngày bắt đầu:</span>
                         <span class="font-semibold text-gray-800">{{ activePackage.startTime | date:'dd/MM/yyyy'
                             }}</span>
                     </div>
                     <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-600">End date:</span>
+                        <span class="text-sm text-gray-600">Ngày kết thúc:</span>
                         <span class="font-semibold text-gray-800">{{ activePackage.endTime | date:'dd/MM/yyyy' }}</span>
                     </div>
                     <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-600">Status:</span>
+                        <span class="text-sm text-gray-600">Trạng thái:</span>
                         <span *ngIf="activePackage.package.isActive"
-                            class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Active</span>
+                            class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Hoạt động</span>
                         <span *ngIf="!activePackage.package.isActive"
-                            class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">Inactive</span>
+                            class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">Không hoạt động</span>
                     </div>
                 </div>
             </div>
 
             <ng-template #noPackage>
-                <div class="text-red-600 font-semibold">User has not registered any package.</div>
+                <div class="text-red-600 font-semibold">Người dùng chưa đăng ký gói nào.</div>
             </ng-template>
 
         </div>
@@ -233,7 +233,7 @@
 
 <div *ngIf="showRoleModal" class="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-30">
     <div class="bg-white p-6 rounded-xl min-w-[320px] shadow-xl">
-        <h3 class="font-semibold text-lg mb-4">Update User Role</h3>
+        <h3 class="font-semibold text-lg mb-4">Cập nhật vai trò người dùng</h3>
         <div>
             <select [(ngModel)]="selectedRoleId" class="w-full px-3 py-2 border rounded-lg mb-6">
                 <option *ngFor="let role of roles" [value]="role.id">
@@ -243,8 +243,18 @@
         </div>
         <div class="flex space-x-2 justify-end">
             <button (click)="saveRole()"
-                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Save</button>
-            <button (click)="showRoleModal=false" class="bg-gray-200 px-4 py-2 rounded-lg">Cancel</button>
+                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Lưu</button>
+            <button (click)="showRoleModal=false" class="bg-gray-200 px-4 py-2 rounded-lg">Hủy</button>
         </div>
     </div>
 </div>
+
+<!-- Popup Component -->
+<app-popup 
+  *ngIf="showPopup"
+  [title]="popupTitle"
+  [message]="popupMessage"
+  [showCancelButton]="true"
+  (okClicked)="onPopupOk()"
+  (cancelClicked)="onPopupCancel()">
+</app-popup>

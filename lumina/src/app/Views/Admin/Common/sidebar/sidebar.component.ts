@@ -20,28 +20,28 @@ export class SidebarComponent {
 
   navGroups = [
     {
-      title: 'User Management',
+      title: 'Quản lý người dùng',
       items: [
-        { path: '/admin/users-list', name: 'User List', icon: 'fas fa-users' }
-        // { path: '/admin/user-details', name: 'User Details', icon: 'fas fa-user-edit' },
-        // { path: '/admin/roles-permissions', name: 'Roles & Permissions', icon: 'fas fa-user-shield' },
+        { path: '/admin/users-list', name: 'Danh sách người dùng', icon: 'fas fa-users' }
+        // { path: '/admin/user-details', name: 'Chi tiết người dùng', icon: 'fas fa-user-edit' },
+        // { path: '/admin/roles-permissions', name: 'Vai trò & Phân quyền', icon: 'fas fa-user-shield' },
       ],
     },
     {
-      title: 'System Configuration',
+      title: 'Cấu hình hệ thống',
       items: [
-        { path: '/admin/system-plans', name: 'Plans & Limits', icon: 'fas fa-layer-group' },
-          { path: '/admin/user-activity', name: 'User Activity', icon: 'fas fa-user-check' },
-        { path: '/admin/notifications', name: 'Notification management', icon: 'fas fa-bell' },
-        // { path: '/admin/system-integrations', name: 'AI/Email/Payment', icon: 'fas fa-plug' },
-        // { path: '/admin/system-srs', name: 'SRS & Leaderboard', icon: 'fas fa-cogs' },
+        { path: '/admin/system-plans', name: 'Gói & Giới hạn', icon: 'fas fa-layer-group' },
+          { path: '/admin/user-activity', name: 'Hoạt động người dùng', icon: 'fas fa-user-check' },
+        { path: '/admin/notifications', name: 'Quản lý thông báo', icon: 'fas fa-bell' },
+        // { path: '/admin/system-integrations', name: 'AI/Email/Thanh toán', icon: 'fas fa-plug' },
+        // { path: '/admin/system-srs', name: 'SRS & Bảng xếp hạng', icon: 'fas fa-cogs' },
       ],
     },
     {
-      title: 'Monitoring & Reports',
+      title: 'Giám sát & Báo cáo',
       items: [
-        { path: '/admin/system-stats', name: 'Statistics & Charts', icon: 'fas fa-chart-bar' },
-        { path: '/admin/user-reports', name: 'User Reports', icon: 'fas fa-user-clock' },
+        { path: '/admin/system-stats', name: 'Thống kê & Biểu đồ', icon: 'fas fa-chart-bar' },
+        { path: '/admin/user-reports', name: 'Báo cáo người dùng', icon: 'fas fa-user-clock' },
       ],
     }
   ];
