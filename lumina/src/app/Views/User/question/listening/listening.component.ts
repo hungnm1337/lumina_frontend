@@ -28,6 +28,7 @@ import { QuotaService } from '../../../../Services/Quota/quota.service';
 import { QuotaLimitModalComponent } from '../../quota-limit-modal/quota-limit-modal.component';
 import { LeaderboardService } from '../../../../Services/Leaderboard/leaderboard.service';
 import { PopupComponent } from '../../../Common/popup/popup.component';
+import { SidebarService } from '../../../../Services/sidebar.service';
 
 @Component({
   selector: 'app-listening',
@@ -104,7 +105,8 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     private examAttemptService: ExamAttemptService,
     private authService: AuthService,
     private quotaService: QuotaService,
-    private leaderboardService: LeaderboardService
+    private leaderboardService: LeaderboardService,
+    private sidebarService: SidebarService
   ) {}
 
   onReportPopupClose(): void {
@@ -116,6 +118,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     this.incrementQuotaOnStart();
     this.examStartTime = new Date();
     this.clearCachedAudioState();
+    this.sidebarService.hideSidebar(); // Ẩn sidebar khi bắt đầu làm bài
 
     setTimeout(() => {
       if (this.questions?.length > 0) {
@@ -136,6 +139,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.saveProgressOnExit();
+    this.sidebarService.showSidebar(); // Hiển thị lại sidebar khi thoát
   }
 
   private loadAttemptId(): void {
@@ -195,8 +199,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
 
   private incrementQuotaOnStart(): void {
     this.quotaService.incrementQuota('listening').subscribe({
-      next: () => {
-      },
+      next: () => {},
       error: (err) => {
         if (err.status === 400 || err.status === 403) {
           this.quotaMessage =
@@ -346,8 +349,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
 
     audio
       .play()
-      .then(() => {
-      })
+      .then(() => {})
       .catch((error) => {
         this.audioPlayCounts.set(currentQuestionId, currentCount);
         this.isAudioPlaying = false;
@@ -425,8 +427,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
           localStorage.removeItem(key);
         }
       });
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   finishExamManual(): void {
@@ -505,8 +506,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
           this.showTOEICNotification(response);
         }
       },
-      error: (error) => {
-      },
+      error: (error) => {},
     });
   }
 
@@ -570,8 +570,7 @@ ${
         this.examAttemptDetails = details;
         this.showExamAttemptDetailsFlag = true;
       },
-      error: (error) => {
-      },
+      error: (error) => {},
     });
   }
 
@@ -674,6 +673,7 @@ ${
   }
 
   goToExams(): void {
+    this.sidebarService.showSidebar(); // Hiển thị lại sidebar
     this.router.navigate(['homepage/user-dashboard/exams']);
   }
 }

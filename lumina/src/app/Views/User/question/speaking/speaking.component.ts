@@ -36,6 +36,7 @@ import { QuotaService } from '../../../../Services/Quota/quota.service';
 import { QuotaLimitModalComponent } from '../../quota-limit-modal/quota-limit-modal.component';
 import { ExamCoordinationService } from '../../../../Services/exam-coordination.service';
 import { ToastService } from '../../../../Services/Toast/toast.service';
+import { SidebarService } from '../../../../Services/sidebar.service';
 
 interface QuestionResult {
   questionNumber: number;
@@ -49,7 +50,7 @@ interface QuestionResult {
   imports: [
     CommonModule,
     PromptComponent,
-    
+
     SpeakingAnswerBoxComponent,
     SpeakingSummaryComponent,
     QuotaLimitModalComponent,
@@ -103,12 +104,12 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone,
     private examCoordination: ExamCoordinationService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private sidebarService: SidebarService
   ) {
     this.stateSubscription = this.speakingStateService
       .getStates()
       .subscribe((states) => {
-
         this.updateSpeakingResults(states);
 
         if (!this.isRecordingInProgress) {
@@ -116,7 +117,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
             this.cdr.detectChanges();
           }, 0);
         }
-        
+
         if (
           !this.isAutoSubmitting &&
           !this.showSpeakingSummary &&
@@ -171,6 +172,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
     this.loadAttemptId();
     this.checkQuotaAccess();
+    this.sidebarService.hideSidebar(); // Ẩn sidebar khi bắt đầu làm bài
 
     this.routerSubscription = this.router.events
       .pipe(filter((event) => event instanceof NavigationStart))
@@ -216,6 +218,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   ngOnDestroy(): void {
     this.stateSubscription.unsubscribe();
+    this.sidebarService.showSidebar(); // Hiển thị lại sidebar
 
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
@@ -708,7 +711,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     this.callEndExamAPI();
     this.examAttemptService.finalizeAttempt(this.attemptId).subscribe({
       next: (summary) => {
-
         if (summary.totalScore !== undefined) {
           this.baseQuestionService.setTotalScore(summary.totalScore);
         }
@@ -755,8 +757,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       };
 
       this.examAttemptService.endExam(endExamRequest).subscribe({
-        next: (response) => {
-        },
+        next: (response) => {},
         error: (error) => {
           console.error('[Speaking]  Error ending speaking exam:', error);
           console.error('[Speaking]  Error details:', {
@@ -787,6 +788,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   goToExams(): void {
+    this.sidebarService.showSidebar(); // Hiển thị lại sidebar
     this.router.navigate(['homepage/user-dashboard/exams']);
   }
 
@@ -857,7 +859,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
     this.examAttemptService.saveProgress(model).subscribe({
       next: () => {
-
         this.cleanupSpeakingSession();
 
         this.router.navigate(['homepage/user-dashboard/exams']);
@@ -873,7 +874,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   private cleanupSpeakingSession(): void {
-
     localStorage.removeItem('currentExamAttempt');
 
     this.speakingStateService.resetAllStates();
@@ -883,7 +883,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   private cleanupSpeakingSessionOnExit(): void {
-
     localStorage.removeItem('currentExamAttempt');
 
     this.speakingStateService.resetAllStates();
