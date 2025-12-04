@@ -70,6 +70,7 @@ export class ResultComponent implements OnInit {
 
   get totalQuestions(): number {
     let total = 0;
+    if (this.attemptDetails?.listeningAnswers) total += this.attemptDetails.listeningAnswers.length;
     if (this.attemptDetails?.readingAnswers) total += this.attemptDetails.readingAnswers.length;
     if (this.attemptDetails?.writingAnswers) total += this.attemptDetails.writingAnswers.length;
     if (this.attemptDetails?.speakingAnswers) total += this.attemptDetails.speakingAnswers.length;
@@ -78,6 +79,9 @@ export class ResultComponent implements OnInit {
 
   get correctAnswers(): number {
     let correct = 0;
+    if (this.attemptDetails?.listeningAnswers) {
+      correct += this.attemptDetails.listeningAnswers.filter(a => a.isCorrect).length;
+    }
     if (this.attemptDetails?.readingAnswers) {
       correct += this.attemptDetails.readingAnswers.filter(a => a.isCorrect).length;
     }
@@ -101,29 +105,38 @@ export class ResultComponent implements OnInit {
   }
 
   getSkillScore(skillType: string): number {
-    if (skillType === 'reading' && this.attemptDetails?.readingAnswers) {
+    const lowerSkill = skillType.toLowerCase();
+    
+    if (lowerSkill === 'listening' && this.attemptDetails?.listeningAnswers) {
+      return this.attemptDetails.listeningAnswers.filter(a => a.isCorrect).length;
+    }
+    if (lowerSkill === 'reading' && this.attemptDetails?.readingAnswers) {
       return this.attemptDetails.readingAnswers.filter(a => a.isCorrect).length;
     }
-    if (skillType === 'writing' && this.attemptDetails?.writingAnswers) {
-      return this.attemptDetails.writingAnswers.length; // Assuming submitted = scored
+    if (lowerSkill === 'writing' && this.attemptDetails?.writingAnswers) {
+      return this.attemptDetails.writingAnswers.length;
     }
-    if (skillType === 'speaking' && this.attemptDetails?.speakingAnswers) {
-      return this.attemptDetails.speakingAnswers.length; // Assuming submitted = scored
+    if (lowerSkill === 'speaking' && this.attemptDetails?.speakingAnswers) {
+      return this.attemptDetails.speakingAnswers.length;
     }
     return 0;
   }
 
   getSkillTotal(skillType: string): number {
-    if (skillType === 'reading' && this.attemptDetails?.readingAnswers) {
+    const lowerSkill = skillType.toLowerCase();
+    
+    if (lowerSkill === 'listening' && this.attemptDetails?.listeningAnswers) {
+      return this.attemptDetails.listeningAnswers.length;
+    }
+    if (lowerSkill === 'reading' && this.attemptDetails?.readingAnswers) {
       return this.attemptDetails.readingAnswers.length;
     }
-    if (skillType === 'writing' && this.attemptDetails?.writingAnswers) {
+    if (lowerSkill === 'writing' && this.attemptDetails?.writingAnswers) {
       return this.attemptDetails.writingAnswers.length;
     }
-    if (skillType === 'speaking' && this.attemptDetails?.speakingAnswers) {
+    if (lowerSkill === 'speaking' && this.attemptDetails?.speakingAnswers) {
       return this.attemptDetails.speakingAnswers.length;
     }
-    // For listening, we don't have separate data, return 0
     return 0;
   }
 

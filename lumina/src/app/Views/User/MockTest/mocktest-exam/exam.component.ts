@@ -72,9 +72,10 @@ export class ExamComponent implements OnInit, OnDestroy {
   isSubmitting: boolean = false;
   totalScore: number = 0;
 
-  // Timer management
-  currentQuestionTime: number = 0;
+  // Timer management - Part-based timer
+  currentPartTime: number = 0; // Total time for current part
   timerResetTrigger: number = 0;
+  hasShownWarning: boolean = false; // Track if 30s warning shown
 
   // Audio player for Listening
   @ViewChild('audioPlayer', { static: false })
@@ -335,7 +336,7 @@ export class ExamComponent implements OnInit, OnDestroy {
     if (index >= 0 && index < (this.currentPart?.questions.length || 0)) {
       this.currentQuestionIndex = index;
       this.showPartCompletionMessage = false;
-      this.updateQuestionTimer();
+      // Don't reset timer when navigating within same part
       this.resetAudioState();
       if (this.currentSkillType === 'listening') {
         this.autoPlayAudio();
@@ -423,7 +424,7 @@ export class ExamComponent implements OnInit, OnDestroy {
         // Initialize at first part and first question
         this.currentPartIndex = 0;
         this.currentQuestionIndex = 0;
-        this.updateQuestionTimer();
+        this.initializePartTimer();
       },
       error: (error) => {
         console.error('Error loading mocktest questions:', error);
@@ -544,33 +545,54 @@ export class ExamComponent implements OnInit, OnDestroy {
   goToQuestion(questionIndex: number) {
     this.currentQuestionIndex = questionIndex;
     this.showPartCompletionMessage = false;
-    this.updateQuestionTimer();
+    // Don't reset timer when navigating within same part
     this.resetAudioState();
     if (this.currentSkillType === 'listening') {
       this.autoPlayAudio();
     }
   }
 
-  // Update timer when question changes
-  private updateQuestionTimer(): void {
-    if (this.currentQuestion && this.isMultipleChoicePart) {
-      this.currentQuestionTime = this.currentQuestion.time || 0;
+  // Calculate total time for current part (sum of all question times)
+  private calculatePartTotalTime(): number {
+    if (!this.currentPart || !this.isMultipleChoicePart) return 0;
+
+    return this.currentPart.questions.reduce((total, question) => {
+      return total + (question.time || 0);
+    }, 0);
+  }
+
+  // Initialize timer when starting a new part
+  private initializePartTimer(): void {
+    if (this.isMultipleChoicePart) {
+      this.currentPartTime = this.calculatePartTotalTime();
       this.timerResetTrigger = Date.now(); // Force timer reset
+      this.hasShownWarning = false; // Reset warning flag
+      console.log(`🕐 Part ${this.currentPartIndex + 1} timer initialized: ${this.currentPartTime}s`);
     }
   }
 
-  onQuestionTimeout(): void {
-    if (this.isMultipleChoicePart) {
-      this.toastService.warning(
-        'Hết thời gian! Tự động chuyển sang câu tiếp theo'
-      );
-      // Auto-move to next question on timeout
-      if (!this.isLastQuestionInExam()) {
-        setTimeout(() => {
-          this.nextQuestion();
-        }, 1000);
-      }
+  // Handle timer events from time component
+  onPartTimerTick(remainingTime: number): void {
+    // Show warning at 30 seconds
+    if (remainingTime <= 30 && !this.hasShownWarning && this.isMultipleChoicePart) {
+      this.hasShownWarning = true;
+      this.toastService.warning('⚠️ Còn 30 giây để hoàn thành part này!');
     }
+  }
+
+  onPartTimeout(): void {
+    if (!this.isMultipleChoicePart) return;
+
+    this.toastService.warning('⏰ Hết thời gian! Tự động chuyển sang part tiếp theo');
+
+    // Auto-move to next part or finish exam
+    setTimeout(() => {
+      if (this.isLastQuestionInExam()) {
+        this.finishExam();
+      } else {
+        this.showPartCompletionMessage = true;
+      }
+    }, 1500);
   }
 
   nextQuestion() {
@@ -606,7 +628,7 @@ export class ExamComponent implements OnInit, OnDestroy {
     } else {
       // Move to next question in current part
       this.currentQuestionIndex++;
-      this.updateQuestionTimer();
+      // Don't reset timer when moving to next question in same part
       this.resetAudioState();
       if (this.currentSkillType === 'listening') {
         this.autoPlayAudio();
@@ -694,7 +716,7 @@ export class ExamComponent implements OnInit, OnDestroy {
       // Go to previous question in current part
       this.currentQuestionIndex--;
       this.showPartCompletionMessage = false;
-      this.updateQuestionTimer();
+      // Don't reset timer when moving to previous question in same part
       this.resetAudioState();
       if (this.currentSkillType === 'listening') {
         this.autoPlayAudio();
@@ -709,6 +731,8 @@ export class ExamComponent implements OnInit, OnDestroy {
       this.showPartCompletionMessage = false;
       this.toastService.success(`Starting ${this.currentPart?.title}`);
       this.updatePartCodeStorage();
+      // Initialize timer for new part
+      this.initializePartTimer();
     }
   }
 
