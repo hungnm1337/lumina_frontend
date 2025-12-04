@@ -65,8 +65,7 @@ export interface Vocabulary {
   status: 'active' | 'inactive';
   audioUrl?: string; 
   isGeneratingAudio?: boolean;
-  
-
+  imageUrl?: string; // URL ảnh từ Cloudinary cho từng vocabulary
 }
 
 export interface VocabularyCategory {

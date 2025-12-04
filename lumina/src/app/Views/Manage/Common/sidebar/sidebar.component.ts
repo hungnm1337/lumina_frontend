@@ -13,7 +13,7 @@ import { AuthService } from './../../../../Services/Auth/auth.service';
 export class SidebarComponent {
   @Input() isOpen = true;
   @Output() sidebarToggle = new EventEmitter<void>();
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   // Dữ liệu menu cho sidebar, tương thích với file HTML mới
   navGroups = [

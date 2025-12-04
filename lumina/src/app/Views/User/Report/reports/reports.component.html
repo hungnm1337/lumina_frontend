@@ -1,75 +1,73 @@
-
-
 <div class="flex flex-row gap-6 min-h-[500px] p-4 md:p-6">
-	<!-- List panel: full width if no detail, animated shrink if detail -->
-	<div
-		class="transition-all duration-500 ease-in-out bg-white rounded-xl shadow p-4 flex flex-col"
-		[ngClass]="selectedReport ? 'w-full md:w-1/3' : 'w-full'"
-		style="min-width: 0;"
-	>
-		<div class="flex flex-col md:flex-row gap-3 mb-4 items-center">
-			<label class="flex flex-col text-sm font-medium text-gray-700">
-				Loại
-				<select [(ngModel)]="filterType" (change)="onFilterTypeChange(filterType)" class="mt-1 rounded border-gray-300 focus:ring-blue-500 focus:border-blue-500 px-2 py-1">
-					<option *ngFor="let opt of typeOptions" [value]="opt.value">{{opt.label}}</option>
-				</select>
-			</label>
-			<label class="flex flex-col text-sm font-medium text-gray-700">
-				Ngày gửi
-				<input type="date" [(ngModel)]="filterDate" (change)="onFilterDateChange(filterDate)" class="mt-1 rounded border-gray-300 focus:ring-blue-500 focus:border-blue-500 px-2 py-1" />
-			</label>
-			<label class="flex flex-col text-sm font-medium text-gray-700">
-				Sắp xếp
-				<select [(ngModel)]="sortDirection" (change)="onSortChange(sortDirection)" class="mt-1 rounded border-gray-300 focus:ring-blue-500 focus:border-blue-500 px-2 py-1">
-					<option value="desc">Mới nhất trước</option>
-					<option value="asc">Cũ nhất trước</option>
-				</select>
-			</label>
-			<button (click)="clearFilters()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded shadow">Xóa lọc</button>
-		</div>
-		<div *ngIf="loading" class="text-blue-600 font-semibold">Đang tải...</div>
-		<div *ngIf="error" class="text-red-600 font-semibold">{{error}}</div>
-		<ul class="flex-1 overflow-y-auto divide-y divide-gray-200">
-			<li *ngFor="let report of filteredReports" (click)="onSelectReport(report, $event)"
-					[class.bg-blue-50]="selectedReport?.reportId === report.reportId"
-					class="cursor-pointer px-2 py-3 hover:bg-blue-100 transition rounded flex flex-col">
-				<div class="font-semibold text-gray-800">{{report.title}}</div>
-				<div class="flex gap-2 text-xs text-gray-500 mt-1">
-					<span class="px-2 py-0.5 rounded bg-gray-100">{{report.type}}</span>
-					<span>{{report.sendAt | date:'shortDate'}}</span>
-				</div>
-			</li>
-			<li *ngIf="!filteredReports.length && !loading" class="text-gray-500 text-center py-4">Không có report nào phù hợp.</li>
-		</ul>
-	</div>
+    <!-- List panel: full width if no detail, animated shrink if detail -->
+    <div class="transition-all duration-500 ease-in-out bg-white rounded-xl shadow p-4 flex flex-col"
+        [ngClass]="selectedReport ? 'w-full md:w-1/3' : 'w-full'" style="min-width: 0;">
+        <div class="flex flex-col md:flex-row gap-3 mb-4 items-center">
+            <label class="flex flex-col text-sm font-medium text-gray-700">
+                Loại
+                <select [(ngModel)]="filterType" (change)="onFilterTypeChange(filterType)"
+                    class="mt-1 rounded border-gray-300 focus:ring-blue-500 focus:border-blue-500 px-2 py-1">
+                    <option *ngFor="let opt of typeOptions" [value]="opt.value">{{opt.label}}</option>
+                </select>
+            </label>
+            <label class="flex flex-col text-sm font-medium text-gray-700">
+                Ngày gửi
+                <input type="date" [(ngModel)]="filterDate" (change)="onFilterDateChange(filterDate)"
+                    class="mt-1 rounded border-gray-300 focus:ring-blue-500 focus:border-blue-500 px-2 py-1" />
+            </label>
+            <label class="flex flex-col text-sm font-medium text-gray-700">
+                Sắp xếp
+                <select [(ngModel)]="sortDirection" (change)="onSortChange(sortDirection)"
+                    class="mt-1 rounded border-gray-300 focus:ring-blue-500 focus:border-blue-500 px-2 py-1">
+                    <option value="desc">Mới nhất trước</option>
+                    <option value="asc">Cũ nhất trước</option>
+                </select>
+            </label>
+            <button (click)="clearFilters()"
+                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded shadow">Xóa lọc</button>
+        </div>
+        <div *ngIf="loading" class="text-blue-600 font-semibold">Đang tải...</div>
+        <div *ngIf="error" class="text-red-600 font-semibold">{{error}}</div>
+        <ul class="flex-1 overflow-y-auto divide-y divide-gray-200">
+            <li *ngFor="let report of filteredReports" (click)="onSelectReport(report, $event)"
+                [class.bg-blue-50]="selectedReport?.reportId === report.reportId"
+                class="cursor-pointer px-2 py-3 hover:bg-blue-100 transition rounded flex flex-col">
+                <div class="font-semibold text-gray-800">{{report.title}}</div>
+                <div class="flex gap-2 text-xs text-gray-500 mt-1">
+                    <span class="px-2 py-0.5 rounded bg-gray-100">{{report.type}}</span>
+                    <span>{{report.sendAt | date:'shortDate'}}</span>
+                </div>
+            </li>
+            <li *ngIf="!filteredReports.length && !loading" class="text-gray-500 text-center py-4">Không có report nào
+                phù hợp.</li>
+        </ul>
+    </div>
 
-	<!-- Detail panel: animated slide-in -->
-	<div
-		*ngIf="selectedReport"
-		class="transition-all duration-500 ease-in-out w-0 md:w-2/3 bg-white rounded-xl shadow p-6 overflow-hidden"
-		[ngClass]="selectedReport ? 'max-w-2xl opacity-100' : 'max-w-0 opacity-0'"
-		style="min-width: 0;"
-	>
-				<div class="flex items-start justify-between mb-2">
-					<h3 class="text-2xl font-bold text-blue-700">{{selectedReport.title}}</h3>
-					<button (click)="closeDetail(); $event.stopPropagation()" aria-label="Đóng chi tiết" class="ml-4 px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm">Đóng</button>
-				</div>
-				<div class="flex flex-wrap gap-4 text-sm text-gray-600 mb-2">
-			<span class="px-2 py-0.5 rounded bg-blue-100 text-blue-700">Loại: {{selectedReport.type}}</span>
-			<span>Người gửi: {{selectedReport.sendBy}}</span>
-			<span>Ngày gửi: {{selectedReport.sendAt | date:'medium'}}</span>
-		</div>
-		<div class="mb-4">
-			<div class="font-semibold text-gray-700 mb-1">Nội dung:</div>
-			<p class="bg-gray-50 rounded p-3 text-gray-800 whitespace-pre-line">{{selectedReport.content}}</p>
-		</div>
-		<div *ngIf="selectedReport.replyContent" class="mt-6 border-t pt-4">
-			<div class="font-semibold text-green-700 mb-1">Phản hồi:</div>
-			<p class="bg-green-50 rounded p-3 text-gray-800 whitespace-pre-line">{{selectedReport.replyContent}}</p>
-			<div class="flex gap-4 text-xs text-gray-500 mt-2">
-				<span>Người phản hồi: {{selectedReport.replyBy}}</span>
-				<span>Thời gian: {{selectedReport.replyAt | date:'medium'}}</span>
-			</div>
-		</div>
-	</div>
+    <!-- Detail panel: animated slide-in -->
+    <div *ngIf="selectedReport"
+        class="transition-all duration-500 ease-in-out w-0 md:w-2/3 bg-white rounded-xl shadow p-6 overflow-hidden"
+        [ngClass]="selectedReport ? 'max-w-2xl opacity-100' : 'max-w-0 opacity-0'" style="min-width: 0;">
+        <div class="flex items-start justify-between mb-2">
+            <h3 class="text-2xl font-bold text-blue-700">{{selectedReport.title}}</h3>
+            <button (click)="closeDetail(); $event.stopPropagation()" aria-label="Đóng chi tiết"
+                class="ml-4 px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm">Đóng</button>
+        </div>
+        <div class="flex flex-wrap gap-4 text-sm text-gray-600 mb-2">
+            <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-700">Loại: {{selectedReport.type}}</span>
+            <span>Người gửi: {{selectedReport.sendBy}}</span>
+            <span>Ngày gửi: {{selectedReport.sendAt | date:'medium'}}</span>
+        </div>
+        <div class="mb-4">
+            <div class="font-semibold text-gray-700 mb-1">Nội dung:</div>
+            <p class="bg-gray-50 rounded p-3 text-gray-800 whitespace-pre-line">{{selectedReport.content}}</p>
+        </div>
+        <div *ngIf="selectedReport.replyContent" class="mt-6 border-t pt-4">
+            <div class="font-semibold text-green-700 mb-1">Phản hồi:</div>
+            <p class="bg-green-50 rounded p-3 text-gray-800 whitespace-pre-line">{{selectedReport.replyContent}}</p>
+            <div class="flex gap-4 text-xs text-gray-500 mt-2">
+                <span>Người phản hồi: {{selectedReport.replyBy}}</span>
+                <span>Thời gian: {{selectedReport.replyAt | date:'medium'}}</span>
+            </div>
+        </div>
+    </div>
 </div>
