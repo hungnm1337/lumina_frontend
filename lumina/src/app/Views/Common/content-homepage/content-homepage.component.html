@@ -1,104 +1,129 @@
 <!-- Scroll Progress Indicator -->
 <div class="fixed top-0 left-0 right-0 h-1 bg-gray-200 z-50">
-  <div class="h-1 bg-blue-600 transition-all duration-200 ease-out" id="scrollProgress" style="width: 0%"></div>
+  <div
+    class="h-1 bg-blue-600 transition-all duration-200 ease-out"
+    id="scrollProgress"
+    style="width: 0%"
+  ></div>
 </div>
 
 <!-- Hero Section -->
 <section
-  class="hero-gradient relative overflow-hidden bg-gradient-to-br from-blue-800 via-purple-900 to-indigo-900 text-white">
+  class="hero-gradient relative overflow-hidden bg-gradient-to-br from-blue-800 via-purple-900 to-indigo-900 text-white"
+>
   <div class="absolute inset-0">
-    <div class="floating-element absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full"></div>
-    <div class="floating-element absolute top-40 right-20 w-16 h-16 bg-white/10 rounded-full"
-      style="animation-delay: -2s;"></div>
-    <div class="floating-element absolute bottom-20 left-1/4 w-12 h-12 bg-white/10 rounded-full"
-      style="animation-delay: -4s;"></div>
+    <div
+      class="floating-element absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full"
+    ></div>
+    <div
+      class="floating-element absolute top-40 right-20 w-16 h-16 bg-white/10 rounded-full"
+      style="animation-delay: -2s"
+    ></div>
+    <div
+      class="floating-element absolute bottom-20 left-1/4 w-12 h-12 bg-white/10 rounded-full"
+      style="animation-delay: -4s"
+    ></div>
   </div>
 
-  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 grid lg:grid-cols-2 gap-12 items-center">
+  <div
+    class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 grid lg:grid-cols-2 gap-12 items-center"
+  >
     <div>
-
       <h1 class="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-
-        <span class="block text-yellow-300">TOEIC 990</span> with us
+        <span class="block text-yellow-300">TOEIC 990</span> cùng chúng tôi
       </h1>
       <p class="text-xl text-blue-100 mb-8 leading-relaxed max-w-lg">
-        Intelligent TOEIC preparation system with AI, high-quality questions and personalized learning methods.
+        Hệ thống ôn thi TOEIC thông minh với AI, câu hỏi chất lượng cao và
+        phương pháp học tập cá nhân hóa.
       </p>
 
       <div class="flex flex-col sm:flex-row gap-4 mb-8">
-        <button class="group relative inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white rounded-xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300 hover:bg-white/20 hover:border-white/40 hover:shadow-2xl hover:-translate-y-1">
-          <i class="fas fa-video transition-transform duration-300 group-hover:rotate-12"></i> Start learning for free
+        <button
+          class="group relative inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white rounded-xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300 hover:bg-white/20 hover:border-white/40 hover:shadow-2xl hover:-translate-y-1"
+        >
+          <i
+            class="fas fa-video transition-transform duration-300 group-hover:rotate-12"
+          ></i>
+          Bắt đầu học miễn phí
         </button>
       </div>
-
-
     </div>
 
-    <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 max-w-md mx-auto">
-      <h3 class="text-2xl font-bold text-white mb-2 text-center">Free Level Test</h3>
-      <p class="text-blue-100 text-center mb-6">Take a 150 minutes test to know your current level</p>
+    <div
+      class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 max-w-md mx-auto"
+    >
+      <h3 class="text-2xl font-bold text-white mb-2 text-center">
+        Kiểm tra trình độ miễn phí
+      </h3>
+      <p class="text-blue-100 text-center mb-6">
+        Tham gia bài kiểm tra 150 phút để biết trình độ hiện tại của bạn
+      </p>
 
       <div class="grid grid-cols-2 gap-3 mb-6">
         <div class="bg-white/20 rounded-lg p-4">
           <div class="flex flex-col items-center text-center">
             <div class="text-white font-semibold mb-1">Listening</div>
-            <div class="text-white text-sm">100 Questions</div>
+            <div class="text-white text-sm">100 Câu hỏi</div>
           </div>
         </div>
         <div class="bg-white/20 rounded-lg p-4">
           <div class="flex flex-col items-center text-center">
             <div class="text-white font-semibold mb-1">Reading</div>
-            <div class="text-white text-sm">100 Questions</div>
+            <div class="text-white text-sm">100 Câu hỏi</div>
           </div>
         </div>
         <div class="bg-white/20 rounded-lg p-4">
           <div class="flex flex-col items-center text-center">
             <div class="text-white font-semibold mb-1">Writing</div>
-            <div class="text-white text-sm">8 Questions</div>
+            <div class="text-white text-sm">8 Câu hỏi</div>
           </div>
         </div>
         <div class="bg-white/20 rounded-lg p-4">
           <div class="flex flex-col items-center text-center">
             <div class="text-white font-semibold mb-1">Speaking</div>
-            <div class="text-white text-sm">11 Questions</div>
+            <div class="text-white text-sm">11 Câu hỏi</div>
           </div>
         </div>
       </div>
 
-      <button (click)="moveToMocktest()" class="w-full btn-primary text-lg py-4 inline-flex items-center justify-center">
-        <i class="fas fa-rocket mr-2"></i> Start test
+      <button
+        (click)="moveToMocktest()"
+        class="w-full btn-primary text-lg py-4 inline-flex items-center justify-center"
+      >
+        <i class="fas fa-rocket mr-2"></i> Bắt đầu kiểm tra
       </button>
-
-
     </div>
   </div>
 </section>
 
-
-
 <!-- Features Section -->
 <section class="py-20">
-
   <app-user-slide-dashboard></app-user-slide-dashboard>
 
   <app-leaderboard-preview></app-leaderboard-preview>
 
   <app-event-preview></app-event-preview>
-
 </section>
-
 
 <app-footer></app-footer>
 <!-- Notification Toast -->
-<div id="notification"
-  class="fixed top-4 right-4 bg-white rounded-lg shadow-lg border border-gray-200 p-4 hidden z-50 max-w-sm">
+<div
+  id="notification"
+  class="fixed top-4 right-4 bg-white rounded-lg shadow-lg border border-gray-200 p-4 hidden z-50 max-w-sm"
+>
   <div class="flex items-start space-x-3">
-    <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+    <div
+      class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0"
+    >
       <i class="fas fa-check text-green-600 text-sm"></i>
     </div>
     <div class="flex-1">
-      <div class="font-medium text-gray-900" id="notificationTitle">Thành công!</div>
-      <div class="text-gray-600 text-sm mt-1" id="notificationText">Thông báo</div>
+      <div class="font-medium text-gray-900" id="notificationTitle">
+        Thành công!
+      </div>
+      <div class="text-gray-600 text-sm mt-1" id="notificationText">
+        Thông báo
+      </div>
     </div>
     <button class="text-gray-400 hover:text-gray-600">
       <i class="fas fa-times text-sm"></i>
@@ -107,6 +132,7 @@
 </div>
 
 <!-- Demo Buttons -->
-<div style="position: fixed; right: 16px; bottom: 16px; z-index: 1000" class="hidden md:flex gap-2">
-
-</div>
+<div
+  style="position: fixed; right: 16px; bottom: 16px; z-index: 1000"
+  class="hidden md:flex gap-2"
+></div>
