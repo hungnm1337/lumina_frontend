@@ -23,7 +23,6 @@ export class OptionsComponent implements OnChanges {
 
   selectedOption: OptionDTO | null = null;
 
-  // ✅ FIX: Emit optionId thay vì boolean
   @Output() answered = new EventEmitter<number>();
 
 
@@ -33,7 +32,6 @@ export class OptionsComponent implements OnChanges {
       this.selectedOption = null;
     }
 
-    // ✅ Restore selected option khi navigate
     if (changes['preSelectedOptionId'] || changes['options']) {
       if (this.preSelectedOptionId && this.options?.length > 0) {
         this.selectedOption =
@@ -44,14 +42,12 @@ export class OptionsComponent implements OnChanges {
   }
 
   onSelect(option: OptionDTO): void {
-    // ✅ FIX: Allow re-selection by only checking if disabled
     if (this.disabled) {
       return;
     }
 
     this.selectedOption = option;
 
-    // ✅ FIX: Emit optionId thay vì boolean
     this.answered.emit(option.optionId);
   }
 }

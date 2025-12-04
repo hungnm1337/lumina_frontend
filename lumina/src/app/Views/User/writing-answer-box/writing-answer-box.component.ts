@@ -35,7 +35,7 @@ export class WritingAnswerBoxComponent implements OnInit, OnChanges, OnDestroy {
   @Input() resetAt: number = 0;
   @Input() contentText: string | undefined;
   @Input() pictureCaption: string | undefined;
-  @Output() answered = new EventEmitter<boolean>();
+  @Output() answered = new EventEmitter<number>();
   @Output() answerChange = new EventEmitter<{
     questionId: number;
     answer: string;
@@ -372,8 +372,9 @@ export class WritingAnswerBoxComponent implements OnInit, OnChanges, OnDestroy {
         // ✅ Show success message with captured displayIndex
         this.toast.success(`Nộp câu thành công (Câu ${submittedDisplayIndex})`);
 
-        // Emit event
-        this.answered.emit(true);
+        // Emit điểm từng câu cho parent
+        const score = feedback?.totalScore ?? 0;
+        this.answered.emit(score);
       })
       .catch((error) => {
         console.error(

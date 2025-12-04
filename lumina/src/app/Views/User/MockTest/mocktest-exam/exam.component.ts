@@ -11,6 +11,7 @@ import { ToastService } from '../../../../Services/Toast/toast.service';
 import { ExamPartDTO, QuestionDTO } from '../../../../Interfaces/exam.interfaces';
 import { ExamAttemptService } from '../../../../Services/ExamAttempt/exam-attempt.service';
 import { ExamAttemptRequestDTO } from '../../../../Interfaces/ExamAttempt/ExamAttemptRequestDTO.interface';
+import { TimeComponent } from '../../time/time.component';
 
 @Component({
   selector: 'app-mock-exam',
@@ -18,7 +19,8 @@ import { ExamAttemptRequestDTO } from '../../../../Interfaces/ExamAttempt/ExamAt
   imports: [
     CommonModule,
     SpeakingComponent,
-    WritingComponent
+    WritingComponent,
+    TimeComponent
   ],
   templateUrl: './exam.component.html',
   styleUrls: ['./exam.component.scss']
@@ -45,6 +47,10 @@ export class ExamComponent implements OnInit, OnDestroy {
   examId: number | null = null;
   isSubmitting: boolean = false;
   totalScore: number = 0;
+
+  // Timer management
+  currentQuestionTime: number = 0;
+  timerResetTrigger: number = 0;
 
   get currentPart(): ExamPartDTO | null {
     return this.exampartDetailsAndQustions[this.currentPartIndex] || null;
@@ -77,6 +83,38 @@ export class ExamComponent implements OnInit, OnDestroy {
 
   get isWritingPart(): boolean {
     return this.currentSkillType === 'writing';
+  }
+
+  // Helper method to get skill type from part
+  private getSkillType(part: ExamPartDTO): 'listening' | 'reading' | 'speaking' | 'writing' | 'unknown' {
+    if (!part?.partCode) return 'unknown';
+    const partCode = part.partCode.toUpperCase();
+
+    if (partCode.includes('LISTENING')) return 'listening';
+    if (partCode.includes('READING')) return 'reading';
+    if (partCode.includes('SPEAKING')) return 'speaking';
+    if (partCode.includes('WRITING') || partCode.includes('WRITTING')) return 'writing';
+
+    return 'unknown';
+  }
+
+  // Sort parts by skill type order and partId
+  private sortPartsBySkillAndId(parts: ExamPartDTO[]): ExamPartDTO[] {
+    // Define skill order priority
+    const skillOrder = { listening: 1, reading: 2, speaking: 3, writing: 4, unknown: 5 };
+
+    // Sort by skill type first, then by partId
+    return parts.sort((a, b) => {
+      const skillA = this.getSkillType(a);
+      const skillB = this.getSkillType(b);
+
+      // Compare skill type priority
+      const skillDiff = skillOrder[skillA] - skillOrder[skillB];
+      if (skillDiff !== 0) return skillDiff;
+
+      // If same skill type, sort by partId
+      return (a.partId || 0) - (b.partId || 0);
+    });
   }
 
   ngOnInit(): void {
@@ -151,8 +189,9 @@ export class ExamComponent implements OnInit, OnDestroy {
   loadMocktestQuestions() {
     this.mockTestService.getMocktestQuestions().subscribe({
       next: (data: ExamPartDTO[]) => {
-        this.exampartDetailsAndQustions = data;
-        console.log('Mocktest questions loaded:', data);
+        // Sort parts by skill type and partId
+        this.exampartDetailsAndQustions = this.sortPartsBySkillAndId(data);
+        console.log('Mocktest questions loaded and sorted:', this.exampartDetailsAndQustions);
 
         // Set examId from first part if not set from route
         if (!this.examId && data.length > 0) {
@@ -166,6 +205,7 @@ export class ExamComponent implements OnInit, OnDestroy {
         // Initialize at first part and first question
         this.currentPartIndex = 0;
         this.currentQuestionIndex = 0;
+        this.updateQuestionTimer();
       },
       error: (error) => {
         console.error('Error loading mocktest questions:', error);
@@ -237,9 +277,57 @@ export class ExamComponent implements OnInit, OnDestroy {
     return false;
   }
 
+  // Check if current part has all questions answered (for MC only)
+  isCurrentPartComplete(): boolean {
+    if (!this.isMultipleChoicePart) return true; // Speaking/Writing always passable
+
+    const currentQuestions = this.currentPart?.questions || [];
+    return currentQuestions.every(q => this.isQuestionAnswered(q.questionId));
+  }
+
+  // Get count of unanswered questions in current part (for MC only)
+  getUnansweredCount(): number {
+    if (!this.isMultipleChoicePart) return 0;
+
+    const currentQuestions = this.currentPart?.questions || [];
+    return currentQuestions.filter(q => !this.isQuestionAnswered(q.questionId)).length;
+  }
+
+  // Get count of answered questions in current part
+  getAnsweredCountInPart(): number {
+    if (!this.currentPart) return 0;
+    return this.currentPart.questions.filter(q => this.isQuestionAnswered(q.questionId)).length;
+  }
+
+  // Get total questions in current part
+  getTotalQuestionsInPart(): number {
+    return this.currentPart?.questions.length || 0;
+  }
+
   goToQuestion(questionIndex: number) {
     this.currentQuestionIndex = questionIndex;
     this.showPartCompletionMessage = false;
+    this.updateQuestionTimer();
+  }
+
+  // Update timer when question changes
+  private updateQuestionTimer(): void {
+    if (this.currentQuestion && this.isMultipleChoicePart) {
+      this.currentQuestionTime = this.currentQuestion.time || 0;
+      this.timerResetTrigger = Date.now(); // Force timer reset
+    }
+  }
+
+  onQuestionTimeout(): void {
+    if (this.isMultipleChoicePart) {
+      this.toastService.warning('Hết thời gian! Tự động chuyển sang câu tiếp theo');
+      // Auto-move to next question on timeout
+      if (!this.isLastQuestionInExam()) {
+        setTimeout(() => {
+          this.nextQuestion();
+        }, 1000);
+      }
+    }
   }
 
   nextQuestion() {
@@ -247,25 +335,35 @@ export class ExamComponent implements OnInit, OnDestroy {
 
     // For Speaking/Writing parts, don't validate answer selection (handled by their own components)
     if (this.isMultipleChoicePart) {
-      // Check if answer is selected for Listening/Reading
+      // Check if answer is selected for current question
       if (!this.selectedAnswers[this.currentQuestion.questionId]) {
-        this.toastService.error('Please select an answer before proceeding.');
+        this.toastService.warning('Vui lòng chọn đáp án trước khi tiếp tục');
         return;
       }
     }
 
     // Check if this is the last question in the part
     if (this.isLastQuestionInPart()) {
+      // For MC parts, validate all questions are answered before proceeding
+      if (this.isMultipleChoicePart && !this.isCurrentPartComplete()) {
+        const unanswered = this.getUnansweredCount();
+        this.toastService.warning(
+          `Vui lòng hoàn thành ${unanswered} câu còn lại trước khi chuyển part`
+        );
+        return;
+      }
+
       if (this.isLastQuestionInExam()) {
         // Finish exam
         this.finishExam();
       } else {
-        // Show part completion message
+        // Show part completion message (Option B)
         this.showPartCompletionMessage = true;
       }
     } else {
       // Move to next question in current part
       this.currentQuestionIndex++;
+      this.updateQuestionTimer();
     }
   }
 
@@ -323,15 +421,17 @@ export class ExamComponent implements OnInit, OnDestroy {
   }
 
   previousQuestion() {
+    // Block going back to previous part
+    if (this.currentQuestionIndex === 0 && this.currentPartIndex > 0) {
+      this.toastService.warning('Không thể quay lại part trước');
+      return;
+    }
+
     if (this.currentQuestionIndex > 0) {
       // Go to previous question in current part
       this.currentQuestionIndex--;
       this.showPartCompletionMessage = false;
-    } else if (this.currentPartIndex > 0) {
-      // Go to last question of previous part
-      this.currentPartIndex--;
-      this.currentQuestionIndex = this.currentPart!.questions.length - 1;
-      this.showPartCompletionMessage = false;
+      this.updateQuestionTimer();
     }
   }
 

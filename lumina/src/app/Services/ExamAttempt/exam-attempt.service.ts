@@ -8,7 +8,6 @@ import { ExamAttemptDetailResponseDTO } from '../../Interfaces/ExamAttempt/ExamA
 import { ReadingAnswerRequestDTO } from '../../Interfaces/ReadingAnswer/ReadingAnswerRequestDTO.interface';
 import { WritingAnswerRequestDTO } from '../../Interfaces/WritingAnswer/WritingAnswerRequestDTO.interface';
 
-// ✅ NEW INTERFACES FOR BACKEND INTEGRATION
 export interface SubmitAnswerResponse {
   success: boolean;
   isCorrect: boolean;
@@ -42,11 +41,6 @@ export class ExamAttemptService {
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Start a new exam attempt
-   * @param model Request data containing UserID and ExamID
-   * @returns Observable of ExamAttemptResponseDTO
-   */
   startExam(model: ExamAttemptRequestDTO): Observable<ExamAttemptRequestDTO> {
     return this.http.post<ExamAttemptRequestDTO>(
       `${this.baseUrl}/start-exam`,
@@ -54,11 +48,6 @@ export class ExamAttemptService {
     );
   }
 
-  /**
-   * End an exam attempt
-   * @param model Request data containing AttemptID
-   * @returns Observable of ExamAttemptResponseDTO
-   */
   endExam(model: ExamAttemptRequestDTO): Observable<ExamAttemptRequestDTO> {
     return this.http.patch<ExamAttemptRequestDTO>(
       `${this.baseUrl}/end-exam`,
@@ -66,22 +55,12 @@ export class ExamAttemptService {
     );
   }
 
-  /**
-   * Get all exam attempts for a specific user
-   * @param userId The ID of the user
-   * @returns Observable of ExamAttemptResponseDTO array
-   */
   getUserAttempts(userId: number): Observable<ExamAttemptResponseDTO[]> {
     return this.http.get<ExamAttemptResponseDTO[]>(
       `${this.baseUrl}/user-attempts/${userId}`
     );
   }
 
-  /**
-   * Get detailed information about a specific exam attempt
-   * @param attemptId The ID of the exam attempt
-   * @returns Observable of ExamAttemptDetailResponseDTO
-   */
   getAttemptDetails(
     attemptId: number
   ): Observable<ExamAttemptDetailResponseDTO> {
@@ -90,14 +69,6 @@ export class ExamAttemptService {
     );
   }
 
-  // ⚠️ DEPRECATED: Use submitReadingAnswerNew() instead
-  // submitReadingAnswer(model: ReadingAnswerRequestDTO): Observable<boolean> {
-  //   return this.http.post<boolean>(
-  //     `${this.baseUrl}/save-reading-answer`,
-  //     model
-  //   );
-  // }
-
   submitWritingAnswer(model: WritingAnswerRequestDTO): Observable<boolean> {
     return this.http.post<boolean>(
       `${this.baseUrl}/save-writing-answer`,
@@ -105,10 +76,6 @@ export class ExamAttemptService {
     );
   }
 
-  /**
-   * ✅ SUBMIT LISTENING ANSWER (NEW)
-   * Submit Listening answer to backend for scoring
-   */
   submitListeningAnswer(model: {
     examAttemptId: number;
     questionId: number;
@@ -120,10 +87,6 @@ export class ExamAttemptService {
     );
   }
 
-  /**
-   * ✅ SUBMIT READING ANSWER (NEW)
-   * Submit Reading answer to backend for scoring
-   */
   submitReadingAnswerNew(model: {
     examAttemptId: number;
     questionId: number;
@@ -135,20 +98,12 @@ export class ExamAttemptService {
     );
   }
 
-  /**
-   * ✅ FINALIZE ATTEMPT (NEW)
-   * Complete exam attempt and calculate total score
-   */
   finalizeAttempt(attemptId: number): Observable<FinalizeAttemptResponse> {
     return this.http.post<FinalizeAttemptResponse>(`${this.baseUrl}/finalize`, {
       examAttemptId: attemptId,
     });
   }
 
-  /**
-   * ✅ SAVE PROGRESS (NEW)
-   * Save exam progress when exiting mid-exam
-   */
   saveProgress(model: {
     examAttemptId: number;
     currentQuestionIndex?: number;

@@ -3,6 +3,8 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { VocabularyService } from '../../../Services/Vocabulary/vocabulary.service';
+import { UploadService } from '../../../Services/Upload/upload.service';
+import { ToastService } from '../../../Services/Toast/toast.service';
 import { HeaderComponent } from '../../Common/header/header.component';
 
 
@@ -63,20 +65,33 @@ export class VocabularyListDetailComponent implements OnInit {
   isEditMode = false;
   editWordForm: FormGroup;
   
+  // Image upload state
+  isUploadingImage = false;
+  selectedImageFile: File | null = null;
+  imagePreview: string | null = null;
+  
+  // Add word image upload state
+  isUploadingImageForAdd = false;
+  selectedImageFileForAdd: File | null = null;
+  imagePreviewForAdd: string | null = null;
+  
 
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private vocabularyService: VocabularyService,
+    private uploadService: UploadService,
+    private toastService: ToastService,
     private fb: FormBuilder
   ) {
-    // Initialize form - 4 fields: word, definition, category, example
+    // Initialize form - 5 fields: word, definition, category, example, imageUrl
     this.addWordForm = this.fb.group({
       word: ['', [Validators.required, Validators.maxLength(100)]],
       definition: ['', [Validators.required, Validators.maxLength(500)]],
       category: [''], // Category - will map to category in database
-      example: [''] // Example
+      example: [''], // Example
+      imageUrl: [''] // Image URL
     });
     
     // Edit vocabulary form
@@ -84,7 +99,8 @@ export class VocabularyListDetailComponent implements OnInit {
       word: ['', [Validators.required, Validators.maxLength(100)]],
       definition: ['', [Validators.required, Validators.maxLength(500)]],
       category: [''],
-      example: ['']
+      example: [''],
+      imageUrl: [''] // Thêm field imageUrl
     });
   }
 
@@ -214,7 +230,7 @@ export class VocabularyListDetailComponent implements OnInit {
                   level: undefined,
                   audioUrl: w.audioUrl,
                   example: w.example,
-                  imageUrl: w.imageUrl // Lấy imageUrl từ API response
+                  imageUrl: w.imageUrl || undefined // Lấy imageUrl từ API response
                 };
                 
                 console.log('✅ Mapped word:', mapped);
@@ -428,8 +444,11 @@ export class VocabularyListDetailComponent implements OnInit {
       word: '',
       definition: '',
       category: '',
-      example: ''
+      example: '',
+      imageUrl: ''
     });
+    this.selectedImageFileForAdd = null;
+    this.imagePreviewForAdd = null;
         this.isAddWordModalOpen = true;
       },
       error: (error) => {
@@ -466,7 +485,43 @@ export class VocabularyListDetailComponent implements OnInit {
     this.isSubmitting = true;
     const formValue = this.addWordForm.value;
 
-    const vocabularyData = {
+    // Nếu có file ảnh mới được chọn, upload lên Cloudinary trước
+    if (this.selectedImageFileForAdd) {
+      this.isUploadingImageForAdd = true;
+      this.toastService.info('Hệ thống đang lưu lại từ vựng...');
+      
+      console.log('📤 Uploading image file:', this.selectedImageFileForAdd.name, 'Size:', this.selectedImageFileForAdd.size);
+      
+      this.uploadService.uploadFile(this.selectedImageFileForAdd).subscribe({
+        next: (response) => {
+          console.log('📥 Upload response:', response);
+          if (response && response.url) {
+            console.log('✅ Image uploaded successfully, URL:', response.url);
+            // Sau khi upload thành công, tiếp tục tạo vocabulary với imageUrl mới
+            this.createVocabularyWithImageUrl(listId, formValue, response.url);
+          } else {
+            console.error('❌ Upload response missing URL:', response);
+            this.toastService.error('Upload ảnh thất bại: Không nhận được URL');
+            this.isUploadingImageForAdd = false;
+            this.isSubmitting = false;
+          }
+        },
+        error: (error) => {
+          console.error('❌ Error uploading image:', error);
+          this.toastService.error('Upload ảnh thất bại. Vui lòng thử lại.');
+          this.isUploadingImageForAdd = false;
+          this.isSubmitting = false;
+        }
+      });
+    } else {
+      console.log('ℹ️ No image file selected, creating vocabulary without image');
+      // Không có file mới, tạo vocabulary với imageUrl hiện tại (nếu có)
+      this.createVocabularyWithImageUrl(listId, formValue, formValue.imageUrl?.trim() || undefined);
+    }
+  }
+
+  private createVocabularyWithImageUrl(listId: number, formValue: any, imageUrl: string | undefined): void {
+    const vocabularyData: any = {
       vocabularyListId: listId,
       word: formValue.word.trim(),
       typeOfWord: 'Noun', // Default value because backend requires this field
@@ -474,19 +529,39 @@ export class VocabularyListDetailComponent implements OnInit {
       category: formValue.category?.trim() || undefined, // Category - map to category
       example: formValue.example?.trim() || undefined // Example
     };
+    
+    // Chỉ thêm imageUrl vào request nếu có giá trị
+    if (imageUrl !== undefined && imageUrl !== null && imageUrl !== '') {
+      vocabularyData.imageUrl = imageUrl;
+      console.log('✅ Adding imageUrl to request:', imageUrl);
+    } else {
+      console.warn('⚠️ No imageUrl provided or imageUrl is empty');
+    }
+    
+    console.log('📤 Sending vocabulary data to backend:', JSON.stringify(vocabularyData, null, 2));
 
     this.vocabularyService.createVocabulary(vocabularyData).subscribe({
       next: (response) => {
         console.log('Vocabulary added successfully:', response);
+        console.log('ImageUrl sent to backend:', imageUrl);
         this.isSubmitting = false;
+        this.isUploadingImageForAdd = false;
+        this.selectedImageFileForAdd = null; // Reset selected file
+        this.imagePreviewForAdd = null; // Reset preview
         this.closeAddWordModal();
         
-        // Reload vocabulary list
-        this.reloadVocabularyList(listId);
+        // Delay nhỏ để đảm bảo database đã cập nhật xong
+        setTimeout(() => {
+          // Reload vocabulary list với force refresh
+          this.reloadVocabularyList(listId);
+        }, 500);
+        
+        this.toastService.success('Thêm từ vựng thành công!');
       },
       error: (error) => {
         console.error('Error adding vocabulary:', error);
         this.isSubmitting = false;
+        this.isUploadingImageForAdd = false;
         
         let errorMsg = 'Cannot add vocabulary. Please try again.';
         
@@ -498,7 +573,7 @@ export class VocabularyListDetailComponent implements OnInit {
           errorMsg = error.error.message;
         }
         
-        alert(errorMsg);
+        this.toastService.error(errorMsg);
       }
     });
   }
@@ -511,6 +586,8 @@ export class VocabularyListDetailComponent implements OnInit {
           // Fallback: load vocabularies by listId
           this.vocabularyService.getVocabularies(listId).subscribe({
             next: (words) => {
+              console.log('🔄 Reloading vocabularies from API:', words);
+              console.log('🖼️ Checking imageUrl in response:', words?.map((w: any) => ({ word: w.word, imageUrl: w.imageUrl })));
               if (this.vocabularyList) {
                 this.vocabularyList.words = (words || []).map((w: any) => {
                   // Try multiple ways to get ID
@@ -525,7 +602,7 @@ export class VocabularyListDetailComponent implements OnInit {
                     wordId = Number(w.ID);
                   }
                   
-                  return {
+                  const mapped = {
                     id: wordId,
                     question: w.word || '',
                     answer: w.definition || '',
@@ -533,12 +610,17 @@ export class VocabularyListDetailComponent implements OnInit {
                     level: undefined,
                     audioUrl: w.audioUrl,
                     example: w.example,
-                    imageUrl: w.imageUrl // Lấy imageUrl từ API response
+                    imageUrl: w.imageUrl || undefined, // Lấy imageUrl từ API response
+                    imageError: false // Reset image error flag
                   };
+                  
+                  console.log('📝 Mapped word:', mapped.question, 'ImageUrl:', mapped.imageUrl, 'Raw w.imageUrl:', w.imageUrl);
+                  return mapped;
                 });
                 this.vocabularyList.vocabularyCount = this.vocabularyList.words.length;
                 // Reset to first page
                 this.currentPage = 1;
+                console.log('✅ Reloaded vocabulary list with', this.vocabularyList.words.length, 'words');
               }
             },
             error: () => {
@@ -547,6 +629,8 @@ export class VocabularyListDetailComponent implements OnInit {
           });
         } else {
           if (this.vocabularyList) {
+            console.log('🔄 Reloading from detail.words:', detail.words);
+            console.log('🖼️ Checking imageUrl in detail.words:', detail.words?.map((w: any) => ({ word: w.word || w.question, imageUrl: w.imageUrl })));
             // Map again to ensure ID
             this.vocabularyList.words = (detail.words || []).map((w: any) => {
               // Try multiple ways to get ID
@@ -561,19 +645,24 @@ export class VocabularyListDetailComponent implements OnInit {
                 wordId = Number(w.ID);
               }
               
-              return {
+              const mapped = {
                 id: wordId,
                 question: w.word || w.question || '',
                 answer: w.definition || w.answer || '',
-                imageUrl: w.imageUrl, // Lấy imageUrl từ API response
+                imageUrl: w.imageUrl || undefined, // Lấy imageUrl từ API response
                 topic: w.category || w.topic,
                 level: w.level,
                 audioUrl: w.audioUrl,
-                example: w.example
+                example: w.example,
+                imageError: false // Reset image error flag
               };
+              
+              console.log('📝 Mapped word from detail:', mapped.question, 'ImageUrl:', mapped.imageUrl, 'Raw w.imageUrl:', w.imageUrl);
+              return mapped;
             });
             this.vocabularyList.vocabularyCount = this.vocabularyList.words.length;
             this.currentPage = 1;
+            console.log('✅ Reloaded vocabulary list from detail with', this.vocabularyList.words.length, 'words');
           }
         }
       },
@@ -581,6 +670,7 @@ export class VocabularyListDetailComponent implements OnInit {
         // Fallback: load vocabularies by listId
         this.vocabularyService.getVocabularies(listId).subscribe({
           next: (words) => {
+            console.log('🔄 Fallback: Reloading vocabularies from API:', words);
             if (this.vocabularyList) {
               this.vocabularyList.words = (words || []).map((w: any) => {
                 // Try multiple ways to get ID
@@ -595,19 +685,27 @@ export class VocabularyListDetailComponent implements OnInit {
                   wordId = Number(w.ID);
                 }
                 
-                return {
+                const mapped = {
                   id: wordId,
                   question: w.word || '',
                   answer: w.definition || '',
                   topic: w.category,
                   audioUrl: w.audioUrl,
                   example: w.example,
-                  imageUrl: w.imageUrl // Lấy imageUrl từ API response
+                  imageUrl: w.imageUrl || undefined, // Lấy imageUrl từ API response
+                  imageError: false // Reset image error flag
                 };
+                
+                console.log('📝 Fallback mapped word:', mapped.question, 'ImageUrl:', mapped.imageUrl);
+                return mapped;
               });
               this.vocabularyList.vocabularyCount = this.vocabularyList.words.length;
               this.currentPage = 1;
+              console.log('✅ Fallback: Reloaded vocabulary list with', this.vocabularyList.words.length, 'words');
             }
+          },
+          error: () => {
+            console.error('Cannot reload vocabulary');
           }
         });
       }
@@ -670,13 +768,88 @@ export class VocabularyListDetailComponent implements OnInit {
       word: this.selectedWord.question,
       definition: this.selectedWord.answer,
       category: this.selectedWord.topic || '',
-      example: this.selectedWord.example || ''
+      example: this.selectedWord.example || '',
+      imageUrl: this.selectedWord.imageUrl || ''
     });
+    
+    // Reset image upload state
+    this.selectedImageFile = null;
+    this.imagePreview = this.selectedWord.imageUrl || null;
   }
 
   cancelEdit(): void {
     this.isEditMode = false;
     this.editWordForm.reset();
+    this.selectedImageFile = null;
+    this.imagePreview = null;
+  }
+  
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        this.toastService.error('Vui lòng chọn file ảnh hợp lệ!');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        this.toastService.error('Kích thước ảnh không được vượt quá 5MB!');
+        return;
+      }
+      
+      this.selectedImageFile = file;
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.imagePreview = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+  
+  removeImage(): void {
+    this.selectedImageFile = null;
+    this.imagePreview = null;
+    this.editWordForm.patchValue({ imageUrl: '' });
+  }
+  
+  onImageSelectedForAdd(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        this.toastService.error('Vui lòng chọn file ảnh hợp lệ!');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        this.toastService.error('Kích thước ảnh không được vượt quá 5MB!');
+        return;
+      }
+      
+      this.selectedImageFileForAdd = file;
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.imagePreviewForAdd = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+  
+  removeImageForAdd(): void {
+    this.selectedImageFileForAdd = null;
+    this.imagePreviewForAdd = null;
+    this.addWordForm.patchValue({ imageUrl: '' });
   }
 
   saveEditedWord(): void {
@@ -692,19 +865,65 @@ export class VocabularyListDetailComponent implements OnInit {
     this.isSubmitting = true;
     const formValue = this.editWordForm.value;
 
-    const updateData = {
+    // Nếu có file ảnh mới được chọn, upload lên Cloudinary trước
+    if (this.selectedImageFile) {
+      this.isUploadingImage = true;
+      this.toastService.info('Hệ thống đang lưu lại từ vựng...');
+      
+      this.uploadService.uploadFile(this.selectedImageFile).subscribe({
+        next: (response) => {
+          if (response && response.url) {
+            // Sau khi upload thành công, tiếp tục update vocabulary với imageUrl mới
+            this.updateVocabularyWithImageUrl(formValue, response.url);
+          } else {
+            this.toastService.error('Upload ảnh thất bại: Không nhận được URL');
+            this.isUploadingImage = false;
+            this.isSubmitting = false;
+          }
+        },
+        error: (error) => {
+          console.error('Error uploading image:', error);
+          this.toastService.error('Upload ảnh thất bại. Vui lòng thử lại.');
+          this.isUploadingImage = false;
+          this.isSubmitting = false;
+        }
+      });
+    } else {
+      // Không có file mới, kiểm tra xem user có muốn xóa ảnh không
+      // Nếu imageUrl trong form là empty string → user đã xóa ảnh → gửi null
+      // Nếu imageUrl trong form có giá trị → giữ nguyên → gửi giá trị đó
+      // Nếu imageUrl trong form là undefined → không thay đổi → không gửi field này
+      const currentImageUrl = formValue.imageUrl?.trim();
+      const imageUrlToSend = currentImageUrl === '' ? null : (currentImageUrl || undefined);
+      this.updateVocabularyWithImageUrl(formValue, imageUrlToSend);
+    }
+  }
+
+  private updateVocabularyWithImageUrl(formValue: any, imageUrl: string | undefined): void {
+    const updateData: any = {
       word: formValue.word.trim(),
       typeOfWord: 'Noun', // Keep default value
       definition: formValue.definition.trim(),
-      category: formValue.category?.trim() || undefined, // Add category
+      category: formValue.category?.trim() || undefined,
       example: formValue.example?.trim() || undefined
     };
+    
+    // Chỉ thêm imageUrl vào request nếu có giá trị (không phải undefined)
+    // Nếu undefined, không gửi field này để backend giữ nguyên giá trị cũ
+    if (imageUrl !== undefined) {
+      updateData.imageUrl = imageUrl || null; // Nếu empty string, gửi null để xóa ảnh
+    }
+    
+    console.log('📤 Sending update request:', updateData);
+    console.log('📤 ImageUrl value:', imageUrl);
 
-    this.vocabularyService.updateVocabulary(this.selectedWordId, updateData).subscribe({
+    this.vocabularyService.updateVocabulary(this.selectedWordId!, updateData).subscribe({
       next: (response) => {
         console.log('Vocabulary updated:', response);
         this.isSubmitting = false;
+        this.isUploadingImage = false;
         this.isEditMode = false;
+        this.selectedImageFile = null; // Reset selected file
         
         // Update local data
         if (this.selectedWord && this.vocabularyList && this.selectedWordId) {
@@ -717,17 +936,22 @@ export class VocabularyListDetailComponent implements OnInit {
               question: formValue.word.trim(),
               answer: formValue.definition.trim(),
               topic: formValue.category?.trim() || undefined,
-              example: formValue.example?.trim()
+              example: formValue.example?.trim(),
+              imageUrl: imageUrl
             };
             this.selectedWord = this.vocabularyList.words[wordIndex];
+            this.imagePreview = imageUrl || null; // Update preview với URL mới
           }
         }
+        
+        this.toastService.success('Cập nhật từ vựng thành công!');
       },
       error: (error) => {
         console.error('Error updating vocabulary:', error);
         this.isSubmitting = false;
+        this.isUploadingImage = false;
         const errorMsg = error?.error?.message || 'Cannot update vocabulary. Please try again.';
-        alert(errorMsg);
+        this.toastService.error(errorMsg);
       }
     });
   }

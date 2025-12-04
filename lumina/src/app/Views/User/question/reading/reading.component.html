@@ -1,129 +1,137 @@
-<app-popup *ngIf="showPopup" [title]="popupTitle" [message]="popupMessage" (okClicked)="onPopupOk()" (cancelClicked)="onPopupCancel()"></app-popup>
-<div class="w-full bg-white rounded-lg shadow-md p-6">
-  <!-- Quota Limit Modal -->
-  <app-quota-limit-modal
-    [isVisible]="showQuotaModal"
-    [skill]="'reading'"
-    [message]="quotaMessage"
-    (close)="closeQuotaModal()"
-  ></app-quota-limit-modal>
+<app-popup
+  *ngIf="showPopup"
+  [title]="popupTitle"
+  [message]="popupMessage"
+  (okClicked)="onPopupOk()"
+  (cancelClicked)="onPopupCancel()"
+></app-popup>
 
-  <!-- Exam Attempt Details Modal -->
-  @if (showExamAttemptDetailsFlag && examAttemptDetails) {
-  <app-exam-attempt-detail
-    [examAttemptDetails]="examAttemptDetails"
-    (close)="closeExamAttemptDetails()"
-  ></app-exam-attempt-detail>
-  } @if (!finished) {
-  <!-- Progress Header -->
-  <!-- <div class="mb-4 flex items-center justify-between">
-    <div class="text-sm text-gray-600">
-      Câu {{ currentIndex + 1 }} / {{ questions.length }}
-    </div>
-    <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded font-medium">
-      Điểm: {{ totalScore }}
-    </span>
-  </div> -->
+<!-- Quota Limit Modal -->
+<app-quota-limit-modal
+  [isVisible]="showQuotaModal"
+  [skill]="'reading'"
+  [message]="quotaMessage"
+  (close)="closeQuotaModal()"
+></app-quota-limit-modal>
 
-  <!-- Question Content -->
-  <div class="mb-6">
-    <h3 class="m-3 font-medium">{{ questions[currentIndex].stemText }}</h3>
-    @if( questions[currentIndex].prompt != null ) {
-    <app-prompt
-      [prompt]="questions[currentIndex].prompt"
-      [resetAt]="currentIndex"
-      [questionType]="questions[currentIndex].questionType ?? ''"
-    ></app-prompt>
-    }
-  </div>
+<!-- Exam Attempt Details Modal -->
+@if (showExamAttemptDetailsFlag && examAttemptDetails) {
+<app-exam-attempt-detail
+  [examAttemptDetails]="examAttemptDetails"
+  (close)="closeExamAttemptDetails()"
+></app-exam-attempt-detail>
+} @if (!finished) {
+<!-- Layout với Navigator bên trái -->
+<div class="flex gap-4">
+  <!-- Left Sidebar: Navigator + Submit Button -->
+  <div class="w-48 flex-shrink-0">
+    <div class="sticky top-4 space-y-4">
+      <!-- Question Navigator - Vertical -->
+      <div class="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+        <h4 class="text-sm font-semibold text-gray-700 mb-3">Navigator</h4>
+        <div class="grid grid-cols-4 gap-2">
+          @for (question of questions; track question.questionId; let i =
+          $index) {
+          <button
+            (click)="navigateToQuestion(i)"
+            [class]="
+              i === currentIndex
+                ? 'w-10 h-10 rounded-md bg-blue-600 text-white font-semibold text-xs shadow-sm hover:bg-blue-700'
+                : isQuestionAnswered(question.questionId)
+                ? 'w-10 h-10 rounded-md bg-green-600 text-white text-xs shadow-sm hover:bg-green-700'
+                : 'w-10 h-10 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 text-xs'
+            "
+          >
+            {{ i + 1 }}
+          </button>
+          }
+        </div>
 
-  <!-- Options -->
-  <app-options
-    [options]="questions[currentIndex].options || []"
-    [resetAt]="currentIndex"
-    [preSelectedOptionId]="
-      getSelectedOptionId(questions[currentIndex].questionId)
-    "
-    (answered)="markAnswered($event)"
-  ></app-options>
+        <!-- Legend -->
+        <div class="mt-3 space-y-1.5 text-xs text-gray-600">
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 bg-gray-200 rounded"></div>
+            <span>Chưa làm</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 bg-green-600 rounded"></div>
+            <span>Đã làm</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 bg-blue-600 rounded"></div>
+            <span>Đang làm</span>
+          </div>
+        </div>
+      </div>
 
-  <!-- Navigation -->
-  <div class="mt-6 flex items-center justify-between">
-    <button
-      (click)="previousQuestion()"
-      [disabled]="currentIndex === 0"
-      class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      <i class="fas fa-arrow-left mr-2"></i>Câu trước
-    </button>
-
-    <div class="flex gap-2">
-      <!-- <button
-        (click)="confirmExit()"
-        class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600"
-        title="Lưu tiến trình và thoát"
-      >
-        Lưu & Thoát
-      </button> -->
+      <!-- Submit Button -->
       <button
         (click)="finishExamManual()"
-        class="px-4 py-2 rounded bg-orange-600 text-white hover:bg-orange-700"
+        class="w-full px-4 py-3 rounded-md bg-orange-600 text-white hover:bg-orange-700 text-sm font-semibold shadow-md"
       >
-        Nộp bài
+        <i class="fas fa-check-circle mr-2"></i>Nộp bài
       </button>
     </div>
-
-    <button
-      (click)="nextQuestion()"
-      [disabled]="currentIndex === questions.length - 1"
-      class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      Câu sau<i class="fas fa-arrow-right ml-2"></i>
-    </button>
   </div>
 
-  <!-- Question Navigator -->
-  <div class="mt-6 p-4 bg-gray-50 rounded-lg">
-    <h4 class="text-sm font-semibold text-gray-600 mb-3">Navigator</h4>
-    <div class="grid grid-cols-10 gap-2">
-      @for (question of questions; track question.questionId; let i = $index) {
+  <!-- Main Content Area -->
+  <div class="flex-1 bg-white rounded-lg shadow-md p-6">
+    <!-- Main Content: Two Column Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <!-- Left Column: Question Stem + Prompt/Image -->
+      <div class="flex flex-col space-y-4">
+        <h3 class="font-medium text-lg text-gray-800">
+          {{ questions[currentIndex].stemText }}
+        </h3>
+        @if( questions[currentIndex].prompt != null ) {
+        <div class="w-full">
+          <app-prompt
+            [prompt]="questions[currentIndex].prompt"
+            [resetAt]="currentIndex"
+            [questionType]="questions[currentIndex].questionType ?? ''"
+          ></app-prompt>
+        </div>
+        }
+      </div>
+
+      <!-- Right Column: Options -->
+      <div class="flex items-start">
+        <div class="w-full">
+          <app-options
+            [options]="questions[currentIndex].options || []"
+            [resetAt]="currentIndex"
+            [preSelectedOptionId]="
+              getSelectedOptionId(questions[currentIndex].questionId)
+            "
+            (answered)="markAnswered($event)"
+          ></app-options>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="mt-4 flex items-center justify-between">
       <button
-        (click)="navigateToQuestion(i)"
-        [class]="
-          i === currentIndex
-            ? 'w-10 h-10 rounded-lg bg-blue-600 text-white font-semibold'
-            : isQuestionAnswered(question.questionId)
-            ? answeredQuestions.get(question.questionId)?.isCorrect
-              ? 'w-10 h-10 rounded-lg bg-green-600 text-white'
-              : 'w-10 h-10 rounded-lg bg-green-600 text-white'
-            : 'w-10 h-10 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300'
-        "
+        (click)="previousQuestion()"
+        [disabled]="currentIndex === 0"
+        class="px-3 py-1.5 rounded-md bg-gray-500 text-white hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-sm"
       >
-        {{ i + 1 }}
+        <i class="fas fa-arrow-left mr-1.5"></i>Câu trước
       </button>
-      }
-    </div>
 
-    <!-- ✅ Legend - Chú thích màu sắc -->
-    <div class="mt-4 flex items-center gap-4 text-xs text-gray-600">
-      <div class="flex items-center gap-1">
-        <div class="w-4 h-4 bg-gray-200 rounded"></div>
-        <span>Chưa làm</span>
-      </div>
-      <div class="flex items-center gap-1">
-        <div class="w-4 h-4 bg-green-600 rounded"></div>
-        <span>Đã làm</span>
-      </div>
-
-      <div class="flex items-center gap-1">
-        <div class="w-4 h-4 bg-blue-600 rounded"></div>
-        <span>Đang làm</span>
-      </div>
+      <button
+        (click)="nextQuestion()"
+        [disabled]="currentIndex === questions.length - 1"
+        class="px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-sm"
+      >
+        Câu sau<i class="fas fa-arrow-right ml-1.5"></i>
+      </button>
     </div>
   </div>
-
-  } @else {
-  <!-- Summary Screen -->
+</div>
+} @else {
+<!-- Summary Screen -->
+<div class="w-full bg-white rounded-lg shadow-md p-6">
   <div class="text-center py-8">
     <div
       class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full mb-4"
@@ -189,5 +197,5 @@
       ></app-report-popup>
     </div>
   </div>
-  }
 </div>
+}

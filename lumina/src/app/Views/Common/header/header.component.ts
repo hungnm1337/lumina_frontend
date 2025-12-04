@@ -23,10 +23,7 @@ import { NotificationService } from '../../../Services/Notification/notification
 export class HeaderComponent implements OnInit, OnDestroy {
   currentUser$!: Observable<AuthUserResponse | null>;
 
-  moveToMocktest() {
-    console.log('Navigating to Mock Test Exams');
-    this.router.navigate(['homepage/mocktest/exams']);
-  }
+  
   isDropdownOpen = false;
   isPremium = false;
   showUpgradeModal = false;
@@ -78,14 +75,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.unreadCountSubscription = this.notificationService.unreadCount$.subscribe(
       count => {
         this.unreadNotificationCount = count;
-        console.log('📢 Unread count updated in header:', count);
+        // console.log('Unread count updated in header:', count);
       }
     );
 
     // ✅ Listen for realtime notifications and refresh count
     this.signalRSubscription = this.signalRService.notificationReceived$.subscribe(
       (notification) => {
-        console.log('📢 New notification received in header:', notification);
+        // console.log('New notification received in header:', notification);
         // Refresh unread count from server when new notification arrives
         this.loadUnreadNotificationCount();
       }
@@ -178,7 +175,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.quotaService.isPremiumUser().subscribe({
       next: (isPremium) => {
         this.isPremium = isPremium;
-        console.log('✅ Premium status checked:', isPremium);
+        // console.log('Premium status checked:', isPremium);
       },
       error: (err) => {
         console.error('❌ Error checking premium status:', err);

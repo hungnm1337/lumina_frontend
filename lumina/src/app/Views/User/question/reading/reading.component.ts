@@ -27,6 +27,7 @@ import { ExamAttemptDetailComponent } from '../../ExamAttempt/exam-attempt-detai
 import { QuotaService } from '../../../../Services/Quota/quota.service';
 import { QuotaLimitModalComponent } from '../../quota-limit-modal/quota-limit-modal.component';
 import { LeaderboardService } from '../../../../Services/Leaderboard/leaderboard.service';
+import { SidebarService } from '../../../../Services/sidebar.service';
 
 @Component({
   selector: 'app-reading',
@@ -96,7 +97,8 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
     private authService: AuthService,
     private examAttemptService: ExamAttemptService,
     private quotaService: QuotaService,
-    private leaderboardService: LeaderboardService
+    private leaderboardService: LeaderboardService,
+    private sidebarService: SidebarService
   ) {}
 
   // Handler for report popup close
@@ -109,10 +111,12 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
     this.loadAttemptId();
     this.incrementQuotaOnStart();
     this.examStartTime = new Date(); // Track start time for leaderboard
+    this.sidebarService.hideSidebar(); // Ẩn sidebar khi bắt đầu làm bài
   }
 
   ngOnDestroy(): void {
     this.saveProgressOnExit();
+    this.sidebarService.showSidebar(); // Hiển thị lại sidebar khi thoát
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -269,7 +273,6 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
       message += `\nSố câu chưa trả lời: ${unansweredCount}\nCác câu chưa trả lời sẽ không được tính điểm!`;
     }
 
-
     this.showPopup = true;
     this.popupTitle = 'Xác nhận nộp bài';
     this.popupMessage = message;
@@ -361,9 +364,15 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
 
     this.leaderboardService.calculateScore(request).subscribe({
       next: (response) => {
-        console.log('✅ [Reading] Leaderboard score calculated successfully:', response);
+        console.log(
+          '✅ [Reading] Leaderboard score calculated successfully:',
+          response
+        );
         console.log('   - SeasonScore:', response.seasonScore);
-        console.log('   - TotalAccumulatedScore:', response.totalAccumulatedScore);
+        console.log(
+          '   - TotalAccumulatedScore:',
+          response.totalAccumulatedScore
+        );
 
         // Hiển thị thông báo TOEIC
         if (response.toeicMessage) {
@@ -381,7 +390,10 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        console.error('❌ [Reading] Error calculating leaderboard score:', error);
+        console.error(
+          '❌ [Reading] Error calculating leaderboard score:',
+          error
+        );
         console.error('   - Error details:', JSON.stringify(error, null, 2));
         // Không block user flow nếu API lỗi
       },
@@ -563,6 +575,7 @@ ${
   }
 
   goToExams(): void {
+    this.sidebarService.showSidebar(); // Hiển thị lại sidebar
     this.router.navigate(['homepage/user-dashboard/exams']);
   }
 }
