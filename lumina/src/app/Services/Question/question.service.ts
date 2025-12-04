@@ -14,8 +14,7 @@ export class QuestionService {
   private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('lumina_token');
     return new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+      'Authorization': `Bearer ${token}`
     });
   }
   createPromptWithQuestions(dto: any): Observable<any> {

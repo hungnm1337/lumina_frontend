@@ -56,8 +56,22 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
       next: (parts: any[]) => {
         console.log('✅ Exam parts loaded:', parts);
         this.examParts = parts;
-        this.examSetKeys = Array.from(new Set(parts.map(p => p.examSetKey)));
-        console.log('📋 ExamSetKeys:', this.examSetKeys);
+        
+        // Lấy unique examSetKeys và sắp xếp theo tháng-năm
+        const uniqueKeys = Array.from(new Set(parts.map(p => p.examSetKey)));
+        this.examSetKeys = uniqueKeys.sort((a, b) => {
+          // Format: MM-YYYY
+          const [monthA, yearA] = a.split('-').map(Number);
+          const [monthB, yearB] = b.split('-').map(Number);
+          
+          // So sánh năm trước, nếu bằng nhau thì so sánh tháng
+          if (yearA !== yearB) {
+            return yearA - yearB;
+          }
+          return monthA - monthB;
+        });
+        
+        console.log('📋 ExamSetKeys (sorted):', this.examSetKeys);
         this.isLoadingParts = false;
       },
       error: (err) => {

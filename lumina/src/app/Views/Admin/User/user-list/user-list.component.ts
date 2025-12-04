@@ -3,12 +3,13 @@ import { NgIf, NgFor, CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../../../Services/User/user.service';
 import { RoleService } from '../../../../Services/Role/role.service';
-import { RouterLink } from '@angular/router'; 
+import { RouterLink } from '@angular/router';
+import { PopupComponent } from '../../../../Views/Common/popup/popup.component'; 
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [NgIf, NgFor, CommonModule, FormsModule, DatePipe, RouterLink],
+  imports: [NgIf, NgFor, CommonModule, FormsModule, DatePipe, RouterLink, PopupComponent],
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.scss']
 })
@@ -17,13 +18,18 @@ export class UserListComponent implements OnInit {
   filteredUsers: any[] = [];
   roles: any[] = [];
   searchTerm: string = '';
-  selectedRole: string = 'All'; 
+  selectedRole: string = 'Tất cả'; 
   isLoading: boolean = true;
   errorMessage: string | null = null;
 
   pageNumber: number = 1;
   totalPages: number = 1;
   pageSize: number = 6;
+
+  showPopup: boolean = false;
+  popupTitle: string = '';
+  popupMessage: string = '';
+  currentUserToToggle: any = null;
 
   constructor(
     private userService: UserService,
@@ -61,7 +67,7 @@ loadUsersPage(page: number): void {
   this.errorMessage = null;
 
   
-  const roleParam = this.selectedRole === 'All' ? '' : this.selectedRole;
+  const roleParam = this.selectedRole === 'Tất cả' ? '' : this.selectedRole;
 
   this.userService.getNonAdminUsersPaged(page, this.searchTerm, roleParam)
     .subscribe({
@@ -73,7 +79,7 @@ loadUsersPage(page: number): void {
         this.isLoading = false;
       },
       error: () => {
-        this.errorMessage = 'Cannot load data.';
+        this.errorMessage = 'Không thể tải dữ liệu.';
         this.isLoading = false;
       }
     });
@@ -84,7 +90,7 @@ loadUsersPage(page: number): void {
 applyFilters(): void {
   let users = this.allUsers;
 
-  if (this.selectedRole !== 'All') {
+  if (this.selectedRole !== 'Tất cả') {
     users = users.filter(user => user.roleName === this.selectedRole);
   }
 
@@ -101,16 +107,31 @@ applyFilters(): void {
 
 toggleStatus(user: any): void {
   const action = user.isActive ? 'khóa' : 'mở khóa';
-  if (confirm(`Bạn có chắc muốn ${action} tài khoản của ${user.fullName}?`)) {
-    this.userService.toggleUserStatus(user.userId).subscribe({
+  this.currentUserToToggle = user;
+  this.popupTitle = user.isActive ? 'Khóa tài khoản' : 'Mở khóa tài khoản';
+  this.popupMessage = `Bạn có chắc muốn ${action} tài khoản của ${user.fullName}?`;
+  this.showPopup = true;
+}
+
+onPopupOk(): void {
+  if (this.currentUserToToggle) {
+    this.userService.toggleUserStatus(this.currentUserToToggle.userId).subscribe({
       next: () => {
-        user.isActive = !user.isActive; // Tự cập nhật trạng thái local cho nhanh UI, load lại trang nếu muốn chắc chắn hơn
+        this.currentUserToToggle.isActive = !this.currentUserToToggle.isActive;
+        this.showPopup = false;
+        this.currentUserToToggle = null;
       },
       error: () => {
-        alert('Có lỗi khi thay đổi trạng thái người dùng!');
+        this.popupTitle = 'Lỗi';
+        this.popupMessage = 'Có lỗi khi thay đổi trạng thái người dùng!';
       }
     });
   }
+}
+
+onPopupCancel(): void {
+  this.showPopup = false;
+  this.currentUserToToggle = null;
 }
 
 
