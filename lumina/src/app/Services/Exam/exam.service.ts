@@ -69,11 +69,7 @@ export class ExamService {
     );
   }
 
-  // ============ COMPLETION STATUS METHODS ============
-
-  /**
-   * Get completion status for all exams for the authenticated user
-   */
+  
   public getUserExamCompletionStatuses(): Observable<
     ExamCompletionStatusDTO[]
   > {
@@ -83,9 +79,7 @@ export class ExamService {
     );
   }
 
-  /**
-   * Get completion status for a specific exam
-   */
+  
   public getExamCompletionStatus(
     examId: number
   ): Observable<ExamCompletionStatusDTO> {
@@ -95,9 +89,7 @@ export class ExamService {
     );
   }
 
-  /**
-   * Get completion status for all parts of a specific exam
-   */
+  
   public getPartCompletionStatus(
     examId: number
   ): Observable<PartCompletionStatusDTO[]> {

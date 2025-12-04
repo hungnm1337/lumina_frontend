@@ -1,1 +1,110 @@
-/* No additional styles needed as Tailwind CSS is used */
+/* Custom styles for popup component */
+
+/* Override Tailwind classes for softer appearance */
+.fixed.inset-0 {
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Modal container */
+.bg-white.rounded-xl.shadow-2xl {
+  animation: slideUp 0.25s ease-out;
+  max-width: 420px;
+}
+
+/* Header styling */
+h2.text-lg {
+  font-size: 15px;
+  font-weight: 600;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  letter-spacing: 0.3px;
+}
+
+/* Message text */
+p.text-gray-900 {
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+/* Buttons container */
+.flex.gap-3 {
+  gap: 10px;
+}
+
+/* OK Button */
+button.bg-blue-500 {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 16px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transition: all 0.2s ease;
+}
+
+button.bg-blue-500:hover {
+  background: linear-gradient(135deg, #5568d3 0%, #6b3f9a 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Cancel Button */
+button.bg-gray-100 {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 16px;
+  border-radius: 8px;
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+button.bg-gray-100:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  h2.text-lg {
+    font-size: 14px;
+    padding: 12px 16px;
+  }
+
+  p.text-gray-900 {
+    font-size: 12px;
+  }
+
+  button.bg-blue-500,
+  button.bg-gray-100 {
+    font-size: 12px;
+    padding: 8px 14px;
+  }
+}
+

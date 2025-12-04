@@ -4,6 +4,57 @@
   right: 0;
   z-index: 9999;
 
+  // ✅ Global Loading Overlay - Phủ toàn màn hình
+  .global-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(6px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 999999;
+    color: white;
+    cursor: wait;
+
+    .spinner {
+      border: 6px solid rgba(255, 255, 255, 0.2);
+      border-top: 6px solid #667eea;
+      border-right: 6px solid #764ba2;
+      border-radius: 50%;
+      width: 70px;
+      height: 70px;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 24px;
+      box-shadow: 0 0 30px rgba(102, 126, 234, 0.6);
+    }
+
+    p {
+      font-size: 20px;
+      font-weight: 600;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+      letter-spacing: 0.5px;
+      margin: 0 0 8px 0;
+    }
+
+    small {
+      font-size: 14px;
+      opacity: 0.9;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
   .chat-button {
     position: fixed;
     bottom: 20px;

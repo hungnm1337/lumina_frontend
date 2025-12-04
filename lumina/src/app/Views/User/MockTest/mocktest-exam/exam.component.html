@@ -23,6 +23,14 @@
         <div class="progress-bar">
           <div class="progress-fill" [style.width.%]="getPartProgress()"></div>
         </div>
+        <!-- Timer for current question -->
+        <div class="timer-container" *ngIf="currentQuestionTime > 0">
+          <app-time
+            [time]="currentQuestionTime"
+            [resetAt]="timerResetTrigger"
+            (timeout)="onQuestionTimeout()">
+          </app-time>
+        </div>
       </div>
       <div class="question-progress" *ngIf="!isMultipleChoicePart">
         <span>{{ currentPart.questions.length }} Questions</span>
@@ -32,14 +40,21 @@
 
     <!-- Question Navigation Pills (Only for Listening/Reading) -->
     <div *ngIf="isMultipleChoicePart" class="question-pills">
-      <button
-        *ngFor="let q of currentPart.questions; let idx = index"
-        class="question-pill"
-        [class.active]="idx === currentQuestionIndex"
-        [class.answered]="isQuestionAnswered(q.questionId)"
-        (click)="goToQuestion(idx)">
-        {{ idx + 1 }}
-      </button>
+      <div class="pills-legend">
+        <span class="legend-item"><span class="legend-dot answered"></span> Đã trả lời</span>
+        <span class="legend-item"><span class="legend-dot active"></span> Câu hiện tại</span>
+      </div>
+      <div class="pills-container">
+        <button
+          *ngFor="let q of currentPart.questions; let idx = index"
+          class="question-pill"
+          [class.active]="idx === currentQuestionIndex"
+          [class.answered]="isQuestionAnswered(q.questionId)"
+          [title]="'Câu ' + (idx + 1) + (isQuestionAnswered(q.questionId) ? ' - Đã trả lời' : '')"
+          (click)="goToQuestion(idx)">
+          {{ idx + 1 }}
+        </button>
+      </div>
     </div>
 
     <!-- Current Question Display -->
@@ -130,14 +145,19 @@
     <div *ngIf="isMultipleChoicePart" class="navigation-buttons">
       <button
         class="btn btn-secondary"
-        [disabled]="currentQuestionIndex === 0 && currentPartIndex === 0"
+        [disabled]="(currentQuestionIndex === 0 && currentPartIndex === 0) || (currentQuestionIndex === 0 && currentPartIndex > 0)"
+        [class.opacity-50]="currentQuestionIndex === 0"
+        [title]="currentQuestionIndex === 0 && currentPartIndex > 0 ? 'Không thể quay lại part trước' : ''"
         (click)="previousQuestion()">
         ← Previous
       </button>
 
       <button
         class="btn btn-primary"
-        [disabled]="!selectedAnswers[currentQuestion.questionId]"
+        [disabled]="!selectedAnswers[currentQuestion.questionId] || (isLastQuestionInPart() && !isCurrentPartComplete())"
+        [title]="isLastQuestionInPart() && !isCurrentPartComplete() ?
+          'Hoàn thành tất cả câu hỏi để tiếp tục (' + getAnsweredCountInPart() + '/' + getTotalQuestionsInPart() + ')' :
+          (!selectedAnswers[currentQuestion.questionId] ? 'Vui lòng chọn đáp án' : '')"
         (click)="nextQuestion()">
         {{ isLastQuestionInExam() ? 'Finish Exam' : (isLastQuestionInPart() ? 'Next Part' : 'Next') }} →
       </button>

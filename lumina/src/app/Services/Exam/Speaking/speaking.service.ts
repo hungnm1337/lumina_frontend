@@ -1,18 +1,16 @@
 import { SpeakingScoringResult } from './../../../Interfaces/exam.interfaces';
 import { environment } from './../../../../environments/environment.development';
-// File: src/app/Services/Speaking/speaking.service.ts
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
-// Export type để các component khác có thể import (sử dụng export type cho isolatedModules)
 export type { SpeakingScoringResult };
 
 @Injectable({
   providedIn: 'root',
 })
 export class SpeakingService {
-  private apiUrl = `${environment.apiUrl}/Speaking`; // Lấy URL API từ environment
+  private apiUrl = `${environment.apiUrl}/Speaking`; 
 
   constructor(private http: HttpClient) {}
 
@@ -27,14 +25,13 @@ export class SpeakingService {
   submitSpeakingAnswer(
     audioBlob: Blob,
     questionId: number,
-    attemptId?: number // ✅ THÊM: attemptId parameter
+    attemptId?: number
   ): Observable<SpeakingScoringResult> {
     const formData = new FormData();
     // Gửi đúng phần mở rộng webm theo định dạng MediaRecorder
     formData.append('audio', audioBlob, 'user-recording.webm');
     formData.append('questionId', questionId.toString());
 
-    // ✅ THÊM: Gửi attemptId nếu có
     if (attemptId && attemptId > 0) {
       formData.append('attemptId', attemptId.toString());
       console.log(

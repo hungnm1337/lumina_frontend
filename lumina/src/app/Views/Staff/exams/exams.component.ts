@@ -2,26 +2,33 @@ import { Component, OnInit } from '@angular/core';
 import { ExamService } from '../../../Services/Exam/exam.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { PopupComponent } from '../../Common/popup/popup.component';
 
 @Component({
   selector: 'app-exams',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PopupComponent],
   templateUrl: './exams.component.html',
   styleUrls: ['./exams.component.scss']
 })
 export class ExamsComponent implements OnInit {
-  allExamGroups: any[] = []; // Mảng để lưu trữ tất cả các group gốc
-  examGroups: any[] = [];    // Mảng để hiển thị trên giao diện (sẽ bị thay đổi bởi filter)
+  allExamGroups: any[] = []; // Array to store all original groups
+  examGroups: any[] = [];    // Array to display on UI (will be changed by filter)
   
   showMonths = 3;
   message = '';
   messageType: 'success' | 'error' = 'success';
 
-  // Thuộc tính cho filter
+  // Filter properties
   searchName: string = '';
   selectedSetKey: string = '';
   examSetKeys: string[] = [];
+
+  // Popup confirmation
+  showConfirmPopup = false;
+  confirmPopupTitle = '';
+  confirmPopupMessage = '';
+  pendingExam: any = null;
 
   constructor(private examService: ExamService) { }
 
@@ -32,26 +39,26 @@ export class ExamsComponent implements OnInit {
   loadExamsGroupedByMonth() {
     this.examService.getAllExamsWithParts().subscribe({
       next: (data) => {
-        // Lưu dữ liệu gốc và dữ liệu để hiển thị
+        // Store original and display data
         this.allExamGroups = data;
         this.examGroups = data;
 
-        // Tạo danh sách các key (tháng-năm) duy nhất để hiển thị trong dropdown filter
-        // Sử dụng Set để đảm bảo các giá trị không bị trùng lặp
+        // Create unique keys list (month-year) for dropdown filter
+        // Use Set to ensure no duplicate values
         this.examSetKeys = [...new Set(data.map((group: any) => group.examSetKey))];
         
-        // Cập nhật lại danh sách hiển thị ban đầu, có thể không cần nếu không có pagination phức tạp
+        // Update initial display list, may not be needed if no complex pagination
         this.updateVisibleGroups(); 
       },
       error: (err) => {
-        console.error('Lỗi khi tải bài thi:', err);
+        console.error('Error loading exams:', err);
       }
     });
   }
 
   updateVisibleGroups() {
-    // Hàm này giờ sẽ được xử lý bởi filterExams và logic slice trong HTML
-    // Chúng ta có thể gọi filterExams() ở đây để áp dụng bộ lọc mặc định nếu có
+    // This function will now be handled by filterExams and slice logic in HTML
+    // We can call filterExams() here to apply default filters if any
     this.filterExams();
   }
 
@@ -60,30 +67,45 @@ export class ExamsComponent implements OnInit {
   }
 
   openExamModal(exam?: any) {
-    console.log('Mở modal bài thi:', exam);
+    console.log('Open exam modal:', exam);
   }
 
   toggleExamStatus(exam: any) {
-    const confirmMsg = exam.isActive
-      ? 'Bạn có chắc muốn khóa bài thi này?'
-      : 'Bạn có chắc muốn mở khóa bài thi này?';
-    if (!window.confirm(confirmMsg)) return;
+    this.pendingExam = exam;
+    this.confirmPopupTitle = exam.isActive ? '🔒 Lock Exam' : '🔓 Unlock Exam';
+    this.confirmPopupMessage = exam.isActive
+      ? `Are you sure you want to lock "${exam.name}"?\n\nOnce locked, students will not be able to access this exam.`
+      : `Are you sure you want to unlock "${exam.name}"?\n\nOnce unlocked, students will be able to access this exam.`;
+    this.showConfirmPopup = true;
+  }
 
+  onConfirmToggleStatus() {
+    if (!this.pendingExam) return;
+
+    const exam = this.pendingExam;
     this.examService.toggleExamStatus(exam.examId).subscribe({
       next: (res: any) => {
         exam.isActive = !exam.isActive;
-        this.showMessage(res?.message || (exam.isActive ? 'Mở khóa thành công!' : 'Khóa bài thi thành công!'), 'success');
+        this.showMessage(res?.message || (exam.isActive ? 'Exam unlocked successfully!' : 'Exam locked successfully!'), 'success');
       },
       error: (err) => {
-        let msg = 'Có lỗi khi đổi trạng thái bài thi';
+        let msg = 'Error changing exam status';
         if (err?.error?.message) msg = err.error.message;
         this.showMessage(msg, 'error');
-        console.error('Lỗi khi thay đổi trạng thái bài thi:', err);
+        console.error('Error changing exam status:', err);
       }
     });
+
+    this.showConfirmPopup = false;
+    this.pendingExam = null;
   }
 
-  // --- Logic tạo bài thi ---
+  onCancelToggleStatus() {
+    this.showConfirmPopup = false;
+    this.pendingExam = null;
+  }
+
+  // --- Create Exam Logic ---
   showCreateExamModal = false;
   createMonth = (new Date().getMonth() + 1);
   createYear = new Date().getFullYear();
@@ -96,38 +118,38 @@ export class ExamsComponent implements OnInit {
     this.showCreateExamModal = false;
   }
 
-  // ✅ Bỏ tham số fromSetKey
+  // ✅ Removed fromSetKey parameter
   createExamForMonth(toSetKey: string) {
     this.examService.createExamForMonth(toSetKey).subscribe({
       next: (res: any) => {
         this.showMessage(
-          res?.message || 'Tạo bài thi thành công!',
+          res?.message || 'Exams created successfully!',
           'success'
         );
-        this.loadExamsGroupedByMonth(); // Reload danh sách
+        this.loadExamsGroupedByMonth(); // Reload list
       },
       error: (err) => {
-        let msg = 'Có lỗi khi tạo bài thi';
+        let msg = 'Error creating exams';
         if (err?.error?.message) msg = err.error.message;
         this.showMessage(msg, 'error');
       }
     });
   }
 
-  // --- Logic Filter được cập nhật ---
+  // --- Updated Filter Logic ---
   filterExams() {
-    // Bắt đầu với danh sách đầy đủ
+    // Start with full list
     let filteredData = [...this.allExamGroups];
 
-    // 1. Lọc theo tháng/năm (selectedSetKey)
+    // 1. Filter by month/year (selectedSetKey)
     if (this.selectedSetKey) {
       filteredData = filteredData.filter(group => group.examSetKey === this.selectedSetKey);
     }
 
-    // 2. Lọc theo tên bài thi (searchName)
+    // 2. Filter by exam name (searchName)
     if (this.searchName) {
       const searchTerm = this.searchName.toLowerCase();
-      // Lọc các group có chứa ít nhất một exam khớp với tên tìm kiếm
+      // Filter groups containing at least one exam matching search term
       filteredData = filteredData.filter(group => 
         group.exams.some((exam: any) => 
           exam.name.toLowerCase().includes(searchTerm)
@@ -135,7 +157,7 @@ export class ExamsComponent implements OnInit {
       );
     }
 
-    // Cập nhật lại danh sách để hiển thị trên giao diện
+    // Update display list
     this.examGroups = filteredData;
   }
 

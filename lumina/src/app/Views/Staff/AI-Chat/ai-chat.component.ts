@@ -40,6 +40,8 @@ export class AiChatComponent implements OnInit, OnDestroy {
   previewData: any = null;
   messages: Message[] = [];
   isLoading = false;
+  isSaving = false;
+
 
   previewDataList: PreviewDataItem[] = [];
   currentPreviewId: string | null = null;
@@ -321,6 +323,11 @@ export class AiChatComponent implements OnInit, OnDestroy {
       this.showPreview = true;
       this.resetPreviewSelectors();
     }
+  }
+
+  // ✅ Handle saving state từ preview panel
+  onSavingStateChange(isSaving: boolean): void {
+    this.isSaving = isSaving;
   }
 
   // ===== HELPER METHODS =====

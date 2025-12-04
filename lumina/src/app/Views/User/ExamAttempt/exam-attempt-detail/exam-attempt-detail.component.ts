@@ -20,7 +20,7 @@ interface QuestionResult {
   imports: [CommonModule, FormsModule, SpeakingSummaryComponent],
   providers: [DatePipe],
   templateUrl: './exam-attempt-detail.component.html',
-    styleUrls: ['./exam-attempt-detail.component.scss'],
+  styleUrls: ['./exam-attempt-detail.component.scss'],
 })
 export class ExamAttemptDetailComponent implements OnInit {
   @Input() examAttemptDetails: ExamAttemptDetailResponseDTO | null = null;
@@ -34,7 +34,8 @@ export class ExamAttemptDetailComponent implements OnInit {
   speakingResults: QuestionResult[] = [];
 
   // Filter state
-  selectedSkill: 'all' | 'listening' | 'reading' | 'writing' | 'speaking' = 'all';
+  selectedSkill: 'all' | 'listening' | 'reading' | 'writing' | 'speaking' =
+    'all';
   selectedPart: string = 'all'; // 'all' or specific part code
 
   // Map partId to partCode for display
@@ -172,7 +173,21 @@ export class ExamAttemptDetailComponent implements OnInit {
 
   formatDate(date: any): string {
     if (!date) return 'N/A';
-    return this.datePipe.transform(date, 'dd/MM/yyyy HH:mm') || 'N/A';
+
+    // If server sends UTC datetime without 'Z', add it to ensure proper conversion
+    let dateStr = typeof date === 'string' ? date : date.toISOString();
+
+    // Add 'Z' if not present and doesn't already have timezone info
+    if (
+      !dateStr.endsWith('Z') &&
+      !dateStr.includes('+') &&
+      !dateStr.includes('-', 10)
+    ) {
+      dateStr = dateStr + 'Z';
+    }
+
+    const localDate = new Date(dateStr);
+    return this.datePipe.transform(localDate, 'dd/MM/yyyy HH:mm') || 'N/A';
   }
 
   getOptionLetter(index: number): string {
@@ -192,7 +207,7 @@ export class ExamAttemptDetailComponent implements OnInit {
     this.partIdToCodeMap.clear();
 
     // Extract from reading answers
-    this.details?.readingAnswers?.forEach(answer => {
+    this.details?.readingAnswers?.forEach((answer) => {
       const partId = answer.question?.partId;
       const partCode = answer.question?.partCode;
       if (partId && partCode && !this.partIdToCodeMap.has(partId)) {
@@ -201,7 +216,7 @@ export class ExamAttemptDetailComponent implements OnInit {
     });
 
     // Extract from writing answers
-    this.details?.writingAnswers?.forEach(answer => {
+    this.details?.writingAnswers?.forEach((answer) => {
       const partId = answer.question?.partId;
       const partCode = answer.question?.partCode;
       if (partId && partCode && !this.partIdToCodeMap.has(partId)) {
@@ -210,7 +225,7 @@ export class ExamAttemptDetailComponent implements OnInit {
     });
 
     // Extract from speaking answers
-    this.details?.speakingAnswers?.forEach(answer => {
+    this.details?.speakingAnswers?.forEach((answer) => {
       const partId = answer.question?.partId;
       const partCode = answer.question?.partCode;
       if (partId && partCode && !this.partIdToCodeMap.has(partId)) {
@@ -237,7 +252,9 @@ export class ExamAttemptDetailComponent implements OnInit {
   }
 
   // Filter methods
-  setSkillFilter(skill: 'all' | 'listening' | 'reading' | 'writing' | 'speaking'): void {
+  setSkillFilter(
+    skill: 'all' | 'listening' | 'reading' | 'writing' | 'speaking'
+  ): void {
     this.selectedSkill = skill;
     // Reset part filter when skill changes
     this.selectedPart = 'all';
@@ -261,31 +278,37 @@ export class ExamAttemptDetailComponent implements OnInit {
 
   getListeningCount(): number {
     // Listening questions are in readingAnswers with partCode starting with 'PART_1' to 'PART_4'
-    return this.details?.readingAnswers?.filter(answer => {
-      const partCode = answer.question?.partCode?.toUpperCase();
-      return partCode && (
-        partCode === 'PART_1' ||
-        partCode === 'PART_2' ||
-        partCode === 'PART_3' ||
-        partCode === 'PART_4' ||
-        partCode.includes('LISTENING') ||
-        partCode.startsWith('L') // L1, L2, L3, L4
-      );
-    }).length || 0;
+    return (
+      this.details?.readingAnswers?.filter((answer) => {
+        const partCode = answer.question?.partCode?.toUpperCase();
+        return (
+          partCode &&
+          (partCode === 'PART_1' ||
+            partCode === 'PART_2' ||
+            partCode === 'PART_3' ||
+            partCode === 'PART_4' ||
+            partCode.includes('LISTENING') ||
+            partCode.startsWith('L')) // L1, L2, L3, L4
+        );
+      }).length || 0
+    );
   }
 
   getReadingCount(): number {
     // Reading questions are in readingAnswers with partCode 'PART_5', 'PART_6', 'PART_7'
-    return this.details?.readingAnswers?.filter(answer => {
-      const partCode = answer.question?.partCode?.toUpperCase();
-      return partCode && (
-        partCode === 'PART_5' ||
-        partCode === 'PART_6' ||
-        partCode === 'PART_7' ||
-        partCode.includes('READING') ||
-        partCode.startsWith('R') // R1, R2, R3
-      );
-    }).length || 0;
+    return (
+      this.details?.readingAnswers?.filter((answer) => {
+        const partCode = answer.question?.partCode?.toUpperCase();
+        return (
+          partCode &&
+          (partCode === 'PART_5' ||
+            partCode === 'PART_6' ||
+            partCode === 'PART_7' ||
+            partCode.includes('READING') ||
+            partCode.startsWith('R')) // R1, R2, R3
+        );
+      }).length || 0
+    );
   }
 
   getWritingCount(): number {
@@ -297,7 +320,12 @@ export class ExamAttemptDetailComponent implements OnInit {
   }
 
   getTotalCount(): number {
-    return this.getListeningCount() + this.getReadingCount() + this.getWritingCount() + this.getSpeakingCount();
+    return (
+      this.getListeningCount() +
+      this.getReadingCount() +
+      this.getWritingCount() +
+      this.getSpeakingCount()
+    );
   }
 
   // Part filter methods
@@ -306,35 +334,42 @@ export class ExamAttemptDetailComponent implements OnInit {
   }
 
   getAvailableParts(): { code: string; name: string; count: number }[] {
-    const partsMap = new Map<string, { code: string; name: string; count: number }>();
+    const partsMap = new Map<
+      string,
+      { code: string; name: string; count: number }
+    >();
 
     // Collect parts based on selected skill (group by partCode)
-    if (this.selectedSkill === 'all' || this.selectedSkill === 'listening' || this.selectedSkill === 'reading') {
-      this.details?.readingAnswers?.forEach(answer => {
+    if (
+      this.selectedSkill === 'all' ||
+      this.selectedSkill === 'listening' ||
+      this.selectedSkill === 'reading'
+    ) {
+      this.details?.readingAnswers?.forEach((answer) => {
         const partCode = answer.question?.partCode;
         const partCodeUpper = partCode?.toUpperCase();
 
         // Filter by skill if not 'all'
         if (this.selectedSkill === 'listening') {
-          const isListening = partCodeUpper && (
-            partCodeUpper === 'PART_1' ||
-            partCodeUpper === 'PART_2' ||
-            partCodeUpper === 'PART_3' ||
-            partCodeUpper === 'PART_4' ||
-            partCodeUpper.includes('LISTENING') ||
-            partCodeUpper.startsWith('L')
-          );
+          const isListening =
+            partCodeUpper &&
+            (partCodeUpper === 'PART_1' ||
+              partCodeUpper === 'PART_2' ||
+              partCodeUpper === 'PART_3' ||
+              partCodeUpper === 'PART_4' ||
+              partCodeUpper.includes('LISTENING') ||
+              partCodeUpper.startsWith('L'));
           if (!isListening) return;
         }
 
         if (this.selectedSkill === 'reading') {
-          const isReading = partCodeUpper && (
-            partCodeUpper === 'PART_5' ||
-            partCodeUpper === 'PART_6' ||
-            partCodeUpper === 'PART_7' ||
-            partCodeUpper.includes('READING') ||
-            partCodeUpper.startsWith('R')
-          );
+          const isReading =
+            partCodeUpper &&
+            (partCodeUpper === 'PART_5' ||
+              partCodeUpper === 'PART_6' ||
+              partCodeUpper === 'PART_7' ||
+              partCodeUpper.includes('READING') ||
+              partCodeUpper.startsWith('R'));
           if (!isReading) return;
         }
 
@@ -348,7 +383,7 @@ export class ExamAttemptDetailComponent implements OnInit {
     }
 
     if (this.selectedSkill === 'all' || this.selectedSkill === 'writing') {
-      this.details?.writingAnswers?.forEach(answer => {
+      this.details?.writingAnswers?.forEach((answer) => {
         const partCode = answer.question?.partCode;
         if (partCode && !partsMap.has(partCode)) {
           partsMap.set(partCode, { code: partCode, name: partCode, count: 0 });
@@ -360,7 +395,7 @@ export class ExamAttemptDetailComponent implements OnInit {
     }
 
     if (this.selectedSkill === 'all' || this.selectedSkill === 'speaking') {
-      this.details?.speakingAnswers?.forEach(answer => {
+      this.details?.speakingAnswers?.forEach((answer) => {
         const partCode = answer.question?.partCode;
         if (partCode && !partsMap.has(partCode)) {
           partsMap.set(partCode, { code: partCode, name: partCode, count: 0 });
@@ -371,8 +406,9 @@ export class ExamAttemptDetailComponent implements OnInit {
       });
     }
 
-    return Array.from(partsMap.values())
-      .sort((a, b) => a.code.localeCompare(b.code));
+    return Array.from(partsMap.values()).sort((a, b) =>
+      a.code.localeCompare(b.code)
+    );
   }
 
   // Filter reading/listening answers by part (using partCode)
@@ -383,33 +419,37 @@ export class ExamAttemptDetailComponent implements OnInit {
 
     // Filter by skill first
     if (this.selectedSkill === 'listening') {
-      filtered = filtered.filter(answer => {
+      filtered = filtered.filter((answer) => {
         const partCode = answer.question?.partCode?.toUpperCase();
-        return partCode && (
-          partCode === 'PART_1' ||
-          partCode === 'PART_2' ||
-          partCode === 'PART_3' ||
-          partCode === 'PART_4' ||
-          partCode.includes('LISTENING') ||
-          partCode.startsWith('L')
+        return (
+          partCode &&
+          (partCode === 'PART_1' ||
+            partCode === 'PART_2' ||
+            partCode === 'PART_3' ||
+            partCode === 'PART_4' ||
+            partCode.includes('LISTENING') ||
+            partCode.startsWith('L'))
         );
       });
     } else if (this.selectedSkill === 'reading') {
-      filtered = filtered.filter(answer => {
+      filtered = filtered.filter((answer) => {
         const partCode = answer.question?.partCode?.toUpperCase();
-        return partCode && (
-          partCode === 'PART_5' ||
-          partCode === 'PART_6' ||
-          partCode === 'PART_7' ||
-          partCode.includes('READING') ||
-          partCode.startsWith('R')
+        return (
+          partCode &&
+          (partCode === 'PART_5' ||
+            partCode === 'PART_6' ||
+            partCode === 'PART_7' ||
+            partCode.includes('READING') ||
+            partCode.startsWith('R'))
         );
       });
     }
 
     // Then filter by part if selected
     if (this.selectedPart !== 'all') {
-      filtered = filtered.filter(answer => answer.question?.partCode === this.selectedPart);
+      filtered = filtered.filter(
+        (answer) => answer.question?.partCode === this.selectedPart
+      );
     }
 
     return filtered;
@@ -420,7 +460,7 @@ export class ExamAttemptDetailComponent implements OnInit {
     if (!this.details?.writingAnswers) return [];
     if (this.selectedPart === 'all') return this.details.writingAnswers;
     return this.details.writingAnswers.filter(
-      answer => answer.question?.partCode === this.selectedPart
+      (answer) => answer.question?.partCode === this.selectedPart
     );
   }
 
@@ -429,7 +469,7 @@ export class ExamAttemptDetailComponent implements OnInit {
     if (!this.details?.speakingAnswers) return [];
     if (this.selectedPart === 'all') return this.details.speakingAnswers;
     return this.details.speakingAnswers.filter(
-      answer => answer.question?.partCode === this.selectedPart
+      (answer) => answer.question?.partCode === this.selectedPart
     );
   }
 

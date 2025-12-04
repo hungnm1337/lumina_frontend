@@ -121,7 +121,6 @@ export class PartQuestionComponent {
       this.isListeningExam = true;
       this.isWritingExam = false;
     } else if (partCode.includes('WRIT')) {
-      // ✅ Match cả WRITTING và WRITING
       this.isSpeakingExam = false;
       this.isReadingExam = false;
       this.isListeningExam = false;
@@ -132,7 +131,7 @@ export class PartQuestionComponent {
       this.isSpeakingExam = type.includes('SPEAKING');
       this.isReadingExam = type.includes('READING');
       this.isListeningExam = type.includes('LISTENING');
-      this.isWritingExam = type.includes('WRIT'); // ✅ Match cả WRITTING và WRITING
+      this.isWritingExam = type.includes('WRIT'); 
     }
   }
 

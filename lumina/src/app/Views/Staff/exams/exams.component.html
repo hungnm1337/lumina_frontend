@@ -61,7 +61,7 @@
                         </div>
                         <div>
                             <h5 class="font-semibold text-red-800">Listening (Nghe)</h5>
-                            <p class="text-sm text-red-600">100 câu hỏi • 45 phút</p>
+                            <!-- <p class="text-sm text-red-600">100 câu hỏi • 45 phút</p> -->
                         </div>
                     </div>
                     <div class="space-y-2 text-sm text-red-700">
@@ -75,11 +75,11 @@
                         </div>
                         <div class="flex justify-between">
                             <span>Part 3: Conversations</span>
-                            <span class="font-medium">13 prompt - 39 câu</span>
+                            <span class="font-medium">5 prompt - 15 câu</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Part 4: Talks</span>
-                            <span class="font-medium">10 prompt - 30 câu</span>
+                            <span class="font-medium">5 prompt - 15 câu</span>
                         </div>
                     </div>
                 </div>
@@ -92,7 +92,7 @@
                         </div>
                         <div>
                             <h5 class="font-semibold text-green-800">Reading (Đọc)</h5>
-                            <p class="text-sm text-green-600">100 câu hỏi • 75 phút</p>
+                            <!-- <p class="text-sm text-green-600">100 câu hỏi • 75 phút</p> -->
                         </div>
                     </div>
                     <div class="space-y-2 text-sm text-green-700">
@@ -106,7 +106,7 @@
                         </div>
                         <div class="flex justify-between">
                             <span>Part 7: Reading Comprehension</span>
-                            <span class="font-medium">18 prompt - 54 câu</span>
+                            <span class="font-medium">5 prompt - 15 câu</span>
                         </div>
                     </div>
                 </div>
@@ -119,7 +119,7 @@
                         </div>
                         <div>
                             <h5 class="font-semibold text-blue-800">Speaking (Nói)</h5>
-                            <p class="text-sm text-blue-600">11 câu hỏi • 20 phút</p>
+                            <!-- <p class="text-sm text-blue-600">11 câu hỏi • 20 phút</p> -->
                         </div>
                     </div>
                     <div class="space-y-2 text-sm text-blue-700">
@@ -154,7 +154,7 @@
                         </div>
                         <div>
                             <h5 class="font-semibold text-purple-800">Writing (Viết)</h5>
-                            <p class="text-sm text-purple-600">8 câu hỏi • 60 phút</p>
+                            <!-- <p class="text-sm text-purple-600">8 câu hỏi • 60 phút</p> -->
                         </div>
                     </div>
                     <div class="space-y-2 text-sm text-purple-700">
@@ -399,3 +399,15 @@
             </form>
         </div>
     </div>
+
+    <!-- Confirmation Popup -->
+    <app-popup
+        *ngIf="showConfirmPopup"
+        [title]="confirmPopupTitle"
+        [message]="confirmPopupMessage"
+        [showCancelButton]="true"
+        [textAlign]="'left'"
+        (okClicked)="onConfirmToggleStatus()"
+        (cancelClicked)="onCancelToggleStatus()">
+    </app-popup>
+</div>
