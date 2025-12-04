@@ -46,7 +46,7 @@ export class NotificationService {
 
     // ✅ Listen for realtime notifications and refresh count
     this.signalRService.notificationReceived$.subscribe(() => {
-      console.log('📢 Notification received in NotificationService, refreshing count...');
+      // console.log('Notification received, refreshing count...');
       this.loadUnreadCount();
     });
   }
@@ -80,18 +80,18 @@ export class NotificationService {
   private loadUnreadCount(): void {
     this.getUnreadCount().subscribe({
       next: (response) => {
-        console.log('📢 [NotificationService] Unread count loaded from server:', response.unreadCount);
+        // console.log('[NotificationService] Unread count loaded:', response.unreadCount);
         this.unreadCountSubject.next(response.unreadCount);
       },
       error: (error) => {
-        console.error('❌ [NotificationService] Error loading unread count:', error);
+        // console.error('[NotificationService] Error loading unread count:', error);
       }
     });
   }
 
   // Public method to force refresh unread count
   public refreshUnreadCount(): void {
-    console.log('📢 [NotificationService] Force refreshing unread count...');
+    // console.log('[NotificationService] Force refreshing unread count...');
     this.loadUnreadCount();
   }
 

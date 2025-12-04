@@ -14,10 +14,10 @@
             <div class="title-section">
                 <h1 class="page-title">
                     <span class="toeic-badge">TOEIC</span>
-                    Exam Management
+                    Quản Lý Bài Thi
                 </h1>
                 <p class="page-subtitle">
-                    Manage TOEIC exams with 4 skills: Listening - Speaking - Reading - Writing
+                    Quản lý bài thi TOEIC với 4 kỹ năng: Nghe - Nói - Đọc - Viết
                 </p>
             </div>
             <!-- <div class="header-stats">
@@ -36,7 +36,7 @@
             </div> -->
             <button class="btn-create-exam" (click)="showCreateExamModal = true">
                 <i class="fas fa-plus"></i>
-                <span class="btn-text">Create New Exam</span>
+                <span class="btn-text">Tạo Bài Thi Mới</span>
             </button>
         </div>
         
@@ -61,7 +61,7 @@
                         </div>
                         <div>
                             <h5 class="font-semibold text-red-800">Listening (Nghe)</h5>
-                            <p class="text-sm text-red-600">100 câu hỏi • 45 phút</p>
+                            <!-- <p class="text-sm text-red-600">100 câu hỏi • 45 phút</p> -->
                         </div>
                     </div>
                     <div class="space-y-2 text-sm text-red-700">
@@ -75,11 +75,11 @@
                         </div>
                         <div class="flex justify-between">
                             <span>Part 3: Conversations</span>
-                            <span class="font-medium">13 prompt - 39 câu</span>
+                            <span class="font-medium">5 prompt - 15 câu</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Part 4: Talks</span>
-                            <span class="font-medium">10 prompt - 30 câu</span>
+                            <span class="font-medium">5 prompt - 15 câu</span>
                         </div>
                     </div>
                 </div>
@@ -92,7 +92,7 @@
                         </div>
                         <div>
                             <h5 class="font-semibold text-green-800">Reading (Đọc)</h5>
-                            <p class="text-sm text-green-600">100 câu hỏi • 75 phút</p>
+                            <!-- <p class="text-sm text-green-600">100 câu hỏi • 75 phút</p> -->
                         </div>
                     </div>
                     <div class="space-y-2 text-sm text-green-700">
@@ -106,7 +106,7 @@
                         </div>
                         <div class="flex justify-between">
                             <span>Part 7: Reading Comprehension</span>
-                            <span class="font-medium">18 prompt - 54 câu</span>
+                            <span class="font-medium">5 prompt - 15 câu</span>
                         </div>
                     </div>
                 </div>
@@ -119,7 +119,7 @@
                         </div>
                         <div>
                             <h5 class="font-semibold text-blue-800">Speaking (Nói)</h5>
-                            <p class="text-sm text-blue-600">11 câu hỏi • 20 phút</p>
+                            <!-- <p class="text-sm text-blue-600">11 câu hỏi • 20 phút</p> -->
                         </div>
                     </div>
                     <div class="space-y-2 text-sm text-blue-700">
@@ -154,7 +154,7 @@
                         </div>
                         <div>
                             <h5 class="font-semibold text-purple-800">Writing (Viết)</h5>
-                            <p class="text-sm text-purple-600">8 câu hỏi • 60 phút</p>
+                            <!-- <p class="text-sm text-purple-600">8 câu hỏi • 60 phút</p> -->
                         </div>
                     </div>
                     <div class="space-y-2 text-sm text-purple-700">
@@ -181,10 +181,10 @@
             <div class="filter-group search-group">
                 <label>
                     <i class="fas fa-search"></i>
-                    Search Exams
+                    Tìm Kiếm Bài Thi
                 </label>
                 <input type="text" 
-                       placeholder="Search by exam name..." 
+                       placeholder="Tìm kiếm theo tên bài thi..." 
                        [(ngModel)]="searchName"
                        (input)="filterExams()"
                        class="filter-input">
@@ -193,12 +193,12 @@
             <div class="filter-group">
                 <label>
                     <i class="fas fa-calendar-alt"></i>
-                    Month/Year
+                    Tháng/Năm
                 </label>
                 <select [(ngModel)]="selectedSetKey" 
                         (change)="filterExams()"
                         class="filter-select">
-                    <option value="">All Months</option>
+                    <option value="">Tất Cả Tháng</option>
                     <option *ngFor="let key of examSetKeys" [value]="key">
                         {{ key.split('-')[0] }}/{{ key.split('-')[1] }}
                     </option>
@@ -209,11 +209,11 @@
                 <button (click)="searchName = ''; selectedSetKey = ''; filterExams()" 
                         class="btn-clear-filters">
                     <i class="fas fa-eraser"></i>
-                    Clear Filters
+                    Xóa Bộ Lọc
                 </button>
                 <button (click)="loadExamsGroupedByMonth()" class="btn-refresh">
                     <i class="fas fa-sync-alt"></i>
-                    Refresh
+                    Làm Mới
                 </button>
             </div>
         </div>
@@ -225,10 +225,10 @@
             <div class="header-left">
                 <h3 class="section-title">
                     <i class="fas fa-clipboard-list"></i>
-                    TOEIC Exams by Month
+                    Bài Thi TOEIC Theo Tháng
                 </h3>
                 <p class="section-subtitle">
-                    Showing {{ examGroups.length }} month(s) with exams
+                    Hiển thị {{ examGroups.length }} tháng có bài thi
                 </p>
             </div>
         </div>
@@ -244,7 +244,7 @@
                             <span>{{ group.examSetKey.split('-')[0] }}/{{ group.examSetKey.split('-')[1] }}</span>
                         </div>
                         <div class="month-badge">
-                            {{ group.exams.length }} Exams
+                            {{ group.exams.length }} Bài Thi
                         </div>
                     </div>
 
@@ -269,7 +269,7 @@
                                 </div>
                                 <div class="status-badge" [class.active]="exam.isActive">
                                     <i class="fas" [ngClass]="exam.isActive ? 'fa-unlock' : 'fa-lock'"></i>
-                                    {{ exam.isActive ? 'Active' : 'Locked' }}
+                                    {{ exam.isActive ? 'Mở Khóa' : 'Khóa' }}
                                 </div>
                             </div>
 
@@ -307,7 +307,7 @@
                                                 [class.unlock]="!exam.isActive"
                                                 (click)="toggleExamStatus(exam)">
                                             <i class="fas" [ngClass]="exam.isActive ? 'fa-lock' : 'fa-unlock'"></i>
-                                            {{ exam.isActive ? 'Lock' : 'Unlock' }}
+                                            {{ exam.isActive ? 'Khóa' : 'Mở Khóa' }}
                                         </button>
                                     </div>
                                 </div>
@@ -322,18 +322,18 @@
         <div class="load-more-section" *ngIf="examGroups.length > showMonths">
             <button class="btn-load-more" (click)="showMonths = showMonths + 3">
                 <i class="fas fa-chevron-down"></i>
-                Load More Months
+                Tải Thêm Tháng
             </button>
         </div>
 
         <!-- Empty State -->
         <div *ngIf="examGroups.length === 0" class="empty-state">
             <i class="fas fa-inbox"></i>
-            <h3>No exams found</h3>
-            <p>Try changing your filters or create a new exam</p>
+            <h3>Không tìm thấy bài thi</h3>
+            <p>Hãy thay đổi bộ lọc hoặc tạo một bài thi mới</p>
             <button class="btn-create-first" (click)="showCreateExamModal = true">
                 <i class="fas fa-plus"></i>
-                Create Your First Exam
+                Tạo Bài Thi Đầu Tiên
             </button>
         </div>
     </div>
@@ -347,8 +347,8 @@
                         <i class="fas fa-calendar-plus"></i>
                     </div>
                     <div class="modal-title-section">
-                        <h2>Create Monthly Exams</h2>
-                        <p>Generate 4 TOEIC exams for selected month</p>
+                        <h2>Tạo Bài Thi Hàng Tháng</h2>
+                        <p>Tạo 4 bài thi TOEIC cho tháng đã chọn</p>
                     </div>
                 </div>
                 <button class="btn-close" (click)="showCreateExamModal = false" type="button">
@@ -360,7 +360,7 @@
                 <div class="form-group">
                     <label for="createMonth">
                         <i class="fas fa-calendar"></i>
-                        Select Month
+                        Chọn Tháng
                     </label>
                     <select id="createMonth" 
                             [(ngModel)]="createMonth" 
@@ -376,7 +376,7 @@
                 <div class="form-group">
                     <label for="createYear">
                         <i class="fas fa-calendar-alt"></i>
-                        Select Year
+                        Chọn Năm
                     </label>
                     <select id="createYear" 
                             [(ngModel)]="createYear" 
@@ -389,13 +389,25 @@
 
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" (click)="showCreateExamModal = false">
-                        Cancel
+                        Hủy
                     </button>
                     <button type="submit" class="btn-primary">
                         <i class="fas fa-plus"></i>
-                        Create Exams
+                        Tạo Bài Thi
                     </button>
                 </div>
             </form>
         </div>
     </div>
+
+    <!-- Confirmation Popup -->
+    <app-popup
+        *ngIf="showConfirmPopup"
+        [title]="confirmPopupTitle"
+        [message]="confirmPopupMessage"
+        [showCancelButton]="true"
+        [textAlign]="'left'"
+        (okClicked)="onConfirmToggleStatus()"
+        (cancelClicked)="onCancelToggleStatus()">
+    </app-popup>
+</div>

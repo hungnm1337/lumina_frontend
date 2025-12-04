@@ -12,13 +12,14 @@ import { QuestionService } from '../../../../Services/Question/question.service'
 import { CommonModule } from '@angular/common';
 import { UploadService } from '../../../../Services/Upload/upload.service';
 import { noWhitespaceValidator } from '../../../../../environments/custom-validators';
+import { PopupComponent } from '../../../Common/popup/popup.component';
 
 @Component({
   selector: 'app-questions',
   templateUrl: './questions.component.html',
   styleUrls: ['./questions.component.scss'],
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, FormsModule],
+  imports: [ReactiveFormsModule, CommonModule, FormsModule, PopupComponent],
 })
 export class QuestionsComponent implements OnInit {
   isModalOpen = false;
@@ -33,6 +34,17 @@ export class QuestionsComponent implements OnInit {
   editPromptForm!: FormGroup;
   message: string = '';
   messageType: string = 'success'; // hoặc 'error'
+
+  // Popup confirmation for delete
+  showDeletePromptPopup = false;
+  deletePromptTitle = '';
+  deletePromptMessage = '';
+  pendingDeletePrompt: any = null;
+
+  showDeleteQuestionPopup = false;
+  deleteQuestionTitle = '';
+  deleteQuestionMessage = '';
+  pendingDeleteQuestion: any = null;
 
   constructor(
     private fb: FormBuilder,
@@ -508,12 +520,12 @@ export class QuestionsComponent implements OnInit {
 
     this.questionService.createPromptWithQuestions(dto).subscribe({
       next: (res) => {
-        alert('Tạo mới prompt thành công!');
+        this.showMessage('Prompt created successfully!', 'success');
         this.closeModal();
         this.loadPrompts();
       },
       error: (err) => {
-        let errorMsg = 'Có lỗi xảy ra';
+        let errorMsg = 'An error occurred';
         if (err.error && err.error.error) {
           errorMsg = err.error.error;
         } else if (err.error) {
@@ -524,7 +536,7 @@ export class QuestionsComponent implements OnInit {
         } else if (err.message) {
           errorMsg = err.message;
         }
-        alert('Lỗi: ' + errorMsg);
+        this.showMessage('Error: ' + errorMsg, 'error');
       },
     });
   }
@@ -544,18 +556,26 @@ export class QuestionsComponent implements OnInit {
     this.questionService
       .importQuestionsExcel(this.excelFile, this.importPartId)
       .subscribe({
-        next: () => {
-          alert('Import thành công!');
+        next: (response) => {
+          alert(response?.message || 'Import thành công!');
           this.closeImportModal();
           this.initData();
         },
         error: (err) => {
+          console.error('Import error:', err);
           let errorMsg = 'Lỗi import file excel!';
-          if (err.error && err.error.error) {
+          
+          // Kiểm tra các trường hợp error response
+          if (err.error?.message) {
+            errorMsg = err.error.message;
+          } else if (err.error?.error) {
             errorMsg = err.error.error;
           } else if (err.error && typeof err.error === 'string') {
             errorMsg = err.error;
+          } else if (err.message) {
+            errorMsg = err.message;
           }
+          
           alert('Lỗi: ' + errorMsg);
         },
       });
@@ -808,8 +828,8 @@ export class QuestionsComponent implements OnInit {
         this.showMessage(
           res?.message ||
             (this.isEditQuestion
-              ? 'Sửa câu hỏi thành công!'
-              : 'Thêm câu hỏi thành công!'),
+              ? 'Question updated successfully!'
+              : 'Question created successfully!'),
           'success'
         );
         this.isQuestionModalOpen = false;
@@ -825,61 +845,87 @@ export class QuestionsComponent implements OnInit {
   }
 
   deleteQuestion(q: any) {
-    if (confirm('Bạn có chắc chắn muốn xóa câu hỏi này?')) {
-      this.questionService.deleteQuestion(q.questionId).subscribe({
-        next: (res) => {
-          // Ưu tiên show message từ backend (dạng object hoặc string)
-          const msg = res?.message
-            ? res.message
-            : typeof res === 'string'
-            ? res
-            : 'Xóa câu hỏi thành công!';
-          this.showMessage(msg, 'success');
-          this.loadPrompts();
-        },
-        error: (err) => {
-          let msg = 'Xóa câu hỏi thất bại!';
-          // Ưu tiên err.error.message nếu có, tiếp đến err.error dạng string
-          if (err?.error?.message) msg = err.error.message;
-          else if (typeof err?.error === 'string') msg = err.error;
-          this.showMessage(msg, 'error');
-        },
-      });
-    }
+    this.pendingDeleteQuestion = q;
+    this.deleteQuestionTitle = '🗑️ Xác Nhận Xóa Câu Hỏi';
+    this.deleteQuestionMessage = `Bạn có chắc chắn muốn xóa câu hỏi này không?\n\nHành động này không thể hoàn tác.`;
+    this.showDeleteQuestionPopup = true;
+  }
+
+  onConfirmDeleteQuestion() {
+    if (!this.pendingDeleteQuestion) return;
+
+    this.questionService.deleteQuestion(this.pendingDeleteQuestion.questionId).subscribe({
+      next: (res) => {
+        const msg = res?.message
+          ? res.message
+          : typeof res === 'string'
+          ? res
+          : 'Question deleted successfully!';
+        this.showMessage(msg, 'success');
+        this.loadPrompts();
+      },
+      error: (err) => {
+        let msg = 'Failed to delete question!';
+        if (err?.error?.message) msg = err.error.message;
+        else if (typeof err?.error === 'string') msg = err.error;
+        this.showMessage(msg, 'error');
+      }
+    });
+
+    this.showDeleteQuestionPopup = false;
+    this.pendingDeleteQuestion = null;
+  }
+
+  onCancelDeleteQuestion() {
+    this.showDeleteQuestionPopup = false;
+    this.pendingDeleteQuestion = null;
   }
 
   deletePrompt(prompt: any) {
     // ✅ Kiểm tra xem prompt có câu hỏi không
     const questionCount = prompt.questions?.length || 0;
 
-    let confirmMsg = `Bạn có chắc chắn muốn xóa prompt này?`;
+    this.pendingDeletePrompt = prompt;
+    this.deletePromptTitle = '🗑️ Xác Nhận Xóa Prompt';
+    
     if (questionCount > 0) {
-      confirmMsg = `Prompt này có ${questionCount} câu hỏi. Xóa prompt sẽ xóa tất cả câu hỏi và đáp án bên trong.\n\nBạn có chắc chắn muốn xóa?`;
+      this.deletePromptMessage = `Prompt này chứa ${questionCount} câu hỏi.\n\nXóa prompt này sẽ vĩnh viễn xóa tất cả các câu hỏi và câu trả lời bên trong.\n\nBạn có chắc chắn muốn xóa không?`;
+    } else {
+      this.deletePromptMessage = `Bạn có chắc chắn muốn xóa prompt này không?`;
     }
+    
+    this.showDeletePromptPopup = true;
+  }
 
-    if (confirm(confirmMsg)) {
-      this.questionService.deletePrompt(prompt.promptId).subscribe({
-        next: (res) => {
-          const msg = res?.message || 'Xóa prompt thành công!';
-          this.showMessage(msg, 'success');
-          this.loadPrompts(); // Reload lại danh sách
-        },
-        error: (err) => {
-          let errorMsg = 'Xóa prompt thất bại!';
+  onConfirmDeletePrompt() {
+    if (!this.pendingDeletePrompt) return;
 
-          // ✅ Hiển thị lỗi từ backend (ví dụ: bài thi đang hoạt động)
-          if (err?.error?.message) {
-            errorMsg = err.error.message;
-          } else if (typeof err?.error === 'string') {
-            errorMsg = err.error;
-          } else if (err?.message) {
-            errorMsg = err.message;
-          }
+    this.questionService.deletePrompt(this.pendingDeletePrompt.promptId).subscribe({
+      next: (res) => {
+        const msg = res?.message || 'Prompt deleted successfully!';
+        this.showMessage(msg, 'success');
+        this.loadPrompts();
+      },
+      error: (err) => {
+        let errorMsg = 'Failed to delete prompt!';
+        if (err?.error?.message) {
+          errorMsg = err.error.message;
+        } else if (typeof err?.error === 'string') {
+          errorMsg = err.error;
+        } else if (err?.message) {
+          errorMsg = err.message;
+        }
+        this.showMessage(errorMsg, 'error');
+      }
+    });
 
-          this.showMessage(errorMsg, 'error');
-        },
-      });
-    }
+    this.showDeletePromptPopup = false;
+    this.pendingDeletePrompt = null;
+  }
+
+  onCancelDeletePrompt() {
+    this.showDeletePromptPopup = false;
+    this.pendingDeletePrompt = null;
   }
 
   //statistics

@@ -5,7 +5,6 @@
   <div
     class="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl"
   >
-    <!-- Close Button -->
     <button
       (click)="closeModal()"
       class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 z-10"
@@ -26,9 +25,7 @@
       </svg>
     </button>
 
-    <!-- Modal Content -->
     <div class="p-5">
-      <!-- Header -->
       <div class="text-center mb-3">
         <div
           class="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mb-2"
@@ -57,11 +54,9 @@
         </p>
       </div>
 
-      <!-- Package Selection Cards -->
       <div class="mb-3">
         <h3 class="text-sm font-bold text-gray-800 mb-2 text-center">Chọn gói Premium</h3>
         
-        <!-- Loading State -->
         <div *ngIf="isLoadingPackages" class="text-center py-8">
           <svg class="animate-spin h-8 w-8 mx-auto text-blue-600" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -70,7 +65,6 @@
           <p class="text-sm text-gray-500 mt-2">Đang tải...</p>
         </div>
         
-        <!-- Package Cards -->
         <div *ngIf="!isLoadingPackages && packages.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div
             *ngFor="let pkg of packages"
@@ -80,7 +74,6 @@
               : 'border-2 border-gray-200 bg-white hover:border-blue-400 hover:shadow-lg'"
             class="relative rounded-xl p-3 cursor-pointer"
           >
-            <!-- Badges -->
             <div 
               *ngIf="pkg.durationInDays && pkg.durationInDays >= 365"
               class="absolute -top-2 -right-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-2 py-0.5 rounded-full text-[10px] font-bold shadow-md"
@@ -95,7 +88,6 @@
             </div>
             
             <div class="text-center">
-              <!-- Icon -->
               <div class="inline-flex items-center justify-center w-12 h-12 rounded-full mb-2"
                 [class]="selectedPackage?.packageId === pkg.packageId 
                   ? 'bg-gradient-to-br from-blue-500 to-purple-600' 
@@ -106,12 +98,8 @@
                 </svg>
               </div>
               
-              <!-- Name -->
               <h4 class="font-bold text-base text-gray-900 mb-1">{{ pkg.packageName }}</h4>
               
-            
-              
-              <!-- Price -->
               <div class="mb-2">
                 <div class="text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   {{ formatPrice(pkg.price!) }}
@@ -119,7 +107,6 @@
                 
               </div>
               
-              <!-- Selected -->
               <div 
                 *ngIf="selectedPackage?.packageId === pkg.packageId"
                 class="mt-2 flex items-center justify-center gap-1 text-blue-600 text-xs font-bold"
@@ -134,7 +121,6 @@
         </div>
       </div>
 
-      <!-- Features -->
       <div class="mb-3 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl p-3 border border-gray-100">
         <h3 class="text-xs font-bold text-gray-800 mb-2 flex items-center gap-1.5 justify-center">
           <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
@@ -163,7 +149,6 @@
         </div>
       </div>
 
-      <!-- Error Message -->
       <div
         *ngIf="errorMessage"
         class="mb-2 p-2 bg-red-50 border border-red-200 rounded-lg"
@@ -171,7 +156,6 @@
         <p class="text-xs text-red-600 text-center font-semibold">{{ errorMessage }}</p>
       </div>
 
-      <!-- Buttons -->
       <div class="flex gap-3 mb-3">
         <button
           (click)="handleUpgrade()"
@@ -229,7 +213,6 @@
         </button>
       </div>
 
-      <!-- Trust Badges -->
       <div class="pt-3 border-t border-gray-200">
         <div
           class="flex items-center justify-center gap-4 text-xs text-gray-500"

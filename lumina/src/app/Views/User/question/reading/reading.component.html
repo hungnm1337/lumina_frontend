@@ -1,129 +1,102 @@
-<app-popup *ngIf="showPopup" [title]="popupTitle" [message]="popupMessage" (okClicked)="onPopupOk()" (cancelClicked)="onPopupCancel()"></app-popup>
+<app-popup
+  *ngIf="showPopup"
+  [title]="popupTitle"
+  [message]="popupMessage"
+  (okClicked)="onPopupOk()"
+  (cancelClicked)="onPopupCancel()"
+></app-popup>
+
+<!-- Quota Limit Modal -->
+<app-quota-limit-modal
+  [isVisible]="showQuotaModal"
+  [skill]="'reading'"
+  [message]="quotaMessage"
+  (close)="closeQuotaModal()"
+></app-quota-limit-modal>
+
+<!-- Exam Attempt Details Modal -->
+@if (showExamAttemptDetailsFlag && examAttemptDetails) {
+<app-exam-attempt-detail
+  [examAttemptDetails]="examAttemptDetails"
+  (close)="closeExamAttemptDetails()"
+></app-exam-attempt-detail>
+} @if (!finished) {
+<!-- Layout với Navigator bên trái (tỉ lệ 25:50:25) -->
+<div class="grid grid-cols-12 gap-4 min-h-[calc(100vh-200px)]">
+  <!-- Left Sidebar: Navigator + Submit Button (3/12 = 25%) -->
+  <div class="col-span-3">
+    <app-question-navigator
+      [questions]="questions"
+      [currentIndex]="currentIndex"
+      [getQuestionStatus]="getQuestionStatus"
+      [legendItems]="navigatorLegendItems"
+      [showSubmitButton]="true"
+      [submitButtonText]="'Nộp bài'"
+      (navigateToQuestion)="navigateToQuestion($event)"
+      (submitExam)="finishExamManual()"
+    ></app-question-navigator>
+  </div>
+
+  <!-- Main Content Area (9/12 = 75%, chia thành 6:3 = 50:25) -->
+  <div class="col-span-9 bg-white rounded-lg shadow-md p-4">
+    <!-- Main Content: Prompt (6/9 = 50%) và Options (3/9 = 25%) -->
+    <div class="grid grid-cols-9 gap-4 mb-3">
+      <!-- Left Column: Prompt/Image + Question Stem (6/9 = 50%) -->
+      <div class="col-span-6 flex flex-col space-y-2">
+        <div class="w-full">
+          @if( questions[currentIndex].prompt != null ) {
+          <div class="w-full mb-2">
+            <app-prompt
+              [prompt]="questions[currentIndex].prompt"
+              [resetAt]="currentIndex"
+              [questionType]="questions[currentIndex].questionType ?? ''"
+            ></app-prompt>
+          </div>
+          }
+          <h3 class="font-medium text-base text-gray-800">
+            {{ questions[currentIndex].stemText }}
+          </h3>
+        </div>
+      </div>
+
+      <!-- Right Column: Options (3/9 = 25%) -->
+      <div class="col-span-3 flex items-start">
+        <div class="w-full">
+          <app-options
+            [options]="questions[currentIndex].options || []"
+            [resetAt]="currentIndex"
+            [preSelectedOptionId]="
+              getSelectedOptionId(questions[currentIndex].questionId)
+            "
+            (answered)="markAnswered($event)"
+          ></app-options>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="mt-4 flex items-center justify-between">
+      <button
+        (click)="previousQuestion()"
+        [disabled]="currentIndex === 0"
+        class="px-3 py-1.5 rounded-md bg-gray-500 text-white hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-sm"
+      >
+        <i class="fas fa-arrow-left mr-1.5"></i>Câu trước
+      </button>
+
+      <button
+        (click)="nextQuestion()"
+        [disabled]="currentIndex === questions.length - 1"
+        class="px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-sm"
+      >
+        Câu sau<i class="fas fa-arrow-right ml-1.5"></i>
+      </button>
+    </div>
+  </div>
+</div>
+} @else {
+<!-- Summary Screen -->
 <div class="w-full bg-white rounded-lg shadow-md p-6">
-  <!-- Quota Limit Modal -->
-  <app-quota-limit-modal
-    [isVisible]="showQuotaModal"
-    [skill]="'reading'"
-    [message]="quotaMessage"
-    (close)="closeQuotaModal()"
-  ></app-quota-limit-modal>
-
-  <!-- Exam Attempt Details Modal -->
-  @if (showExamAttemptDetailsFlag && examAttemptDetails) {
-  <app-exam-attempt-detail
-    [examAttemptDetails]="examAttemptDetails"
-    (close)="closeExamAttemptDetails()"
-  ></app-exam-attempt-detail>
-  } @if (!finished) {
-  <!-- Progress Header -->
-  <!-- <div class="mb-4 flex items-center justify-between">
-    <div class="text-sm text-gray-600">
-      Câu {{ currentIndex + 1 }} / {{ questions.length }}
-    </div>
-    <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded font-medium">
-      Điểm: {{ totalScore }}
-    </span>
-  </div> -->
-
-  <!-- Question Content -->
-  <div class="mb-6">
-    <h3 class="m-3 font-medium">{{ questions[currentIndex].stemText }}</h3>
-    @if( questions[currentIndex].prompt != null ) {
-    <app-prompt
-      [prompt]="questions[currentIndex].prompt"
-      [resetAt]="currentIndex"
-      [questionType]="questions[currentIndex].questionType ?? ''"
-    ></app-prompt>
-    }
-  </div>
-
-  <!-- Options -->
-  <app-options
-    [options]="questions[currentIndex].options || []"
-    [resetAt]="currentIndex"
-    [preSelectedOptionId]="
-      getSelectedOptionId(questions[currentIndex].questionId)
-    "
-    (answered)="markAnswered($event)"
-  ></app-options>
-
-  <!-- Navigation -->
-  <div class="mt-6 flex items-center justify-between">
-    <button
-      (click)="previousQuestion()"
-      [disabled]="currentIndex === 0"
-      class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      <i class="fas fa-arrow-left mr-2"></i>Câu trước
-    </button>
-
-    <div class="flex gap-2">
-      <!-- <button
-        (click)="confirmExit()"
-        class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600"
-        title="Lưu tiến trình và thoát"
-      >
-        Lưu & Thoát
-      </button> -->
-      <button
-        (click)="finishExamManual()"
-        class="px-4 py-2 rounded bg-orange-600 text-white hover:bg-orange-700"
-      >
-        Nộp bài
-      </button>
-    </div>
-
-    <button
-      (click)="nextQuestion()"
-      [disabled]="currentIndex === questions.length - 1"
-      class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      Câu sau<i class="fas fa-arrow-right ml-2"></i>
-    </button>
-  </div>
-
-  <!-- Question Navigator -->
-  <div class="mt-6 p-4 bg-gray-50 rounded-lg">
-    <h4 class="text-sm font-semibold text-gray-600 mb-3">Navigator</h4>
-    <div class="grid grid-cols-10 gap-2">
-      @for (question of questions; track question.questionId; let i = $index) {
-      <button
-        (click)="navigateToQuestion(i)"
-        [class]="
-          i === currentIndex
-            ? 'w-10 h-10 rounded-lg bg-blue-600 text-white font-semibold'
-            : isQuestionAnswered(question.questionId)
-            ? answeredQuestions.get(question.questionId)?.isCorrect
-              ? 'w-10 h-10 rounded-lg bg-green-600 text-white'
-              : 'w-10 h-10 rounded-lg bg-green-600 text-white'
-            : 'w-10 h-10 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300'
-        "
-      >
-        {{ i + 1 }}
-      </button>
-      }
-    </div>
-
-    <!-- ✅ Legend - Chú thích màu sắc -->
-    <div class="mt-4 flex items-center gap-4 text-xs text-gray-600">
-      <div class="flex items-center gap-1">
-        <div class="w-4 h-4 bg-gray-200 rounded"></div>
-        <span>Chưa làm</span>
-      </div>
-      <div class="flex items-center gap-1">
-        <div class="w-4 h-4 bg-green-600 rounded"></div>
-        <span>Đã làm</span>
-      </div>
-
-      <div class="flex items-center gap-1">
-        <div class="w-4 h-4 bg-blue-600 rounded"></div>
-        <span>Đang làm</span>
-      </div>
-    </div>
-  </div>
-
-  } @else {
-  <!-- Summary Screen -->
   <div class="text-center py-8">
     <div
       class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full mb-4"
@@ -189,5 +162,5 @@
       ></app-report-popup>
     </div>
   </div>
-  }
 </div>
+}

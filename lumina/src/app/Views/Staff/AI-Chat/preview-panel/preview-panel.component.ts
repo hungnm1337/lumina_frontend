@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ExamPartService } from '../../../../Services/ExamPart/exam-part.service';
 import { FormsModule } from '@angular/forms';
@@ -14,6 +14,8 @@ import { UploadService } from '../../../../Services/Upload/upload.service';
 })
 export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
   @Input() previewData: any = null;
+  @Output() savingStateChange = new EventEmitter<boolean>();
+  
   examParts: any[] = [];
   examSetKeys: string[] = [];
   selectedExamSetKey: string | null = null;
@@ -54,8 +56,22 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
       next: (parts: any[]) => {
         console.log('✅ Exam parts loaded:', parts);
         this.examParts = parts;
-        this.examSetKeys = Array.from(new Set(parts.map(p => p.examSetKey)));
-        console.log('📋 ExamSetKeys:', this.examSetKeys);
+        
+        // Lấy unique examSetKeys và sắp xếp theo tháng-năm
+        const uniqueKeys = Array.from(new Set(parts.map(p => p.examSetKey)));
+        this.examSetKeys = uniqueKeys.sort((a, b) => {
+          // Format: MM-YYYY
+          const [monthA, yearA] = a.split('-').map(Number);
+          const [monthB, yearB] = b.split('-').map(Number);
+          
+          // So sánh năm trước, nếu bằng nhau thì so sánh tháng
+          if (yearA !== yearB) {
+            return yearA - yearB;
+          }
+          return monthA - monthB;
+        });
+        
+        console.log('📋 ExamSetKeys (sorted):', this.examSetKeys);
         this.isLoadingParts = false;
       },
       error: (err) => {
@@ -96,6 +112,7 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     this.isSaving = true;
+    this.savingStateChange.emit(true);
 
     try {
       // BƯỚC 1: Đếm tổng số câu hỏi
@@ -131,6 +148,7 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
 
       if (totalQuestions === 0) {
         this.isSaving = false;
+        this.savingStateChange.emit(false);
         this.showToastMessage('⚠️ Không tìm thấy câu hỏi nào để lưu!');
         return;
       }
@@ -142,6 +160,7 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
 
       if (!checkResponse?.canAdd) {
         this.isSaving = false;
+        this.savingStateChange.emit(false);
         this.showToastMessage('❌ ' + (checkResponse?.error || 'Không đủ slot để thêm câu hỏi!'));
         return;
       }
@@ -173,6 +192,7 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
         next: (res) => {
           console.log('✅ Lưu đề thi thành công', res);
           this.isSaving = false;
+          this.savingStateChange.emit(false);
           this.showToastMessage('✅ Lưu đề thi thành công!');
 
           // ✅ Reset selectors sau khi save thành công
@@ -183,12 +203,14 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
         error: (err) => {
           console.error('❌ Lưu đề thi thất bại', err);
           this.isSaving = false;
+          this.savingStateChange.emit(false);
           this.showToastMessage('❌ Lưu đề thi thất bại!');
         }
       });
     } catch (error: any) {
       console.error('❌ Lỗi khi xử lý:', error);
       this.isSaving = false;
+      this.savingStateChange.emit(false);
       this.showToastMessage('❌ ' + (error?.error?.error || 'Có lỗi xảy ra!'));
     }
   }

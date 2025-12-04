@@ -32,6 +32,11 @@ import {
   WritingQuestionStateService,
   WritingQuestionStateData,
 } from '../../../../Services/Exam/Writing/writing-question-state.service';
+import { SidebarService } from '../../../../Services/sidebar.service';
+import {
+  QuestionNavigatorComponent,
+  NavigatorLegendItem,
+} from '../../question-navigator/question-navigator.component';
 
 @Component({
   selector: 'app-writing',
@@ -44,31 +49,32 @@ import {
     QuotaLimitModalComponent,
     ReportPopupComponent,
     PopupComponent,
+    QuestionNavigatorComponent,
   ],
   templateUrl: './writing.component.html',
   styleUrl: './writing.component.scss',
 })
 export class WritingComponent implements OnChanges, OnDestroy, OnInit {
-      // Popup state cho xác nhận nộp bài và lưu tiến trình
-      showPopup = false;
-      popupMessage = '';
-      popupTitle = '';
-      popupOkHandler: (() => void) | null = null;
-      popupCancelHandler: (() => void) | null = null;
+  // Popup state cho xác nhận nộp bài và lưu tiến trình
+  showPopup = false;
+  popupMessage = '';
+  popupTitle = '';
+  popupOkHandler: (() => void) | null = null;
+  popupCancelHandler: (() => void) | null = null;
 
-      onPopupOk() {
-        if (this.popupOkHandler) this.popupOkHandler();
-      }
-      onPopupCancel() {
-        if (this.popupCancelHandler) this.popupCancelHandler();
-      }
-    // Show report popup state
-    showReportPopup: boolean = false;
+  onPopupOk() {
+    if (this.popupOkHandler) this.popupOkHandler();
+  }
+  onPopupCancel() {
+    if (this.popupCancelHandler) this.popupCancelHandler();
+  }
+  // Show report popup state
+  showReportPopup: boolean = false;
 
-    // Exam ID getter for popup type
-    get examId(): number | null {
-      return this.attemptId;
-    }
+  // Exam ID getter for popup type
+  get examId(): number | null {
+    return this.attemptId;
+  }
   @Input() questions: QuestionDTO[] | null = null;
   @Input() isInMockTest: boolean = false; // Để biết đang thi trong mock test hay standalone
   @Output() finished = new EventEmitter<void>();
@@ -100,6 +106,25 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   quotaMessage =
     'Kỹ năng Writing chỉ dành cho tài khoản Premium. Vui lòng nâng cấp để sử dụng tính năng này!';
 
+  // Navigator configuration
+  navigatorLegendItems: NavigatorLegendItem[] = [
+    { color: 'bg-gray-200', label: 'Chưa làm' },
+    { color: 'bg-orange-500', label: 'Đã làm' },
+    { color: 'bg-purple-500', label: 'Đã nộp' },
+    { color: 'bg-yellow-500', label: 'Đang chấm', animated: true },
+    { color: 'bg-green-600', label: 'Đã chấm xong' },
+    { color: 'bg-blue-600', label: 'Đang làm' },
+  ];
+
+  getQuestionStatus = (questionId: number, index: number): string => {
+    if (this.hasQuestionFeedback(questionId)) return 'answered-green-600';
+    if (this.isQuestionSubmitting(questionId)) return 'submitting';
+    if (this.isQuestionSubmitted(questionId)) return 'submitted';
+    if (this.hasAnswer(questionId)) return 'has-answer';
+    if (index === this.currentIndex) return 'current';
+    return 'unanswered';
+  };
+
   constructor(
     private router: Router,
     private authService: AuthService,
@@ -110,7 +135,8 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     private toastService: ToastService,
     private quotaService: QuotaService,
     private cdr: ChangeDetectorRef,
-    private writingStateService: WritingQuestionStateService
+    private writingStateService: WritingQuestionStateService,
+    private sidebarService: SidebarService
   ) {
     this.startAutoSave();
   }
@@ -131,6 +157,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     this.loadSavedData();
     this.loadAttemptId();
     this.checkQuotaAccess();
+    this.sidebarService.hideSidebar(); // Ẩn sidebar khi bắt đầu làm bài
     if (this.questions && this.questions.length > 0) {
       this.preloadAllCaptions();
       // ✅ Initialize all questions in state service
@@ -164,6 +191,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     this.stopAutoSave();
     this.saveCurrentState();
     this.saveProgressOnExit();
+    this.sidebarService.showSidebar(); // Hiển thị lại sidebar khi thoát
   }
 
   // ============= ATTEMPT MANAGEMENT (NEW) =============
@@ -469,7 +497,9 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       // ✅ Force immediate change detection to update UI
       this.cdr.detectChanges();
 
-      console.log(`[WritingComponent] 📍 Navigated to question index ${index}, questionId: ${this.questions[index].questionId}`);
+      console.log(
+        `[WritingComponent] 📍 Navigated to question index ${index}, questionId: ${this.questions[index].questionId}`
+      );
     }
   }
 
@@ -667,6 +697,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   viewHistory(): void {
+    this.sidebarService.showSidebar(); // Hiển thị lại sidebar
     // Điều hướng đến trang lịch sử làm bài với attemptId hiện tại
     if (this.attemptId) {
       this.router.navigate([
@@ -821,9 +852,18 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     // ✅ Nếu thi standalone, hiển thị confirm như cũ
     this.showPopup = true;
     this.popupTitle = 'Xác nhận nộp bài';
-    this.popupMessage = 'Bạn có chắc chắn muốn nộp bài thi Writing không?\n\nSố câu đã nộp: ' + submittedCount + '/' + totalQuestions;
-    this.popupOkHandler = () => { this.showPopup = false; this.finishExam(); };
-    this.popupCancelHandler = () => { this.showPopup = false; };
+    this.popupMessage =
+      'Bạn có chắc chắn muốn nộp bài thi Writing không?\n\nSố câu đã nộp: ' +
+      submittedCount +
+      '/' +
+      totalQuestions;
+    this.popupOkHandler = () => {
+      this.showPopup = false;
+      this.finishExam();
+    };
+    this.popupCancelHandler = () => {
+      this.showPopup = false;
+    };
   }
 
   // ============= EXIT HANDLING (NEW) =============
@@ -853,9 +893,15 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   confirmExit(): void {
     this.showPopup = true;
     this.popupTitle = 'Xác nhận thoát';
-    this.popupMessage = 'Bạn có muốn lưu tiến trình và thoát không?\n\n- Chọn "OK" để lưu và thoát\n- Chọn "Cancel" để tiếp tục làm bài';
-    this.popupOkHandler = () => { this.showPopup = false; this.saveProgressAndExit(); };
-    this.popupCancelHandler = () => { this.showPopup = false; };
+    this.popupMessage =
+      'Bạn có muốn lưu tiến trình và thoát không?\n\n- Chọn "OK" để lưu và thoát\n- Chọn "Cancel" để tiếp tục làm bài';
+    this.popupOkHandler = () => {
+      this.showPopup = false;
+      this.saveProgressAndExit();
+    };
+    this.popupCancelHandler = () => {
+      this.showPopup = false;
+    };
     // Popup component should only be in the template, not here
   }
 
