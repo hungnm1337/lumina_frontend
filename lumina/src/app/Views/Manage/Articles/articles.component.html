@@ -36,9 +36,10 @@
         <input
           type="text"
           [(ngModel)]="searchTerm"
-          (ngModelChange)="page = 1"
+          (ngModelChange)="onSearchInput($event)"
           placeholder="Search articles, content, authors..."
-          class="search-input">
+          class="search-input"
+          maxlength="100">
         <button 
           *ngIf="searchTerm" 
           (click)="clearSearch()" 
@@ -163,14 +164,6 @@
                 <i class="fas fa-calendar"></i>
                 <span>{{article.publishDate}}</span>
               </div>
-              <div class="info-item">
-                <i class="fas fa-eye"></i>
-                <span>{{article.views}} views</span>
-              </div>
-              <div class="info-item">
-                <i class="fas fa-heart"></i>
-                <span>{{article.likes}} likes</span>
-              </div>
             </div>
           </div>
 
@@ -186,17 +179,21 @@
             <button 
               *ngIf="article.status === 'pending'"
               class="btn-success-card"
-              (click)="approveArticle(article)">
-              <i class="fas fa-check"></i>
-              Duyệt
+              (click)="approveArticle(article)"
+              [disabled]="isApproving || isRejecting">
+              <i *ngIf="isApproving" class="fas fa-spinner fa-spin"></i>
+              <i *ngIf="!isApproving" class="fas fa-check"></i>
+              {{isApproving ? 'Đang duyệt...' : 'Duyệt'}}
             </button>
             
             <button 
               *ngIf="article.status === 'pending'"
               class="btn-danger-card"
-              (click)="rejectArticle(article)">
-              <i class="fas fa-times"></i>
-              Từ chối
+              (click)="rejectArticle(article)"
+              [disabled]="isApproving || isRejecting">
+              <i *ngIf="isRejecting" class="fas fa-spinner fa-spin"></i>
+              <i *ngIf="!isRejecting" class="fas fa-times"></i>
+              {{isRejecting ? 'Đang từ chối...' : 'Từ chối'}}
             </button>
           </div>
         </div>
@@ -206,34 +203,45 @@
       <div *ngIf="!isLoading && !errorMessage && filteredArticles.length === 0" class="empty-state">
         <i class="fas fa-file-alt"></i>
         <h3>Không có bài viết nào</h3>
-        <p>Không tìm thấy bài viết nào phù hợp với bộ lọc hiện tại</p>
+        <p *ngIf="selectedStatus !== 'all' || searchTerm">
+          Không tìm thấy bài viết nào phù hợp với bộ lọc hiện tại.
+          <button (click)="clearFilters()" class="btn-link">Xóa bộ lọc</button>
+        </p>
+        <p *ngIf="selectedStatus === 'all' && !searchTerm">
+          Chưa có bài viết nào cần duyệt.
+        </p>
       </div>
     </div>
   </div>
 
   <!-- Pagination -->
   <div *ngIf="totalPages > 1" class="pagination">
-    <button 
-      class="pagination-btn" 
-      [disabled]="page === 1"
-      (click)="prevPage()">
-      <i class="fas fa-chevron-left"></i>
-    </button>
-    
-    <button 
-      *ngFor="let pageNum of getPageNumbers()" 
-      class="pagination-btn"
-      [class.active]="pageNum === page"
-      (click)="goToPage(pageNum)">
-      {{ pageNum }}
-    </button>
-    
-    <button 
-      class="pagination-btn" 
-      [disabled]="page === totalPages"
-      (click)="nextPage()">
-      <i class="fas fa-chevron-right"></i>
-    </button>
+    <div class="pagination-info">
+      Showing {{(page - 1) * pageSize + 1}} - {{Math.min(page * pageSize, totalItems)}} of {{totalItems}} articles
+    </div>
+    <div class="pagination-controls">
+      <button 
+        class="pagination-btn" 
+        [disabled]="page === 1"
+        (click)="prevPage()">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      
+      <button 
+        *ngFor="let pageNum of getPageNumbers()" 
+        class="pagination-btn"
+        [class.active]="pageNum === page"
+        (click)="goToPage(pageNum)">
+        {{ pageNum }}
+      </button>
+      
+      <button 
+        class="pagination-btn" 
+        [disabled]="page === totalPages"
+        (click)="nextPage()">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -261,12 +269,14 @@
           id="rejectionReason"
           [(ngModel)]="rejectionReason"
           class="form-textarea"
-          placeholder="Vui lòng nhập lý do từ chối bài viết này..."
+          placeholder="Vui lòng nhập lý do từ chối bài viết này (tối thiểu 10 ký tự)..."
           rows="4"
+          maxlength="500"
           required>
         </textarea>
         <div class="form-help">
-          Lý do từ chối sẽ được gửi đến tác giả để họ có thể sửa lại bài viết.
+          <span>Lý do từ chối sẽ được gửi đến tác giả để họ có thể sửa lại bài viết.</span>
+          <span class="char-counter">{{rejectionReason.length || 0}} / 500</span>
         </div>
       </div>
     </div>
@@ -278,9 +288,10 @@
       <button 
         class="btn btn-danger" 
         (click)="confirmReject()"
-        [disabled]="!rejectionReason.trim()">
-        <i class="fas fa-times"></i>
-        Từ chối bài viết
+        [disabled]="!rejectionReason.trim() || isRejecting || rejectionReason.trim().length < 10">
+        <i *ngIf="isRejecting" class="fas fa-spinner fa-spin"></i>
+        <i *ngIf="!isRejecting" class="fas fa-times"></i>
+        {{isRejecting ? 'Đang xử lý...' : 'Từ chối bài viết'}}
       </button>
     </div>
   </div>

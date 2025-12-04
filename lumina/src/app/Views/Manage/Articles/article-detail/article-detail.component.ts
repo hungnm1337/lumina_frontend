@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Subscription } from 'rxjs';
 import { ArticleService } from '../../../../Services/Article/article.service';
+import { AuthService } from '../../../../Services/Auth/auth.service';
 import { ArticleResponse } from '../../../../Interfaces/article.interfaces';
 import { ToastrService } from 'ngx-toastr';
 
@@ -14,7 +16,7 @@ import { ToastrService } from 'ngx-toastr';
   templateUrl: './article-detail.component.html',
   styleUrls: ['./article-detail.component.scss']
 })
-export class ArticleDetailComponent implements OnInit {
+export class ArticleDetailComponent implements OnInit, OnDestroy {
   article: ArticleResponse | null = null;
   isLoading: boolean = true;
   error: string = '';
@@ -23,16 +25,30 @@ export class ArticleDetailComponent implements OnInit {
   showRejectModal = false;
   rejectionReason: string = '';
 
+  // Approval modal
+  showApproveModal = false;
+
+  // Loading states
+  isApproving = false;
+  isRejecting = false;
+
+  private subscriptions: Subscription[] = [];
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private articleService: ArticleService,
     private sanitizer: DomSanitizer,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
     this.loadArticle();
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   loadArticle(): void {
@@ -47,17 +63,18 @@ export class ArticleDetailComponent implements OnInit {
     }
 
     // Use manager endpoint to view any article including pending
-    this.articleService.getArticleByIdForManager(+articleId).subscribe({
+    const sub = this.articleService.getArticleByIdForManager(+articleId).subscribe({
       next: (article) => {
         this.article = article;
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error loading article:', error);
+        this.handleError(error, 'tải bài viết');
         this.error = 'Unable to load article. Please try again later.';
         this.isLoading = false;
       }
     });
+    this.subscriptions.push(sub);
   }
 
   goBack(): void {
@@ -203,9 +220,51 @@ export class ArticleDetailComponent implements OnInit {
       }
     );
     
+    // Sanitize HTML content first to prevent XSS
+    let sanitized = processedContent
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+      .replace(/on\w+\s*=\s*[^\s>]*/gi, '')
+      .replace(/javascript:/gi, '')
+      .replace(/data:text\/html/gi, '');
+
+    // Allow safe HTML tags
+    const allowedTags = ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
+                        'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'code', 'pre', 'div', 'iframe'];
+    
+    // Create a temporary element to parse HTML
+    const temp = document.createElement('div');
+    temp.innerHTML = sanitized;
+    
+    // Remove disallowed tags (except iframe for YouTube)
+    const allElements = temp.querySelectorAll('*');
+    allElements.forEach(el => {
+      const tagName = el.tagName.toLowerCase();
+      if (!allowedTags.includes(tagName)) {
+        const parent = el.parentNode;
+        if (parent) {
+          while (el.firstChild) {
+            parent.insertBefore(el.firstChild, el);
+          }
+          parent.removeChild(el);
+        }
+      } else {
+        // Remove dangerous attributes
+        Array.from(el.attributes).forEach(attr => {
+          if (attr.name.startsWith('on') || 
+              (attr.name === 'href' && attr.value.startsWith('javascript:')) ||
+              (tagName !== 'iframe' && attr.name === 'src' && attr.value.startsWith('javascript:'))) {
+            el.removeAttribute(attr.name);
+          }
+        });
+      }
+    });
+    
+    sanitized = temp.innerHTML;
+
     // Use bypassSecurityTrustHtml to allow iframes and other content
-    // Note: This is safe because content comes from our own database (staff-created articles)
-    return this.sanitizer.bypassSecurityTrustHtml(processedContent);
+    // Note: Content has been sanitized above
+    return this.sanitizer.bypassSecurityTrustHtml(sanitized);
   }
 
   // Convert Quill Delta to HTML (simplified version)
@@ -250,17 +309,57 @@ export class ArticleDetailComponent implements OnInit {
   // Approve article
   approveArticle() {
     if (!this.article) return;
-    
-    this.articleService.reviewArticle(this.article.articleId, true).subscribe({
+
+    // Check authorization
+    const roleId = this.authService.getRoleId();
+    if (roleId !== 2) {
+      this.toastr.error('Bạn không có quyền phê duyệt bài viết.');
+      return;
+    }
+
+    if (this.isApproving) {
+      return;
+    }
+
+    // Show confirmation modal
+    this.showApproveModal = true;
+  }
+
+  // Confirm approval
+  confirmApprove() {
+    if (!this.article) return;
+
+    // Check authorization again
+    const roleId = this.authService.getRoleId();
+    if (roleId !== 2) {
+      this.toastr.error('Bạn không có quyền phê duyệt bài viết.');
+      this.cancelApprove();
+      return;
+    }
+
+    if (this.isApproving) {
+      return;
+    }
+
+    this.isApproving = true;
+    const sub = this.articleService.reviewArticle(this.article.articleId, true).subscribe({
       next: (response) => {
         this.toastr.success('Bài viết đã được duyệt thành công!');
+        this.showApproveModal = false;
         this.loadArticle(); // Reload to update status
+        this.isApproving = false;
       },
       error: (error) => {
-        console.error('Lỗi khi duyệt bài viết:', error);
-        this.toastr.error('Có lỗi xảy ra khi duyệt bài viết');
+        this.handleError(error, 'duyệt bài viết');
+        this.isApproving = false;
       }
     });
+    this.subscriptions.push(sub);
+  }
+
+  // Cancel approval
+  cancelApprove() {
+    this.showApproveModal = false;
   }
 
   // Reject article
@@ -272,25 +371,85 @@ export class ArticleDetailComponent implements OnInit {
 
   // Confirm rejection
   confirmReject() {
-    if (!this.rejectionReason.trim()) {
+    // Check authorization
+    const roleId = this.authService.getRoleId();
+    if (roleId !== 2) {
+      this.toastr.error('Bạn không có quyền từ chối bài viết.');
+      this.cancelReject();
+      return;
+    }
+
+    const reason = this.rejectionReason.trim();
+
+    if (!reason) {
       this.toastr.warning('Vui lòng nhập lý do từ chối');
+      return;
+    }
+
+    if (reason.length < 10) {
+      this.toastr.warning('Lý do từ chối phải có ít nhất 10 ký tự');
+      return;
+    }
+
+    if (reason.length > 500) {
+      this.toastr.warning('Lý do từ chối không được vượt quá 500 ký tự');
       return;
     }
 
     if (!this.article) return;
 
-    this.articleService.reviewArticle(this.article.articleId, false, this.rejectionReason).subscribe({
+    // Sanitize rejection reason
+    const sanitizedReason = this.sanitizeText(reason);
+
+    if (this.isRejecting) {
+      return;
+    }
+
+    this.isRejecting = true;
+    const sub = this.articleService.reviewArticle(this.article.articleId, false, sanitizedReason).subscribe({
       next: (response) => {
         this.toastr.success('Bài viết đã được từ chối');
         this.showRejectModal = false;
         this.rejectionReason = '';
         this.loadArticle(); // Reload to update status
+        this.isRejecting = false;
       },
       error: (error) => {
-        console.error('Lỗi khi từ chối bài viết:', error);
-        this.toastr.error('Có lỗi xảy ra khi từ chối bài viết');
+        this.handleError(error, 'từ chối bài viết');
+        this.isRejecting = false;
       }
     });
+    this.subscriptions.push(sub);
+  }
+
+  // Sanitize text to prevent XSS
+  private sanitizeText(text: string): string {
+    return text
+      .replace(/<[^>]*>/g, '')
+      .replace(/javascript:/gi, '')
+      .replace(/on\w+\s*=/gi, '')
+      .trim();
+  }
+
+  // Improved error handling
+  private handleError(error: any, action: string): void {
+    let errorMessage = `Không thể ${action}.`;
+    
+    if (error.status === 0) {
+      errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+    } else if (error.status === 401) {
+      errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+    } else if (error.status === 403) {
+      errorMessage = 'Bạn không có quyền thực hiện thao tác này.';
+    } else if (error.status === 500) {
+      errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
+    } else if (error?.error?.message) {
+      errorMessage = error.error.message;
+    } else if (error?.message) {
+      errorMessage = error.message;
+    }
+    
+    this.toastr.error(errorMessage);
   }
 
   // Cancel rejection

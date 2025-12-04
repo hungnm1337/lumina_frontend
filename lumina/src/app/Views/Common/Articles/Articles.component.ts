@@ -6,8 +6,8 @@ import { HeaderComponent } from '../header/header.component';
 import { ArticleService } from '../../../Services/Article/article.service';
 import { ArticleResponse, ArticleCategory, ArticleProgress } from '../../../Interfaces/article.interfaces';
 import { AuthService } from '../../../Services/Auth/auth.service';
-import { filter } from 'rxjs/operators';
-import { Subscription } from 'rxjs';
+import { filter, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Subject, Subscription } from 'rxjs';
 
 interface BlogArticle {
   id: number;
@@ -45,7 +45,8 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
   selectedSort: string = 'newest';
 
   // Real data from API
-  publishedArticles: ArticleResponse[] = [];
+  publishedArticles: ArticleResponse[] = []; // Filtered articles (for search)
+  allPublishedArticles: ArticleResponse[] = []; // All articles (for Featured Authors)
   categories: ArticleCategory[] = [];
   isLoading: boolean = true;
   error: string = '';
@@ -55,6 +56,10 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
 
   // Router subscription for navigation events
   private routerSubscription?: Subscription;
+
+  // Search subject for debouncing
+  private searchSubject = new Subject<string>();
+  private searchSubscription?: Subscription;
 
   // Filter categories for UI
   filterCategories = [
@@ -72,7 +77,11 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
 
   // Computed properties for display
   get featuredArticles(): ArticleResponse[] {
-    return this.publishedArticles.slice(0, 2);
+    // Only show featured articles when there's no search query
+    if (this.searchQuery.trim()) {
+      return [];
+    }
+    return this.allPublishedArticles.slice(0, 2);
   }
 
   get latestArticles(): ArticleResponse[] {
@@ -108,9 +117,9 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
   showAllLatestArticles: boolean = false;
 
   get featuredAuthors(): any[] {
-    // Extract unique authors from published articles
+    // Extract unique authors from ALL published articles (not filtered by search)
     const authors = new Map();
-    this.publishedArticles.forEach(article => {
+    this.allPublishedArticles.forEach(article => {
       if (!authors.has(article.authorName)) {
         authors.set(article.authorName, {
           id: authors.size + 1,
@@ -118,7 +127,7 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
           expertise: 'Content Creator',
           avatar: article.authorName.charAt(0).toUpperCase(),
           avatarColor: this.getAuthorAvatarColor(authors.size),
-          articlesCount: this.publishedArticles.filter(a => a.authorName === article.authorName).length
+          articlesCount: this.allPublishedArticles.filter(a => a.authorName === article.authorName).length
         });
       }
     });
@@ -152,11 +161,24 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
           this.reloadArticleProgress();
         }
       });
+
+    // Subscribe to search subject with debounce for real-time search
+    this.searchSubscription = this.searchSubject
+      .pipe(
+        debounceTime(500), // Wait 500ms after user stops typing
+        distinctUntilChanged() // Only trigger if value changed
+      )
+      .subscribe(() => {
+        this.filterArticles();
+      });
   }
 
   ngOnDestroy(): void {
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
+    }
+    if (this.searchSubscription) {
+      this.searchSubscription.unsubscribe();
     }
   }
 
@@ -180,7 +202,8 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
       sortDir: 'desc'
     }).subscribe({
       next: (response) => {
-        this.publishedArticles = response.items;
+        this.allPublishedArticles = response.items; // Store all articles
+        this.publishedArticles = response.items; // Initially, show all articles
         if (this.isLogin) {
           this.loadArticleProgress(response.items.map(a => a.articleId));
         }
@@ -255,6 +278,16 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
   }
 
   onSearch(): void {
+    this.filterArticles();
+  }
+
+  onSearchInput(): void {
+    // Trigger search with debounce
+    this.searchSubject.next(this.searchQuery);
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
     this.filterArticles();
   }
 
@@ -427,6 +460,13 @@ export class BlogArticlesComponent implements OnInit, OnDestroy {
     }
 
     return pages;
+  }
+
+  // Truncate text to a maximum length
+  truncateText(text: string, maxLength: number = 150): string {
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength).trim() + '...';
   }
 }
 

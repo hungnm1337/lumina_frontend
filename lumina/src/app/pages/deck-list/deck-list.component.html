@@ -12,6 +12,27 @@
     <p class="page-subtitle">Learn and practice TOEIC vocabulary effectively with smart flashcard system</p>
   </div>
 
+  <!-- Search Section -->
+  <div class="search-section" *ngIf="!isLoading && !error && decks.length > 0">
+    <div class="search-container">
+      <div class="search-input-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input 
+          type="text" 
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearchChange()"
+          placeholder="Search vocabulary sets..." 
+          class="search-input">
+        <button 
+          *ngIf="searchTerm" 
+          (click)="clearSearch()" 
+          class="clear-search-btn">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Loading State -->
   <div *ngIf="isLoading" class="loading-state">
     <div class="loading-spinner"></div>
@@ -34,7 +55,15 @@
 
   <!-- Decks Grid -->
   <div *ngIf="!isLoading && !error && decks.length > 0">
-    <div class="decks-grid">
+    <!-- Empty Search Result -->
+    <div *ngIf="filteredDecks.length === 0 && searchTerm" class="empty-search-state">
+      <div class="empty-icon">🔍</div>
+      <h3>No results found</h3>
+      <p>No vocabulary sets match your search "{{ searchTerm }}"</p>
+      <button class="clear-search-link" (click)="clearSearch()">Clear search</button>
+    </div>
+
+    <div class="decks-grid" *ngIf="filteredDecks.length > 0">
       <a 
         *ngFor="let deck of paginatedDecks; let i = index" 
         [routerLink]="['/flashcards', deck.id]" 
@@ -70,7 +99,7 @@
     </div>
 
     <!-- Pagination -->
-    <div class="pagination-section" *ngIf="decks.length > 0 && totalPages > 1">
+    <div class="pagination-section" *ngIf="filteredDecks.length > 0 && totalPages > 1">
       <div class="pagination-controls">
         <button class="btn-page" [disabled]="currentPage === 1" (click)="prevPage()">Previous</button>
         <div class="page-numbers">

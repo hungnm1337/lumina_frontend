@@ -52,6 +52,11 @@ export class UserVocabularyComponent implements OnInit {
   listForm: FormGroup;
   isSubmitting = false;
 
+  // Delete confirmation state
+  showDeleteModal = false;
+  listToDelete: VocabularyListResponse | null = null;
+  isDeleting = false;
+
   // Streak data
   streakData: any = null;
   isLoadingStreak = false;
@@ -175,12 +180,22 @@ export class UserVocabularyComponent implements OnInit {
 
     this.isLoadingStreak = true;
     this.streakService.getStreakSummary(userId).subscribe({
-      next: (data) => {
-        this.streakData = data;
+      next: (response) => {
+        // Backend trả về { success: true, data: {...} }
+        if (response && response.success && response.data) {
+          this.streakData = response.data;
+        } else if (response && response.currentStreak !== undefined) {
+          // Fallback: nếu response trả về trực tiếp data
+          this.streakData = response;
+        } else {
+          this.streakData = null;
+        }
         this.isLoadingStreak = false;
+        console.log('Streak data loaded:', this.streakData);
       },
       error: (error: any) => {
         console.error('Error loading streak data:', error);
+        this.streakData = null;
         this.isLoadingStreak = false;
       }
     });
@@ -188,7 +203,9 @@ export class UserVocabularyComponent implements OnInit {
 
 
   getConsecutiveDays(): number {
-    return this.streakData?.currentStreak || 0;
+    if (!this.streakData) return 0;
+    // Backend trả về camelCase (currentStreak)
+    return this.streakData.currentStreak ?? 0;
   }
 
   getStreakEmoji(): string {
@@ -240,6 +257,39 @@ export class UserVocabularyComponent implements OnInit {
         this.toastService.error('Tạo folder thất bại. Vui lòng thử lại.');
         this.isSubmitting = false;
         console.error('Error creating vocabulary list:', err);
+      }
+    });
+  }
+
+  // Delete folder methods
+  openDeleteModal(list: VocabularyListResponse, event: Event): void {
+    event.stopPropagation(); // Prevent card click event
+    this.listToDelete = list;
+    this.showDeleteModal = true;
+  }
+
+  closeDeleteModal(): void {
+    this.showDeleteModal = false;
+    this.listToDelete = null;
+  }
+
+  confirmDeleteList(): void {
+    if (!this.listToDelete || this.isDeleting) {
+      return;
+    }
+
+    this.isDeleting = true;
+    this.vocabularyService.deleteVocabularyList(this.listToDelete.vocabularyListId).subscribe({
+      next: () => {
+        this.toastService.success(`Đã xóa folder "${this.listToDelete!.name}" thành công!`);
+        this.isDeleting = false;
+        this.closeDeleteModal();
+        this.loadUserLists(); // Refresh the list
+      },
+      error: (err) => {
+        this.toastService.error('Xóa folder thất bại. Vui lòng thử lại.');
+        this.isDeleting = false;
+        console.error('Error deleting vocabulary list:', err);
       }
     });
   }

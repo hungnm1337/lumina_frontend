@@ -35,7 +35,7 @@
       <div class="search-section">
         <div class="search-input-wrapper">
           <i class="fas fa-search search-icon"></i>
-          <input type="text" [(ngModel)]="searchTerm" (input)="onSearchChange()" placeholder="Search vocabulary lists..." class="search-input">
+          <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchInput($event)" placeholder="Search vocabulary lists..." class="search-input">
           <button *ngIf="searchTerm" (click)="clearSearch()" class="clear-search-btn"><i class="fas fa-times"></i></button>
         </div>
       </div>
@@ -137,7 +137,7 @@
       <div class="search-section">
         <div class="search-input-wrapper">
           <i class="fas fa-search search-icon"></i>
-          <input type="text" [(ngModel)]="searchTerm" (input)="onSearchChange()" placeholder="Search words in this list..." class="search-input">
+          <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchInput($event)" placeholder="Search words in this list..." class="search-input">
           <button *ngIf="searchTerm" (click)="clearSearch()" class="clear-search-btn"><i class="fas fa-times"></i></button>
         </div>
       </div>
@@ -186,6 +186,12 @@
 
             <!-- Card Content Section -->
             <div class="card-body">
+              <!-- Image Section -->
+              <div *ngIf="vocab.imageUrl" class="vocab-image-section">
+                <img [src]="vocab.imageUrl" [alt]="'Image for ' + vocab.word" class="vocab-image" 
+                     (error)="handleImageError($event, vocab)" />
+              </div>
+              
               <div class="translation-box">
                 <i class="fas fa-language translation-icon"></i>
                 <span class="translation-text">{{vocab.translation}}</span>
@@ -215,6 +221,9 @@
           <button class="btn-add-first" (click)="openModal()"><i class="fas fa-plus"></i> Add First Word</button>
         </div>
         <div *ngIf="!isLoading && totalPages > 1" class="pagination-section">
+          <div class="pagination-info">
+            Showing {{getStartIndex()}} - {{getEndIndex()}} of {{totalItems}} words
+          </div>
           <div class="pagination-controls">
             <button class="btn-page btn-prev" [disabled]="page <= 1" (click)="prevPage()">
               <i class="fas fa-chevron-left"></i>
@@ -228,7 +237,7 @@
                 {{pageNum}}
               </button>
             </div>
-            <button class="btn-page btn-next" [disabled]="page >= totalPages" (click)="nextPage()">
+            <button class="btn-page btn-next" [disabled]="page >= totalPages || totalItems === 0" (click)="nextPage()">
               <span>Next</span>
               <i class="fas fa-chevron-right"></i>
             </button>
@@ -256,13 +265,18 @@
         <label for="list-name">List Name *</label>
         <input id="list-name" type="text" formControlName="name" placeholder="e.g., TOEIC Business Vocabulary" class="form-input">
         <div *ngIf="listForm.get('name')?.invalid && listForm.get('name')?.touched" class="error-message">
-          List name is required.
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="checkbox-wrapper">
-          <input id="isPublic" type="checkbox" formControlName="isPublic" class="form-checkbox">
-          <label for="isPublic">Make this list public for all users</label>
+          <span *ngIf="listForm.get('name')?.errors?.['required']">
+            List name is required.
+          </span>
+          <span *ngIf="listForm.get('name')?.errors?.['minlength']">
+            List name must be at least 3 characters.
+          </span>
+          <span *ngIf="listForm.get('name')?.errors?.['maxlength']">
+            List name must not exceed 100 characters.
+          </span>
+          <span *ngIf="listForm.get('name')?.errors?.['pattern']">
+            List name can only contain letters, numbers, spaces, hyphens, and underscores.
+          </span>
         </div>
       </div>
       <div class="modal-actions">
@@ -304,7 +318,18 @@
           placeholder="Enter English word"
         />
         <div *ngIf="vocabularyForm.get('word')?.invalid && vocabularyForm.get('word')?.touched" class="error-message">
-          English word is required.
+          <span *ngIf="vocabularyForm.get('word')?.errors?.['required']">
+            English word is required.
+          </span>
+          <span *ngIf="vocabularyForm.get('word')?.errors?.['minlength']">
+            Word must be at least 1 character.
+          </span>
+          <span *ngIf="vocabularyForm.get('word')?.errors?.['maxlength']">
+            Word must not exceed 100 characters.
+          </span>
+          <span *ngIf="vocabularyForm.get('word')?.errors?.['pattern']">
+            Word can only contain letters, spaces, hyphens, and apostrophes.
+          </span>
         </div>
       </div>
       <div class="form-row">
@@ -314,6 +339,14 @@
             <option value="">Select part of speech</option>
             <option *ngFor="let pos of partsOfSpeech" [value]="pos">{{ pos }}</option>
           </select>
+          <div *ngIf="vocabularyForm.get('partOfSpeech')?.invalid && vocabularyForm.get('partOfSpeech')?.touched" class="error-message">
+            <span *ngIf="vocabularyForm.get('partOfSpeech')?.errors?.['required']">
+              Part of speech is required.
+            </span>
+            <span *ngIf="vocabularyForm.get('partOfSpeech')?.errors?.['pattern']">
+              Please select a valid part of speech.
+            </span>
+          </div>
         </div>
 
         <div class="form-group">
@@ -329,6 +362,17 @@
           <datalist id="category-suggestions">
             <option *ngFor="let category of categories" [value]="category.name"></option>
           </datalist>
+          <div *ngIf="vocabularyForm.get('category')?.invalid && vocabularyForm.get('category')?.touched" class="error-message">
+            <span *ngIf="vocabularyForm.get('category')?.errors?.['required']">
+              Category is required.
+            </span>
+            <span *ngIf="vocabularyForm.get('category')?.errors?.['maxlength']">
+              Category must not exceed 50 characters.
+            </span>
+            <span *ngIf="vocabularyForm.get('category')?.errors?.['pattern']">
+              Category can only contain letters, spaces, and hyphens.
+            </span>
+          </div>
         </div>
 
       </div>
@@ -343,6 +387,14 @@
           class="form-textarea"
           placeholder="Enter word definition"
         ></textarea>
+        <div *ngIf="vocabularyForm.get('definition')?.invalid && vocabularyForm.get('definition')?.touched" class="error-message">
+          <span *ngIf="vocabularyForm.get('definition')?.errors?.['required']">
+            Definition is required.
+          </span>
+          <span *ngIf="vocabularyForm.get('definition')?.errors?.['maxlength']">
+            Definition must not exceed 1000 characters.
+          </span>
+        </div>
       </div>
 
       <!-- Vietnamese Translation -->
@@ -355,6 +407,14 @@
           class="form-textarea"
           placeholder="Enter Vietnamese translation"
         ></textarea>
+        <div *ngIf="vocabularyForm.get('translation')?.invalid && vocabularyForm.get('translation')?.touched" class="error-message">
+          <span *ngIf="vocabularyForm.get('translation')?.errors?.['required']">
+            Translation is required.
+          </span>
+          <span *ngIf="vocabularyForm.get('translation')?.errors?.['maxlength']">
+            Translation must not exceed 500 characters.
+          </span>
+        </div>
       </div>
 
       <!-- Example Sentence -->
@@ -367,6 +427,14 @@
           class="form-textarea"
           placeholder="Enter example sentence"
         ></textarea>
+        <div *ngIf="vocabularyForm.get('example')?.invalid && vocabularyForm.get('example')?.touched" class="error-message">
+          <span *ngIf="vocabularyForm.get('example')?.errors?.['required']">
+            Example sentence is required.
+          </span>
+          <span *ngIf="vocabularyForm.get('example')?.errors?.['maxlength']">
+            Example sentence must not exceed 500 characters.
+          </span>
+        </div>
       </div>
 
       <!-- Image Upload -->

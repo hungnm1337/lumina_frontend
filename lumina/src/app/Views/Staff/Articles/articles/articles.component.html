@@ -13,7 +13,7 @@
       </div>
       <div class="header-stats">
         <div class="stat-card">
-          <div class="stat-number">{{total || 0}}</div>
+          <div class="stat-number">{{getTotalArticlesCount()}}</div>
           <div class="stat-label">Total Articles</div>
         </div>
         <div class="stat-card">
@@ -48,7 +48,7 @@
         <input
           type="text"
           [(ngModel)]="searchTerm"
-          (input)="onSearchChange()"
+          (ngModelChange)="onSearchInput($event)"
           placeholder="Search articles, content, categories..."
           class="search-input">
         <button 
@@ -266,12 +266,12 @@
       <!-- Pagination -->
       <div *ngIf="!isLoading && total > pageSize" class="pagination-section">
         <div class="pagination-info">
-          Page {{page}} / {{Math.ceil(total / pageSize)}} · Total {{total | number}} articles
+          Page {{page}} / {{maxPage || 1}} · Total {{total | number}} articles
         </div>
         <div class="pagination-controls">
           <button 
             class="btn-page" 
-            [disabled]="page <= 1" 
+            [disabled]="!canGoPrev" 
             (click)="prevPage()">
             <i class="fas fa-chevron-left"></i>
             Previous
@@ -279,7 +279,7 @@
           <span class="current-page">{{page}}</span>
           <button 
             class="btn-page" 
-            [disabled]="page * pageSize >= total" 
+            [disabled]="!canGoNext" 
             (click)="nextPage()">
             Next
             <i class="fas fa-chevron-right"></i>
@@ -339,7 +339,7 @@
           <h3>Category Distribution</h3>
         </div>
         <div class="category-stats">
-          <div *ngFor="let category of categories" class="category-stat-item">
+          <div *ngFor="let category of displayedCategories" class="category-stat-item">
             <div class="category-info">
               <span class="category-icon">📚</span>
               <span class="category-name">{{category.name}}</span>
@@ -348,6 +348,13 @@
               <span class="count">{{getCategoryCount(category.name)}}</span>
             </div>
           </div>
+        </div>
+        <div class="category-actions" *ngIf="hasMoreCategories">
+          <button class="show-more-btn" (click)="toggleShowAllCategories()">
+            <span *ngIf="!showAllCategories">Xem thêm</span>
+            <span *ngIf="showAllCategories">Thu gọn</span>
+            <i class="fas" [class.fa-chevron-down]="!showAllCategories" [class.fa-chevron-up]="showAllCategories"></i>
+          </button>
         </div>
       </div>
 
@@ -474,7 +481,15 @@
                   class="form-input">
                 <div *ngIf="sectionGroup.get('sectionTitle')?.invalid && sectionGroup.get('sectionTitle')?.touched" 
                      class="error-message">
-                  Section title is required
+                  <span *ngIf="sectionGroup.get('sectionTitle')?.errors?.['required']">
+                    Section title is required
+                  </span>
+                  <span *ngIf="sectionGroup.get('sectionTitle')?.errors?.['minlength']">
+                    Section title must be at least 3 characters
+                  </span>
+                  <span *ngIf="sectionGroup.get('sectionTitle')?.errors?.['maxlength']">
+                    Section title must not exceed 255 characters
+                  </span>
                 </div>
               </div>
               
@@ -509,10 +524,13 @@
 
   <div *ngIf="sectionGroup.get('content')?.invalid && sectionGroup.get('content')?.touched" 
        class="error-message">
-    <span *ngIf="sectionGroup.get('type')?.value === 'video'">
-      Please paste a YouTube video URL
+    <span *ngIf="sectionGroup.get('type')?.value === 'video' && sectionGroup.get('content')?.errors?.['invalidYoutubeUrl']">
+      Vui lòng nhập URL YouTube hợp lệ (ví dụ: https://www.youtube.com/watch?v=...)
     </span>
-    <span *ngIf="sectionGroup.get('type')?.value !== 'video'">
+    <span *ngIf="sectionGroup.get('type')?.value === 'video' && sectionGroup.get('content')?.errors?.['required']">
+      Vui lòng nhập URL YouTube
+    </span>
+    <span *ngIf="sectionGroup.get('type')?.value !== 'video' && sectionGroup.get('content')?.errors?.['required']">
       Content is required
     </span>
   </div>

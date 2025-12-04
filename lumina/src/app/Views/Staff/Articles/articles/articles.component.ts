@@ -1,6 +1,9 @@
-﻿import { Component, OnInit, ViewChild } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
+import { DomSanitizer } from '@angular/platform-browser';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ArticleService } from '../../../../Services/Article/article.service';
 import { ToastService } from '../../../../Services/Toast/toast.service';
 import { AuthService } from '../../../../Services/Auth/auth.service';
@@ -20,10 +23,11 @@ import Quill from 'quill';
   templateUrl: './articles.component.html',
   styleUrls: ['./articles.component.scss']
 })
-export class ArticlesComponent implements OnInit {
+export class ArticlesComponent implements OnInit, OnDestroy {
   // Data Properties
   articles: Article[] = [];
   filteredArticles: Article[] = [];
+  allArticlesForStats: Article[] = []; // All articles for statistics (not paginated)
   categories: ArticleCategory[] = [];
   categoryNames: string[] = [];
   
@@ -58,6 +62,16 @@ export class ArticlesComponent implements OnInit {
   // Upload state
   uploadingImages: { [key: number]: boolean } = {}; // Track upload state per section index
 
+  // Category display state
+  showAllCategories = false;
+
+  // Search debounce
+  private searchSubject = new Subject<string>();
+  private searchSubscription?: Subscription;
+
+  // Form state tracking
+  hasUnsavedChanges = false;
+
   // Confirmation Modal Properties
   showConfirmModal = false;
   confirmTitle = '';
@@ -84,7 +98,8 @@ export class ArticlesComponent implements OnInit {
     private articleService: ArticleService,
     private toastService: ToastService,
     private authService: AuthService,
-    private uploadService: UploadService
+    private uploadService: UploadService,
+    private sanitizer: DomSanitizer
   ) {
     this.articleForm = this.fb.group({
       category: ['', Validators.required],
@@ -106,6 +121,40 @@ export class ArticlesComponent implements OnInit {
     this.isStaff = (roleId === 3);
     this.loadCategories();
     this.loadArticles();
+    this.loadAllArticlesForStats(); // Load all articles for statistics
+
+    // Setup search debounce
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(500),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.searchTerm = searchTerm;
+      this.onSearchChange();
+    });
+
+    // Track form changes for unsaved changes warning
+    this.articleForm.valueChanges.subscribe(() => {
+      this.hasUnsavedChanges = true;
+    });
+  }
+
+  ngOnDestroy(): void {
+    // Cleanup Quill editors to prevent memory leaks
+    this.quillEditors.forEach((editor, index) => {
+      try {
+        if (editor && typeof editor.destroy === 'function') {
+          editor.destroy();
+        }
+      } catch (error) {
+        console.warn(`Error destroying Quill editor ${index}:`, error);
+      }
+    });
+    this.quillEditors.clear();
+
+    // Unsubscribe from search
+    if (this.searchSubscription) {
+      this.searchSubscription.unsubscribe();
+    }
   }
 
   // ===== ROLE CHECKING METHODS =====
@@ -133,7 +182,7 @@ export class ArticlesComponent implements OnInit {
     const formGroup = this.fb.group({
       type: ['đoạn văn', Validators.required],
       content: [''],
-      sectionTitle: ['', Validators.required],
+      sectionTitle: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(255)]],
       youtubeUrl: [''] // Keep for backward compatibility, but not used in UI
     });
 
@@ -234,6 +283,44 @@ export class ArticlesComponent implements OnInit {
     });
   }
 
+  // Load all articles for statistics (with proper pagination)
+  loadAllArticlesForStats(): void {
+    let allArticles: Article[] = [];
+    let currentPage = 1;
+    const pageSize = 1000; // Reasonable page size
+    
+    const loadPage = () => {
+      this.articleService.queryArticles({
+        page: currentPage,
+        pageSize: pageSize,
+        sortBy: this.sortBy,
+        sortDir: this.sortDir
+        // Don't apply search or status filter for stats
+      }).subscribe({
+        next: (res) => {
+          const convertedArticles = res.items.map(article => this.articleService.convertToArticle(article));
+          allArticles = [...allArticles, ...convertedArticles];
+          
+          // If we got a full page, there might be more
+          if (res.items.length === pageSize && res.total > allArticles.length) {
+            currentPage++;
+            loadPage();
+          } else {
+            // Done loading all articles
+            this.allArticlesForStats = allArticles;
+          }
+        },
+        error: (error) => {
+          console.error('Error loading all articles for stats:', error);
+          // Use what we have so far
+          this.allArticlesForStats = allArticles;
+        }
+      });
+    };
+    
+    loadPage();
+  }
+
   // ===== FILTER & SEARCH METHODS =====
   onFilterChange(): void {
     this.page = 1;
@@ -242,6 +329,10 @@ export class ArticlesComponent implements OnInit {
 
   onSearchChange(): void {
     this.onFilterChange();
+  }
+
+  onSearchInput(value: string): void {
+    this.searchSubject.next(value);
   }
 
   onCategoryChange(): void {
@@ -254,7 +345,8 @@ export class ArticlesComponent implements OnInit {
 
   // ===== PAGINATION METHODS =====
   nextPage(): void {
-    if (this.page * this.pageSize < this.total) {
+    const maxPage = Math.ceil(this.total / this.pageSize);
+    if (this.page < maxPage && this.total > 0) {
       this.page += 1;
       this.loadArticles();
     }
@@ -265,6 +357,18 @@ export class ArticlesComponent implements OnInit {
       this.page -= 1;
       this.loadArticles();
     }
+  }
+
+  get maxPage(): number {
+    return Math.ceil(this.total / this.pageSize);
+  }
+
+  get canGoNext(): boolean {
+    return this.page < this.maxPage && this.total > 0;
+  }
+
+  get canGoPrev(): boolean {
+    return this.page > 1;
   }
 
   changePageSize(size: number): void {
@@ -357,9 +461,15 @@ export class ArticlesComponent implements OnInit {
   }
 
   closeModal(): void {
+    if (this.hasUnsavedChanges) {
+      if (!confirm('Bạn có chắc muốn đóng? Dữ liệu chưa lưu sẽ bị mất.')) {
+        return;
+      }
+    }
     this.isModalOpen = false;
     this.editingArticle = null;
     this.articleForm.reset();
+    this.hasUnsavedChanges = false;
     while (this.sections.length !== 0) {
       this.sections.removeAt(0);
     }
@@ -370,8 +480,14 @@ export class ArticlesComponent implements OnInit {
 
   // ===== CRUD OPERATIONS =====
   saveArticle(): void {
+    // Prevent multiple submissions
+    if (this.isSubmitting) {
+      return;
+    }
+
     if (!this.articleForm.valid) {
       this.toastService.error("Vui lòng điền đầy đủ các trường bắt buộc.");
+      this.articleForm.markAllAsTouched();
       return;
     }
 
@@ -385,9 +501,23 @@ export class ArticlesComponent implements OnInit {
       return;
     }
 
-    // Process tags
+    // Process tags with validation
     const tagsArray = formData.tags ? 
-      formData.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag) : 
+      formData.tags.split(',')
+        .map((tag: string) => tag.trim())
+        .filter((tag: string) => {
+          if (!tag || tag.length === 0) return false;
+          if (tag.length > 50) {
+            this.toastService.warning(`Tag "${tag.substring(0, 30)}..." quá dài, sẽ bị cắt ngắn`);
+            return tag.substring(0, 50);
+          }
+          // Only allow alphanumeric and some special characters
+          if (!/^[a-zA-Z0-9\s\-_]+$/.test(tag)) {
+            this.toastService.warning(`Tag "${tag}" chứa ký tự không hợp lệ, sẽ bị bỏ qua`);
+            return false;
+          }
+          return true;
+        }) : 
       [];
 
     // Debug: Log section content before saving
@@ -430,6 +560,22 @@ export class ArticlesComponent implements OnInit {
           } catch (e) {
             // Not JSON, assume it's HTML
             console.log(`Section ${index} - Content is already HTML`);
+          }
+        }
+
+        // Sanitize HTML content to prevent XSS
+        if (typeof content === 'string' && content.trim() !== '') {
+          // Use bypassSecurityTrustHtml only if we trust the content source
+          // For user input, we should sanitize more strictly
+          // Note: DomSanitizer.sanitize() is deprecated, but we use it for XSS protection
+          // In production, consider using DOMPurify library for better sanitization
+          try {
+            // Basic HTML sanitization - remove script tags and dangerous attributes
+            content = this.sanitizeHtmlContent(content);
+          } catch (e) {
+            console.warn('Error sanitizing content:', e);
+            // If sanitization fails, escape HTML
+            content = this.escapeHtml(content);
           }
         }
         
@@ -509,6 +655,7 @@ export class ArticlesComponent implements OnInit {
         next: () => {
           this.toastService.success('Xóa bài viết thành công!');
           this.loadArticles();
+          this.loadAllArticlesForStats(); // Reload stats after delete
           this.closeConfirmModal();
         },
         error: (error) => {
@@ -545,6 +692,7 @@ export class ArticlesComponent implements OnInit {
           if (article) {
             article.status = 'pending';
           }
+          this.loadAllArticlesForStats(); // Reload stats after status change
           this.isLoading = false;
           this.closeConfirmModal();
         },
@@ -571,6 +719,7 @@ export class ArticlesComponent implements OnInit {
       next: () => {
         this.toastService.success('Đã phê duyệt và xuất bản bài viết!');
         this.loadArticles();
+        this.loadAllArticlesForStats(); // Reload stats after approval
       },
       error: () => {
         this.toastService.error('Phê duyệt thất bại.');
@@ -595,6 +744,7 @@ export class ArticlesComponent implements OnInit {
         next: () => {
           this.toastService.info('Đã từ chối và trả lại bài viết.');
           this.loadArticles();
+          this.loadAllArticlesForStats(); // Reload stats after rejection
           this.closeConfirmModal();
         },
         error: () => {
@@ -623,14 +773,33 @@ export class ArticlesComponent implements OnInit {
   // ===== HELPER METHODS =====
   private finalizeSave(): void {
     this.isSubmitting = false;
+    this.hasUnsavedChanges = false;
     this.closeModal();
     this.loadArticles();
+    this.loadAllArticlesForStats(); // Reload stats after save
   }
 
   private handleSaveError(error: any, action: string): void {
     this.isSubmitting = false;
     console.error(`Error ${action} article:`, error);
-    this.toastService.error(`Không thể ${action} bài viết. Vui lòng thử lại.`);
+    
+    let errorMessage = `Không thể ${action} bài viết.`;
+    
+    if (error.status === 0) {
+      errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+    } else if (error.status === 401) {
+      errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+    } else if (error.status === 403) {
+      errorMessage = 'Bạn không có quyền thực hiện thao tác này.';
+    } else if (error.status === 500) {
+      errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
+    } else if (error?.error?.message) {
+      errorMessage = error.error.message;
+    } else if (error?.message) {
+      errorMessage = error.message;
+    }
+    
+    this.toastService.error(errorMessage);
   }
 
   getStatusClass(status: string): string {
@@ -652,20 +821,42 @@ export class ArticlesComponent implements OnInit {
   }
 
   // ===== STATISTICS METHODS =====
+  getTotalArticlesCount(): number {
+    return this.allArticlesForStats.length;
+  }
+
   getPublishedCount(): number {
-    return this.filteredArticles.filter(a => a.status === 'published').length;
+    return this.allArticlesForStats.filter(a => a.status === 'published').length;
   }
 
   getPendingCount(): number {
-    return this.filteredArticles.filter(a => a.status === 'pending').length;
+    return this.allArticlesForStats.filter(a => a.status === 'pending').length;
   }
 
   getDraftCount(): number {
-    return this.filteredArticles.filter(a => a.status === 'draft').length;
+    return this.allArticlesForStats.filter(a => a.status === 'draft').length;
   }
 
   getCategoryCount(categoryName: string): number {
-    return this.filteredArticles.filter(a => a.category === categoryName).length;
+    return this.allArticlesForStats.filter(a => a.category === categoryName).length;
+  }
+
+  // Get displayed categories (6 first or all)
+  get displayedCategories(): ArticleCategory[] {
+    if (this.showAllCategories || this.categories.length <= 6) {
+      return this.categories;
+    }
+    return this.categories.slice(0, 6);
+  }
+
+  // Toggle show all categories
+  toggleShowAllCategories(): void {
+    this.showAllCategories = !this.showAllCategories;
+  }
+
+  // Check if there are more than 6 categories
+  get hasMoreCategories(): boolean {
+    return this.categories.length > 6;
   }
 
   // ===== TEMPLATE HELPER METHODS =====
@@ -731,6 +922,14 @@ export class ArticlesComponent implements OnInit {
         return;
       }
 
+      // Validate file extension
+      const allowedImageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+      const fileExtension = file.name.split('.').pop()?.toLowerCase();
+      if (!fileExtension || !allowedImageExtensions.includes(fileExtension)) {
+        this.toastService.error('Định dạng file không được hỗ trợ. Chỉ chấp nhận: JPG, PNG, GIF, WEBP');
+        return;
+      }
+
       this.uploadImageToCloudinary(file, sectionIndex);
     };
   }
@@ -754,6 +953,14 @@ export class ArticlesComponent implements OnInit {
       // Validate file type
       if (!file.type.startsWith('video/')) {
         this.toastService.error('Vui lòng chọn file video hợp lệ');
+        return;
+      }
+
+      // Validate file extension
+      const allowedVideoExtensions = ['mp4', 'webm', 'ogg'];
+      const fileExtension = file.name.split('.').pop()?.toLowerCase();
+      if (!fileExtension || !allowedVideoExtensions.includes(fileExtension)) {
+        this.toastService.error('Định dạng file không được hỗ trợ. Chỉ chấp nhận: MP4, WEBM, OGG');
         return;
       }
 
@@ -1081,6 +1288,50 @@ export class ArticlesComponent implements OnInit {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+  }
+
+  // Sanitize HTML content to prevent XSS attacks
+  private sanitizeHtmlContent(html: string): string {
+    // Remove script tags and event handlers
+    let sanitized = html
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+      .replace(/on\w+\s*=\s*[^\s>]*/gi, '')
+      .replace(/javascript:/gi, '')
+      .replace(/data:text\/html/gi, '');
+    
+    // Allow safe HTML tags (you can customize this list)
+    const allowedTags = ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
+                        'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'code', 'pre'];
+    
+    // Create a temporary element to parse HTML
+    const temp = document.createElement('div');
+    temp.innerHTML = sanitized;
+    
+    // Remove disallowed tags
+    const allElements = temp.querySelectorAll('*');
+    allElements.forEach(el => {
+      const tagName = el.tagName.toLowerCase();
+      if (!allowedTags.includes(tagName)) {
+        // Replace with its content
+        const parent = el.parentNode;
+        if (parent) {
+          while (el.firstChild) {
+            parent.insertBefore(el.firstChild, el);
+          }
+          parent.removeChild(el);
+        }
+      } else {
+        // Remove dangerous attributes
+        Array.from(el.attributes).forEach(attr => {
+          if (attr.name.startsWith('on') || attr.name === 'href' && attr.value.startsWith('javascript:')) {
+            el.removeAttribute(attr.name);
+          }
+        });
+      }
+    });
+    
+    return temp.innerHTML;
   }
 
   // ===== CATEGORY MANAGEMENT METHODS =====
