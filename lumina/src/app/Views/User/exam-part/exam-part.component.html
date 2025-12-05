@@ -9,7 +9,7 @@
     <div
       class="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-4"
     ></div>
-    <p class="text-gray-600 text-lg">Loading exam information...</p>
+    <p class="text-gray-600 text-lg">Đang tải thông tin bài thi...</p>
   </div>
 
   <!-- Exam Detail -->
@@ -21,56 +21,56 @@
         class="flex items-center px-4 py-2 border-solid border border-gray-300 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
       >
         <i class="fas fa-arrow-left mr-2"></i>
-        Back to list
+        Quay lại danh sách
       </button>
     </div>
 
     <!-- Exam Info -->
     <div class="bg-white rounded-2xl shadow-lg p-8">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6">Exam Information</h2>
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">Thông tin bài thi</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="space-y-4">
           <div class="flex items-center">
             <i class="fas fa-id-card text-blue-500 w-6"></i>
-            <span class="ml-3 text-gray-600">Exam ID:</span>
+            <span class="ml-3 text-gray-600">Mã bài thi:</span>
             <span class="ml-2 font-semibold">{{ examDetail.examId }}</span>
           </div>
           <div class="flex items-center">
             <i class="fas fa-tag text-green-500 w-6"></i>
-            <span class="ml-3 text-gray-600">Exam Type:</span>
+            <span class="ml-3 text-gray-600">Loại bài thi:</span>
             <span class="ml-2 font-semibold">{{ examDetail.examType }}</span>
           </div>
           <div class="flex items-center">
             <i class="fas fa-toggle-on text-purple-500 w-6"></i>
-            <span class="ml-3 text-gray-600">Status:</span>
+            <span class="ml-3 text-gray-600">Trạng thái:</span>
             <span
               class="ml-2 font-semibold"
               [class]="examDetail.isActive ? 'text-green-600' : 'text-red-600'"
             >
-              {{ examDetail.isActive ? "Active" : "Paused" }}
+              {{ examDetail.isActive ? "Hoạt động" : "Tạm dừng" }}
             </span>
           </div>
         </div>
         <div class="space-y-4">
           <div class="flex items-center">
             <i class="fas fa-user text-orange-500 w-6"></i>
-            <span class="ml-3 text-gray-600">Created by:</span>
+            <span class="ml-3 text-gray-600">Người tạo:</span>
             <span class="ml-2 font-semibold">{{
               examDetail.createdByName
             }}</span>
           </div>
           <div class="flex items-center">
             <i class="fas fa-calendar-alt text-red-500 w-6"></i>
-            <span class="ml-3 text-gray-600">Created date:</span>
+            <span class="ml-3 text-gray-600">Ngày tạo:</span>
             <span class="ml-2 font-semibold">{{
               formatDate(examDetail.createdAt)
             }}</span>
           </div>
           <div class="flex items-center">
             <i class="fas fa-list text-indigo-500 w-6"></i>
-            <span class="ml-3 text-gray-600">Number of parts:</span>
+            <span class="ml-3 text-gray-600">Số phần:</span>
             <span class="ml-2 font-semibold"
-              >{{ examDetail.examParts?.length || 0 }} parts</span
+              >{{ examDetail.examParts?.length || 0 }} phần</span
             >
           </div>
         </div>
@@ -79,9 +79,9 @@
     <!-- Exam Parts -->
     <div class="bg-white rounded-2xl shadow-lg p-8">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-900">Exam Parts</h2>
+        <h2 class="text-2xl font-bold text-gray-900">Các phần thi</h2>
         <span class="text-sm text-gray-500"
-          >{{ examDetail.examParts?.length || 0 }} parts</span
+          >{{ examDetail.examParts?.length || 0 }} phần</span
         >
       </div>
 
@@ -177,8 +177,8 @@
             <p class="text-sm text-gray-600">
               {{
                 part.completionStatus?.isCompleted
-                  ? "Click to retry"
-                  : "Click to start the test"
+                  ? "Nhấn để làm lại"
+                  : "Nhấn để bắt đầu làm bài"
               }}
             </p>
 
@@ -192,7 +192,7 @@
               "
               class="mt-2 flex items-center gap-2"
             >
-              <span class="text-sm text-gray-600">Last score:</span>
+              <span class="text-sm text-gray-600">Điểm gần nhất:</span>
               <span class="text-lg font-bold text-green-600">
                 {{ part.completionStatus.score }}
               </span>
@@ -239,7 +239,7 @@
         >
           <i class="fas fa-clipboard-list text-3xl text-gray-400"></i>
         </div>
-        <p class="text-lg font-medium text-gray-500">No exam parts available</p>
+        <p class="text-lg font-medium text-gray-500">Không có phần thi nào</p>
       </div>
     </div>
   </div>
@@ -251,15 +251,17 @@
     >
       <i class="fas fa-exclamation-triangle text-3xl text-red-500"></i>
     </div>
-    <h2 class="text-2xl font-bold text-gray-900 mb-2">Exam not found</h2>
+    <h2 class="text-2xl font-bold text-gray-900 mb-2">
+      Không tìm thấy bài thi
+    </h2>
     <p class="text-gray-600 mb-6">
-      Exam with ID {{ examId }} does not exist or has been deleted.
+      Bài thi với mã {{ examId }} không tồn tại hoặc đã bị xóa.
     </p>
     <button
       (click)="goBack()"
       class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
     >
-      Back to list
+      Quay lại danh sách
     </button>
   </div>
 </div>

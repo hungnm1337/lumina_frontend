@@ -33,6 +33,10 @@ import {
   WritingQuestionStateData,
 } from '../../../../Services/Exam/Writing/writing-question-state.service';
 import { SidebarService } from '../../../../Services/sidebar.service';
+import {
+  QuestionNavigatorComponent,
+  NavigatorLegendItem,
+} from '../../question-navigator/question-navigator.component';
 
 @Component({
   selector: 'app-writing',
@@ -45,6 +49,7 @@ import { SidebarService } from '../../../../Services/sidebar.service';
     QuotaLimitModalComponent,
     ReportPopupComponent,
     PopupComponent,
+    QuestionNavigatorComponent,
   ],
   templateUrl: './writing.component.html',
   styleUrl: './writing.component.scss',
@@ -100,6 +105,25 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   showQuotaModal = false;
   quotaMessage =
     'Kỹ năng Writing chỉ dành cho tài khoản Premium. Vui lòng nâng cấp để sử dụng tính năng này!';
+
+  // Navigator configuration
+  navigatorLegendItems: NavigatorLegendItem[] = [
+    { color: 'bg-gray-200', label: 'Chưa làm' },
+    { color: 'bg-orange-500', label: 'Đã làm' },
+    { color: 'bg-purple-500', label: 'Đã nộp' },
+    { color: 'bg-yellow-500', label: 'Đang chấm', animated: true },
+    { color: 'bg-green-600', label: 'Đã chấm xong' },
+    { color: 'bg-blue-600', label: 'Đang làm' },
+  ];
+
+  getQuestionStatus = (questionId: number, index: number): string => {
+    if (this.hasQuestionFeedback(questionId)) return 'answered-green-600';
+    if (this.isQuestionSubmitting(questionId)) return 'submitting';
+    if (this.isQuestionSubmitted(questionId)) return 'submitted';
+    if (this.hasAnswer(questionId)) return 'has-answer';
+    if (index === this.currentIndex) return 'current';
+    return 'unanswered';
+  };
 
   constructor(
     private router: Router,
@@ -487,12 +511,13 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       console.log(
         '[Writing] ✅ Writing part completed in mock test - emitting event'
       );
-      this.isFinished = true;
+      // ❌ KHÔNG set isFinished = true trong mock test để tránh hiển thị kết quả
       this.writingPartCompleted.emit();
       return;
     }
 
     // ✅ Nếu thi standalone, hiển thị kết quả như cũ
+    this.isFinished = true;
     this.showExplain = true;
     this.callEndExamAPI();
 
@@ -637,7 +662,17 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   getCurrentQuestion(): QuestionDTO | null {
     if (!this.questions || this.currentIndex >= this.questions.length)
       return null;
-    return this.questions[this.currentIndex];
+    const question = this.questions[this.currentIndex];
+    // Debug log để kiểm tra stemText
+    if (question && !question.stemText) {
+      console.log('[Writing] ⚠️ Question stemText is empty:', {
+        questionId: question.questionId,
+        stemText: question.stemText,
+        promptTitle: question.prompt?.title,
+        promptContent: question.prompt?.contentText?.substring(0, 50)
+      });
+    }
+    return question;
   }
 
   getSavedAnswer(questionId: number): string {

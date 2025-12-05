@@ -7,23 +7,13 @@
         <div class="flex items-center space-x-2">
           <!-- Logo Icon -->
           <div class="relative group">
-            <div
-              class="w-10 h-10 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300 group-hover:scale-105">
-              <i class="fas fa-graduation-cap text-white text-lg"></i>
-            </div>
-            <div
-              class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white animate-pulse">
-            </div>
-          </div>
+            <div>
+              <a routerLink="/homepage">
+                <div>
+                  <img src="./assets/logo.png" alt="Lumina TOEIC Logo" class="w-auto h-16 pl-4" />
+                </div>
+              </a>
 
-          <!-- Brand Text -->
-          <div class="flex flex-col leading-tight">
-            <span
-              class="text-lg lg:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
-              Lumina TOEIC
-            </span>
-            <div class="text-xs text-gray-500 font-medium hidden sm:block">
-              Smart TOEIC Learning
             </div>
           </div>
         </div>
@@ -33,7 +23,7 @@
       <nav class="hidden lg:flex items-center space-x-1 xl:space-x-2">
         <a routerLink="/homepage"
           class="px-2 xl:px-3 py-2 rounded-lg text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 font-medium relative group whitespace-nowrap">
-          <i class="fas fa-home mr-1 text-blue-500"></i>Home
+          <i class="fas fa-home mr-1 text-blue-500"></i>Trang chủ
           <div
             class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-200">
           </div>
@@ -41,17 +31,17 @@
 
         <a (click)="moveToExams()"
           class="px-2 xl:px-3 py-2 rounded-lg hover: cursor-pointer text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 font-medium relative group whitespace-nowrap">
-          <i class="fas fa-dumbbell mr-1 text-orange-500"></i>Practice
+          <i class="fas fa-dumbbell mr-1 text-orange-500"></i>Luyện tập
           <div
             class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-200">
           </div>
         </a>
 
-        
+
 
         <a routerLink="/vocabulary"
           class="px-2 xl:px-3 py-2 rounded-lg text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 font-medium relative group whitespace-nowrap">
-          <i class="fas fa-book mr-1 text-purple-500"></i>Vocabulary
+          <i class="fas fa-book mr-1 text-purple-500"></i>Từ vựng
           <div
             class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-200">
           </div>
@@ -59,7 +49,7 @@
 
         <a routerLink="/articles"
           class="px-2 xl:px-3 py-2 rounded-lg text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 font-medium relative group whitespace-nowrap">
-          <i class="fas fa-blog mr-1 text-pink-500"></i>Articles
+          <i class="fas fa-blog mr-1 text-pink-500"></i>Bài viết
           <div
             class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-200">
           </div>
@@ -67,7 +57,7 @@
 
         <a
           class="relative px-2 xl:px-3 py-2 rounded-lg text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200 font-medium group whitespace-nowrap cursor-pointer">
-          <i class="fas fa-trophy mr-1 text-yellow-400"></i>Rankings
+          <i class="fas fa-trophy mr-1 text-yellow-400"></i>Xếp hạng
           <div
             class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-200">
           </div>
@@ -214,18 +204,18 @@
                 <a style="cursor: pointer" (click)="goToProfile()"
                   class="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 group">
                   <i class="fas fa-user-circle mr-2 text-gray-400 w-4 text-center group-hover:text-blue-500"></i>
-                  <span class="font-medium">Profile</span>
+                  <span class="font-medium">Trang cá nhân</span>
                 </a>
                 <a (click)="openReportPopup($event)" href="javascript:void(0)" class="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-red-600 hover:bg-red-50
                   transition-all duration-200 group">
                   <i class="fa-solid fa-triangle-exclamation mr-2  text-gray-400 w-4 text-center group-hover:text-red-500"></i>
-                  <span class="font-medium">Report system</span>
+                  <span class="font-medium">Báo lỗi hệ thống</span>
                 </a>
                 <!-- Logout Menu Item -->
                 <a (click)="logout()" href="javascript:void(0)"
                   class="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-red-600 hover:bg-red-50 transition-all duration-200 group">
                   <i class="fas fa-sign-out-alt mr-2 text-gray-400 w-4 text-center group-hover:text-red-500"></i>
-                  <span class="font-medium">Logout</span>
+                  <span class="font-medium">Đăng xuất</span>
                 </a>
 
 
@@ -241,12 +231,12 @@
           <a routerLink="/login"
             class="px-3 py-1.5 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 font-medium flex items-center whitespace-nowrap">
             <i class="fas fa-sign-in-alt mr-1.5"></i>
-            <span class="hidden sm:inline">Login</span>
+            <span class="hidden sm:inline">Đăng nhập</span>
           </a>
           <a routerLink="/register"
             class="px-4 py-1.5 text-sm bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:scale-105 flex items-center whitespace-nowrap">
             <i class="fas fa-user-plus mr-1.5"></i>
-            <span class="hidden sm:inline">Register</span>
+            <span class="hidden sm:inline">Đăng ký</span>
           </a>
         </div>
         }

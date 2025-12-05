@@ -28,6 +28,11 @@ import { QuotaService } from '../../../../Services/Quota/quota.service';
 import { QuotaLimitModalComponent } from '../../quota-limit-modal/quota-limit-modal.component';
 import { LeaderboardService } from '../../../../Services/Leaderboard/leaderboard.service';
 import { SidebarService } from '../../../../Services/sidebar.service';
+import {
+  QuestionNavigatorComponent,
+  NavigatorLegendItem,
+} from '../../question-navigator/question-navigator.component';
+import { TimeComponent } from '../../time/time.component';
 
 @Component({
   selector: 'app-reading',
@@ -40,6 +45,8 @@ import { SidebarService } from '../../../../Services/sidebar.service';
     QuotaLimitModalComponent,
     ReportPopupComponent,
     PopupComponent,
+    QuestionNavigatorComponent,
+    TimeComponent,
   ],
   templateUrl: './reading.component.html',
   styleUrls: ['./reading.component.scss'],
@@ -92,6 +99,24 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
   showQuotaModal = false;
   quotaMessage = '';
 
+  // Timer management - Part-based countdown
+  partTotalTime: number = 0;
+  timerResetTrigger: number = 0;
+  hasShownTimeWarning = false;
+
+  // Navigator configuration
+  navigatorLegendItems: NavigatorLegendItem[] = [
+    { color: 'bg-gray-200', label: 'Chưa làm' },
+    { color: 'bg-green-600', label: 'Đã làm' },
+    { color: 'bg-blue-600', label: 'Đang làm' },
+  ];
+
+  getQuestionStatus = (questionId: number, index: number): string => {
+    if (index === this.currentIndex) return 'current';
+    if (this.answeredQuestions.has(questionId)) return 'answered-green-600';
+    return 'unanswered';
+  };
+
   constructor(
     private router: Router,
     private authService: AuthService,
@@ -112,6 +137,7 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
     this.incrementQuotaOnStart();
     this.examStartTime = new Date(); // Track start time for leaderboard
     this.sidebarService.hideSidebar(); // Ẩn sidebar khi bắt đầu làm bài
+    this.initializePartTimer(); // Initialize countdown timer
   }
 
   ngOnDestroy(): void {
@@ -122,7 +148,55 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['questions'] && this.questions?.length > 0) {
       this.resetQuiz();
+      this.initializePartTimer(); // Re-initialize timer when questions change
     }
+  }
+
+  // ============= TIMER MANAGEMENT =============
+
+  // Calculate total time for part (sum of all question times)
+  private calculatePartTotalTime(): number {
+    if (!this.questions || this.questions.length === 0) return 0;
+    return this.questions.reduce((total, question) => {
+      return total + (question.time || 0);
+    }, 0);
+  }
+
+  // Initialize timer when starting the part
+  private initializePartTimer(): void {
+    this.partTotalTime = this.calculatePartTotalTime();
+    this.timerResetTrigger = Date.now(); // Force timer reset
+    this.hasShownTimeWarning = false;
+    console.log(`🕐 Reading Part timer initialized: ${this.partTotalTime}s`);
+  }
+
+  // Handle timer tick events
+  onPartTimerTick(remainingTime: number): void {
+    // Show warning at 30 seconds
+    if (remainingTime <= 30 && !this.hasShownTimeWarning) {
+      this.hasShownTimeWarning = true;
+      console.log('⚠️ Reading: 30 seconds remaining!');
+    }
+  }
+
+  // Handle timeout - auto submit
+  onPartTimeout(): void {
+    console.log('⏱️ Reading time expired!');
+    this.popupTitle = 'Hết thời gian!';
+    this.popupMessage =
+      'Thời gian làm bài đã hết. Bài thi sẽ được nộp tự động.';
+    this.popupOkHandler = () => {
+      this.showPopup = false;
+      this.finishExamByTimeout();
+    };
+    this.popupCancelHandler = null;
+    this.showPopup = true;
+  }
+
+  // Finish exam due to timeout - auto submit to get score
+  private finishExamByTimeout(): void {
+    console.log('🏁 Auto-submitting Reading exam due to timeout...');
+    this.finishExam();
   }
 
   // ============= ATTEMPT MANAGEMENT =============

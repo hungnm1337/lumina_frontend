@@ -79,8 +79,8 @@
     }
   </div>
 </div>
-} @if (finished) {
-<!-- Summary Screen - Centered 70% width -->
+} @if (finished && !isInMockTest) {
+<!-- Summary Screen - Centered 70% width - Chỉ hiển thị khi KHÔNG phải MockTest -->
 <div class="flex justify-center w-full">
   <div class="w-[70%] bg-white rounded-lg shadow-md p-6">
     <div class="text-center py-8">
@@ -132,7 +132,8 @@
     </div>
   </div>
 </div>
-} @if (showSpeakingSummary) {
+} @if (showSpeakingSummary && !isInMockTest) {
+<!-- Speaking Summary Modal - Chỉ hiển thị khi KHÔNG phải MockTest -->
 <div
   class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
 >

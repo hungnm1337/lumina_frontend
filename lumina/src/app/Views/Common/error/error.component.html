@@ -34,14 +34,13 @@
     <!-- Error Message -->
     <div class="mb-8">
       <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">
-        Oops! Page Not Found
+        Rất tiếc! Không tìm thấy trang
       </h2>
       <p class="text-xl text-gray-300 mb-2">
-        The page you're looking for seems to have wandered off into the digital
-        void.
+        Trang bạn đang tìm kiếm dường như đã lạc vào không gian số.
       </p>
       <p class="text-lg text-gray-400">
-        Don't worry, even the best explorers sometimes take a wrong turn!
+        Đừng lo lắng, ngay cả những nhà thám hiểm giỏi nhất đôi khi cũng đi sai đường!
       </p>
     </div>
 
@@ -66,7 +65,7 @@
             d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
           ></path>
         </svg>
-        Go Home
+        Về trang chủ
       </button>
 
       <button
@@ -86,7 +85,7 @@
             d="M10 19l-7-7m0 0l7-7m-7 7h18"
           ></path>
         </svg>
-        Go Back
+        Quay lại
       </button>
     </div>
 
@@ -95,7 +94,7 @@
       <div class="relative">
         <input
           type="text"
-          placeholder="Search for what you need..."
+          placeholder="Tìm kiếm những gì bạn cần..."
           class="w-full py-3 px-4 pr-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300"
           (keyup.enter)="performSearch(searchInput.value)"
           #searchInput
@@ -129,21 +128,21 @@
         href="#"
         (click)="showAlert('Contact')"
         class="hover:text-blue-400 transition-colors duration-300"
-        >Contact Support</a
+        >Liên hệ hỗ trợ</a
       >
       <span class="text-gray-600">•</span>
       <a
         href="#"
         (click)="showAlert('Help')"
         class="hover:text-blue-400 transition-colors duration-300"
-        >Help Center</a
+        >Trung tâm trợ giúp</a
       >
       <span class="text-gray-600">•</span>
       <a
         href="#"
         (click)="showAlert('Status')"
         class="hover:text-blue-400 transition-colors duration-300"
-        >System Status</a
+        >Trạng thái hệ thống</a
       >
     </div>
   </div>

@@ -602,7 +602,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
         }
         
         return {
-          sectionTitle: section.sectionTitle || `Section ${index + 1}`,
+          sectionTitle: section.sectionTitle || `Phần ${index + 1}`,
           sectionContent: finalContent,
           type: section.type,
           orderIndex: index
@@ -876,9 +876,9 @@ export class ArticlesComponent implements OnInit, OnDestroy {
       return (article as any).authorName;
     }
     if ((article as any).authorId) {
-      return `User #${(article as any).authorId}`;
+      return `Người dùng #${(article as any).authorId}`;
     }
-    return 'Staff User';
+    return 'Nhân viên';
   }
 
   // ===== QUICK ACTION METHODS =====

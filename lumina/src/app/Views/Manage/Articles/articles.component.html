@@ -5,24 +5,24 @@
       <div class="title-section">
         <h1 class="page-title">
           <span class="toeic-badge">TOEIC</span>
-          Article Management
+          Quản lý bài viết
         </h1>
         <p class="page-subtitle">
-          Review and manage articles from staff
+          Xem xét và quản lý bài viết từ nhân viên
         </p>
       </div>
       <div class="header-stats">
         <div class="stat-card">
           <div class="stat-number">{{stats.totalArticles || 0}}</div>
-          <div class="stat-label">Total Articles</div>
+          <div class="stat-label">Tổng bài viết</div>
         </div>
         <div class="stat-card">
           <div class="stat-number">{{stats.pendingArticles}}</div>
-          <div class="stat-label">Pending</div>
+          <div class="stat-label">Chờ duyệt</div>
         </div>
         <div class="stat-card">
           <div class="stat-number">{{stats.approvedArticles}}</div>
-          <div class="stat-label">Published</div>
+          <div class="stat-label">Đã duyệt</div>
         </div>
       </div>
     </div>
@@ -37,7 +37,7 @@
           type="text"
           [(ngModel)]="searchTerm"
           (ngModelChange)="onSearchInput($event)"
-          placeholder="Search articles, content, authors..."
+          placeholder="Tìm kiếm bài viết, nội dung, tác giả..."
           class="search-input"
           maxlength="100">
         <button 
@@ -51,23 +51,23 @@
 
     <div class="filters-section">
       <div class="filter-group">
-        <label>Status</label>
+        <label>Trạng thái</label>
         <select [(ngModel)]="selectedStatus" (change)="onStatusChange()" class="filter-select">
-          <option value="all">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="rejected">Rejected</option>
+          <option value="all">Tất cả trạng thái</option>
+          <option value="pending">Chờ duyệt</option>
+          <option value="approved">Đã duyệt</option>
+          <option value="rejected">Đã từ chối</option>
         </select>
       </div>
 
       <div class="filter-actions">
         <button (click)="clearFilters()" class="btn-clear-filters">
           <i class="fas fa-eraser"></i>
-          Clear All
+          Xóa tất cả
         </button>
         <button (click)="loadArticles()" class="btn-refresh">
           <i class="fas fa-sync-alt"></i>
-          Refresh
+          Làm mới
         </button>
       </div>
     </div>
@@ -82,7 +82,7 @@
         <div class="loading-spinner">
           <i class="fas fa-spinner fa-spin"></i>
         </div>
-        <p>Loading articles...</p>
+        <p>Đang tải bài viết...</p>
       </div>
 
       <!-- Error State -->
@@ -100,11 +100,11 @@
 
       <!-- Articles Grid -->
       <div *ngIf="!isLoading && !errorMessage" class="articles-grid">
-        <div 
-          *ngFor="let article of pagedArticles; let i = index" 
+        <div
+          *ngFor="let article of pagedArticles; let i = index"
           class="article-card"
           [class.featured]="article.status === 'published'">
-          
+
           <!-- Card Header -->
           <div class="card-header">
             <div class="article-status-section">
@@ -113,15 +113,15 @@
                 {{getStatusText(article.status, article.rejectionReason)}}
               </span>
             </div>
-            
-            <button 
+
+            <button
   *ngIf="article.status === 'published'"
-  class="btn-action" 
+  class="btn-action"
   [class.btn-hide]="!article.isPublished"
   [class.btn-show]="article.isPublished"
   (click)="toggleHideArticle(article)"
   [title]="article.isPublished ? 'Ẩn bài viết' : 'Hiển thị bài viết'">
-  
+
   <i class="fas" [ngClass]="article.isPublished ? 'fa-eye' : 'fa-eye-slash'"></i>
 
 </button>
@@ -169,14 +169,14 @@
 
           <!-- Card Footer -->
           <div class="card-footer">
-            <button 
+            <button
               class="btn-primary-card"
               (click)="viewArticle(article)">
               <i class="fas fa-eye"></i>
               Xem
             </button>
-            
-            <button 
+
+            <button
               *ngIf="article.status === 'pending'"
               class="btn-success-card"
               (click)="approveArticle(article)"
@@ -185,8 +185,8 @@
               <i *ngIf="!isApproving" class="fas fa-check"></i>
               {{isApproving ? 'Đang duyệt...' : 'Duyệt'}}
             </button>
-            
-            <button 
+
+            <button
               *ngIf="article.status === 'pending'"
               class="btn-danger-card"
               (click)="rejectArticle(article)"
@@ -265,7 +265,7 @@
         <label for="rejectionReason" class="form-label">
           Lý do từ chối <span class="required">*</span>
         </label>
-        <textarea 
+        <textarea
           id="rejectionReason"
           [(ngModel)]="rejectionReason"
           class="form-textarea"
@@ -285,8 +285,8 @@
       <button class="btn btn-secondary" (click)="cancelReject()">
         Hủy
       </button>
-      <button 
-        class="btn btn-danger" 
+      <button
+        class="btn btn-danger"
         (click)="confirmReject()"
         [disabled]="!rejectionReason.trim() || isRejecting || rejectionReason.trim().length < 10">
         <i *ngIf="isRejecting" class="fas fa-spinner fa-spin"></i>

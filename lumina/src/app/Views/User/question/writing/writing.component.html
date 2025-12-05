@@ -15,85 +15,24 @@
 ></app-quota-limit-modal>
 
 @if (questions && questions.length > 0 && !isFinished) {
-<!-- Layout với Navigator bên trái -->
-<div class="flex gap-4">
-  <!-- Left Sidebar: Navigator + Submit Button -->
-  <div class="w-48 flex-shrink-0">
-    <div class="sticky top-4 space-y-4">
-      <!-- Question Navigator - Vertical -->
-      <div class="bg-white rounded-lg shadow-md p-4 border border-gray-200">
-        <h4 class="text-sm font-semibold text-gray-700 mb-3">Navigator</h4>
-        <div class="grid grid-cols-4 gap-2">
-          @for (question of questions; track question.questionId; let i =
-          $index) {
-          <button
-            (click)="navigateToQuestion(i)"
-            [class]="
-              hasQuestionFeedback(question.questionId)
-                ? 'w-10 h-10 rounded-md bg-green-600 text-white font-semibold text-xs shadow-sm' +
-                  (i === currentIndex ? ' ring-2 ring-blue-400' : '')
-                : isQuestionSubmitting(question.questionId)
-                ? 'w-10 h-10 rounded-md bg-yellow-500 text-white font-semibold animate-pulse text-xs shadow-sm' +
-                  (i === currentIndex ? ' ring-2 ring-blue-400' : '')
-                : isQuestionSubmitted(question.questionId)
-                ? 'w-10 h-10 rounded-md bg-purple-500 text-white font-semibold text-xs shadow-sm' +
-                  (i === currentIndex ? ' ring-2 ring-blue-400' : '')
-                : hasAnswer(question.questionId)
-                ? 'w-10 h-10 rounded-md bg-orange-500 text-white text-xs shadow-sm' +
-                  (i === currentIndex ? ' ring-2 ring-blue-400' : '')
-                : i === currentIndex
-                ? 'w-10 h-10 rounded-md bg-blue-600 text-white font-semibold text-xs shadow-sm'
-                : 'w-10 h-10 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 text-xs'
-            "
-          >
-            {{ i + 1 }}
-          </button>
-          }
-        </div>
-
-        <!-- Legend -->
-        <div class="mt-3 space-y-1.5 text-xs text-gray-600">
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 bg-gray-200 rounded"></div>
-            <span>Chưa làm</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 bg-orange-500 rounded"></div>
-            <span>Đã làm</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 bg-purple-500 rounded"></div>
-            <span>Đã nộp</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 bg-yellow-500 rounded animate-pulse"></div>
-            <span>Đang chấm</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 bg-green-600 rounded"></div>
-            <span>Đã chấm xong</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 bg-blue-600 rounded"></div>
-            <span>Đang làm</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Submit Button (only if NOT in mock test) -->
-      @if (!isInMockTest) {
-      <button
-        (click)="finishWritingExam()"
-        class="w-full px-4 py-3 rounded-md bg-orange-600 text-white hover:bg-orange-700 text-sm font-semibold shadow-md"
-      >
-        <i class="fas fa-check-circle mr-2"></i>Nộp bài
-      </button>
-      }
-    </div>
+<!-- Layout với Navigator bên trái (tỉ lệ 25:50:25) -->
+<div class="grid grid-cols-12 gap-4 min-h-[calc(100vh-200px)]">
+  <!-- Left Sidebar: Navigator + Submit Button (3/12 = 25%) -->
+  <div class="col-span-3">
+    <app-question-navigator
+      [questions]="questions"
+      [currentIndex]="currentIndex"
+      [getQuestionStatus]="getQuestionStatus"
+      [legendItems]="navigatorLegendItems"
+      [showSubmitButton]="!isInMockTest"
+      [submitButtonText]="'Nộp bài'"
+      (navigateToQuestion)="navigateToQuestion($event)"
+      (submitExam)="finishWritingExam()"
+    ></app-question-navigator>
   </div>
 
-  <!-- Main Content Area -->
-  <div class="flex-1 bg-white rounded-lg shadow-md p-6">
+  <!-- Main Content Area (9/12 = 75%, chia thành 6:3 = 50:25) -->
+  <div class="col-span-9 bg-white rounded-lg shadow-md p-4">
     <!-- Timer -->
     <div class="mb-4">
       <app-time
@@ -106,78 +45,80 @@
 
     <!-- Question Content -->
     @if (getCurrentQuestion()) {
-    <div class="border border-gray-200 rounded-lg p-4 mb-4">
-      <!-- Main Content: Two Column Layout -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Left Column: Question Info + Image + Hint -->
-        <div class="flex flex-col space-y-4">
+    <div class="border border-gray-200 rounded-lg p-3 mb-2">
+      <!-- Main Content: Question Info (6/9 = 50%) và Writing Answer Box (3/9 = 25%) -->
+      <div class="grid grid-cols-9 gap-4">
+        <!-- Left Column: Question Info + Image + Hint (6/9 = 50%) -->
+        <div class="col-span-6 flex flex-col space-y-2">
           <div>
-            <h4 class="font-medium text-gray-900 mb-2">
-              Question {{ currentIndex + 1 }}:
-              {{ getCurrentQuestion()?.stemText }}
-            </h4>
-            @if (getCurrentQuestion()?.prompt?.contentText) {
-            <div class="font-medium text-gray-600 mb-2">
-              <strong>{{ getCurrentQuestion()?.prompt?.title }}</strong>
-              <p style="white-space: pre-wrap">
-                {{ getCurrentQuestion()?.prompt?.contentText }}
-              </p>
+            <div>
+              <h4 class="font-medium text-gray-900 mb-1 text-sm">
+                Question {{ currentIndex + 1 }}:
+                {{ getCurrentQuestion()?.stemText || getCurrentQuestion()?.prompt?.title || 'Write a response based on the image and content below' }}
+              </h4>
+              @if (getCurrentQuestion()?.prompt?.contentText) {
+              <div class="font-medium text-gray-600 mb-1 text-sm">
+                <strong>{{ getCurrentQuestion()?.prompt?.title }}</strong>
+                <p style="white-space: pre-wrap">
+                  {{ getCurrentQuestion()?.prompt?.contentText }}
+                </p>
+              </div>
+              }
+            </div>
+
+            @if (getCurrentQuestion()?.prompt?.referenceImageUrl) {
+            <div class="flex justify-center my-2">
+              <img
+                [src]="getCurrentQuestion()?.prompt?.referenceImageUrl"
+                [alt]="'Question ' + (currentIndex + 1) + ' image'"
+                class="w-[30%] h-auto rounded-lg border border-gray-200"
+              />
+            </div>
+
+            <div>
+              <button
+                class="btn border-s-blue-400 inline-flex items-center gap-1 px-3 py-1.5 rounded-md border border-blue-500 text-blue-600 hover:bg-blue-50 active:bg-blue-100 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm text-sm"
+                (click)="showHint()"
+                [disabled]="isCurrentCaptionLoading()"
+              >
+                Show Hint
+              </button>
+              @if (isCurrentCaptionLoading()) {
+              <svg
+                class="animate-spin h-3 w-3 text-blue-600 inline-block ml-1"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                />
+                <path
+                  d="M4 12h16"
+                  stroke="currentColor"
+                  stroke-width="4"
+                  stroke-linecap="round"
+                />
+              </svg>
+              } @if (isShowHint && !isCurrentCaptionLoading()) {
+              <span
+                class="ml-1 text-sm text-gray-600"
+                *ngIf="getCurrentCaption()"
+              >
+                Caption: {{ getCurrentCaption() }}
+              </span>
+              }
             </div>
             }
           </div>
-
-          @if (getCurrentQuestion()?.prompt?.referenceImageUrl) {
-          <div class="flex justify-center">
-            <img
-              [src]="getCurrentQuestion()?.prompt?.referenceImageUrl"
-              [alt]="'Question ' + (currentIndex + 1) + ' image'"
-              class="max-w-xs w-full h-auto rounded-lg border border-gray-200"
-            />
-          </div>
-
-          <div>
-            <button
-              class="btn border-s-blue-400 inline-flex items-center gap-2 px-4 py-2 rounded-md border border-blue-500 text-blue-600 hover:bg-blue-50 active:bg-blue-100 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
-              (click)="showHint()"
-              [disabled]="isCurrentCaptionLoading()"
-            >
-              Show Hint
-            </button>
-            @if (isCurrentCaptionLoading()) {
-            <svg
-              class="animate-spin h-4 w-4 text-blue-600 inline-block ml-2"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-              />
-              <path
-                d="M4 12h16"
-                stroke="currentColor"
-                stroke-width="4"
-                stroke-linecap="round"
-              />
-            </svg>
-            } @if (isShowHint && !isCurrentCaptionLoading()) {
-            <span
-              class="ml-2 text-sm text-gray-600"
-              *ngIf="getCurrentCaption()"
-            >
-              Caption: {{ getCurrentCaption() }}
-            </span>
-            }
-          </div>
-          }
         </div>
 
-        <!-- Right Column: Writing Answer Box -->
-        <div class="flex items-start">
+        <!-- Right Column: Writing Answer Box (3/9 = 25%) -->
+        <div class="col-span-3 flex items-start">
           <div class="w-full">
             <app-writing-answer-box
               [questionId]="getCurrentQuestion()?.questionId || 0"

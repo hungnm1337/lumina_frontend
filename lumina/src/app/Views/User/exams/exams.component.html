@@ -9,7 +9,7 @@
     <div
       class="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-4"
     ></div>
-    <p class="text-gray-600 text-lg">Loading exam list...</p>
+    <p class="text-gray-600 text-lg">Đang tải danh sách bài thi...</p>
   </div>
 
   <!-- Search and Filter Section -->
@@ -26,7 +26,7 @@
               type="text"
               [(ngModel)]="searchTerm"
               (ngModelChange)="applyFilters()"
-              placeholder="Search exams by name or description..."
+              placeholder="Tìm kiếm bài thi theo tên hoặc mô tả..."
               class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
             />
             <button
@@ -46,7 +46,7 @@
             (ngModelChange)="applyFilters()"
             class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
           >
-            <option value="">All Skills</option>
+            <option value="">Tất cả kỹ năng</option>
             <option value="LISTENING">Listening</option>
             <option value="READING">Reading</option>
             <option value="SPEAKING">Speaking</option>
@@ -61,9 +61,9 @@
             (ngModelChange)="applyFilters()"
             class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
           >
-            <option value="name">Sort by Name</option>
-            <option value="date">Sort by Date</option>
-            <option value="creator">Sort by Creator</option>
+            <option value="name">Sắp xếp theo tên</option>
+            <option value="date">Sắp xếp theo ngày</option>
+            <option value="creator">Sắp xếp theo người tạo</option>
           </select>
         </div>
       </div>
@@ -73,7 +73,7 @@
         *ngIf="searchTerm || selectedSkill !== ''"
         class="mt-4 flex items-center gap-2 flex-wrap"
       >
-        <span class="text-sm text-gray-600">Active filters:</span>
+        <span class="text-sm text-gray-600">Bộ lọc đang áp dụng:</span>
         <span
           *ngIf="searchTerm"
           class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"
@@ -101,13 +101,13 @@
           (click)="clearAllFilters()"
           class="text-sm text-red-600 hover:text-red-700 font-medium"
         >
-          Clear all
+          Xóa tất cả
         </button>
       </div>
 
       <!-- Results Count -->
       <div class="mt-4 text-sm text-gray-600">
-        Found {{ getTotalExamsCount() }} exam(s)
+        Tìm thấy {{ getTotalExamsCount() }} bài thi
       </div>
     </div>
   </div>
@@ -144,7 +144,9 @@
               {{ getRemainingText(skillGroup.skillName) }}
             </span>
           </div>
-          <p class="text-xs opacity-90">{{ skillGroup.exams.length }} exams</p>
+          <p class="text-xs opacity-90">
+            {{ skillGroup.exams.length }} bài thi
+          </p>
         </div>
       </div>
 
@@ -154,8 +156,8 @@
         <div *ngIf="skillGroup.exams.length === 0" class="text-center py-8">
           <i [class]="skillGroup.icon" class="text-4xl text-gray-300 mb-2"></i>
           <p class="text-sm text-gray-500">
-            No exams available for
-            {{ skillGroup.skillName.toLowerCase() }} skill
+            Không có bài thi nào cho kỹ năng
+            {{ skillGroup.skillName }}
           </p>
         </div>
 
@@ -178,7 +180,7 @@
               class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10 animate-slideInRight"
             >
               <i class="fas fa-check-circle"></i>
-              <span class="font-medium">Completed</span>
+              <span class="font-medium">Đã hoàn thành</span>
             </div>
 
             <!-- ✅ Progress Indicator (for in-progress exams) -->
@@ -258,8 +260,10 @@
               </div>
               <div class="flex justify-between items-center mt-1">
                 <span class="text-xs text-gray-500">
-                  {{ exam.completionStatus.completedPartsCount }} of
-                  {{ exam.completionStatus.totalPartsCount }} parts
+                  {{ exam.completionStatus.completedPartsCount }}/{{
+                    exam.completionStatus.totalPartsCount
+                  }}
+                  phần
                 </span>
                 <span
                   class="text-xs font-medium"
@@ -306,7 +310,9 @@
                   class="text-xs"
                 ></i>
                 <span class="text-xs font-medium">
-                  {{ exam.completionStatus?.isCompleted ? "Retry" : "Start" }}
+                  {{
+                    exam.completionStatus?.isCompleted ? "Làm lại" : "Bắt đầu"
+                  }}
                 </span>
               </button>
             </div>

@@ -1,10 +1,11 @@
+
 <div *ngIf="stats" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
   <div class="stats-card rounded-xl p-6 text-white card-hover">
     <div class="flex items-center justify-between">
       <div>
-        <p class="text-sm opacity-90">Total Users</p>
+        <p class="text-sm opacity-90">Tổng số người dùng</p>
         <p class="text-3xl font-bold mt-1">{{ stats.totalUsers | number }}</p>
-        <p class="text-sm opacity-90 mt-1">users in the system</p>
+        <p class="text-sm opacity-90 mt-1">người dùng trong hệ thống</p>
       </div>
       <i class="fas fa-users text-3xl opacity-80"></i>
     </div>
@@ -12,9 +13,9 @@
   <div class="revenue-card rounded-xl p-6 text-white card-hover">
     <div class="flex items-center justify-between">
       <div>
-        <p class="text-sm opacity-90">Monthly Revenue</p>
+        <p class="text-sm opacity-90">Doanh thu tháng</p>
         <p class="text-3xl font-bold mt-1">{{ stats.monthlyRevenue | number:'1.0-2' }}</p>
-        <p class="text-sm opacity-90 mt-1">VND</p>
+        <p class="text-sm opacity-90 mt-1">VNĐ</p>
       </div>
       <i class="fas fa-dollar-sign text-3xl opacity-80"></i>
     </div>
@@ -22,9 +23,9 @@
   <div class="users-card rounded-xl p-6 text-white card-hover">
     <div class="flex items-center justify-between">
       <div>
-        <p class="text-sm opacity-90">Pro Users</p>
+        <p class="text-sm opacity-90">Người dùng Pro</p>
         <p class="text-3xl font-bold mt-1">{{ stats.proUserCount | number }}</p>
-        <p class="text-sm opacity-90 mt-1">{{ stats.proPercent }}% of total users</p>
+        <p class="text-sm opacity-90 mt-1">{{ stats.proPercent }}% tổng số người dùng</p>
       </div>
       <i class="fas fa-crown text-3xl opacity-80"></i>
     </div>
@@ -32,70 +33,71 @@
   <div class="activity-card rounded-xl p-6 text-white card-hover">
     <div class="flex items-center justify-between">
       <div>
-        <p class="text-sm opacity-90">Today's Activity</p>
+        <p class="text-sm opacity-90">Hoạt động hôm nay</p>
         <p class="text-3xl font-bold mt-1">{{ stats.registeredToday | number }}</p>
-        <p class="text-sm opacity-90 mt-1">New registrations</p>
+        <p class="text-sm opacity-90 mt-1">Đăng ký mới</p>
       </div>
       <i class="fas fa-users text-3xl opacity-80"></i>
     </div>
   </div>
 </div>
 
+
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-    <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
-        <div class="grid grid-cols-2 gap-4">
-            <button class="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-                routerLink="/admin/users-list">
-                <i class="fas fa-users text-2xl text-blue-600 mb-2"></i>
-                <span class="text-sm font-medium text-gray-700">User List</span>
-            </button>
-            <button class="flex flex-col items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
-                routerLink="/admin/system-plans">
-                <i class="fas fa-layer-group text-2xl text-green-600 mb-2"></i>
-                <span class="text-sm font-medium text-gray-700">Plans & Limits</span>
-            </button>
-            <button class="flex flex-col items-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors"
-                routerLink="/admin/system-stats">
-                <i class="fas fa-chart-bar text-2xl text-yellow-600 mb-2"></i>
-                <span class="text-sm font-medium text-gray-700">Statistics & Charts</span>
-            </button>
-            <button class="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
-                routerLink="/admin/user-activity">
-                <i class="fas fa-user-clock text-2xl text-purple-600 mb-2"></i>
-                <span class="text-sm font-medium text-gray-700">User Activity</span>
-            </button>
-        </div>
+  <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">Hành động nhanh</h3>
+    <div class="grid grid-cols-2 gap-4">
+      <button class="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+        routerLink="/admin/users-list">
+        <i class="fas fa-users text-2xl text-blue-600 mb-2"></i>
+        <span class="text-sm font-medium text-gray-700">Danh sách người dùng</span>
+      </button>
+      <button class="flex flex-col items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+        routerLink="/admin/system-plans">
+        <i class="fas fa-layer-group text-2xl text-green-600 mb-2"></i>
+        <span class="text-sm font-medium text-gray-700">Gói & Giới hạn</span>
+      </button>
+      <button class="flex flex-col items-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors"
+        routerLink="/admin/system-stats">
+        <i class="fas fa-chart-bar text-2xl text-yellow-600 mb-2"></i>
+        <span class="text-sm font-medium text-gray-700">Thống kê & Biểu đồ</span>
+      </button>
+      <button class="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+        routerLink="/admin/user-activity">
+        <i class="fas fa-user-clock text-2xl text-purple-600 mb-2"></i>
+        <span class="text-sm font-medium text-gray-700">Hoạt động người dùng</span>
+      </button>
     </div>
-    <div class="bg-white rounded-xl shadow-sm p-6 card-hover" *ngIf="stats">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">System Insights</h3>
-        <div class="space-y-4 text-sm text-gray-600">
-            <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                <div>
-                    <p class="font-medium text-gray-800">New users today</p>
-                    <p class="text-xs text-gray-500">Recent registrations</p>
-                </div>
-                <span class="text-lg font-semibold text-blue-600">{{ stats.registeredToday | number }}</span>
-            </div>
-            <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                <div>
-                    <p class="font-medium text-gray-800">Active Pro users</p>
-                    <p class="text-xs text-gray-500">Currently subscribed</p>
-                </div>
-                <div class="text-right">
-                    <p class="text-lg font-semibold text-green-600">{{ stats.proUserCount | number }}</p>
-                    <p class="text-xs text-gray-500">{{ stats.proPercent }}% of total</p>
-                </div>
-            </div>
-            <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                <div>
-                    <p class="font-medium text-gray-800">Monthly revenue</p>
-                    <p class="text-xs text-gray-500">Projected</p>
-                </div>
-                <span class="text-lg font-semibold text-purple-600">
-                    {{ stats.monthlyRevenue | currency:'VND':'symbol':'1.0-0' }}
-                </span>
-            </div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm p-6 card-hover" *ngIf="stats">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">Thông tin hệ thống</h3>
+    <div class="space-y-4 text-sm text-gray-600">
+      <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+        <div>
+          <p class="font-medium text-gray-800">Người dùng mới hôm nay</p>
+          <p class="text-xs text-gray-500">Đăng ký gần đây</p>
         </div>
+        <span class="text-lg font-semibold text-blue-600">{{ stats.registeredToday | number }}</span>
+      </div>
+      <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+        <div>
+          <p class="font-medium text-gray-800">Người dùng Pro đang hoạt động</p>
+          <p class="text-xs text-gray-500">Đang đăng ký</p>
+        </div>
+        <div class="text-right">
+          <p class="text-lg font-semibold text-green-600">{{ stats.proUserCount | number }}</p>
+          <p class="text-xs text-gray-500">{{ stats.proPercent }}% tổng số</p>
+        </div>
+      </div>
+      <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+        <div>
+          <p class="font-medium text-gray-800">Doanh thu tháng</p>
+          <p class="text-xs text-gray-500">Dự kiến</p>
+        </div>
+        <span class="text-lg font-semibold text-purple-600">
+          {{ stats.monthlyRevenue | currency:'VND':'symbol':'1.0-0' }}
+        </span>
+      </div>
     </div>
+  </div>
 </div>

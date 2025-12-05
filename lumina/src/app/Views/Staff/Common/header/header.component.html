@@ -2,14 +2,14 @@
   <div class="flex items-center justify-between px-6 py-4">
     <div class="flex items-center space-x-6">
       <!-- Toggle Button -->
-      <button 
+      <button
         (click)="sidebarToggle.emit()"
         [title]="sidebarOpen ? 'Thu gọn sidebar (Ctrl+B)' : 'Mở rộng sidebar (Ctrl+B)'"
         class="group p-2.5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-all duration-300 border border-blue-100/50 shadow-sm hover:shadow-md">
         <i class="fas text-blue-600 group-hover:text-blue-700 transition-all duration-300"
            [ngClass]="sidebarOpen ? 'fa-bars' : 'fa-chevron-right'"></i>
       </button>
-      
+
       <!-- Page Title với Visual Accent -->
       <div class="flex items-center space-x-3">
         <div class="w-1 h-8 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
@@ -22,16 +22,16 @@
     <div class="flex items-center space-x-4">
       <!-- Notification Bell -->
       <div class="relative">
-        <button 
+        <button
           (click)="goToNotifications()"
           class="relative p-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 transition-all duration-200 group border border-gray-200/50">
-          <svg class="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors" 
+          <svg class="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors"
                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M15 17h5l-3.5-3.5a5.06 5.06 0 10-7.07 0L5 17h5m5 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
           </svg>
           <!-- Enhanced Notification Badge -->
-          <span 
+          <span
             *ngIf="unreadNotificationCount > 0"
             class="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full flex items-center justify-center border-2 border-white shadow-lg">
             {{ unreadNotificationCount > 99 ? '99+' : unreadNotificationCount }}
@@ -42,7 +42,7 @@
       <!-- Enhanced User Profile with Dropdown -->
       @if (currentUser$ | async; as currentUser) {
       <div class="relative">
-        <button 
+        <button
           (click)="toggleDropdown($event)"
           class="flex items-center space-x-3 p-2 pr-4 rounded-xl hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200/50 group">
           <div class="relative">
@@ -59,9 +59,9 @@
           </div>
           <div class="text-left hidden lg:block">
             <span class="text-sm font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">{{ currentUser.name }}</span>
-            <p class="text-xs text-gray-500">Content Manager</p>
+            <p class="text-xs text-gray-500">Quản lý Nội dung</p>
           </div>
-          <svg class="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" 
+          <svg class="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors"
                fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
           </svg>
@@ -80,17 +80,17 @@
           </div>
           <div class="py-1">
             <!-- Profile Menu Item -->
-            <a 
-              style="cursor: pointer" 
+            <a
+              style="cursor: pointer"
               (click)="goToProfile()"
               class="flex items-center px-4 py-3 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 group">
               <i class="fas fa-user-circle mr-3 text-gray-400 w-4 text-center group-hover:text-blue-500"></i>
-              <span class="font-medium">Profile</span>
+              <span class="font-medium">Hồ sơ</span>
             </a>
 
             <!-- Logout Menu Item -->
-            <a 
-              (click)="logout()" 
+            <a
+              (click)="logout()"
               href="javascript:void(0)"
               class="flex items-center px-4 py-3 text-sm text-gray-700 hover:text-red-600 hover:bg-red-50 transition-all duration-200 group">
               <i class="fas fa-sign-out-alt mr-3 text-gray-400 w-4 text-center group-hover:text-red-500"></i>

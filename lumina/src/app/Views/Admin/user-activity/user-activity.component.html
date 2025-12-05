@@ -1,10 +1,10 @@
 <div class="user-activity-container">
   <!-- Header -->
   <div class="page-header">
-    <h1>📊 User Activity Analytics</h1>
+    <h1>📊 Phân Tích Hoạt Động Người Dùng</h1>
     <button class="btn-refresh" (click)="refreshData()" [disabled]="isLoading">
-      <span *ngIf="!isLoading">🔄 Refresh</span>
-      <span *ngIf="isLoading">⏳ Loading...</span>
+      <span *ngIf="!isLoading">🔄 Làm mới</span>
+      <span *ngIf="isLoading">⏳ Đang tải...</span>
     </button>
   </div>
 
@@ -27,38 +27,38 @@
       <div class="metric-card realtime">
         <div class="metric-icon">🔴</div>
         <div class="metric-value">{{ keyMetrics.activeUsersNow }}</div>
-        <div class="metric-label">Online Now</div>
+        <div class="metric-label">Đang Online</div>
       </div>
 
       <div class="metric-card">
         <div class="metric-icon">👥</div>
         <div class="metric-value">{{ keyMetrics.totalUsers | number }}</div>
-        <div class="metric-label">Total Users (7 days)</div>
-        <div class="metric-sub">{{ keyMetrics.newUsers | number }} new</div>
+        <div class="metric-label">Tổng Người Dùng (7 ngày)</div>
+        <div class="metric-sub">{{ keyMetrics.newUsers | number }} mới</div>
       </div>
 
       <div class="metric-card">
         <div class="metric-icon">🎯</div>
         <div class="metric-value">{{ keyMetrics.sessions | number }}</div>
-        <div class="metric-label">Sessions</div>
+        <div class="metric-label">Phiên Làm Việc</div>
       </div>
 
       <div class="metric-card">
         <div class="metric-icon">📄</div>
         <div class="metric-value">{{ keyMetrics.pageViews | number }}</div>
-        <div class="metric-label">Page Views</div>
+        <div class="metric-label">Lượt Xem Trang</div>
       </div>
 
       <div class="metric-card">
         <div class="metric-icon">⏱️</div>
         <div class="metric-value">{{ formatDuration(keyMetrics.avgSessionDuration) }}</div>
-        <div class="metric-label">Avg. Session Duration</div>
+        <div class="metric-label">Thời Gian Trung Bình Mỗi Phiên</div>
       </div>
 
       <div class="metric-card">
         <div class="metric-icon">📊</div>
         <div class="metric-value">{{ keyMetrics.bounceRate | number:'1.1-1' }}%</div>
-        <div class="metric-label">Bounce Rate</div>
+        <div class="metric-label">Tỷ Lệ Thoát</div>
       </div>
     </div>
 
@@ -67,15 +67,15 @@
       
       <!-- Top Pages -->
       <div class="chart-card">
-        <h2>🏆 Top Pages</h2>
+        <h2>🏆 Trang Phổ Biến</h2>
         <div class="table-wrapper">
           <table>
             <thead>
               <tr>
-                <th>Page</th>
-                <th>Views</th>
-                <th>Users</th>
-                <th>Avg. Time</th>
+                <th>Trang</th>
+                <th>Lượt Xem</th>
+                <th>Người Dùng</th>
+                <th>Thời Gian TB</th>
               </tr>
             </thead>
             <tbody>
@@ -89,7 +89,7 @@
                 <td>{{ formatDuration(page.avgDuration) }}</td>
               </tr>
               <tr *ngIf="topPages.length === 0">
-                <td colspan="4" class="no-data">No data available</td>
+                <td colspan="4" class="no-data">Không có dữ liệu</td>
               </tr>
             </tbody>
           </table>
@@ -98,14 +98,14 @@
 
       <!-- Traffic Sources -->
       <div class="chart-card">
-        <h2>🌐 Traffic Sources</h2>
+        <h2>🌐 Nguồn Lưu Lượng</h2>
         <div class="table-wrapper">
           <table>
             <thead>
               <tr>
-                <th>Source / Medium</th>
-                <th>Sessions</th>
-                <th>Users</th>
+                <th>Nguồn / Loại</th>
+                <th>Phiên Làm Việc</th>
+                <th>Người Dùng</th>
               </tr>
             </thead>
             <tbody>
@@ -118,7 +118,7 @@
                 <td>{{ source.users | number }}</td>
               </tr>
               <tr *ngIf="trafficSources.length === 0">
-                <td colspan="3" class="no-data">No data available</td>
+                <td colspan="3" class="no-data">Không có dữ liệu</td>
               </tr>
             </tbody>
           </table>
@@ -127,7 +127,7 @@
 
       <!-- Devices -->
       <div class="chart-card">
-        <h2>📱 Devices</h2>
+        <h2>📱 Thiết Bị</h2>
         <div class="device-list">
           <div class="device-item" *ngFor="let device of devices">
             <div class="device-info">
@@ -136,29 +136,29 @@
             </div>
             <div class="device-stats">
               <div class="stat">
-                <span class="stat-label">Users:</span>
+                <span class="stat-label">Người Dùng:</span>
                 <span class="stat-value">{{ device.users | number }}</span>
               </div>
               <div class="stat">
-                <span class="stat-label">Sessions:</span>
+                <span class="stat-label">Phiên Làm Việc:</span>
                 <span class="stat-value">{{ device.sessions | number }}</span>
               </div>
             </div>
           </div>
-          <div *ngIf="devices.length === 0" class="no-data">No data available</div>
+          <div *ngIf="devices.length === 0" class="no-data">Không có dữ liệu</div>
         </div>
       </div>
 
       <!-- Countries -->
       <div class="chart-card">
-        <h2>🌍 Top Countries</h2>
+        <h2>🌍 Quốc Gia Hàng Đầu</h2>
         <div class="table-wrapper">
           <table>
             <thead>
               <tr>
-                <th>Country / City</th>
-                <th>Users</th>
-                <th>Sessions</th>
+                <th>Quốc Gia / Thành Phố</th>
+                <th>Người Dùng</th>
+                <th>Phiên Làm Việc</th>
               </tr>
             </thead>
             <tbody>
@@ -171,7 +171,7 @@
                 <td>{{ country.sessions | number }}</td>
               </tr>
               <tr *ngIf="countries.length === 0">
-                <td colspan="3" class="no-data">No data available</td>
+                <td colspan="3" class="no-data">Không có dữ liệu</td>
               </tr>
             </tbody>
           </table>
@@ -180,7 +180,7 @@
 
       <!-- Daily Traffic -->
       <div class="chart-card full-width">
-        <h2>📈 Daily Traffic (Last 7 Days)</h2>
+        <h2>📈 Lưu Lượng Hàng Ngày (7 Ngày Gần Nhất)</h2>
         <div class="daily-chart">
           <div class="chart-bar" *ngFor="let day of dailyTraffic">
             <div class="bar-wrapper">
@@ -190,24 +190,24 @@
             </div>
             <div class="bar-label">{{ formatDate(day.date) }}</div>
             <div class="bar-stats">
-              <div>Sessions: {{ day.sessions }}</div>
-              <div>Views: {{ day.pageViews }}</div>
+              <div>Phiên: {{ day.sessions }}</div>
+              <div>Lượt Xem: {{ day.pageViews }}</div>
             </div>
           </div>
-          <div *ngIf="dailyTraffic.length === 0" class="no-data">No data available</div>
+          <div *ngIf="dailyTraffic.length === 0" class="no-data">Không có dữ liệu</div>
         </div>
       </div>
 
       <!-- Browsers -->
       <div class="chart-card">
-        <h2>🌐 Browsers</h2>
+        <h2>🌐 Trình Duyệt</h2>
         <div class="table-wrapper">
           <table>
             <thead>
               <tr>
-                <th>Browser</th>
-                <th>Users</th>
-                <th>Sessions</th>
+                <th>Trình Duyệt</th>
+                <th>Người Dùng</th>
+                <th>Phiên Làm Việc</th>
               </tr>
             </thead>
             <tbody>
@@ -217,7 +217,7 @@
                 <td>{{ browser.sessions | number }}</td>
               </tr>
               <tr *ngIf="browsers.length === 0">
-                <td colspan="3" class="no-data">No data available</td>
+                <td colspan="3" class="no-data">Không có dữ liệu</td>
               </tr>
             </tbody>
           </table>

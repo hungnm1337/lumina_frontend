@@ -4,12 +4,16 @@
     <div class="mb-8">
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900 mb-2">Notebook</h1>
-          <p class="text-gray-600">Manage and search through your learning notes</p>
+          <h1 class="text-3xl font-bold text-gray-900 mb-2">Sổ tay</h1>
+          <p class="text-gray-600">
+            Quản lý và tìm kiếm các ghi chú học tập của bạn
+          </p>
         </div>
         <div class="bg-white rounded-xl px-4 py-3 shadow-md">
-          <div class="text-sm text-gray-500">Total Notes</div>
-          <div class="text-2xl font-bold text-blue-600">{{ userNotes.length }}</div>
+          <div class="text-sm text-gray-500">Tổng số ghi chú</div>
+          <div class="text-2xl font-bold text-blue-600">
+            {{ userNotes.length }}
+          </div>
         </div>
       </div>
 
@@ -19,12 +23,21 @@
           <!-- Search Input -->
           <div class="flex-1">
             <div class="relative">
-              <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-              <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="filterNotes()"
-                placeholder="Search by content, article, section, or author..."
-                class="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
-              <button *ngIf="searchTerm" (click)="clearSearch()"
-                class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+              <i
+                class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+              ></i>
+              <input
+                type="text"
+                [(ngModel)]="searchTerm"
+                (ngModelChange)="filterNotes()"
+                placeholder="Tìm kiếm theo nội dung, bài viết, phần hoặc tác giả..."
+                class="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+              />
+              <button
+                *ngIf="searchTerm"
+                (click)="clearSearch()"
+                class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
                 <i class="fas fa-times"></i>
               </button>
             </div>
@@ -32,12 +45,15 @@
 
           <!-- Sort Options -->
           <div class="md:w-64">
-            <select [(ngModel)]="sortBy" (ngModelChange)="applySorting()"
-              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white">
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="updated">Recently Updated</option>
-              <option value="article">By Article</option>
+            <select
+              [(ngModel)]="sortBy"
+              (ngModelChange)="applySorting()"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+            >
+              <option value="newest">Mới nhất</option>
+              <option value="oldest">Cũ nhất</option>
+              <option value="updated">Cập nhật gần đây</option>
+              <option value="article">Theo bài viết</option>
             </select>
           </div>
         </div>
@@ -45,13 +61,19 @@
         <!-- Search Results Info -->
         <div class="mt-4 flex items-center justify-between text-sm">
           <span class="text-gray-600">
-            <span *ngIf="searchTerm" class="font-medium">{{ filteredNotes.length }}</span>
-            <span *ngIf="!searchTerm">Showing all</span>
-            <span *ngIf="searchTerm"> result(s) for "{{ searchTerm }}"</span>
-            <span *ngIf="!searchTerm"> {{ filteredNotes.length }} note(s)</span>
+            <span *ngIf="searchTerm" class="font-medium">{{
+              filteredNotes.length
+            }}</span>
+            <span *ngIf="!searchTerm">Đang hiển thị tất cả</span>
+            <span *ngIf="searchTerm"> kết quả cho "{{ searchTerm }}"</span>
+            <span *ngIf="!searchTerm"> {{ filteredNotes.length }} ghi chú</span>
           </span>
-          <button *ngIf="searchTerm" (click)="clearSearch()" class="text-red-600 hover:text-red-700 font-medium">
-            Clear search
+          <button
+            *ngIf="searchTerm"
+            (click)="clearSearch()"
+            class="text-red-600 hover:text-red-700 font-medium"
+          >
+            Xóa tìm kiếm
           </button>
         </div>
       </div>
@@ -59,62 +81,73 @@
 
     <!-- Notes Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div *ngFor="let note of filteredNotes" (click)="MoveToDetail(note.noteId)"
-        class="bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer group border border-gray-100 hover:border-blue-300 hover:-translate-y-2">
-
+      <div
+        *ngFor="let note of filteredNotes"
+        (click)="MoveToDetail(note.noteId)"
+        class="bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer group border border-gray-100 hover:border-blue-300 hover:-translate-y-2"
+      >
         <!-- Card Header with Gradient -->
-        <div class="h-2  bg-blue-500"></div>
+        <div class="h-2 bg-blue-500"></div>
 
         <div class="p-5">
           <!-- Top Section -->
           <div class="flex items-start justify-between mb-4">
             <div class="flex items-center gap-2">
               <div
-                class="w-10 h-10 rounded-xl bg-blue-300 flex items-center justify-center text-white font-bold shadow-md">
+                class="w-10 h-10 rounded-xl bg-blue-300 flex items-center justify-center text-white font-bold shadow-md"
+              >
                 <i class="fas fa-sticky-note"></i>
               </div>
               <div>
-                <div class="text-xs text-gray-500 font-medium">Note #{{note.noteId}}</div>
+                <div class="text-xs text-gray-500 font-medium">
+                  Note #{{ note.noteId }}
+                </div>
                 <div class="text-xs text-gray-400">
-                  <i class="far fa-clock mr-1"></i>{{note.createAt | date:'MMM d, y'}}
+                  <i class="far fa-clock mr-1"></i
+                  >{{ note.createAt | date : "MMM d, y" }}
                 </div>
               </div>
             </div>
             <div
-              class="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-blue-50 flex items-center justify-center transition-colors">
-              <i class="fas fa-arrow-right text-gray-400 group-hover:text-blue-600 text-sm transition-colors"></i>
+              class="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-blue-50 flex items-center justify-center transition-colors"
+            >
+              <i
+                class="fas fa-arrow-right text-gray-400 group-hover:text-blue-600 text-sm transition-colors"
+              ></i>
             </div>
           </div>
 
           <!-- Article Title -->
           <h3
-            class="text-lg font-bold text-gray-900 mb-3 line-clamp-2 leading-tight group-hover:text-blue-600 transition-colors">
-            {{note.article}}
+            class="text-lg font-bold text-gray-900 mb-3 line-clamp-2 leading-tight group-hover:text-blue-600 transition-colors"
+          >
+            {{ note.article }}
           </h3>
 
-          <span class="truncate my-2">{{note.section}}</span>
-
+          <span class="truncate my-2">{{ note.section }}</span>
 
           <!-- Metadata Section -->
           <div class="space-y-2 mt-4 mb-4 pb-4 border-b border-gray-100">
             <div class="flex items-center gap-2 text-sm text-gray-600">
-              <div class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <div
+                class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0"
+              >
                 <i class="fas fa-user text-blue-600 text-xs"></i>
               </div>
-              <span class="truncate">{{note.user}}</span>
+              <span class="truncate">{{ note.user }}</span>
             </div>
-
           </div>
 
           <!-- Footer -->
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1 text-xs text-gray-500">
               <i class="fas fa-edit"></i>
-              <span>Updated {{note.updateAt | date:'short'}}</span>
+              <span>Cập nhật {{ note.updateAt | date : "short" }}</span>
             </div>
             <button
-              class="px-3 py-1.5 bg-blue-500 text-white text-xs font-semibold rounded-lg hover:bg-blue-600 transition-all group-hover:shadow-md">
-              View <i class="fas fa-arrow-right ml-1"></i>
+              class="px-3 py-1.5 bg-blue-500 text-white text-xs font-semibold rounded-lg hover:bg-blue-600 transition-all group-hover:shadow-md"
+            >
+              Xem <i class="fas fa-arrow-right ml-1"></i>
             </button>
           </div>
         </div>
@@ -123,17 +156,28 @@
 
     <!-- No Results Message -->
     <div *ngIf="filteredNotes.length === 0" class="text-center py-16">
-      <div class="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+      <div
+        class="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4"
+      >
         <i class="fas fa-search text-4xl text-gray-400"></i>
       </div>
-      <h3 class="text-xl font-bold text-gray-900 mb-2">No notes found</h3>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">
+        Không tìm thấy ghi chú
+      </h3>
       <p class="text-gray-500 mb-6">
-        <span *ngIf="searchTerm">Try adjusting your search terms or clear the filter</span>
-        <span *ngIf="!searchTerm">Start creating your first note to see it here</span>
+        <span *ngIf="searchTerm"
+          >Thử điều chỉnh từ khóa tìm kiếm hoặc xóa bộ lọc</span
+        >
+        <span *ngIf="!searchTerm"
+          >Bắt đầu tạo ghi chú đầu tiên của bạn để hiển thị tại đây</span
+        >
       </p>
-      <button *ngIf="searchTerm" (click)="clearSearch()"
-        class="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors font-medium">
-        Clear Search
+      <button
+        *ngIf="searchTerm"
+        (click)="clearSearch()"
+        class="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors font-medium"
+      >
+        Xóa tìm kiếm
       </button>
     </div>
   </div>

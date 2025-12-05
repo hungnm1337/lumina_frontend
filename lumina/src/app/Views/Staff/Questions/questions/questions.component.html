@@ -14,16 +14,16 @@
       <div class="title-section">
         <h1 class="page-title">
           <span class="toeic-badge">TOEIC</span>
-          Question Bank Management
+          Quản Lý Câu Hỏi
         </h1>
         <p class="page-subtitle">
-          Create and manage comprehensive question database for TOEIC exams
+          Tạo và quản lý cơ sở dữ liệu câu hỏi toàn diện cho kỳ thi TOEIC
         </p>
       </div>
       <div class="header-stats">
         <div class="stat-card">
           <div class="stat-number">{{ questionStats.totalQuestions || 0 }}</div>
-          <div class="stat-label">Total Questions</div>
+          <div class="stat-label">Tổng Câu Hỏi</div>
         </div>
         <!-- <div class="stat-card">
           <div class="stat-number">{{ questionStats.usedQuestions || 0 }}</div>
@@ -42,15 +42,15 @@
     <div class="header-actions">
       <button class="btn-action-secondary" (click)="openUploadModal()">
         <i class="fas fa-cloud-upload-alt"></i>
-        <span class="btn-text">Upload Media</span>
+        <span class="btn-text">Tải Lên Media</span>
       </button>
       <button class="btn-action-secondary" (click)="openImportModal()">
         <i class="fas fa-file-excel"></i>
-        <span class="btn-text">Import Excel</span>
+        <span class="btn-text">Nhập Excel</span>
       </button>
       <button class="btn-create-question" (click)="openModal()">
         <i class="fas fa-plus"></i>
-        <span class="btn-text">Create Question</span>
+        <span class="btn-text">Tạo Câu Hỏi</span>
       </button>
     </div>
   </div>
@@ -62,8 +62,8 @@
         <i class="fas fa-headphones"></i>
       </div>
       <div class="skill-info">
-        <h4>Listening</h4>
-        <p>4 Parts</p>
+        <h4>Nghe</h4>
+        <p>4 Phần</p>
       </div>
     </div>
     <div class="skill-card reading">
@@ -71,8 +71,8 @@
         <i class="fas fa-book-open"></i>
       </div>
       <div class="skill-info">
-        <h4>Reading</h4>
-        <p>3 Parts</p>
+        <h4>Đọc</h4>
+        <p>3 Phần</p>
       </div>
     </div>
     <div class="skill-card speaking">
@@ -80,8 +80,8 @@
         <i class="fas fa-microphone"></i>
       </div>
       <div class="skill-info">
-        <h4>Speaking</h4>
-        <p>5 Parts</p>
+        <h4>Nói</h4>
+        <p>5 Phần</p>
       </div>
     </div>
     <div class="skill-card writing">
@@ -89,8 +89,8 @@
         <i class="fas fa-pen"></i>
       </div>
       <div class="skill-info">
-        <h4>Writing</h4>
-        <p>3 Parts</p>
+        <h4>Viết</h4>
+        <p>3 Phần</p>
       </div>
     </div>
   </div>
@@ -100,14 +100,14 @@
       <div class="filter-group">
         <label>
           <i class="fas fa-calendar-alt"></i>
-          Exam Set
+          Kỳ Thi
         </label>
         <select
           [(ngModel)]="selectedExamSetKey"
           (change)="onExamSetKeyFilterChange()"
           class="filter-select"
         >
-          <option [value]="null">All Exam Sets</option>
+          <option [value]="null">Tất Cả Kỳ Thi</option>
           <option *ngFor="let key of examSetKeys" [ngValue]="key">
             {{ key }}
           </option>
@@ -117,7 +117,7 @@
       <div class="filter-group">
         <label>
           <i class="fas fa-list-ol"></i>
-          Part
+          Phần
         </label>
         <select
           [(ngModel)]="selectedPartId"
@@ -127,7 +127,7 @@
           [class.disabled]="!selectedExamSetKey"
         >
           <option value="">
-            {{ selectedExamSetKey ? "All Parts" : "Select Exam Set First" }}
+            {{ selectedExamSetKey ? "Tất Cả Phần" : "Chọn Kỳ Thi Trước" }}
           </option>
           <option
             *ngFor="let part of filteredPartsForView"
@@ -148,11 +148,11 @@
           class="btn-clear-filters"
         >
           <i class="fas fa-eraser"></i>
-          Clear Filters
+          Xóa Bộ Lọc
         </button>
         <button (click)="loadPrompts()" class="btn-refresh">
           <i class="fas fa-sync-alt"></i>
-          Refresh
+          Làm Mới
         </button>
       </div>
     </div>
@@ -164,12 +164,12 @@
       <div class="header-left">
         <h3 class="section-title">
           <i class="fas fa-list"></i>
-          Question Prompts
+          Prompt Câu Hỏi
         </h3>
-        <p class="section-subtitle">
+        <!-- <p class="section-subtitle">
           Showing {{ (page - 1) * size + 1 }}-{{ getMaxDisplayCount() }} of
           {{ totalPages }} prompts
-        </p>
+        </p> -->
       </div>
     </div>
 
@@ -202,14 +202,14 @@
             <button
               class="btn-icon edit"
               (click)="editPrompt(prompt)"
-              title="Edit Prompt"
+              title="Chỉnh Sửa Prompt"
             >
               <i class="fas fa-edit"></i>
             </button>
             <button
               class="btn-icon delete"
               (click)="deletePrompt(prompt)"
-              title="Delete Prompt"
+              title="Xóa Prompt"
             >
               <i class="fas fa-trash-alt"></i>
             </button>
@@ -218,7 +218,7 @@
 
         <!-- Card Content -->
         <div class="card-content">
-          <h4 class="prompt-title">{{ prompt.title || "Untitled Prompt" }}</h4>
+          <h4 class="prompt-title">{{ prompt.title || "Chưa Đặt Tên Prompt" }}</h4>
           <div class="prompt-text">{{ prompt.contentText }}</div>
 
           <!-- Media Section -->
@@ -227,7 +227,7 @@
             *ngIf="prompt.referenceImageUrl || prompt.referenceAudioUrl"
           >
             <div class="media-item" *ngIf="prompt.referenceImageUrl">
-              <img [src]="prompt.referenceImageUrl" alt="Reference Image" />
+              <img [src]="prompt.referenceImageUrl" alt="Hình Ảnh Tham Khảo" />
             </div>
             <div class="media-item" *ngIf="prompt.referenceAudioUrl">
               <audio controls [src]="prompt.referenceAudioUrl"></audio>
@@ -239,7 +239,7 @@
             <div class="questions-header">
               <span class="questions-count">
                 <i class="fas fa-question-circle"></i>
-                {{ prompt.questions?.length || 0 }} Questions
+                {{ prompt.questions?.length || 0 }} Câu Hỏi
               </span>
               <button
                 *ngIf="prompt.questions?.length > 0"
@@ -252,7 +252,7 @@
                     prompt.showQuestions ? 'fa-chevron-up' : 'fa-chevron-down'
                   "
                 ></i>
-                {{ prompt.showQuestions ? "Hide" : "Show" }}
+                {{ prompt.showQuestions ? "Ẩn" : "Hiển Thị" }}
               </button>
             </div>
 
@@ -269,7 +269,7 @@
                 <div class="question-content">
                   <div class="question-text">{{ q.stemText }}</div>
 
-                  <!-- Options -->
+                  <!-- Các Tùy Chọn -->
                   <div
                     class="options-list"
                     *ngIf="q.options && q.options.length > 0"
@@ -284,40 +284,40 @@
                     </div>
                   </div>
 
-                  <!-- Explanation -->
+                  <!-- Giải Thích -->
                   <div *ngIf="q.questionExplain" class="explanation">
                     <i class="fas fa-lightbulb"></i>
                     {{ q.questionExplain }}
                   </div>
 
-                  <!-- Question Actions -->
+                  <!-- Thao Tác Câu Hỏi -->
                   <div class="question-actions">
                     <button
                       class="btn-edit-question"
                       (click)="editQuestion(q, prompt)"
                     >
                       <i class="fas fa-edit"></i>
-                      Edit Question
+                      Chỉnh Sửa Câu Hỏi
                     </button>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Empty State -->
+            <!-- Trạng Thái Trống -->
             <div
               *ngIf="!prompt.questions || prompt.questions.length === 0"
               class="empty-questions"
             >
               <i class="fas fa-inbox"></i>
-              <p>No questions yet</p>
+              <p>Chưa có câu hỏi</p>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Pagination -->
+    <!-- Phân Trang -->
     <div class="flex justify-end items-center gap-2 my-4">
       <button
         class="px-2 py-1 border rounded"
@@ -358,7 +358,7 @@
             </div>
             <div>
               <h3 class="text-xl font-bold text-gray-800">
-                Tạo Prompt & Câu hỏi mới
+                Tạo Prompt & Câu Hỏi Mới
               </h3>
               <p class="text-xs text-gray-500 mt-0.5">
                 Điền đầy đủ thông tin để tạo prompt
@@ -400,7 +400,7 @@
               <!-- Tiêu đề Passage -->
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                  <i class="fas fa-heading text-blue-500 mr-2"></i>Tiêu đề
+                  <i class="fas fa-heading text-blue-500 mr-2"></i>Tiêu Đề
                   Passage
                 </label>
                 <input
@@ -414,7 +414,7 @@
               <!-- Nội dung Passage -->
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                  <i class="fas fa-paragraph text-blue-500 mr-2"></i>Nội dung
+                  <i class="fas fa-paragraph text-blue-500 mr-2"></i>Nội Dung
                   Passage
                 </label>
                 <textarea
@@ -430,8 +430,8 @@
                 <!-- Link hình ảnh -->
                 <div>
                   <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    <i class="fas fa-image text-blue-500 mr-2"></i>Hình ảnh tham
-                    khảo
+                    <i class="fas fa-image text-blue-500 mr-2"></i>Hình Ảnh Tham
+                    Khảo
                   </label>
                   <div class="relative">
                     <input
@@ -446,8 +446,8 @@
                 <!-- Link audio -->
                 <div>
                   <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    <i class="fas fa-music text-blue-500 mr-2"></i>Audio tham
-                    khảo
+                    <i class="fas fa-music text-blue-500 mr-2"></i>Audio Tham
+                    Khảo
                   </label>
                   <div class="relative">
                     <input
@@ -487,7 +487,7 @@
                   (change)="onSkillChange($event)"
                   class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all bg-white appearance-none cursor-pointer"
                 >
-                  <option value="">Chọn skill</option>
+                  <option value="">Chọn Skill</option>
                   <option *ngFor="let skill of skills" [value]="skill">
                     {{ skill }}
                   </option>
@@ -527,7 +527,7 @@
               </div>
               <div>
                 <p class="text-sm font-semibold text-blue-900">
-                  Yêu cầu số câu hỏi
+                  Yêu Cầu Số Câu Hỏi
                 </p>
                 <p class="text-xs text-blue-700 mt-0.5">
                   Part này cần
@@ -554,7 +554,7 @@
               </div>
               <div>
                 <h4 class="text-lg font-semibold text-gray-800">
-                  Danh sách câu hỏi
+                  Danh Sách Câu Hỏi
                 </h4>
                 <p class="text-xs text-gray-500">
                   Tổng:
@@ -589,7 +589,7 @@
               <!-- Nội dung câu hỏi -->
               <div class="mb-4">
                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                  <i class="fas fa-edit text-gray-500 mr-2"></i>Nội dung câu hỏi
+                  <i class="fas fa-edit text-gray-500 mr-2"></i>Nội Dung Câu Hỏi
                 </label>
                 <input
                   type="text"
@@ -608,7 +608,7 @@
               >
                 <label class="block text-sm font-semibold text-gray-700 mb-2">
                   <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Giải
-                  thích (nếu có)
+                  Thích (Nếu Có)
                 </label>
                 <input
                   type="text"
@@ -633,8 +633,8 @@
                 </div>
                 <div>
                   <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    <i class="fas fa-clock text-blue-500 mr-2"></i>Thời gian
-                    (giây)
+                    <i class="fas fa-clock text-blue-500 mr-2"></i>Thời Gian
+                    (Giây)
                   </label>
                   <input
                     type="number"
@@ -652,7 +652,7 @@
                 formArrayName="options"
               >
                 <label class="block text-sm font-semibold text-gray-700 mb-3">
-                  <i class="fas fa-check-circle text-green-500 mr-2"></i>Đáp án
+                  <i class="fas fa-check-circle text-green-500 mr-2"></i>Đáp Án
                 </label>
                 <div class="space-y-2">
                   <div
@@ -729,7 +729,7 @@
           (click)="savePrompt()"
           class="px-5 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all font-medium shadow-md hover:shadow-lg"
         >
-          <i class="fas fa-check mr-2"></i>Tạo prompt & câu hỏi
+          <i class="fas fa-check mr-2"></i>Tạo Prompt & Câu Hỏi
         </button>
       </div>
     </div>
@@ -872,7 +872,7 @@
           <!-- Tiêu đề Passage -->
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">
-              <i class="fas fa-heading text-indigo-500 mr-2"></i>Tiêu đề Passage
+              <i class="fas fa-heading text-indigo-500 mr-2"></i>Tiêu Đề Passage
             </label>
             <input
               formControlName="title"
@@ -885,7 +885,7 @@
           <!-- Nội dung Passage -->
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">
-              <i class="fas fa-paragraph text-indigo-500 mr-2"></i>Nội dung
+              <i class="fas fa-paragraph text-indigo-500 mr-2"></i>Nội Dung
               Passage
             </label>
             <textarea
@@ -913,8 +913,8 @@
             <!-- Link ảnh -->
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">
-                <i class="fas fa-image text-indigo-500 mr-2"></i>Link ảnh tham
-                khảo
+                <i class="fas fa-image text-indigo-500 mr-2"></i>Link Ảnh Tham
+                Khảo
               </label>
               <input
                 formControlName="referenceImageUrl"
@@ -930,8 +930,8 @@
             <!-- Link audio -->
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">
-                <i class="fas fa-music text-indigo-500 mr-2"></i>Link audio tham
-                khảo
+                <i class="fas fa-music text-indigo-500 mr-2"></i>Link Audio Tham
+                Khảo
               </label>
               <input
                 formControlName="referenceAudioUrl"
@@ -964,7 +964,7 @@
           [disabled]="editPromptForm.invalid"
           class="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all font-medium shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <i class="fas fa-save mr-2"></i>Lưu thay đổi
+          <i class="fas fa-save mr-2"></i>Lưu Thay Đổi
         </button>
       </div>
     </div>
@@ -991,7 +991,7 @@
             </div>
             <div>
               <h3 class="text-xl font-bold text-gray-800">
-                {{ isEditQuestion ? "Sửa câu hỏi" : "Thêm câu hỏi mới" }}
+                {{ isEditQuestion ? "Sửa Câu Hỏi" : "Thêm Câu Hỏi Mới" }}
               </h3>
               <p class="text-xs text-gray-500 mt-0.5">
                 {{
@@ -1021,7 +1021,7 @@
           <!-- Nội dung câu hỏi -->
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">
-              <i class="fas fa-edit text-green-500 mr-2"></i>Nội dung câu hỏi
+              <i class="fas fa-edit text-green-500 mr-2"></i>Nội Dung Câu Hỏi
             </label>
             <input
               formControlName="stemText"
@@ -1035,8 +1035,8 @@
             *ngIf="currentSkill !== 'Speaking' && currentSkill !== 'Writing'"
           >
             <label class="block text-sm font-semibold text-gray-700 mb-2">
-              <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Giải thích
-              (nếu có)
+              <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Giải Thích
+              (Nếu Có)
             </label>
             <input
               formControlName="questionExplain"
@@ -1051,7 +1051,7 @@
           >
             <label class="block text-sm font-semibold text-gray-700 mb-2">
               <i class="fas fa-microphone text-blue-500 mr-2"></i>Sample Answer
-              (Câu trả lời mẫu)
+              (Câu Trả Lời Mẫu)
             </label>
             <textarea
               formControlName="sampleAnswer"
@@ -1060,7 +1060,7 @@
               class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all bg-white resize-none"
             ></textarea>
             <p class="text-xs text-gray-500 mt-1">
-              <i class="fas fa-info-circle mr-1"></i>Sample answer này sẽ được
+              <i class="fas fa-info-circle mr-1"></i>Sample Answer này sẽ được
               sử dụng để đánh giá câu trả lời của học viên
             </p>
           </div>
@@ -1081,7 +1081,7 @@
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">
-                <i class="fas fa-clock text-blue-500 mr-2"></i>Thời gian (giây)
+                <i class="fas fa-clock text-blue-500 mr-2"></i>Thời Gian (Giây)
               </label>
               <input
                 formControlName="time"
@@ -1099,7 +1099,7 @@
             formArrayName="options"
           >
             <label class="block text-sm font-semibold text-gray-700 mb-3">
-              <i class="fas fa-check-circle text-green-500 mr-2"></i>Các đáp án
+              <i class="fas fa-check-circle text-green-500 mr-2"></i>Các Đáp Án
             </label>
             <div class="space-y-2">
               <div
@@ -1152,7 +1152,7 @@
           class="px-5 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all font-medium shadow-md hover:shadow-lg"
         >
           <i class="fas fa-{{ isEditQuestion ? 'save' : 'plus' }} mr-2"></i
-          >{{ isEditQuestion ? "Lưu sửa đổi" : "Thêm mới" }}
+          >{{ isEditQuestion ? "Lưu Sửa Đổi" : "Thêm Mới" }}
         </button>
       </div>
     </div>

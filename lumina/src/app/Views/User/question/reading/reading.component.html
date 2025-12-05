@@ -21,81 +21,59 @@
   (close)="closeExamAttemptDetails()"
 ></app-exam-attempt-detail>
 } @if (!finished) {
-<!-- Layout với Navigator bên trái -->
-<div class="flex gap-4">
-  <!-- Left Sidebar: Navigator + Submit Button -->
-  <div class="w-48 flex-shrink-0">
-    <div class="sticky top-4 space-y-4">
-      <!-- Question Navigator - Vertical -->
-      <div class="bg-white rounded-lg shadow-md p-4 border border-gray-200">
-        <h4 class="text-sm font-semibold text-gray-700 mb-3">Navigator</h4>
-        <div class="grid grid-cols-4 gap-2">
-          @for (question of questions; track question.questionId; let i =
-          $index) {
-          <button
-            (click)="navigateToQuestion(i)"
-            [class]="
-              i === currentIndex
-                ? 'w-10 h-10 rounded-md bg-blue-600 text-white font-semibold text-xs shadow-sm hover:bg-blue-700'
-                : isQuestionAnswered(question.questionId)
-                ? 'w-10 h-10 rounded-md bg-green-600 text-white text-xs shadow-sm hover:bg-green-700'
-                : 'w-10 h-10 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 text-xs'
-            "
-          >
-            {{ i + 1 }}
-          </button>
-          }
-        </div>
-
-        <!-- Legend -->
-        <div class="mt-3 space-y-1.5 text-xs text-gray-600">
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 bg-gray-200 rounded"></div>
-            <span>Chưa làm</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 bg-green-600 rounded"></div>
-            <span>Đã làm</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 bg-blue-600 rounded"></div>
-            <span>Đang làm</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Submit Button -->
-      <button
-        (click)="finishExamManual()"
-        class="w-full px-4 py-3 rounded-md bg-orange-600 text-white hover:bg-orange-700 text-sm font-semibold shadow-md"
-      >
-        <i class="fas fa-check-circle mr-2"></i>Nộp bài
-      </button>
-    </div>
+<!-- Layout với Navigator bên trái (tỉ lệ 25:50:25) -->
+<div class="grid grid-cols-12 gap-4 min-h-[calc(100vh-200px)]">
+  <!-- Left Sidebar: Navigator + Submit Button (3/12 = 25%) -->
+  <div class="col-span-3">
+    <app-question-navigator
+      [questions]="questions"
+      [currentIndex]="currentIndex"
+      [getQuestionStatus]="getQuestionStatus"
+      [legendItems]="navigatorLegendItems"
+      [showSubmitButton]="true"
+      [submitButtonText]="'Nộp bài'"
+      (navigateToQuestion)="navigateToQuestion($event)"
+      (submitExam)="finishExamManual()"
+    ></app-question-navigator>
   </div>
 
-  <!-- Main Content Area -->
-  <div class="flex-1 bg-white rounded-lg shadow-md p-6">
-    <!-- Main Content: Two Column Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-      <!-- Left Column: Question Stem + Prompt/Image -->
-      <div class="flex flex-col space-y-4">
-        <h3 class="font-medium text-lg text-gray-800">
-          {{ questions[currentIndex].stemText }}
-        </h3>
-        @if( questions[currentIndex].prompt != null ) {
+  <!-- Main Content Area (9/12 = 75%, chia thành 6:3 = 50:25) -->
+  <div class="col-span-9 bg-white rounded-lg shadow-md p-4">
+    <!-- Timer -->
+    <div
+      *ngIf="partTotalTime > 0"
+      class="mb-4 border border-gray-200 rounded-lg p-3 timer-light"
+    >
+      <app-time
+        [time]="partTotalTime"
+        [resetAt]="timerResetTrigger"
+        (timeout)="onPartTimeout()"
+        (timeUpdate)="onPartTimerTick($event)"
+      ></app-time>
+    </div>
+
+    <!-- Main Content: Prompt (6/9 = 50%) và Options (3/9 = 25%) -->
+    <div class="grid grid-cols-9 gap-4 mb-3">
+      <!-- Left Column: Prompt/Image + Question Stem (6/9 = 50%) -->
+      <div class="col-span-6 flex flex-col space-y-2">
         <div class="w-full">
-          <app-prompt
-            [prompt]="questions[currentIndex].prompt"
-            [resetAt]="currentIndex"
-            [questionType]="questions[currentIndex].questionType ?? ''"
-          ></app-prompt>
+          @if( questions[currentIndex].prompt != null ) {
+          <div class="w-full mb-2">
+            <app-prompt
+              [prompt]="questions[currentIndex].prompt"
+              [resetAt]="currentIndex"
+              [questionType]="questions[currentIndex].questionType ?? ''"
+            ></app-prompt>
+          </div>
+          }
+          <h3 class="font-medium text-base text-gray-800">
+            {{ questions[currentIndex].stemText }}
+          </h3>
         </div>
-        }
       </div>
 
-      <!-- Right Column: Options -->
-      <div class="flex items-start">
+      <!-- Right Column: Options (3/9 = 25%) -->
+      <div class="col-span-3 flex items-start">
         <div class="w-full">
           <app-options
             [options]="questions[currentIndex].options || []"

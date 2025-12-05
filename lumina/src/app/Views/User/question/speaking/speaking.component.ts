@@ -67,6 +67,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   @Input() questions: QuestionDTO[] = [];
   @Input() partInfo: ExamPartDTO | null = null;
   @Input() isInMockTest: boolean = false;
+  @Input() mockTestAttemptId: number | null = null; // AttemptId passed from MockTest parent
   @Output() speakingAnswered = new EventEmitter<boolean>();
   @Output() speakingPartCompleted = new EventEmitter<void>();
 
@@ -158,7 +159,56 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['mockTestAttemptId'] && this.isInMockTest) {
+      const newAttemptId = changes['mockTestAttemptId'].currentValue;
+      if (newAttemptId && newAttemptId > 0) {
+        this.attemptId = newAttemptId;
+        console.log(
+          '[SpeakingComponent] mockTestAttemptId updated:',
+          this.attemptId
+        );
+      }
+    }
+
     if (changes['questions']) {
+      const previousQuestions = changes['questions'].previousValue;
+      const currentQuestions = changes['questions'].currentValue;
+
+      console.log('[SpeakingComponent] ngOnChanges - questions changed:', {
+        previousCount: previousQuestions?.length || 0,
+        currentCount: currentQuestions?.length || 0,
+        previousIds:
+          previousQuestions?.map((q: QuestionDTO) => q.questionId) || [],
+        currentIds:
+          currentQuestions?.map((q: QuestionDTO) => q.questionId) || [],
+        isInMockTest: this.isInMockTest,
+        speakingResultsSize: this.speakingResults.size,
+        speakingResultsKeys: Array.from(this.speakingResults.keys()),
+      });
+
+      // FIX: Reset speaking results when questions change (different part)
+      // Check if this is a different set of questions (different part)
+      const previousIds = new Set(
+        previousQuestions?.map((q: QuestionDTO) => q.questionId) || []
+      );
+      const currentIds = new Set(
+        currentQuestions?.map((q: QuestionDTO) => q.questionId) || []
+      );
+      const isDifferentPart =
+        previousIds.size > 0 &&
+        !Array.from(currentIds).some((id) => previousIds.has(id));
+
+      if (isDifferentPart && this.isInMockTest) {
+        console.log(
+          '[SpeakingComponent] Detected part change in MockTest - clearing speakingResults'
+        );
+        this.speakingResults.clear();
+        this.speakingQuestionResults = [];
+        this.speakingStateService.resetAllStates();
+        this.isAutoSubmitting = false;
+        this.isWaitingForAllScored = false;
+      }
+
       this.baseQuestionService.initializeQuestions(this.questions);
     }
   }
@@ -246,6 +296,19 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   private loadAttemptId(): void {
     try {
+      if (
+        this.isInMockTest &&
+        this.mockTestAttemptId &&
+        this.mockTestAttemptId > 0
+      ) {
+        this.attemptId = this.mockTestAttemptId;
+        console.log(
+          '[Speaking] Using mockTestAttemptId from parent:',
+          this.attemptId
+        );
+        return;
+      }
+
       const stored = localStorage.getItem('currentExamAttempt');
 
       if (!stored) {
@@ -372,18 +435,39 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }): void {
     const { questionId, result } = event;
 
+    console.log('[SpeakingComponent] onSpeakingResult received:', {
+      questionId: questionId,
+      overallScore: result?.overallScore,
+      currentQuestionsIds: this.questions.map((q) => q.questionId),
+      isInMockTest: this.isInMockTest,
+      speakingResultsBeforeUpdate: Array.from(this.speakingResults.keys()),
+    });
+
     const q = this.questions.find((q) => q.questionId === questionId);
 
     if (!q) {
       console.error(
         '[SpeakingComponent]  Question not found for questionId:',
-        questionId
+        questionId,
+        'Available questions:',
+        this.questions.map((q) => q.questionId)
       );
       return;
     }
 
     if (result.overallScore !== null && result.overallScore !== undefined) {
       this.speakingResults.set(q.questionId, result);
+
+      console.log(
+        '[SpeakingComponent] Result stored for questionId:',
+        q.questionId,
+        {
+          speakingResultsAfterUpdate: Array.from(this.speakingResults.keys()),
+          areAllQuestionsNowScored: this.questions.every((q) =>
+            this.speakingResults.has(q.questionId)
+          ),
+        }
+      );
 
       const questionIndex = this.questions.findIndex(
         (q) => q.questionId === questionId
@@ -423,6 +507,73 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   onSpeakingSubmitting(isSubmitting: boolean): void {
     this.isSpeakingSubmitting = isSubmitting;
     if (!isSubmitting) {
+    }
+  }
+
+  // Mock test helper methods
+  areAllQuestionsScored(): boolean {
+    if (!this.questions || this.questions.length === 0) {
+      console.log(
+        '[SpeakingComponent] areAllQuestionsScored: No questions, returning false'
+      );
+      return false;
+    }
+
+    const allScored = this.questions.every((q) =>
+      this.speakingResults.has(q.questionId)
+    );
+
+    console.log('[SpeakingComponent] areAllQuestionsScored check:', {
+      questionIds: this.questions.map((q) => q.questionId),
+      speakingResultsKeys: Array.from(this.speakingResults.keys()),
+      speakingResultsSize: this.speakingResults.size,
+      questionsLength: this.questions.length,
+      allScored: allScored,
+      eachQuestionStatus: this.questions.map((q) => ({
+        questionId: q.questionId,
+        hasResult: this.speakingResults.has(q.questionId),
+      })),
+    });
+
+    return allScored;
+  }
+
+  getScoredCount(): number {
+    // Only count results for current questions
+    const count = this.questions.filter((q) =>
+      this.speakingResults.has(q.questionId)
+    ).length;
+    console.log('[SpeakingComponent] getScoredCount:', {
+      totalQuestions: this.questions.length,
+      scoredCount: count,
+      speakingResultsSize: this.speakingResults.size,
+    });
+    return count;
+  }
+
+  onNextPartClicked(): void {
+    console.log('[SpeakingComponent] onNextPartClicked called:', {
+      areAllQuestionsScored: this.areAllQuestionsScored(),
+      isInMockTest: this.isInMockTest,
+    });
+
+    if (this.isInMockTest) {
+      if (this.areAllQuestionsScored()) {
+        console.log(
+          '[SpeakingComponent] onNextPartClicked: All scored in MockTest, emitting speakingPartCompleted'
+        );
+        this.baseQuestionService.finishQuiz();
+        this.speakingPartCompleted.emit();
+      } else {
+        console.log(
+          '[SpeakingComponent] onNextPartClicked: Not all scored yet, waiting...'
+        );
+      }
+    } else {
+      // Ngoài MockTest, gọi finishSpeakingExam bình thường
+      if (this.areAllQuestionsScored()) {
+        this.finishSpeakingExam();
+      }
     }
   }
 
@@ -471,7 +622,15 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         this.baseQuestionService.navigateToQuestion(nextIndex);
         this.resetCounter++;
       } else {
-        this.finishSpeakingExam();
+        if (this.isInMockTest && this.areAllQuestionsScored()) {
+          console.log(
+            '[SpeakingComponent] onAutoAdvanceNext: Last question scored in MockTest, auto-finishing'
+          );
+          this.finishSpeakingExam();
+        } else if (!this.isInMockTest) {
+          this.finishSpeakingExam();
+        }
+        // Nếu trong MockTest nhưng chưa chấm xong, không làm gì - chờ scoring hoàn tất
       }
 
       this.isAutoAdvancing = false;
@@ -596,17 +755,43 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   async finishSpeakingExam(): Promise<void> {
+    console.log('[SpeakingComponent] finishSpeakingExam called:', {
+      showSpeakingSummary: this.showSpeakingSummary,
+      hasSpeakingQuestions: this.hasSpeakingQuestions(),
+      isInMockTest: this.isInMockTest,
+      questionsCount: this.questions.length,
+      speakingResultsSize: this.speakingResults.size,
+      questionIds: this.questions.map((q) => q.questionId),
+      speakingResultsKeys: Array.from(this.speakingResults.keys()),
+    });
+
+    if (this.isInMockTest) {
+      console.log(
+        '[SpeakingComponent] finishSpeakingExam: In MockTest mode, skipping summary and emitting speakingPartCompleted'
+      );
+
+      // Chỉ finish quiz và emit event để ExamComponent xử lý chuyển part
+      this.baseQuestionService.finishQuiz();
+      this.speakingPartCompleted.emit();
+
+      console.log(
+        '[SpeakingComponent] finishSpeakingExam: speakingPartCompleted emitted successfully'
+      );
+      return;
+    }
+
+    // Phần code dưới đây chỉ chạy khi KHÔNG phải MockTest mode
     if (this.showSpeakingSummary) {
+      console.log(
+        '[SpeakingComponent] finishSpeakingExam: Already showing summary, returning'
+      );
       return;
     }
 
     if (!this.hasSpeakingQuestions()) {
-      return;
-    }
-
-    if (this.isInMockTest) {
-      this.baseQuestionService.finishQuiz();
-      this.speakingPartCompleted.emit();
+      console.log(
+        '[SpeakingComponent] finishSpeakingExam: No speaking questions, returning'
+      );
       return;
     }
 
