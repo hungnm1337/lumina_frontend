@@ -7,35 +7,35 @@
         <div class="title-section">
           <h1 class="page-title">
             <span class="toeic-badge">TOEIC</span>
-            Vocabulary Management
+            Quản Lý Từ Vựng
           </h1>
           <p class="page-subtitle">
-            Organize your vocabulary into lists for focused learning
+            Tổ chức từ vựng của bạn thành các danh sách để học tập hiệu quả
           </p>
         </div>
         <div class="header-stats">
           <div class="stat-card">
             <div class="stat-number">{{vocabularyLists.length || 0}}</div>
-            <div class="stat-label">Total Lists</div>
+            <div class="stat-label">Tổng Danh Sách</div>
           </div>
           <div class="stat-card">
             <div class="stat-number">{{getPendingCount()}}</div>
-            <div class="stat-label">Pending</div>
+            <div class="stat-label">Chờ Duyệt</div>
           </div>
           <div class="stat-card">
             <div class="stat-number">{{getPublishedCount()}}</div>
-            <div class="stat-label">Published</div>
+            <div class="stat-label">Đã Xuất Bản</div>
           </div>
         </div>
       </div>
-      <button class="btn-primary" (click)="openCreateListModal()"><i class="fas fa-folder-plus"></i> Add New List</button>
+      <button class="btn-primary" (click)="openCreateListModal()"><i class="fas fa-folder-plus"></i> Thêm Danh Sách Mới</button>
     </div>
 
     <div class="search-filter-panel">
       <div class="search-section">
         <div class="search-input-wrapper">
           <i class="fas fa-search search-icon"></i>
-          <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchInput($event)" placeholder="Search vocabulary lists..." class="search-input">
+          <input type="text" [(ngModel)]="searchTerm" (input)="onSearchChange()" placeholder="Tìm kiếm danh sách từ vựng..." class="search-input">
           <button *ngIf="searchTerm" (click)="clearSearch()" class="clear-search-btn"><i class="fas fa-times"></i></button>
         </div>
       </div>
@@ -43,7 +43,7 @@
 
 
     <div *ngIf="isLoading" class="loading-state">
-      <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></div><p>Loading lists...</p>
+      <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></div><p>Đang tải danh sách...</p>
     </div>
     <div *ngIf="!isLoading && vocabularyLists.length > 0" class="folder-grid">
       <div *ngFor="let list of vocabularyLists" 
@@ -57,27 +57,27 @@
             <div class="folder-icon"><i class="fas fa-folder"></i></div>
             <div class="list-info">
               <h3 class="folder-name">{{ list.name }}</h3>
-              <p class="folder-meta">{{ list.vocabularyCount }} words · Created by {{ list.makeByName }}</p>
+              <p class="folder-meta">{{ list.vocabularyCount }} từ · Tạo bởi {{ list.makeByName }}</p>
             </div>
           </div>
           <div class="folder-status-right">
             <div *ngIf="list.status?.toLowerCase() === 'published'" class="status-badge-published">
               <i class="fas fa-check-circle"></i>
               <div class="status-text-wrapper">
-                <span class="status-line-1">Approved</span>
-                <span class="status-line-2">& Published</span>
+                <span class="status-line-1">Đã Duyệt</span>
+                <span class="status-line-2">& Xuất Bản</span>
               </div>
             </div>
             <div *ngIf="list.status?.toLowerCase() === 'pending'" class="status-info status-pending">
               <i class="fas fa-clock"></i>
-              <span>Waiting for approval</span>
+              <span>Đang chờ duyệt</span>
             </div>
             <div *ngIf="list.status?.toLowerCase() === 'draft' || list.status?.toLowerCase() === 'rejected'" class="action-buttons">
               <button class="btn-request-approval" (click)="requestApproval(list, $event); $event.stopPropagation()" 
                       [disabled]="isSubmitting">
                 <i class="fas fa-paper-plane"></i> 
-                <span *ngIf="!isSubmitting">Send for Review</span>
-                <span *ngIf="isSubmitting">Sending...</span>
+                <span *ngIf="!isSubmitting">Gửi Để Duyệt</span>
+                <span *ngIf="isSubmitting">Đang gửi...</span>
               </button>
             </div>
           </div>
@@ -110,34 +110,33 @@
     </div>
     <div *ngIf="!isLoading && vocabularyLists.length === 0" class="empty-state">
       <div class="empty-icon"><i class="fas fa-folder-open"></i></div>
-      <h3>No vocabulary lists found</h3>
-      <p>Create your first list to start adding words. Remember to send for review when ready!</p>
-      <button class="btn-add-first" (click)="openCreateListModal()"><i class="fas fa-plus"></i> Create First List</button>
+      <h3>Không tìm thấy danh sách từ vựng</h3>
+      <p>Tạo danh sách đầu tiên để bắt đầu thêm từ. Nhớ gửi để duyệt khi đã sẵn sàng!</p>
+      <button class="btn-add-first" (click)="openCreateListModal()"><i class="fas fa-plus"></i> Tạo Danh Sách Đầu Tiên</button>
     </div>
   </div>
   <div *ngIf="currentView === 'words' && selectedList">
     <div class="page-header">
       <div class="header-content">
-        <button class="btn-back" (click)="showListView()"><i class="fas fa-arrow-left"></i> Back to Lists</button>
+        <button class="btn-back" (click)="showListView()"><i class="fas fa-arrow-left"></i> Quay Lại Danh Sách</button>
         <div class="title-section">
           <h1 class="page-title">
             <i class="fas fa-folder-open folder-title-icon"></i> 
             {{ selectedList.name }}
-            <span class="word-count-badge">{{ selectedList.vocabularyCount }} words</span>
           </h1>
           <p class="page-subtitle">
-            Manage all words inside this list
+            Quản lý tất cả từ vựng trong danh sách này
           </p>
         </div>
       </div>
-      <button class="btn-primary" (click)="openModal()"><i class="fas fa-plus"></i> Add New Word</button>
+      <button class="btn-primary" (click)="openModal()"><i class="fas fa-plus"></i> Thêm Từ Mới</button>
     </div>
 
     <div class="search-filter-panel">
       <div class="search-section">
         <div class="search-input-wrapper">
           <i class="fas fa-search search-icon"></i>
-          <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchInput($event)" placeholder="Search words in this list..." class="search-input">
+          <input type="text" [(ngModel)]="searchTerm" (input)="onSearchChange()" placeholder="Tìm kiếm từ trong danh sách này..." class="search-input">
           <button *ngIf="searchTerm" (click)="clearSearch()" class="clear-search-btn"><i class="fas fa-times"></i></button>
         </div>
       </div>
@@ -147,7 +146,7 @@
     <div class="main-content">
       <div class="vocabulary-list-section">
         <div *ngIf="isLoading" class="loading-state">
-          <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></div><p>Loading vocabulary...</p>
+          <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></div><p>Đang tải từ vựng...</p>
         </div>
         <div *ngIf="!isLoading" class="vocabulary-grid">
           <div *ngFor="let vocab of pagedVocabularies" class="vocabulary-card">
@@ -157,7 +156,7 @@
                 <div class="word-header">
                   <h3 class="word-title" (click)="speakWord(vocab.word)">
                     {{vocab.word}}
-                    <button class="btn-speak" (click)="speakWord(vocab.word); $event.stopPropagation()" title="Pronounce">
+                    <button class="btn-speak" (click)="speakWord(vocab.word); $event.stopPropagation()" title="Phát âm">
                       <i class="fas fa-volume-up"></i>
                     </button>
                   </h3>
@@ -175,10 +174,10 @@
                 </div>
               </div>
               <div class="card-actions-menu">
-                <button class="btn-action btn-edit" (click)="openModal(vocab); $event.stopPropagation()" title="Edit word">
+                <button class="btn-action btn-edit" (click)="openModal(vocab); $event.stopPropagation()" title="Chỉnh sửa từ">
                   <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn-action btn-delete" (click)="deleteVocabulary(vocab.id); $event.stopPropagation()" title="Delete word">
+                <button class="btn-action btn-delete" (click)="deleteVocabulary(vocab.id); $event.stopPropagation()" title="Xóa từ">
                   <i class="fas fa-trash"></i>
                 </button>
               </div>
@@ -200,7 +199,7 @@
               <div class="definition-box">
                 <div class="definition-label">
                   <i class="fas fa-book"></i>
-                  <span>Definition</span>
+                  <span>Định Nghĩa</span>
                 </div>
                 <p class="definition-content">{{vocab.definition}}</p>
               </div>
@@ -208,7 +207,7 @@
               <div class="example-box" *ngIf="vocab.example">
                 <div class="example-label">
                   <i class="fas fa-quote-left"></i>
-                  <span>Example</span>
+                  <span>Ví Dụ</span>
                 </div>
                 <p class="example-content">"{{vocab.example}}"</p>
               </div>
@@ -217,17 +216,14 @@
         </div>
         
         <div *ngIf="!isLoading && pagedVocabularies.length === 0" class="empty-state">
-          <div class="empty-icon"><i class="fas fa-box-open"></i></div><h3>This list is empty</h3><p>Start by adding the first vocabulary word to this list.</p>
-          <button class="btn-add-first" (click)="openModal()"><i class="fas fa-plus"></i> Add First Word</button>
+          <div class="empty-icon"><i class="fas fa-box-open"></i></div><h3>Danh sách này trống</h3><p>Bắt đầu bằng cách thêm từ vựng đầu tiên vào danh sách này.</p>
+          <button class="btn-add-first" (click)="openModal()"><i class="fas fa-plus"></i> Thêm Từ Đầu Tiên</button>
         </div>
         <div *ngIf="!isLoading && totalPages > 1" class="pagination-section">
-          <div class="pagination-info">
-            Showing {{getStartIndex()}} - {{getEndIndex()}} of {{totalItems}} words
-          </div>
           <div class="pagination-controls">
             <button class="btn-page btn-prev" [disabled]="page <= 1" (click)="prevPage()">
               <i class="fas fa-chevron-left"></i>
-              <span>Previous</span>
+              <span>Trước</span>
             </button>
             <div class="page-numbers">
               <button *ngFor="let pageNum of getPageNumbers()" 
@@ -237,8 +233,8 @@
                 {{pageNum}}
               </button>
             </div>
-            <button class="btn-page btn-next" [disabled]="page >= totalPages || totalItems === 0" (click)="nextPage()">
-              <span>Next</span>
+            <button class="btn-page btn-next" [disabled]="page >= totalPages" (click)="nextPage()">
+              <span>Sau</span>
               <i class="fas fa-chevron-right"></i>
             </button>
           </div>
@@ -254,36 +250,31 @@
       <div class="modal-header-content">
         <div class="modal-icon"><i class="fas fa-folder-plus"></i></div>
         <div class="modal-title-section">
-          <h2>Create New Vocabulary List</h2>
-          <p>Start a new collection of words</p>
+          <h2>Tạo Danh Sách Từ Vựng Mới</h2>
+          <p>Bắt đầu một bộ sưu tập từ mới</p>
         </div>
       </div>
       <button class="btn-close" (click)="closeCreateListModal()"><i class="fas fa-times"></i></button>
     </div>
     <form [formGroup]="listForm" (ngSubmit)="saveNewList()" class="modal-form">
       <div class="form-group">
-        <label for="list-name">List Name *</label>
-        <input id="list-name" type="text" formControlName="name" placeholder="e.g., TOEIC Business Vocabulary" class="form-input">
+        <label for="list-name">Tên Danh Sách *</label>
+        <input id="list-name" type="text" formControlName="name" placeholder="Ví dụ: Từ Vựng TOEIC Kinh Doanh" class="form-input">
         <div *ngIf="listForm.get('name')?.invalid && listForm.get('name')?.touched" class="error-message">
-          <span *ngIf="listForm.get('name')?.errors?.['required']">
-            List name is required.
-          </span>
-          <span *ngIf="listForm.get('name')?.errors?.['minlength']">
-            List name must be at least 3 characters.
-          </span>
-          <span *ngIf="listForm.get('name')?.errors?.['maxlength']">
-            List name must not exceed 100 characters.
-          </span>
-          <span *ngIf="listForm.get('name')?.errors?.['pattern']">
-            List name can only contain letters, numbers, spaces, hyphens, and underscores.
-          </span>
+          Tên danh sách là bắt buộc.
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="checkbox-wrapper">
+          <input id="isPublic" type="checkbox" formControlName="isPublic" class="form-checkbox">
+          <label for="isPublic">Công khai danh sách này cho tất cả người dùng</label>
         </div>
       </div>
       <div class="modal-actions">
-        <button type="button" class="btn-secondary" (click)="closeCreateListModal()">Cancel</button>
+        <button type="button" class="btn-secondary" (click)="closeCreateListModal()">Hủy</button>
         <button type="submit" class="btn-primary" [disabled]="listForm.invalid || isSubmitting">
           <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin"></i>
-          Create List
+          Tạo Danh Sách
         </button>
       </div>
     </form>
@@ -297,8 +288,8 @@
           <i class="fas fa-book-medical"></i>
         </div>
         <div class="modal-title-section">
-          <h2>{{ editingVocabulary ? 'Edit Vocabulary' : 'Add New Vocabulary' }}</h2>
-          <p>Build your TOEIC vocabulary collection</p>
+          <h2>{{ editingVocabulary ? 'Chỉnh Sửa Từ Vựng' : 'Thêm Từ Vựng Mới' }}</h2>
+          <p>Xây dựng bộ sưu tập từ vựng TOEIC của bạn</p>
         </div>
       </div>
       <button class="btn-close" (click)="closeModal()">
@@ -309,27 +300,16 @@
     <form [formGroup]="vocabularyForm" (ngSubmit)="saveVocabulary()" class="modal-form">
   
       <div class="form-group full-width">
-        <label for="word">ENGLISH WORD <span class="required">*</span></label>
+        <label for="word">TỪ TIẾNG ANH <span class="required">*</span></label>
         <input
           id="word"
           type="text"
           formControlName="word"
           class="form-input"
-          placeholder="Enter English word"
+          placeholder="Nhập từ tiếng Anh"
         />
         <div *ngIf="vocabularyForm.get('word')?.invalid && vocabularyForm.get('word')?.touched" class="error-message">
-          <span *ngIf="vocabularyForm.get('word')?.errors?.['required']">
-            English word is required.
-          </span>
-          <span *ngIf="vocabularyForm.get('word')?.errors?.['minlength']">
-            Word must be at least 1 character.
-          </span>
-          <span *ngIf="vocabularyForm.get('word')?.errors?.['maxlength']">
-            Word must not exceed 100 characters.
-          </span>
-          <span *ngIf="vocabularyForm.get('word')?.errors?.['pattern']">
-            Word can only contain letters, spaces, hyphens, and apostrophes.
-          </span>
+          Từ tiếng Anh là bắt buộc.
         </div>
       </div>
       <div class="form-row">
@@ -339,112 +319,69 @@
             <option value="">Select part of speech</option>
             <option *ngFor="let pos of partsOfSpeech" [value]="pos">{{ pos }}</option>
           </select>
-          <div *ngIf="vocabularyForm.get('partOfSpeech')?.invalid && vocabularyForm.get('partOfSpeech')?.touched" class="error-message">
-            <span *ngIf="vocabularyForm.get('partOfSpeech')?.errors?.['required']">
-              Part of speech is required.
-            </span>
-            <span *ngIf="vocabularyForm.get('partOfSpeech')?.errors?.['pattern']">
-              Please select a valid part of speech.
-            </span>
-          </div>
         </div>
 
         <div class="form-group">
-          <label for="category">CATEGORY <span class="required">*</span></label>
+          <label for="category">DANH MỤC <span class="required">*</span></label>
           <input
             id="category"
             type="text"
             formControlName="category"
             class="form-input"
-            placeholder="Enter category (e.g., Business, Technology, Travel...)"
+            placeholder="Nhập danh mục (ví dụ: Business, Technology, Travel...)"
             list="category-suggestions"
           />
           <datalist id="category-suggestions">
             <option *ngFor="let category of categories" [value]="category.name"></option>
           </datalist>
-          <div *ngIf="vocabularyForm.get('category')?.invalid && vocabularyForm.get('category')?.touched" class="error-message">
-            <span *ngIf="vocabularyForm.get('category')?.errors?.['required']">
-              Category is required.
-            </span>
-            <span *ngIf="vocabularyForm.get('category')?.errors?.['maxlength']">
-              Category must not exceed 50 characters.
-            </span>
-            <span *ngIf="vocabularyForm.get('category')?.errors?.['pattern']">
-              Category can only contain letters, spaces, and hyphens.
-            </span>
-          </div>
         </div>
 
       </div>
 
       <!-- Definition -->
       <div class="form-group full-width">
-        <label for="definition">DEFINITION <span class="required">*</span></label>
+        <label for="definition">ĐỊNH NGHĨA <span class="required">*</span></label>
         <textarea
           id="definition"
           formControlName="definition"
           rows="3"
           class="form-textarea"
-          placeholder="Enter word definition"
+          placeholder="Nhập định nghĩa của từ"
         ></textarea>
-        <div *ngIf="vocabularyForm.get('definition')?.invalid && vocabularyForm.get('definition')?.touched" class="error-message">
-          <span *ngIf="vocabularyForm.get('definition')?.errors?.['required']">
-            Definition is required.
-          </span>
-          <span *ngIf="vocabularyForm.get('definition')?.errors?.['maxlength']">
-            Definition must not exceed 1000 characters.
-          </span>
-        </div>
       </div>
 
       <!-- Vietnamese Translation -->
       <div class="form-group full-width">
-        <label for="translation">VIETNAMESE TRANSLATION <span class="required">*</span></label>
+        <label for="translation">BẢN DỊCH TIẾNG VIỆT <span class="required">*</span></label>
         <textarea
           id="translation"
           formControlName="translation"
           rows="2"
           class="form-textarea"
-          placeholder="Enter Vietnamese translation"
+          placeholder="Nhập bản dịch tiếng Việt"
         ></textarea>
-        <div *ngIf="vocabularyForm.get('translation')?.invalid && vocabularyForm.get('translation')?.touched" class="error-message">
-          <span *ngIf="vocabularyForm.get('translation')?.errors?.['required']">
-            Translation is required.
-          </span>
-          <span *ngIf="vocabularyForm.get('translation')?.errors?.['maxlength']">
-            Translation must not exceed 500 characters.
-          </span>
-        </div>
       </div>
 
       <!-- Example Sentence -->
       <div class="form-group full-width">
-        <label for="example">EXAMPLE SENTENCE <span class="required">*</span></label>
+        <label for="example">VÍ DỤ <span class="required">*</span></label>
         <textarea
           id="example"
           formControlName="example"
           rows="3"
           class="form-textarea"
-          placeholder="Enter example sentence"
+          placeholder="Nhập câu ví dụ"
         ></textarea>
-        <div *ngIf="vocabularyForm.get('example')?.invalid && vocabularyForm.get('example')?.touched" class="error-message">
-          <span *ngIf="vocabularyForm.get('example')?.errors?.['required']">
-            Example sentence is required.
-          </span>
-          <span *ngIf="vocabularyForm.get('example')?.errors?.['maxlength']">
-            Example sentence must not exceed 500 characters.
-          </span>
-        </div>
       </div>
 
       <!-- Image Upload -->
       <div class="form-group full-width">
-        <label for="vocab-image">Image (optional)</label>
+        <label for="vocab-image">Hình Ảnh (tùy chọn)</label>
         
         <!-- Current Image Preview -->
         <div *ngIf="imagePreview" class="image-preview-container">
           <img [src]="imagePreview" alt="Vocabulary image" class="image-preview" />
-          <button type="button" class="btn-remove-image" (click)="removeImage()" title="Remove image">
+          <button type="button" class="btn-remove-image" (click)="removeImage()" title="Xóa hình ảnh">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
@@ -467,7 +404,7 @@
               <polyline points="17 8 12 3 7 8"/>
               <line x1="12" y1="3" x2="12" y2="15"/>
             </svg>
-            <span>{{ imagePreview ? 'Change Image' : 'Select Image' }}</span>
+            <span>{{ imagePreview ? 'Đổi Hình Ảnh' : 'Chọn Hình Ảnh' }}</span>
           </label>
         </div>
         
@@ -477,13 +414,13 @@
       <!-- Actions -->
       <div class="modal-actions">
         <button type="button" class="btn-secondary" (click)="closeModal()">
-          Cancel
+          Hủy
         </button>
         <button type="submit" class="btn-primary" [disabled]="vocabularyForm.invalid || isSubmitting || isUploadingImage">
           <i *ngIf="isSubmitting || isUploadingImage" class="fas fa-spinner fa-spin"></i>
-          <span *ngIf="!isSubmitting && !isUploadingImage">{{ editingVocabulary ? 'Update Word' : 'Add Word' }}</span>
-          <span *ngIf="isUploadingImage && !isSubmitting">Uploading image...</span>
-          <span *ngIf="isSubmitting && !isUploadingImage">{{ editingVocabulary ? 'Updating...' : 'Saving...' }}</span>
+          <span *ngIf="!isSubmitting && !isUploadingImage">{{ editingVocabulary ? 'Cập Nhật Từ' : 'Thêm Từ' }}</span>
+          <span *ngIf="isUploadingImage && !isSubmitting">Đang tải ảnh lên...</span>
+          <span *ngIf="isSubmitting && !isUploadingImage">{{ editingVocabulary ? 'Đang cập nhật...' : 'Đang lưu...' }}</span>
         </button>
       </div>
     </form>
@@ -495,9 +432,10 @@
   <div class="modal-content modal-confirm" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <div class="modal-header-content">
-        <div class="modal-icon" [ngClass]="{'icon-danger': confirmType === 'delete', 'icon-warning': confirmType === 'approval'}">
+        <div class="modal-icon" [ngClass]="{'icon-danger': confirmType === 'delete', 'icon-warning': confirmType === 'approval' || confirmType === 'cancel'}">
           <i *ngIf="confirmType === 'delete'" class="fas fa-exclamation-triangle"></i>
           <i *ngIf="confirmType === 'approval'" class="fas fa-paper-plane"></i>
+          <i *ngIf="confirmType === 'cancel'" class="fas fa-exclamation-circle"></i>
         </div>
         <div class="modal-title-section">
           <h2>{{confirmTitle}}</h2>
@@ -523,13 +461,14 @@
       <button
         type="button"
         class="btn-primary"
-        [ngClass]="{'btn-danger': confirmType === 'delete', 'btn-warning': confirmType === 'approval'}"
-        (click)="confirmType === 'delete' ? confirmDelete() : confirmApproval()"
+        [ngClass]="{'btn-danger': confirmType === 'delete', 'btn-warning': confirmType === 'approval' || confirmType === 'cancel'}"
+        (click)="confirmType === 'delete' ? confirmDelete() : (confirmType === 'approval' ? confirmApproval() : confirmCancel())"
         [disabled]="isSubmitting || isLoading">
         <i *ngIf="isSubmitting || isLoading" class="fas fa-spinner fa-spin"></i>
         <i *ngIf="!isSubmitting && !isLoading && confirmType === 'delete'" class="fas fa-trash"></i>
         <i *ngIf="!isSubmitting && !isLoading && confirmType === 'approval'" class="fas fa-paper-plane"></i>
-        <span *ngIf="!isSubmitting && !isLoading">{{confirmType === 'delete' ? 'Xóa' : 'Gửi phê duyệt'}}</span>
+        <i *ngIf="!isSubmitting && !isLoading && confirmType === 'cancel'" class="fas fa-times"></i>
+        <span *ngIf="!isSubmitting && !isLoading">{{confirmType === 'delete' ? 'Xóa' : (confirmType === 'approval' ? 'Gửi phê duyệt' : 'Xác nhận hủy')}}</span>
         <span *ngIf="isSubmitting || isLoading">Đang xử lý...</span>
       </button>
     </div>

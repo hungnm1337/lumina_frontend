@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SidebarComponent } from '../../Common/sidebar/sidebar.component'; 
 import { HeaderComponent } from '../../Common/header/header.component'; 
@@ -26,5 +26,14 @@ export class ManagerLayoutComponent {
 
   toggleSidebar() {
     this.isSidebarOpen = !this.isSidebarOpen;
+  }
+
+  // Phím tắt Ctrl+B để toggle sidebar
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (event.ctrlKey && event.key === 'b') {
+      event.preventDefault();
+      this.toggleSidebar();
+    }
   }
 }
