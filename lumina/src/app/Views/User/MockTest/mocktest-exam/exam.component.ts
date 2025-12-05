@@ -66,6 +66,10 @@ export class ExamComponent implements OnInit, OnDestroy {
   selectedAnswers: { [questionId: number]: number } = {}; // questionId -> optionId (for Listening/Reading)
   showPartCompletionMessage: boolean = false;
 
+  // Speaking tracking in MockTest
+  speakingCompletedQuestions: { [partId: number]: number } = {}; // partId -> number of completed questions
+  showSpeakingNextPartButton: boolean = false; // Hiển thị nút chuyển part cho Speaking
+
   // Attempt management
   attemptId: number | null = null;
   examId: number | null = null;
@@ -567,14 +571,22 @@ export class ExamComponent implements OnInit, OnDestroy {
       this.currentPartTime = this.calculatePartTotalTime();
       this.timerResetTrigger = Date.now(); // Force timer reset
       this.hasShownWarning = false; // Reset warning flag
-      console.log(`🕐 Part ${this.currentPartIndex + 1} timer initialized: ${this.currentPartTime}s`);
+      console.log(
+        `🕐 Part ${this.currentPartIndex + 1} timer initialized: ${
+          this.currentPartTime
+        }s`
+      );
     }
   }
 
   // Handle timer events from time component
   onPartTimerTick(remainingTime: number): void {
     // Show warning at 30 seconds
-    if (remainingTime <= 30 && !this.hasShownWarning && this.isMultipleChoicePart) {
+    if (
+      remainingTime <= 30 &&
+      !this.hasShownWarning &&
+      this.isMultipleChoicePart
+    ) {
       this.hasShownWarning = true;
       this.toastService.warning('⚠️ Còn 30 giây để hoàn thành part này!');
     }
@@ -583,7 +595,9 @@ export class ExamComponent implements OnInit, OnDestroy {
   onPartTimeout(): void {
     if (!this.isMultipleChoicePart) return;
 
-    this.toastService.warning('⏰ Hết thời gian! Tự động chuyển sang part tiếp theo');
+    this.toastService.warning(
+      '⏰ Hết thời gian! Tự động chuyển sang part tiếp theo'
+    );
 
     // Auto-move to next part or finish exam
     setTimeout(() => {
@@ -652,8 +666,17 @@ export class ExamComponent implements OnInit, OnDestroy {
       showPartCompletionMessage: this.showPartCompletionMessage,
     });
 
+    // ✅ FIX: Lưu số câu Speaking đã hoàn thành cho part hiện tại
+    if (this.currentPart) {
+      this.speakingCompletedQuestions[this.currentPart.partId] =
+        this.currentPart.questions.length;
+      console.log(
+        '[ExamComponent] Speaking completed questions updated:',
+        this.speakingCompletedQuestions
+      );
+    }
+
     // Speaking finished all questions in mock test
-    // Auto-advance to next part or finish exam
     if (this.isLastQuestionInExam()) {
       console.log(
         '[ExamComponent] onSpeakingPartCompleted: Last question in exam, finishing exam'
@@ -661,9 +684,10 @@ export class ExamComponent implements OnInit, OnDestroy {
       this.finishExam();
     } else {
       console.log(
-        '[ExamComponent] onSpeakingPartCompleted: Setting showPartCompletionMessage = true'
+        '[ExamComponent] onSpeakingPartCompleted: Showing next part button for Speaking'
       );
-      this.showPartCompletionMessage = true;
+      // ✅ FIX: Hiển thị nút chuyển part thay vì tự động chuyển
+      this.showSpeakingNextPartButton = true;
     }
   }
 
@@ -729,6 +753,7 @@ export class ExamComponent implements OnInit, OnDestroy {
       this.currentPartIndex++;
       this.currentQuestionIndex = 0;
       this.showPartCompletionMessage = false;
+      this.showSpeakingNextPartButton = false; // Reset nút chuyển part Speaking
       this.toastService.success(`Starting ${this.currentPart?.title}`);
       this.updatePartCodeStorage();
       // Initialize timer for new part
@@ -757,7 +782,16 @@ export class ExamComponent implements OnInit, OnDestroy {
   }
 
   getAnsweredCount(): number {
-    return Object.keys(this.selectedAnswers).length;
+    // Đếm câu trả lời multiple choice (Listening/Reading)
+    const multipleChoiceCount = Object.keys(this.selectedAnswers).length;
+
+    // Đếm câu Speaking đã hoàn thành
+    const speakingCount = Object.values(this.speakingCompletedQuestions).reduce(
+      (sum, count) => sum + count,
+      0
+    );
+
+    return multipleChoiceCount + speakingCount;
   }
 
   finishExam() {

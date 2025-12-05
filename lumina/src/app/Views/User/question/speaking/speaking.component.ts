@@ -67,6 +67,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   @Input() questions: QuestionDTO[] = [];
   @Input() partInfo: ExamPartDTO | null = null;
   @Input() isInMockTest: boolean = false;
+  @Input() mockTestAttemptId: number | null = null; // AttemptId passed from MockTest parent
   @Output() speakingAnswered = new EventEmitter<boolean>();
   @Output() speakingPartCompleted = new EventEmitter<void>();
 
@@ -158,6 +159,17 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['mockTestAttemptId'] && this.isInMockTest) {
+      const newAttemptId = changes['mockTestAttemptId'].currentValue;
+      if (newAttemptId && newAttemptId > 0) {
+        this.attemptId = newAttemptId;
+        console.log(
+          '[SpeakingComponent] mockTestAttemptId updated:',
+          this.attemptId
+        );
+      }
+    }
+
     if (changes['questions']) {
       const previousQuestions = changes['questions'].previousValue;
       const currentQuestions = changes['questions'].currentValue;
@@ -284,6 +296,19 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   private loadAttemptId(): void {
     try {
+      if (
+        this.isInMockTest &&
+        this.mockTestAttemptId &&
+        this.mockTestAttemptId > 0
+      ) {
+        this.attemptId = this.mockTestAttemptId;
+        console.log(
+          '[Speaking] Using mockTestAttemptId from parent:',
+          this.attemptId
+        );
+        return;
+      }
+
       const stored = localStorage.getItem('currentExamAttempt');
 
       if (!stored) {
@@ -531,8 +556,24 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       areAllQuestionsScored: this.areAllQuestionsScored(),
       isInMockTest: this.isInMockTest,
     });
-    if (this.areAllQuestionsScored() && this.isInMockTest) {
-      this.finishSpeakingExam();
+
+    if (this.isInMockTest) {
+      if (this.areAllQuestionsScored()) {
+        console.log(
+          '[SpeakingComponent] onNextPartClicked: All scored in MockTest, emitting speakingPartCompleted'
+        );
+        this.baseQuestionService.finishQuiz();
+        this.speakingPartCompleted.emit();
+      } else {
+        console.log(
+          '[SpeakingComponent] onNextPartClicked: Not all scored yet, waiting...'
+        );
+      }
+    } else {
+      // Ngoài MockTest, gọi finishSpeakingExam bình thường
+      if (this.areAllQuestionsScored()) {
+        this.finishSpeakingExam();
+      }
     }
   }
 
@@ -581,7 +622,15 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         this.baseQuestionService.navigateToQuestion(nextIndex);
         this.resetCounter++;
       } else {
-        this.finishSpeakingExam();
+        if (this.isInMockTest && this.areAllQuestionsScored()) {
+          console.log(
+            '[SpeakingComponent] onAutoAdvanceNext: Last question scored in MockTest, auto-finishing'
+          );
+          this.finishSpeakingExam();
+        } else if (!this.isInMockTest) {
+          this.finishSpeakingExam();
+        }
+        // Nếu trong MockTest nhưng chưa chấm xong, không làm gì - chờ scoring hoàn tất
       }
 
       this.isAutoAdvancing = false;
@@ -716,6 +765,22 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       speakingResultsKeys: Array.from(this.speakingResults.keys()),
     });
 
+    if (this.isInMockTest) {
+      console.log(
+        '[SpeakingComponent] finishSpeakingExam: In MockTest mode, skipping summary and emitting speakingPartCompleted'
+      );
+
+      // Chỉ finish quiz và emit event để ExamComponent xử lý chuyển part
+      this.baseQuestionService.finishQuiz();
+      this.speakingPartCompleted.emit();
+
+      console.log(
+        '[SpeakingComponent] finishSpeakingExam: speakingPartCompleted emitted successfully'
+      );
+      return;
+    }
+
+    // Phần code dưới đây chỉ chạy khi KHÔNG phải MockTest mode
     if (this.showSpeakingSummary) {
       console.log(
         '[SpeakingComponent] finishSpeakingExam: Already showing summary, returning'
@@ -726,18 +791,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     if (!this.hasSpeakingQuestions()) {
       console.log(
         '[SpeakingComponent] finishSpeakingExam: No speaking questions, returning'
-      );
-      return;
-    }
-
-    if (this.isInMockTest) {
-      console.log(
-        '[SpeakingComponent] finishSpeakingExam: In MockTest mode, emitting speakingPartCompleted'
-      );
-      this.baseQuestionService.finishQuiz();
-      this.speakingPartCompleted.emit();
-      console.log(
-        '[SpeakingComponent] finishSpeakingExam: speakingPartCompleted emitted successfully'
       );
       return;
     }
