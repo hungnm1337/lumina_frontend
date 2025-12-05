@@ -15,10 +15,18 @@
       <input
         type="text"
         [(ngModel)]="searchQuery"
-        placeholder="Tìm kiếm bài viết..."
+        (ngModelChange)="onSearchInput()"
+        placeholder="Search articles..." 
         class="search-input"
         (keyup.enter)="onSearch()"
       >
+      <button 
+        *ngIf="searchQuery" 
+        class="clear-search-btn" 
+        (click)="clearSearch()"
+        title="Clear search">
+        <i class="fas fa-times"></i>
+      </button>
       <button class="search-btn" (click)="onSearch()">
         <i class="fas fa-search"></i>
       </button>
@@ -27,7 +35,7 @@
 </div>
 
 <!-- Featured Articles Section -->
-<div class="featured-section">
+<div class="featured-section" *ngIf="!searchQuery.trim()">
   <div class="section-header">
     <h2 class="section-title">Bài viết nổi bật</h2>
     <p class="section-subtitle">Các bài viết được đọc và chia sẻ nhiều nhất</p>
@@ -62,8 +70,8 @@
         </div>
 
         <h3 class="card-title">{{ article.title }}</h3>
-        <p class="card-summary">{{ article.summary }}</p>
-
+        <p class="card-summary">{{ truncateText(article.summary, 150) }}</p>
+        
         <div class="card-author">
           <div [class]="'author-avatar ' + getAuthorAvatarColor(0)">
             {{ article.authorName.charAt(0).toUpperCase() }}
@@ -143,8 +151,8 @@
         </div>
 
         <h3 class="card-title">{{ article.title }}</h3>
-        <p class="card-summary">{{ article.summary }}</p>
-
+        <p class="card-summary">{{ truncateText(article.summary, 150) }}</p>
+        
         <div class="card-author">
           <div [class]="'author-avatar ' + getAuthorAvatarColor(0)">
             {{ article.authorName.charAt(0).toUpperCase() }}
@@ -212,7 +220,7 @@
     </div>
 
     <div class="pagination-info">
-      Trang {{ currentPage }} / {{ totalPages }} ({{ publishedArticles.length }} bài viết)
+      Page {{ currentPage }} / {{ totalPages }}
     </div>
   </div>
 </div>

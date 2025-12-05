@@ -1,8 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { VocabularyService } from '../../../Services/Vocabulary/vocabulary.service';
 import { ToastService } from '../../../Services/Toast/toast.service';
+import { AuthService } from '../../../Services/Auth/auth.service';
 import {
   Vocabulary,
   VocabularyCategory,
@@ -22,7 +26,7 @@ interface VocabularyReviewRequest {
   templateUrl: './vocabulary-management.component.html',
   styleUrls: ['./vocabulary-management.component.scss']
 })
-export class VocabularyManagementComponent implements OnInit {
+export class VocabularyManagementComponent implements OnInit, OnDestroy {
   // ----- TRẠNG THÁI GIAO DIỆN -----
   currentView: 'lists' | 'words' = 'lists';
   selectedList: VocabularyListResponse | null = null;
@@ -31,33 +35,43 @@ export class VocabularyManagementComponent implements OnInit {
   vocabularies: Vocabulary[] = [];
   filteredVocabularies: Vocabulary[] = [];
   vocabularyLists: VocabularyListResponse[] = [];
+  allListsForStats: VocabularyListResponse[] = []; // All lists for statistics (not filtered)
   stats: VocabularyStats[] = [];
   
   // ----- STATS METHODS -----
   getTotalCount(): number {
-    return this.vocabularyLists.length;
+    return this.allListsForStats.length;
   }
   
   getPendingCount(): number {
-    return this.vocabularyLists.filter(list => list.status?.toLowerCase() === 'pending').length;
+    return this.allListsForStats.filter(list => list.status?.toLowerCase() === 'pending').length;
   }
   
   getPublishedCount(): number {
-    return this.vocabularyLists.filter(list => list.status?.toLowerCase() === 'published').length;
+    return this.allListsForStats.filter(list => list.status?.toLowerCase() === 'published').length;
   }
 
   // ----- TRẠNG THÁI BỘ LỌC VÀ TÌM KIẾM -----
   searchTerm = '';
   statusFilter = 'all'; // all, pending, approved, rejected
+  private searchSubject = new Subject<string>();
+  private searchSubscription?: Subscription;
+  private subscriptions: Subscription[] = [];
 
   // ----- TRẠNG THÁI MODAL REVIEW -----
   isReviewModalOpen = false;
   reviewingList: VocabularyListResponse | null = null;
   rejectionReason: string = '';
 
+  // ----- TRẠNG THÁI MODAL APPROVE -----
+  showApproveModal = false;
+  approvingList: VocabularyListResponse | null = null;
+
   // ----- TRẠNG THÁI KHÁC -----
   isLoading = false;
   isSubmitting = false;
+  isApproving = false;
+  isRejecting = false;
 
   // ----- DỮ LIỆU TĨNH -----
   categories: VocabularyCategory[] = [
@@ -80,11 +94,42 @@ export class VocabularyManagementComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private vocabularyService: VocabularyService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private authService: AuthService,
+    private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit() {
     this.loadVocabularyLists();
+
+    // Setup search debounce
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(500),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.searchTerm = searchTerm;
+      this.onSearchChange();
+    });
+  }
+
+  ngOnDestroy(): void {
+    // Unsubscribe all subscriptions
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+    if (this.searchSubscription) {
+      this.searchSubscription.unsubscribe();
+    }
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (event.key === 'Escape' && (this.isReviewModalOpen || this.showApproveModal)) {
+      if (this.isReviewModalOpen) {
+        this.cancelReject();
+      }
+      if (this.showApproveModal) {
+        this.cancelApprove();
+      }
+    }
   }
 
   // ----- QUẢN LÝ GIAO DIỆN -----
@@ -106,21 +151,27 @@ export class VocabularyManagementComponent implements OnInit {
   // ----- TẢI DỮ LIỆU -----
   loadVocabularyLists() {
     this.isLoading = true;
-    this.vocabularyService.getVocabularyLists(this.searchTerm).subscribe({
+    const sub = this.vocabularyService.getVocabularyLists(this.searchTerm).subscribe({
       next: (lists) => { 
-        console.log('Manager received vocabulary lists:', lists);
-        // Chỉ hiển thị:
-        // 1. Các folder có status = "Pending" (đã gửi yêu cầu phê duyệt)
-        // 2. Các folder có status = "Published" mà do Staff tạo (RoleId = 3)
+        // Hiển thị các folder của Staff (RoleId = 3) với các status:
+        // 1. Pending (cần duyệt)
+        // 2. Rejected (bị từ chối)
+        // 3. Published (đã duyệt)
         let allLists = lists.filter(list => {
           const status = list.status?.toLowerCase();
           const isStaffCreated = list.makeByRoleId === 3; // RoleId 3 = Staff
           
-          return status === 'pending' || 
-                 (status === 'published' && isStaffCreated);
+          return isStaffCreated && (
+            status === 'pending' || 
+            status === 'rejected' ||
+            status === 'published'
+          );
         }); 
         
-        // Apply status filter
+        // Store all lists for stats (không filter)
+        this.allListsForStats = allLists;
+        
+        // Apply status filter for display
         if (this.statusFilter !== 'all') {
           allLists = allLists.filter(list => {
             const status = list.status?.toLowerCase();
@@ -128,32 +179,59 @@ export class VocabularyManagementComponent implements OnInit {
           });
         }
         
+        // Sắp xếp theo thứ tự ưu tiên: pending -> rejected -> published
+        allLists.sort((a, b) => {
+          const getPriority = (list: VocabularyListResponse): number => {
+            const status = list.status?.toLowerCase();
+            // 1. Pending (cần duyệt) - ưu tiên cao nhất
+            if (status === 'pending') return 1;
+            // 2. Rejected (từ chối) - ưu tiên thứ hai
+            if (status === 'rejected') return 2;
+            // 3. Published (đã duyệt) - ưu tiên thấp nhất
+            if (status === 'published') return 3;
+            // Các trường hợp khác
+            return 4;
+          };
+
+          const priorityA = getPriority(a);
+          const priorityB = getPriority(b);
+
+          if (priorityA !== priorityB) {
+            return priorityA - priorityB;
+          }
+          // Nếu cùng priority, sắp xếp theo ngày tạo (mới nhất trước)
+          const dateA = new Date(a.createAt).getTime();
+          const dateB = new Date(b.createAt).getTime();
+          return dateB - dateA;
+        });
+        
         this.vocabularyLists = allLists;
         this.updatePagination();
         this.isLoading = false; 
       },
       error: (error) => { 
-        console.error('Error loading vocabulary lists:', error);
-        this.toastService.error('Không thể tải danh sách từ điển: ' + (error.error?.message || error.message)); 
+        this.handleError(error, 'tải danh sách từ điển');
         this.isLoading = false; 
       }
     });
+    this.subscriptions.push(sub);
   }
 
   loadVocabularies(listId: number) {
     this.isLoading = true;
     this.page = 1; // Reset to first page when loading new list
-    this.vocabularyService.getVocabularies(listId, this.searchTerm).subscribe({
+    const sub = this.vocabularyService.getVocabularies(listId, this.searchTerm).subscribe({
         next: (vocabularies) => {
             this.vocabularies = vocabularies.map(v => this.vocabularyService.convertToVocabulary(v));
             this.filterVocabularies();
             this.isLoading = false;
         },
         error: (error) => { 
-          this.toastService.error('Không thể tải danh sách từ vựng'); 
+          this.handleError(error, 'tải danh sách từ vựng');
           this.isLoading = false; 
         }
     });
+    this.subscriptions.push(sub);
   }
 
   // ----- TÌM KIẾM & LỌC -----
@@ -180,6 +258,11 @@ export class VocabularyManagementComponent implements OnInit {
     }
   }
 
+  // Search input handler for debounce
+  onSearchInput(value: string): void {
+    this.searchSubject.next(value);
+  }
+
   onStatusFilterChange() {
     this.loadVocabularyLists();
   }
@@ -191,28 +274,66 @@ export class VocabularyManagementComponent implements OnInit {
 
   // ----- DUYỆT/TỪ CHỐI -----
   approveList(list: VocabularyListResponse) {
-    if (!list || this.isSubmitting) {
+    // Check authorization
+    const roleId = this.authService.getRoleId();
+    if (roleId !== 2) { // 2 = Manager
+      this.toastService.error('Bạn không có quyền phê duyệt danh sách từ vựng.');
       return;
     }
 
-    this.isSubmitting = true;
+    // Prevent multiple approvals
+    if (this.isApproving || this.isRejecting) {
+      this.toastService.warning('Đang xử lý, vui lòng đợi...');
+      return;
+    }
+
+    // Show confirmation modal
+    this.approvingList = list;
+    this.showApproveModal = true;
+  }
+
+  // Confirm approval
+  confirmApprove() {
+    if (!this.approvingList) return;
+
+    // Check authorization again
+    const roleId = this.authService.getRoleId();
+    if (roleId !== 2) {
+      this.toastService.error('Bạn không có quyền phê duyệt danh sách từ vựng.');
+      this.cancelApprove();
+      return;
+    }
+
+    if (this.isApproving) {
+      return;
+    }
+
+    this.isApproving = true;
     const reviewData: VocabularyReviewRequest = {
       isApproved: true,
       comment: ''
     };
 
-    this.vocabularyService.reviewVocabularyList(list.vocabularyListId, reviewData).subscribe({
+    const sub = this.vocabularyService.reviewVocabularyList(this.approvingList.vocabularyListId, reviewData).subscribe({
       next: () => {
         this.toastService.success('Đã duyệt danh sách từ vựng thành công!');
+        this.showApproveModal = false;
+        this.approvingList = null;
         this.loadVocabularyLists();
-        this.isSubmitting = false;
+        this.isApproving = false;
       },
       error: (error) => {
-        console.error('Approve error:', error);
-        this.toastService.error('Có lỗi xảy ra khi duyệt danh sách.');
-        this.isSubmitting = false;
+        this.handleError(error, 'duyệt danh sách từ vựng');
+        this.isApproving = false;
       }
     });
+    this.subscriptions.push(sub);
+  }
+
+  // Cancel approval
+  cancelApprove() {
+    this.showApproveModal = false;
+    this.approvingList = null;
   }
 
   rejectList(list: VocabularyListResponse) {
@@ -222,34 +343,86 @@ export class VocabularyManagementComponent implements OnInit {
   }
 
   confirmReject() {
-    if (!this.rejectionReason.trim()) {
+    // Check authorization
+    const roleId = this.authService.getRoleId();
+    if (roleId !== 2) {
+      this.toastService.error('Bạn không có quyền từ chối danh sách từ vựng.');
+      this.cancelReject();
+      return;
+    }
+
+    const reason = this.rejectionReason.trim();
+    
+    if (!reason) {
       this.toastService.warning('Vui lòng nhập lý do từ chối');
       return;
     }
 
-    if (!this.reviewingList || this.isSubmitting) {
+    if (reason.length < 10) {
+      this.toastService.warning('Lý do từ chối phải có ít nhất 10 ký tự');
       return;
     }
 
-    this.isSubmitting = true;
+    if (reason.length > 500) {
+      this.toastService.warning('Lý do từ chối không được vượt quá 500 ký tự');
+      return;
+    }
+
+    if (!this.reviewingList) {
+      return;
+    }
+
+    // Sanitize rejection reason to prevent XSS
+    const sanitizedReason = this.sanitizeText(reason);
+
+    if (this.isRejecting) {
+      return;
+    }
+
+    this.isRejecting = true;
     const reviewData: VocabularyReviewRequest = {
       isApproved: false,
-      comment: this.rejectionReason.trim()
+      comment: sanitizedReason
     };
 
-    this.vocabularyService.reviewVocabularyList(this.reviewingList.vocabularyListId, reviewData).subscribe({
+    const sub = this.vocabularyService.reviewVocabularyList(this.reviewingList.vocabularyListId, reviewData).subscribe({
       next: () => {
         this.toastService.success('Đã từ chối danh sách từ vựng');
         this.cancelReject();
         this.loadVocabularyLists();
-        this.isSubmitting = false;
+        this.isRejecting = false;
       },
       error: (error) => {
-        console.error('Reject error:', error);
-        this.toastService.error('Có lỗi xảy ra khi từ chối danh sách.');
-        this.isSubmitting = false;
+        this.handleError(error, 'từ chối danh sách từ vựng');
+        this.isRejecting = false;
       }
     });
+    this.subscriptions.push(sub);
+  }
+
+  // Sanitize text to prevent XSS
+  private sanitizeText(text: string): string {
+    // Remove HTML tags and dangerous characters
+    return text
+      .replace(/<[^>]*>/g, '')
+      .replace(/javascript:/gi, '')
+      .replace(/on\w+\s*=/gi, '')
+      .trim();
+  }
+
+  // Sanitize HTML content for display
+  sanitizeHtml(html: string): SafeHtml {
+    if (!html) {
+      return this.sanitizer.bypassSecurityTrustHtml('');
+    }
+    
+    // Sanitize HTML content
+    const sanitized = html
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+      .replace(/javascript:/gi, '');
+    
+    return this.sanitizer.bypassSecurityTrustHtml(sanitized);
   }
 
   cancelReject() {
@@ -276,9 +449,23 @@ export class VocabularyManagementComponent implements OnInit {
     if (this.page > this.totalPages) this.page = this.totalPages; 
   }
 
-  nextPage() { if (this.page < this.totalPages) this.page++; }
-  prevPage() { if (this.page > 1) this.page--; }
-  goToPage(pageNum: number) { this.page = pageNum; }
+  nextPage() { 
+    if (this.page < this.totalPages && this.totalItems > 0) {
+      this.page++;
+    }
+  }
+  
+  prevPage() { 
+    if (this.page > 1) {
+      this.page--;
+    }
+  }
+  
+  goToPage(pageNum: number) { 
+    if (pageNum >= 1 && pageNum <= this.totalPages && this.totalItems > 0) {
+      this.page = pageNum;
+    }
+  }
   
   getPageNumbers(): number[] {
     const pages: number[] = [];
@@ -362,22 +549,53 @@ export class VocabularyManagementComponent implements OnInit {
   }
 
   sendBackToStaff(list: VocabularyListResponse) {
+    // Check authorization
+    const roleId = this.authService.getRoleId();
+    if (roleId !== 2) {
+      this.toastService.error('Bạn không có quyền gửi lại danh sách về staff.');
+      return;
+    }
+
     if (confirm('Bạn có chắc muốn gửi lại danh sách này về staff để chỉnh sửa?')) {
       this.isSubmitting = true;
-      this.vocabularyService.sendBackToStaff(list.vocabularyListId).subscribe({
+      const sub = this.vocabularyService.sendBackToStaff(list.vocabularyListId).subscribe({
         next: () => {
           this.toastService.success('Đã gửi lại danh sách về staff!');
           this.loadVocabularyLists();
           this.isSubmitting = false;
         },
         error: (error) => {
-          console.error('Send back error:', error);
-          this.toastService.error('Có lỗi xảy ra khi gửi lại danh sách.');
+          this.handleError(error, 'gửi lại danh sách về staff');
           this.isSubmitting = false;
         }
       });
+      this.subscriptions.push(sub);
     }
   }
+
+  // Improved error handling
+  private handleError(error: any, action: string): void {
+    let errorMessage = `Không thể ${action}.`;
+    
+    if (error.status === 0) {
+      errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+    } else if (error.status === 401) {
+      errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+    } else if (error.status === 403) {
+      errorMessage = 'Bạn không có quyền thực hiện thao tác này.';
+    } else if (error.status === 500) {
+      errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
+    } else if (error?.error?.message) {
+      errorMessage = error.error.message;
+    } else if (error?.message) {
+      errorMessage = error.message;
+    }
+    
+    this.toastService.error(errorMessage);
+  }
+
+  // Helper for template
+  Math = Math;
 }
 
 

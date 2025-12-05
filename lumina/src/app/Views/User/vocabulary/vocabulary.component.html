@@ -116,11 +116,19 @@
       <div *ngIf="!isLoadingLists && userLists.length === 0" class="text-gray-500">No lists yet. Create from AI chat and save to folder to get started.</div>
       <div *ngIf="!isLoadingLists && userLists.length > 0">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div *ngFor="let list of showLimitedUserLists" class="vocab-card cursor-pointer" (click)="navigateToVocabularyList(list)">
+          <div *ngFor="let list of showLimitedUserLists" class="vocab-card cursor-pointer relative" (click)="navigateToVocabularyList(list)">
             <div class="p-6">
               <div class="flex items-center justify-between mb-3">
                 <h3 class="font-bold text-gray-900">{{ list.name }}</h3>
-                <span class="text-xs text-gray-500">{{ list.createAt | date:'dd/MM/yyyy' }}</span>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-gray-500">{{ list.createAt | date:'dd/MM/yyyy' }}</span>
+                  <button 
+                    class="delete-btn"
+                    (click)="openDeleteModal(list, $event)"
+                    title="Xóa folder">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
               </div>
               <p class="text-gray-600 text-sm mb-3">{{ list.vocabularyCount }} words</p>
               <div class="progress-bar mb-2"><div class="progress-fill" [style.width]="(Math.min(list.vocabularyCount,100)) + '%'" ></div></div>
@@ -212,6 +220,49 @@
               </button>
             </div>
           </form>
+        </div>
+      </div>
+
+      <!-- Delete Confirmation Modal -->
+      <div *ngIf="showDeleteModal" class="modal-overlay" (click)="closeDeleteModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <div class="modal-header-content">
+              <div class="modal-icon" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #dc2626;">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <div class="modal-title-section">
+                <h2>Xác nhận xóa folder</h2>
+                <p>Bạn có chắc chắn muốn xóa folder này?</p>
+              </div>
+            </div>
+            <button class="btn-close" (click)="closeDeleteModal()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          
+          <div class="modal-body">
+            <div class="delete-warning">
+              <p class="warning-text">
+                Folder <strong>"{{ listToDelete?.name }}"</strong> sẽ bị xóa vĩnh viễn.
+              </p>
+              <p class="warning-subtext">
+                Tất cả từ vựng trong folder này cũng sẽ bị xóa. Hành động này không thể hoàn tác.
+              </p>
+            </div>
+          </div>
+          
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="closeDeleteModal()" [disabled]="isDeleting">
+              Hủy
+            </button>
+            <button type="button" class="btn-danger" (click)="confirmDeleteList()" [disabled]="isDeleting">
+              <i *ngIf="isDeleting" class="fas fa-spinner fa-spin"></i>
+              <i *ngIf="!isDeleting" class="fas fa-trash"></i>
+              <span *ngIf="!isDeleting">Xóa folder</span>
+              <span *ngIf="isDeleting">Đang xóa...</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -1,8 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ArticleService } from '../../../Services/Article/article.service';
+import { AuthService } from '../../../Services/Auth/auth.service';
 import { Article } from '../../../Interfaces/article.interfaces';
 import { ToastrService } from 'ngx-toastr';
 
@@ -20,7 +23,7 @@ interface ArticleStats {
   templateUrl: './articles.component.html',
   styleUrls: ['./articles.component.scss']
 })
-export class ArticlesComponent implements OnInit {
+export class ArticlesComponent implements OnInit, OnDestroy {
   // Loading/Error states
   isLoading = false;
   errorMessage: string | null = null;
@@ -35,10 +38,14 @@ export class ArticlesComponent implements OnInit {
 
   // Articles data
   articles: Article[] = [];
+  allArticlesForStats: Article[] = []; // All articles for statistics (not filtered)
 
   // Filter states
   selectedStatus: string = 'all';
   searchTerm: string = '';
+  private searchSubject = new Subject<string>();
+  private searchSubscription?: Subscription;
+  private subscriptions: Subscription[] = [];
 
   // Pagination
   page: number = 1;
@@ -51,14 +58,52 @@ export class ArticlesComponent implements OnInit {
   rejectingArticle: Article | null = null;
   rejectionReason: string = '';
 
+  // Approval modal
+  showApproveModal = false;
+  approvingArticle: Article | null = null;
+
+  // Loading states for actions
+  isApproving = false;
+  isRejecting = false;
+
   constructor(
     private articleService: ArticleService,
     private router: Router,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
     this.loadArticles();
+
+    // Setup search debounce
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(500),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.searchTerm = searchTerm;
+      this.page = 1;
+    });
+  }
+
+  ngOnDestroy(): void {
+    // Unsubscribe all subscriptions
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+    if (this.searchSubscription) {
+      this.searchSubscription.unsubscribe();
+    }
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (event.key === 'Escape' && (this.showRejectModal || this.showApproveModal)) {
+      if (this.showRejectModal) {
+        this.cancelReject();
+      }
+      if (this.showApproveModal) {
+        this.cancelApprove();
+      }
+    }
   }
 
   // Load articles from API
@@ -66,28 +111,33 @@ export class ArticlesComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = null;
 
-    this.articleService.getAllArticles().subscribe({
+    const sub = this.articleService.getAllArticles().subscribe({
       next: (response: any) => {
         // Filter out draft articles (manager không xem draft)
         const allArticles = response.map((article: any) => this.articleService.convertToArticle(article));
         this.articles = allArticles.filter((article: Article) => article.status !== 'draft' || article.rejectionReason);
+        
+        // Store all articles for stats (not filtered)
+        this.allArticlesForStats = allArticles.filter((article: Article) => article.status !== 'draft' || article.rejectionReason);
+        
         this.updateStats();
         this.isLoading = false;
       },
       error: (error: any) => {
-        console.error('Lỗi khi tải danh sách bài viết:', error);
+        this.handleError(error, 'tải danh sách bài viết');
         this.errorMessage = 'Không thể tải danh sách bài viết';
         this.isLoading = false;
       }
     });
+    this.subscriptions.push(sub);
   }
 
-  // Update statistics
+  // Update statistics - tính từ tất cả articles (không filter)
   updateStats() {
-    this.stats.totalArticles = this.articles.length;
-    this.stats.pendingArticles = this.articles.filter(a => a.status === 'pending').length;
-    this.stats.approvedArticles = this.articles.filter(a => a.status === 'published').length;
-    this.stats.monthlyViews = this.articles.reduce((sum, a) => sum + a.views, 0);
+    this.stats.totalArticles = this.allArticlesForStats.length;
+    this.stats.pendingArticles = this.allArticlesForStats.filter(a => a.status === 'pending').length;
+    this.stats.approvedArticles = this.allArticlesForStats.filter(a => a.status === 'published').length;
+    this.stats.monthlyViews = this.allArticlesForStats.reduce((sum, a) => sum + (a.views || 0), 0);
   }
 
   // Filter articles
@@ -117,6 +167,34 @@ export class ArticlesComponent implements OnInit {
         article.author.toLowerCase().includes(term)
       );
     }
+
+    // Sắp xếp theo thứ tự ưu tiên: pending -> rejected -> published
+    filtered.sort((a, b) => {
+      // Hàm để xác định thứ tự ưu tiên
+      const getPriority = (article: Article): number => {
+        // 1. Pending (cần duyệt) - ưu tiên cao nhất
+        if (article.status === 'pending') return 1;
+        // 2. Rejected (từ chối) - ưu tiên thứ hai
+        if (article.status === 'draft' && article.rejectionReason) return 2;
+        // 3. Published (đã duyệt) - ưu tiên thấp nhất
+        if (article.status === 'published') return 3;
+        // Các trường hợp khác
+        return 4;
+      };
+
+      const priorityA = getPriority(a);
+      const priorityB = getPriority(b);
+
+      // Sắp xếp theo priority, nếu cùng priority thì sắp xếp theo ngày tạo (mới nhất trước)
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+
+      // Nếu cùng priority, sắp xếp theo ngày tạo (mới nhất trước)
+      const dateA = new Date(a.publishDate).getTime();
+      const dateB = new Date(b.publishDate).getTime();
+      return dateB - dateA;
+    });
 
     // Update pagination
     this.totalItems = filtered.length;
@@ -167,16 +245,61 @@ export class ArticlesComponent implements OnInit {
 
   // Duyệt bài viết
   approveArticle(article: Article) {
-    this.articleService.reviewArticle(article.id, true).subscribe({
+    // Check authorization
+    const roleId = this.authService.getRoleId();
+    if (roleId !== 2) { // 2 = Manager
+      this.toastr.error('Bạn không có quyền phê duyệt bài viết.');
+      return;
+    }
+
+    // Prevent multiple approvals
+    if (this.isApproving || this.isRejecting) {
+      this.toastr.warning('Đang xử lý, vui lòng đợi...');
+      return;
+    }
+
+    // Show confirmation modal
+    this.approvingArticle = article;
+    this.showApproveModal = true;
+  }
+
+  // Confirm approval
+  confirmApprove() {
+    if (!this.approvingArticle) return;
+
+    // Check authorization again
+    const roleId = this.authService.getRoleId();
+    if (roleId !== 2) {
+      this.toastr.error('Bạn không có quyền phê duyệt bài viết.');
+      this.cancelApprove();
+      return;
+    }
+
+    if (this.isApproving) {
+      return;
+    }
+
+    this.isApproving = true;
+    const sub = this.articleService.reviewArticle(this.approvingArticle.id, true).subscribe({
       next: (response) => {
         this.toastr.success('Bài viết đã được duyệt thành công!');
+        this.showApproveModal = false;
+        this.approvingArticle = null;
         this.loadArticles();
+        this.isApproving = false;
       },
       error: (error) => {
-        console.error('Lỗi khi duyệt bài viết:', error);
-        this.toastr.error('Có lỗi xảy ra khi duyệt bài viết');
+        this.handleError(error, 'duyệt bài viết');
+        this.isApproving = false;
       }
     });
+    this.subscriptions.push(sub);
+  }
+
+  // Cancel approval
+  cancelApprove() {
+    this.showApproveModal = false;
+    this.approvingArticle = null;
   }
 
   // Từ chối bài viết
@@ -188,24 +311,64 @@ export class ArticlesComponent implements OnInit {
 
   // Xác nhận từ chối với lý do
   confirmReject() {
-    if (!this.rejectionReason.trim()) {
+    // Check authorization
+    const roleId = this.authService.getRoleId();
+    if (roleId !== 2) {
+      this.toastr.error('Bạn không có quyền từ chối bài viết.');
+      this.cancelReject();
+      return;
+    }
+
+    const reason = this.rejectionReason.trim();
+    
+    if (!reason) {
       this.toastr.warning('Vui lòng nhập lý do từ chối');
       return;
     }
 
-    this.articleService.reviewArticle(this.rejectingArticle!.id, false, this.rejectionReason).subscribe({
+    if (reason.length < 10) {
+      this.toastr.warning('Lý do từ chối phải có ít nhất 10 ký tự');
+      return;
+    }
+
+    if (reason.length > 500) {
+      this.toastr.warning('Lý do từ chối không được vượt quá 500 ký tự');
+      return;
+    }
+
+    // Sanitize rejection reason to prevent XSS
+    const sanitizedReason = this.sanitizeText(reason);
+
+    if (this.isRejecting) {
+      return;
+    }
+
+    this.isRejecting = true;
+    const sub = this.articleService.reviewArticle(this.rejectingArticle!.id, false, sanitizedReason).subscribe({
       next: (response) => {
         this.toastr.success('Bài viết đã được từ chối');
         this.showRejectModal = false;
         this.rejectingArticle = null;
         this.rejectionReason = '';
         this.loadArticles();
+        this.isRejecting = false;
       },
       error: (error) => {
-        console.error('Lỗi khi từ chối bài viết:', error);
-        this.toastr.error('Có lỗi xảy ra khi từ chối bài viết');
+        this.handleError(error, 'từ chối bài viết');
+        this.isRejecting = false;
       }
     });
+    this.subscriptions.push(sub);
+  }
+
+  // Sanitize text to prevent XSS
+  private sanitizeText(text: string): string {
+    // Remove HTML tags and dangerous characters
+    return text
+      .replace(/<[^>]*>/g, '')
+      .replace(/javascript:/gi, '')
+      .replace(/on\w+\s*=/gi, '')
+      .trim();
   }
 
   // Hủy từ chối
@@ -222,19 +385,26 @@ export class ArticlesComponent implements OnInit {
 
   // Toggle hide/show article - Uses IsPublished field
   toggleHideArticle(article: Article) {
+    // Check authorization
+    const roleId = this.authService.getRoleId();
+    if (roleId !== 2) {
+      this.toastr.error('Bạn không có quyền ẩn/hiện bài viết.');
+      return;
+    }
+
     // Toggle IsPublished: true = hiển thị, false = ẩn
     const newPublishedStatus = !article.isPublished;
-    this.articleService.toggleHideArticle(article.id, newPublishedStatus).subscribe({
+    const sub = this.articleService.toggleHideArticle(article.id, newPublishedStatus).subscribe({
       next: (response) => {
         article.isPublished = newPublishedStatus;
         this.toastr.success(newPublishedStatus ? 'Bài viết đã được hiển thị' : 'Bài viết đã được ẩn');
         this.loadArticles(); // Reload to update list
       },
       error: (error) => {
-        console.error('Lỗi khi ẩn/hiện bài viết:', error);
-        this.toastr.error('Có lỗi xảy ra khi ẩn/hiện bài viết');
+        this.handleError(error, 'ẩn/hiện bài viết');
       }
     });
+    this.subscriptions.push(sub);
   }
 
   // Clear search
@@ -257,7 +427,7 @@ export class ArticlesComponent implements OnInit {
 
   // Pagination methods
   nextPage() {
-    if (this.page < this.totalPages) {
+    if (this.page < this.totalPages && this.totalItems > 0) {
       this.page++;
     }
   }
@@ -269,7 +439,35 @@ export class ArticlesComponent implements OnInit {
   }
 
   goToPage(pageNum: number) {
-    this.page = pageNum;
+    if (pageNum >= 1 && pageNum <= this.totalPages && this.totalItems > 0) {
+      this.page = pageNum;
+    }
+  }
+
+  // Improved error handling
+  private handleError(error: any, action: string): void {
+    let errorMessage = `Không thể ${action}.`;
+    
+    if (error.status === 0) {
+      errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+    } else if (error.status === 401) {
+      errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+    } else if (error.status === 403) {
+      errorMessage = 'Bạn không có quyền thực hiện thao tác này.';
+    } else if (error.status === 500) {
+      errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
+    } else if (error?.error?.message) {
+      errorMessage = error.error.message;
+    } else if (error?.message) {
+      errorMessage = error.message;
+    }
+    
+    this.toastr.error(errorMessage);
+  }
+
+  // Search input handler
+  onSearchInput(value: string): void {
+    this.searchSubject.next(value);
   }
 
   getPageNumbers(): number[] {
@@ -283,4 +481,7 @@ export class ArticlesComponent implements OnInit {
     }
     return pages;
   }
+
+  // Helper for template
+  Math = Math;
 }

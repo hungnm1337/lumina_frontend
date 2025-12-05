@@ -216,6 +216,17 @@ export class VocabularyService {
     return this.http.get(`${this.vocabularyListsUrl}/${id}`, { headers });
   }
 
+  // Xóa vocabulary list
+  deleteVocabularyList(id: number): Observable<any> {
+    const token = localStorage.getItem('lumina_token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.delete(`${this.vocabularyListsUrl}/${id}`, { headers });
+  }
+
   // Helper method để convert VocabularyWord thành Vocabulary (cho UI)
   convertToVocabulary(vocabulary: VocabularyWord): Vocabulary {
     console.log('Converting vocabulary:', vocabulary);

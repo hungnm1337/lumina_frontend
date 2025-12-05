@@ -31,6 +31,11 @@ export class ChatComponent implements OnInit, OnDestroy {
   showSaveButton = false;
   generatedVocabularies: GeneratedVocabularyDTO[] = [];
   vocabularyImageUrl: string | null = null; // URL ảnh từ AI
+  
+  // Modal state for folder name input
+  showFolderModal = false;
+  folderName = 'Vocabulary Folder';
+  pendingVocabularies: GeneratedVocabularyDTO[] = [];
 
   constructor(
     private chatService: ChatService,
@@ -171,15 +176,32 @@ export class ChatComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const folderName = prompt('Nhập tên folder cho từ vựng:', 'Vocabulary Folder');
-    if (!folderName || folderName.trim() === '') {
+    // Store vocabularies and open modal
+    this.pendingVocabularies = vocabToSave;
+    this.folderName = 'Vocabulary Folder';
+    this.showFolderModal = true;
+  }
+
+  closeFolderModal(): void {
+    this.showFolderModal = false;
+    this.pendingVocabularies = [];
+    this.folderName = 'Vocabulary Folder';
+  }
+
+  async confirmSaveFolder(): Promise<void> {
+    if (!this.folderName || this.folderName.trim() === '') {
+      this.toastService.warning('Vui lòng nhập tên folder!');
       return;
     }
+
+    const folderName = this.folderName.trim();
+    const vocabToSave = this.pendingVocabularies;
 
     try {
       const userId = this.authService.getCurrentUserId();
       if (!userId) {
         this.toastService.error('Vui lòng đăng nhập để lưu từ vựng!');
+        this.closeFolderModal();
         return;
       }
 
@@ -200,7 +222,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
       const request: SaveVocabularyRequestDTO = {
         userId: userId,
-        folderName: folderName.trim(),
+        folderName: folderName,
         vocabularies: vocabToSave, // Mỗi vocabulary đã có imageUrl riêng (Cloudinary URL)
         imageUrl: this.vocabularyImageUrl || undefined // Gửi URL ảnh folder nếu có (deprecated, giữ để backward compatibility)
       };
@@ -216,6 +238,9 @@ export class ChatComponent implements OnInit, OnDestroy {
 
       if (response && response.success) {
         this.toastService.success(response.message);
+        
+        // Đóng modal
+        this.closeFolderModal();
         
         // Ẩn nút lưu
         this.showSaveButton = false;
@@ -234,20 +259,30 @@ export class ChatComponent implements OnInit, OnDestroy {
         // Emit tin nhắn để lưu vào savedMessages của FloatingChatComponent
         this.messageAdded.emit(confirmMessage);
 
-        // Điều hướng đến trang Từ vựng và highlight folder mới tạo
-        // Delay một chút để đảm bảo message được emit trước khi navigate
-        setTimeout(() => {
-          try {
-            const listId = response.vocabularyListId;
-            if (listId) {
-              this.router.navigate(['/vocabulary'], { queryParams: { highlight: listId } });
-            } else {
-              this.router.navigate(['/vocabulary']);
+        // Kiểm tra xem đang ở trang vocabulary hay không
+        const currentUrl = this.router.url;
+        const isOnVocabularyPage = currentUrl.startsWith('/vocabulary') && !currentUrl.includes('/vocabulary/list/');
+
+        if (isOnVocabularyPage) {
+          // Nếu đang ở trang vocabulary, reload lại trang để cập nhật danh sách
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
+        } else {
+          // Nếu không ở trang vocabulary, navigate đến trang đó
+          setTimeout(() => {
+            try {
+              const listId = response.vocabularyListId;
+              if (listId) {
+                this.router.navigate(['/vocabulary'], { queryParams: { highlight: listId } });
+              } else {
+                this.router.navigate(['/vocabulary']);
+              }
+            } catch (err) {
+              console.error('Navigation error:', err);
             }
-          } catch (err) {
-            console.error('Navigation error:', err);
-          }
-        }, 100);
+          }, 100);
+        }
       } else {
         this.toastService.error('Lưu từ vựng thất bại. Vui lòng thử lại!');
       }
@@ -256,6 +291,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       console.error('Error saving vocabularies:', error);
       const errorMessage = error?.error?.message || error?.message || 'Lỗi khi lưu từ vựng!';
       this.toastService.error(errorMessage);
+      // Không đóng modal khi có lỗi để user có thể thử lại
     }
   }
 

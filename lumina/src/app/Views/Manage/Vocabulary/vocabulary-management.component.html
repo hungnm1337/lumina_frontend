@@ -36,9 +36,10 @@
         <input
           type="text"
           [(ngModel)]="searchTerm"
-          (input)="onSearchChange()"
+          (ngModelChange)="onSearchInput($event)"
           placeholder="Search vocabulary lists..."
-          class="search-input">
+          class="search-input"
+          maxlength="100">
         <button 
           *ngIf="searchTerm" 
           (click)="clearSearch()" 
@@ -140,6 +141,17 @@
                 <span>{{ list.isPublic ? 'Công khai' : 'Riêng tư' }}</span>
               </div>
             </div>
+
+            <!-- Rejection Reason Alert -->
+            <div *ngIf="list.rejectionReason" class="rejection-alert">
+              <div class="alert-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span class="alert-title">Danh sách đã bị từ chối</span>
+              </div>
+              <div class="alert-content">
+                <p class="rejection-reason">{{ list.rejectionReason }}</p>
+              </div>
+            </div>
           </div>
 
           <!-- Card Footer -->
@@ -154,17 +166,21 @@
             <button 
               *ngIf="canReview(list)"
               class="btn-success-card"
-              (click)="approveList(list)">
-              <i class="fas fa-check"></i>
-              Duyệt
+              (click)="approveList(list)"
+              [disabled]="isApproving || isRejecting">
+              <i *ngIf="isApproving" class="fas fa-spinner fa-spin"></i>
+              <i *ngIf="!isApproving" class="fas fa-check"></i>
+              {{isApproving ? 'Đang duyệt...' : 'Duyệt'}}
             </button>
             
             <button 
               *ngIf="canReview(list)"
               class="btn-danger-card"
-              (click)="rejectList(list)">
-              <i class="fas fa-times"></i>
-              Từ chối
+              (click)="rejectList(list)"
+              [disabled]="isApproving || isRejecting">
+              <i *ngIf="isRejecting" class="fas fa-spinner fa-spin"></i>
+              <i *ngIf="!isRejecting" class="fas fa-times"></i>
+              {{isRejecting ? 'Đang từ chối...' : 'Từ chối'}}
             </button>
           </div>
         </div>
@@ -174,7 +190,13 @@
       <div *ngIf="!isLoading && currentView === 'lists' && pagedVocabularyLists.length === 0" class="empty-state">
         <i class="fas fa-inbox"></i>
         <h3>Không có danh sách nào</h3>
-        <p>Chưa có danh sách từ vựng nào để quản lý.</p>
+        <p *ngIf="statusFilter !== 'all' || searchTerm">
+          Không tìm thấy danh sách nào phù hợp với bộ lọc hiện tại.
+          <button (click)="statusFilter = 'all'; searchTerm = ''; onStatusFilterChange()" class="btn-link">Xóa bộ lọc</button>
+        </p>
+        <p *ngIf="statusFilter === 'all' && !searchTerm">
+          Chưa có danh sách từ vựng nào cần duyệt.
+        </p>
       </div>
 
       <!-- Vocabulary Words View -->
@@ -212,12 +234,12 @@
             <div class="word-body">
               <div class="definition">
                 <strong>Định nghĩa:</strong>
-                <p>{{ vocab.definition }}</p>
+                <p [innerHTML]="sanitizeHtml(vocab.definition)"></p>
               </div>
               
               <div class="example" *ngIf="vocab.example">
                 <strong>Ví dụ:</strong>
-                <p>{{ vocab.example }}</p>
+                <p [innerHTML]="sanitizeHtml(vocab.example)"></p>
               </div>
               
               <div class="category" *ngIf="vocab.category">
@@ -240,27 +262,32 @@
 
   <!-- Pagination -->
   <div *ngIf="totalPages > 1" class="pagination">
-    <button 
-      class="pagination-btn" 
-      [disabled]="page === 1"
-      (click)="prevPage()">
-      <i class="fas fa-chevron-left"></i>
-    </button>
-    
-    <button 
-      *ngFor="let pageNum of getPageNumbers()" 
-      class="pagination-btn"
-      [class.active]="pageNum === page"
-      (click)="goToPage(pageNum)">
-      {{ pageNum }}
-    </button>
-    
-    <button 
-      class="pagination-btn" 
-      [disabled]="page === totalPages"
-      (click)="nextPage()">
-      <i class="fas fa-chevron-right"></i>
-    </button>
+    <div class="pagination-info">
+      Showing {{getStartIndex()}} - {{getEndIndex()}} of {{totalItems}} {{currentView === 'lists' ? 'lists' : 'words'}}
+    </div>
+    <div class="pagination-controls">
+      <button 
+        class="pagination-btn" 
+        [disabled]="page === 1"
+        (click)="prevPage()">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      
+      <button 
+        *ngFor="let pageNum of getPageNumbers()" 
+        class="pagination-btn"
+        [class.active]="pageNum === page"
+        (click)="goToPage(pageNum)">
+        {{ pageNum }}
+      </button>
+      
+      <button 
+        class="pagination-btn" 
+        [disabled]="page === totalPages"
+        (click)="nextPage()">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
   </div>
 
   <!-- Rejection Modal -->
@@ -287,12 +314,14 @@
             id="rejectionReason"
             [(ngModel)]="rejectionReason"
             class="form-textarea"
-            placeholder="Vui lòng nhập lý do từ chối danh sách từ vựng này..."
+            placeholder="Vui lòng nhập lý do từ chối danh sách từ vựng này (tối thiểu 10 ký tự)..."
             rows="4"
+            maxlength="500"
             required>
           </textarea>
           <div class="form-help">
-            Lý do từ chối sẽ được gửi đến staff để họ có thể sửa lại danh sách.
+            <span>Lý do từ chối sẽ được gửi đến staff để họ có thể sửa lại danh sách.</span>
+            <span class="char-counter">{{rejectionReason.length || 0}} / 500</span>
           </div>
         </div>
       </div>
@@ -304,12 +333,47 @@
         <button 
           class="btn btn-danger" 
           (click)="confirmReject()"
-          [disabled]="!rejectionReason.trim() || isSubmitting">
-          <i class="fas fa-times" *ngIf="!isSubmitting"></i>
-          <div class="spinner-small" *ngIf="isSubmitting"></div>
-          {{ isSubmitting ? 'Đang xử lý...' : 'Từ chối danh sách' }}
+          [disabled]="!rejectionReason.trim() || isRejecting || rejectionReason.trim().length < 10">
+          <i *ngIf="isRejecting" class="fas fa-spinner fa-spin"></i>
+          <i *ngIf="!isRejecting" class="fas fa-times"></i>
+          {{ isRejecting ? 'Đang xử lý...' : 'Từ chối danh sách' }}
         </button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Approval Modal -->
+<div *ngIf="showApproveModal" class="modal-overlay" (click)="cancelApprove()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">Xác nhận duyệt danh sách từ vựng</h3>
+      <button class="modal-close" (click)="cancelApprove()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="approve-info">
+        <i class="fas fa-check-circle approve-icon"></i>
+        <h4>Danh sách: {{ approvingList?.name }}</h4>
+        <p>Tạo bởi: {{ approvingList?.makeByName }}</p>
+        <p class="approve-warning">Bạn có chắc chắn muốn duyệt và xuất bản danh sách từ vựng này?</p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="cancelApprove()" [disabled]="isApproving">
+        Hủy
+      </button>
+      <button 
+        class="btn btn-success" 
+        (click)="confirmApprove()"
+        [disabled]="isApproving">
+        <i *ngIf="isApproving" class="fas fa-spinner fa-spin"></i>
+        <i *ngIf="!isApproving" class="fas fa-check"></i>
+        {{isApproving ? 'Đang duyệt...' : 'Xác nhận duyệt'}}
+      </button>
     </div>
   </div>
 </div>
