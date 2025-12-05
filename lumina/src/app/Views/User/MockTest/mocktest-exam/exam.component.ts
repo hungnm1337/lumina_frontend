@@ -429,6 +429,11 @@ export class ExamComponent implements OnInit, OnDestroy {
         this.currentPartIndex = 0;
         this.currentQuestionIndex = 0;
         this.initializePartTimer();
+
+        // Auto play audio for first question if it's a listening part
+        if (this.currentSkillType === 'listening') {
+          this.autoPlayAudio();
+        }
       },
       error: (error) => {
         console.error('Error loading mocktest questions:', error);
@@ -758,6 +763,11 @@ export class ExamComponent implements OnInit, OnDestroy {
       this.updatePartCodeStorage();
       // Initialize timer for new part
       this.initializePartTimer();
+
+      // Auto play audio for first question if it's a listening part
+      if (this.currentSkillType === 'listening') {
+        this.autoPlayAudio();
+      }
     }
   }
 
