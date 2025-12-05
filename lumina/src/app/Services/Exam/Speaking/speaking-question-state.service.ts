@@ -138,14 +138,14 @@ export class SpeakingQuestionStateService {
       1: {
         questionNumber: 1,
         partNumber: 1,
-        preparationTime: 45,
-        recordingTime: 45,
+        preparationTime: 10,
+        recordingTime: 10,
       },
       2: {
         questionNumber: 2,
         partNumber: 1,
-        preparationTime: 45,
-        recordingTime: 45,
+        preparationTime: 10,
+        recordingTime: 10,
       },
       3: {
         questionNumber: 3,
