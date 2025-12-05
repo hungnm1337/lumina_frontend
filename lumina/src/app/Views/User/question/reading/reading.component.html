@@ -39,6 +39,19 @@
 
   <!-- Main Content Area (9/12 = 75%, chia thành 6:3 = 50:25) -->
   <div class="col-span-9 bg-white rounded-lg shadow-md p-4">
+    <!-- Timer -->
+    <div
+      *ngIf="partTotalTime > 0"
+      class="mb-4 border border-gray-200 rounded-lg p-3 timer-light"
+    >
+      <app-time
+        [time]="partTotalTime"
+        [resetAt]="timerResetTrigger"
+        (timeout)="onPartTimeout()"
+        (timeUpdate)="onPartTimerTick($event)"
+      ></app-time>
+    </div>
+
     <!-- Main Content: Prompt (6/9 = 50%) và Options (3/9 = 25%) -->
     <div class="grid grid-cols-9 gap-4 mb-3">
       <!-- Left Column: Prompt/Image + Question Stem (6/9 = 50%) -->

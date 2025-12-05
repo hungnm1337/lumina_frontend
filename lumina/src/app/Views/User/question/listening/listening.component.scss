@@ -1,0 +1,8 @@
+// Timer light theme - override white text to dark
+.timer-light {
+  ::ng-deep {
+    .text-white {
+      color: #374151 !important; // text-gray-700
+    }
+  }
+}
