@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, OnInit, ElementRef, HostListener, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, ElementRef, HostListener, OnDestroy } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter, map, mergeMap } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
@@ -15,6 +15,7 @@ import { AuthUserResponse } from './../../../../Interfaces/auth.interfaces';
   templateUrl: './header.component.html',
 })
 export class HeaderComponent implements OnInit, OnDestroy {
+  @Input() sidebarOpen = true;
   @Output() sidebarToggle = new EventEmitter<void>();
   pageTitle = 'Bảng quản lý';
   isDropdownOpen = false;

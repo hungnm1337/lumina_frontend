@@ -64,8 +64,8 @@
           <!-- Image Section -->
           <div *ngIf="currentTerm?.imageUrl" class="flashcard-image-container">
             <img 
-              [src]="currentTerm.imageUrl" 
-              [alt]="'Image for ' + currentTerm.question" 
+              [src]="currentTerm?.imageUrl" 
+              [alt]="'Image for ' + (currentTerm?.question || '')" 
               class="flashcard-image"
               loading="lazy"
               (error)="handleImageError($event, currentTermIndex)"
