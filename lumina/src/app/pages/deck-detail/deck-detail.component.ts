@@ -184,9 +184,8 @@ export class DeckDetailComponent implements OnInit {
   playAudio(event: Event, termIndex?: number): void {
     event.stopPropagation(); // Prevent card flip when clicking audio
 
-    // Nếu có termIndex (từ danh sách từ vựng), dùng term đó, nếu không dùng currentTermIndex (từ flashcard chính)
-    const index = termIndex !== undefined ? termIndex : this.currentTermIndex;
-    const term = this.terms[index];
+    // Nếu có termIndex (từ danh sách từ vựng), dùng term đó, nếu không dùng currentTerm (từ flashcard chính)
+    const term = termIndex !== undefined ? this.terms[termIndex] : this.currentTerm;
 
     if (!term) return;
 
@@ -328,8 +327,8 @@ export class DeckDetailComponent implements OnInit {
   // Thực hiện đánh giá
   private performReview(quality: number): void {
     // Lấy term hiện tại để lấy VocabularyId
-    const currentTerm = this.terms[this.currentTermIndex];
-    if (!currentTerm) {
+    const term = this.currentTerm;
+    if (!term) {
       this.showCustomAlert('Không tìm thấy từ vựng. Vui lòng thử lại.', 'error');
       this.isReviewing = false;
       return;
@@ -344,7 +343,7 @@ export class DeckDetailComponent implements OnInit {
 
     // Gửi VocabularyId và VocabularyListId để tạo/tìm record theo word level
     const request: ReviewVocabularyRequest = {
-      vocabularyId: currentTerm.id, // VocabularyId từ term
+      vocabularyId: term.id, // VocabularyId từ term
       vocabularyListId: listId,
       quality: quality
     };
@@ -420,6 +419,14 @@ export class DeckDetailComponent implements OnInit {
     this.isFlipped = false;
     // Scroll lên đầu flashcard
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Getter để lấy current term một cách an toàn
+  get currentTerm(): Term | undefined {
+    if (this.terms.length === 0 || this.currentTermIndex < 0 || this.currentTermIndex >= this.terms.length) {
+      return undefined;
+    }
+    return this.terms[this.currentTermIndex];
   }
 
   // Custom Alert Modal Methods
