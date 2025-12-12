@@ -166,8 +166,9 @@
             <button 
               *ngIf="canReview(list)"
               class="btn-success-card"
-              (click)="approveList(list)"
-              [disabled]="isApproving || isRejecting">
+              (click)="approveList(list); $event.stopPropagation()"
+              [disabled]="isApproving || isRejecting"
+              type="button">
               <i *ngIf="isApproving" class="fas fa-spinner fa-spin"></i>
               <i *ngIf="!isApproving" class="fas fa-check"></i>
               {{isApproving ? 'Đang duyệt...' : 'Duyệt'}}
@@ -176,8 +177,9 @@
             <button 
               *ngIf="canReview(list)"
               class="btn-danger-card"
-              (click)="rejectList(list)"
-              [disabled]="isApproving || isRejecting">
+              (click)="rejectList(list); $event.stopPropagation()"
+              [disabled]="isApproving || isRejecting"
+              type="button">
               <i *ngIf="isRejecting" class="fas fa-spinner fa-spin"></i>
               <i *ngIf="!isRejecting" class="fas fa-times"></i>
               {{isRejecting ? 'Đang từ chối...' : 'Từ chối'}}
@@ -355,7 +357,9 @@
 
     <div class="modal-body">
       <div class="approve-info">
-        <i class="fas fa-check-circle approve-icon"></i>
+        <div class="approve-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
         <h4>Danh sách: {{ approvingList?.name }}</h4>
         <p>Tạo bởi: {{ approvingList?.makeByName }}</p>
         <p class="approve-warning">Bạn có chắc chắn muốn duyệt và xuất bản danh sách từ vựng này?</p>

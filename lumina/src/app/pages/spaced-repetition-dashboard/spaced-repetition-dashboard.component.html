@@ -1,7 +1,7 @@
 <app-header></app-header>
 
 <div class="dashboard-container">
-  <!-- Header Section -->
+
   <div class="header-section">
     <button (click)="goBack()" class="back-button">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"
@@ -16,10 +16,10 @@
     </div>
   </div>
 
-  <!-- Statistics Cards -->
+
   <div class="stats-section">
     <div class="stats-grid">
-      <!-- Due Today Card -->
+
       <div class="stat-card stat-card-red">
         <div class="stat-icon">
           <i class="fas fa-exclamation-circle"></i>
@@ -30,7 +30,7 @@
         </div>
       </div>
 
-      <!-- Mastered Card -->
+
       <div class="stat-card stat-card-green">
         <div class="stat-icon">
           <i class="fas fa-trophy"></i>
@@ -41,7 +41,7 @@
         </div>
       </div>
 
-      <!-- Upcoming Card -->
+
       <div class="stat-card stat-card-blue">
         <div class="stat-icon">
           <i class="fas fa-calendar-alt"></i>
@@ -53,7 +53,6 @@
       </div>
     </div>
 
-    <!-- New: Button to Vocabulary List Table -->
     <div class="action-center" style="margin-top: 24px; text-align: center;">
       <button class="btn-view-all-vocabulary" routerLink="/spaced-repetition/vocabulary-list">
         <i class="fas fa-table"></i>
@@ -63,7 +62,7 @@
     </div>
   </div>
 
-  <!-- Quick Actions -->
+
   <div class="quick-actions-section" *ngIf="dueTodayWords && dueTodayWords.length > 0">
     <div class="quick-action-card">
       <div class="quick-action-content">
@@ -78,7 +77,7 @@
     </div>
   </div>
 
-  <!-- Due Today Section -->
+
   <div class="section">
     <div class="section-header">
       <div class="section-title-group">
@@ -88,20 +87,19 @@
       <span class="badge badge-due" *ngIf="!isLoadingDue">{{ dueTodayWords.length }}</span>
     </div>
 
-    <!-- Loading State -->
+
     <div *ngIf="isLoadingDue" class="loading-state">
       <div class="loading-spinner"></div>
       <p>Đang tải...</p>
     </div>
 
-    <!-- Empty State -->
+  
     <div *ngIf="!isLoadingDue && dueTodayWords.length === 0" class="empty-state">
       <div class="empty-icon">🎉</div>
       <h3>Không có từ vựng nào cần review!</h3>
       <p>Bạn đã hoàn thành tất cả các từ vựng cần review hôm nay.</p>
     </div>
 
-    <!-- Quiz Button for Due Today Words -->
     <div *ngIf="!isLoadingDue && dueTodayWords.length > 0" class="mb-6">
       <button class="action-button action-button-primary w-full" (click)="startReviewQuiz()">
         <i class="fas fa-question-circle mr-2"></i>
@@ -113,7 +111,7 @@
       </p>
     </div>
 
-    <!-- Due Today Vocabulary Grid -->
+
     <div *ngIf="!isLoadingDue && dueTodayWords.length > 0">
       <div class="vocabulary-grid">
         <div *ngFor="let item of dueTodayWords" class="vocabulary-card upcoming-vocab"
@@ -136,7 +134,6 @@
     </div>
   </div>
 
-  <!-- Missed Words Section -->
   <div class="section" *ngIf="!isLoadingStats && missedWords.length > 0">
     <div class="section-header">
       <div class="section-title-group">
@@ -153,7 +150,7 @@
       </p>
     </div>
 
-    <!-- Missed Words Grid -->
+
     <div class="vocabulary-grid">
       <div *ngFor="let item of missedWords" class="vocabulary-card missed-vocab"
         (click)="goToDeck(item.reviewInfo.vocabularyListId)">
@@ -178,7 +175,6 @@
     </div>
   </div>
 
-  <!-- Tomorrow's Review Section -->
   <div class="section">
     <div class="section-header">
       <div class="section-title-group">
@@ -188,20 +184,19 @@
       <span class="badge badge-upcoming" *ngIf="!isLoadingUpcoming">{{ upcomingVocabularies.length }}</span>
     </div>
 
-    <!-- Loading State -->
+   
     <div *ngIf="isLoadingUpcoming" class="loading-state">
       <div class="loading-spinner"></div>
       <p>Đang tải...</p>
     </div>
 
-    <!-- Empty State -->
+    
     <div *ngIf="!isLoadingUpcoming && upcomingVocabularies.length === 0" class="empty-state">
       <div class="empty-icon">📅</div>
       <h3>Không có từ vựng nào cần học ngày mai</h3>
       <p>Các từ vựng của bạn đã được review hoặc chưa được lên lịch.</p>
     </div>
 
-    <!-- Upcoming Vocabulary Grid -->
     <div *ngIf="!isLoadingUpcoming && upcomingVocabularies.length > 0">
       <div class="vocabulary-grid">
         <div *ngFor="let item of paginatedUpcomingVocabularies" class="vocabulary-card upcoming-vocab"
@@ -222,7 +217,7 @@
         </div>
       </div>
 
-      <!-- Pagination Controls (Carousel Style) -->
+     
       <div *ngIf="totalUpcomingPages > 1" class="pagination-carousel">
         <button class="carousel-btn prev-btn" [disabled]="currentUpcomingPage === 1" (click)="previousUpcomingPage()">
           <i class="fas fa-chevron-left"></i>
@@ -240,7 +235,6 @@
     </div>
   </div>
 
-  <!-- Unlearned Folders Section -->
   <div class="section" *ngIf="!isLoadingStats && unlearnedFolders.length > 0">
     <div class="section-header">
       <div class="section-title-group">
@@ -261,7 +255,6 @@
     </div>
   </div>
 
-  <!-- Learned Folders by Date Section -->
   <div class="section" *ngIf="!isLoadingStats && learnedVocabulariesByDate.length > 0">
     <div class="section-header">
       <div class="section-title-group">
@@ -270,7 +263,7 @@
       </div>
     </div>
 
-    <!-- Group by Date -->
+  
     <div *ngFor="let dateGroup of learnedVocabulariesByDate" class="date-group" [attr.data-date-group]="dateGroup.date">
       <div class="date-group-header">
         <h3 class="date-group-title">
@@ -280,7 +273,6 @@
         <span class="date-group-count">{{ dateGroup.vocabularies.length }} từ vựng</span>
       </div>
 
-      <!-- Vocabulary Grid -->
       <div *ngIf="dateGroup.vocabularies.length > 0">
         <div class="vocabulary-grid">
           <div *ngFor="let item of getPaginatedVocabulariesForDate(dateGroup)" class="vocabulary-card progress-vocab"
@@ -301,7 +293,6 @@
           </div>
         </div>
 
-        <!-- Pagination Controls (Carousel Style) -->
         <div *ngIf="getTotalPagesForDate(dateGroup) > 1" class="pagination-carousel">
           <button class="carousel-btn prev-btn" [disabled]="dateGroup.currentPage === 1"
             (click)="previousPageForDate(dateGroup)">
@@ -319,7 +310,6 @@
         </div>
       </div>
 
-      <!-- Empty state for date group -->
       <div *ngIf="dateGroup.vocabularies.length === 0" class="empty-state">
         <p>Không có từ vựng nào</p>
       </div>

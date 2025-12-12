@@ -38,24 +38,24 @@ export interface ReviewQuizAnswer {
   styleUrls: ['./review-quiz.component.scss']
 })
 export class ReviewQuizComponent implements OnInit, OnDestroy {
-  // Quiz state
+
   allWords: VocabularyWord[] = [];
   questions: ReviewQuizQuestion[] = [];
   currentQuestionIndex: number = 0;
   answers: ReviewQuizAnswer[] = [];
   selectedAnswer: string = '';
   
-  // Timer
-  timeRemaining: number = 30; // 30 seconds per question
+
+  timeRemaining: number = 30; 
   timerSubscription?: Subscription;
   isTimerRunning: boolean = false;
   
-  // State
+
   isLoading: boolean = true;
   isFinished: boolean = false;
   questionStartTime: number = 0;
   
-  // Results
+
   correctCount: number = 0;
   incorrectCount: number = 0;
   wordIds: number[] = [];
@@ -99,8 +99,7 @@ export class ReviewQuizComponent implements OnInit, OnDestroy {
   loadVocabularies(): void {
     this.isLoading = true;
     
-    // Load all vocabularies from all lists that contain these words
-    // We need to get the vocabulary list IDs first
+  
     this.spacedRepetitionService.getDueForReview().subscribe({
       next: (repetitions) => {
         const wordLevelRepetitions = repetitions.filter(r => 
@@ -115,7 +114,7 @@ export class ReviewQuizComponent implements OnInit, OnDestroy {
           return;
         }
 
-        // Get unique list IDs
+      
         const uniqueListIds = new Set<number>();
         const wordToRepetitionMap = new Map<number, any>();
         
@@ -128,7 +127,6 @@ export class ReviewQuizComponent implements OnInit, OnDestroy {
           }
         });
 
-        // Load vocabularies from all lists
         const vocabularyRequests = Array.from(uniqueListIds).map(listId => 
           this.vocabularyService.getVocabularies(listId)
         );
@@ -146,7 +144,7 @@ export class ReviewQuizComponent implements OnInit, OnDestroy {
               });
             });
 
-            // Filter to only include words that are in wordIds
+           
             this.allWords = Array.from(wordsMap.values()).filter(w => 
               w.id && this.wordIds.includes(w.id)
             );
@@ -157,7 +155,7 @@ export class ReviewQuizComponent implements OnInit, OnDestroy {
               return;
             }
 
-            // Generate questions
+         
             this.generateQuestions(wordToRepetitionMap);
             this.isLoading = false;
           },
@@ -177,10 +175,10 @@ export class ReviewQuizComponent implements OnInit, OnDestroy {
   }
 
   generateQuestions(wordToRepetitionMap: Map<number, any>): void {
-    // Shuffle words
+
     const shuffledWords = this.shuffleArray([...this.allWords]);
     
-    // Generate questions - alternate between word-to-meaning and meaning-to-word
+
     this.questions = shuffledWords.map((word, index) => {
       const repetition = wordToRepetitionMap.get(word.id!);
       const questionType: 'word-to-meaning' | 'meaning-to-word' = index % 2 === 0 ? 'word-to-meaning' : 'meaning-to-word';
@@ -276,7 +274,7 @@ export class ReviewQuizComponent implements OnInit, OnDestroy {
 
   selectAnswer(answer: string): void {
     if (this.answers[this.currentQuestionIndex]) {
-      return; // Already answered
+      return;
     }
     
     this.selectedAnswer = answer;
@@ -288,7 +286,7 @@ export class ReviewQuizComponent implements OnInit, OnDestroy {
     const question = this.questions[this.currentQuestionIndex];
     
     if (this.answers[this.currentQuestionIndex]) {
-      return; // Already submitted
+      return; 
     }
     
     const timeSpent = Math.floor((Date.now() - this.questionStartTime) / 1000);
@@ -312,10 +310,9 @@ export class ReviewQuizComponent implements OnInit, OnDestroy {
       this.incorrectCount++;
     }
     
-    // Update spaced repetition status (truyền thêm timeSpent)
     this.updateSpacedRepetition(question, isCorrect, timeSpent);
     
-    // Move to next question or finish
+ 
     setTimeout(() => {
       if (this.currentQuestionIndex < this.questions.length - 1) {
         this.currentQuestionIndex++;
@@ -323,25 +320,23 @@ export class ReviewQuizComponent implements OnInit, OnDestroy {
       } else {
         this.finishQuiz();
       }
-    }, 1500); // Show feedback for 1.5 seconds
+    }, 1500); 
   }
 
   updateSpacedRepetition(question: ReviewQuizQuestion, isCorrect: boolean, timeSpent: number): void {
-    // Cải thiện quality mapping: tính dựa trên thời gian trả lời
-    // Quality: 0-5 (0 = không nhớ, 5 = nhớ rất tốt)
+
     let quality: number;
     
     if (!isCorrect) {
-      quality = 0;  // Không nhớ
+      quality = 0;  
     } else {
-      // Tính quality dựa trên thời gian trả lời
-      // Nhanh (< 5s) = 5, Trung bình (5-15s) = 4, Chậm (> 15s) = 3
+      
       if (timeSpent < 5) {
-        quality = 5;  // Nhớ rất tốt
+        quality = 5;  
       } else if (timeSpent < 15) {
-        quality = 4;  // Nhớ tốt
+        quality = 4; 
       } else {
-        quality = 3;  // Nhớ tạm
+        quality = 3;  
       }
     }
     
@@ -353,7 +348,7 @@ export class ReviewQuizComponent implements OnInit, OnDestroy {
     
     this.spacedRepetitionService.reviewVocabulary(request).subscribe({
       next: (response) => {
-        // Successfully updated
+   
         console.log('Updated review status for word:', question.word);
       },
       error: (error) => {
