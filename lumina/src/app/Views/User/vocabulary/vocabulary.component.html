@@ -11,9 +11,9 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
       <div class="text-center">
-        <h1 class="text-5xl font-bold mb-6">TOEIC Vocabulary</h1>
+        <h1 class="text-5xl font-bold mb-6">Từ vựng TOEIC</h1>
         <p class="text-xl text-purple-100 mb-8 max-w-3xl mx-auto">
-          Learn and practice TOEIC vocabulary effectively with smart flashcard system and diverse exercises
+          Học và luyện tập từ vựng TOEIC hiệu quả với hệ thống thẻ ghi nhớ thông minh và các bài tập đa dạng
         </p>
       </div>
     </div>
@@ -23,62 +23,62 @@
   <!-- Learning Methods -->
   <section class="py-16">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-12"><h2 class="text-3xl font-bold text-gray-900 mb-4">Learning Methods</h2><p class="text-lg text-gray-600">Choose the learning method that suits you</p></div>
+      <div class="text-center mb-12"><h2 class="text-3xl font-bold text-gray-900 mb-4">Phương pháp học</h2><p class="text-lg text-gray-600">Chọn phương pháp học phù hợp với bạn</p></div>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <!-- Flashcards Card -->
-        <div class="vocab-card">
-          <div class="bg-gradient-to-br from-blue-500 to-blue-700 p-6 text-white"><div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4"><i class="fas fa-layer-group text-2xl"></i></div><h3 class="text-2xl font-bold mb-2">Flashcards</h3><p class="text-blue-100">Learn vocabulary with flashcards</p></div>
-          <div class="p-6">
-            <div class="space-y-3 mb-6">
-              <div class="flex items-center space-x-3"><i class="fas fa-eye text-blue-600"></i><span>View words and meanings</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-volume-up text-blue-600"></i><span>Listen to correct pronunciation</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-repeat text-blue-600"></i><span>Smart repetition</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-heart text-blue-600"></i><span>Save favorite words</span></div>
+        <div class="vocab-card flex flex-col">
+          <div class="bg-gradient-to-br from-blue-500 to-blue-700 p-6 text-white flex flex-col" style="min-height: 180px;"><div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4"><i class="fas fa-layer-group text-2xl"></i></div><h3 class="text-2xl font-bold mb-2">Thẻ ghi nhớ</h3><p class="text-blue-100">Học từ vựng với thẻ ghi nhớ</p></div>
+          <div class="p-6 flex flex-col flex-grow">
+            <div class="space-y-3 mb-6 flex-grow">
+              <div class="flex items-center space-x-3"><i class="fas fa-eye text-blue-600"></i><span>Xem từ và nghĩa</span></div>
+              <div class="flex items-center space-x-3"><i class="fas fa-volume-up text-blue-600"></i><span>Nghe phát âm chuẩn</span></div>
+              <div class="flex items-center space-x-3"><i class="fas fa-repeat text-blue-600"></i><span>Lặp lại thông minh</span></div>
+              <div class="flex items-center space-x-3"><i class="fas fa-heart text-blue-600"></i><span>Lưu từ yêu thích</span></div>
             </div>
-            <button class="w-full btn-primary" (click)="startFlashcards()"><i class="fas fa-play mr-2"></i>Start Learning</button>
+            <button class="w-full btn-primary" (click)="startFlashcards()"><i class="fas fa-play mr-2"></i>Bắt đầu học</button>
           </div>
         </div>
         <!-- Quiz Card -->
-        <div class="vocab-card">
-          <div class="bg-gradient-to-br from-green-500 to-green-700 p-6 text-white"><div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4"><i class="fas fa-question-circle text-2xl"></i></div><h3 class="text-2xl font-bold mb-2">Quiz</h3><p class="text-green-100">Test your vocabulary knowledge</p></div>
-          <div class="p-6">
-            <div class="space-y-3 mb-6">
-              <div class="flex items-center space-x-3"><i class="fas fa-list text-green-600"></i><span>Multiple choice questions</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-clock text-green-600"></i><span>Time limit included</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-chart-bar text-green-600"></i><span>View detailed results</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-trophy text-green-600"></i><span>Earn points</span></div>
+        <div class="vocab-card flex flex-col">
+          <div class="bg-gradient-to-br from-green-500 to-green-700 p-6 text-white flex flex-col" style="min-height: 180px;"><div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4"><i class="fas fa-question-circle text-2xl"></i></div><h3 class="text-2xl font-bold mb-2">Câu đố</h3><p class="text-green-100">Kiểm tra kiến thức từ vựng của bạn</p></div>
+          <div class="p-6 flex flex-col flex-grow">
+            <div class="space-y-3 mb-6 flex-grow">
+              <div class="flex items-center space-x-3"><i class="fas fa-list text-green-600"></i><span>Câu hỏi trắc nghiệm</span></div>
+              <div class="flex items-center space-x-3"><i class="fas fa-clock text-green-600"></i><span>Có giới hạn thời gian</span></div>
+              <div class="flex items-center space-x-3"><i class="fas fa-chart-bar text-green-600"></i><span>Xem kết quả chi tiết</span></div>
+              <div class="flex items-center space-x-3"><i class="fas fa-trophy text-green-600"></i><span>Kiếm điểm</span></div>
             </div>
-            <button class="w-full btn-primary bg-gradient-to-r from-green-500 to-green-700" (click)="startQuiz()"><i class="fas fa-play mr-2"></i>Take Quiz</button>
+            <button class="w-full btn-primary bg-gradient-to-r from-green-500 to-green-700" (click)="startQuiz()"><i class="fas fa-play mr-2"></i>Làm bài kiểm tra</button>
           </div>
         </div>
         <!-- Word Lists Card with Spaced Repetition Dashboard -->
-        <div class="vocab-card">
-          <div class="bg-gradient-to-br from-purple-500 to-purple-700 p-6 text-white">
+        <div class="vocab-card flex flex-col">
+          <div class="bg-gradient-to-br from-purple-500 to-purple-700 p-6 text-white flex flex-col" style="min-height: 180px;">
             <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
               <i class="fas fa-brain text-2xl"></i>
             </div>
-            <h3 class="text-2xl font-bold mb-2">Smart Learning</h3>
-            <p class="text-purple-100">Track and review vocabulary with Spaced Repetition</p>
+            <h3 class="text-2xl font-bold mb-2">Học thông minh</h3>
+            <p class="text-purple-100">Theo dõi và ôn tập từ vựng với Lặp lại ngắt quãng</p>
           </div>
           
-          <div class="p-6">
+          <div class="p-6 flex flex-col flex-grow">
             <!-- Features List -->
-            <div class="space-y-3 mb-6">
+            <div class="space-y-3 mb-6 flex-grow">
               <div class="flex items-center space-x-3">
                 <i class="fas fa-bell text-purple-600"></i>
-                <span class="text-sm">Automatic review reminders</span>
+                <span>Nhắc nhở ôn tập tự động</span>
               </div>
               <div class="flex items-center space-x-3">
                 <i class="fas fa-chart-line text-purple-600"></i>
-                <span class="text-sm">Track learning progress</span>
+                <span>Theo dõi tiến độ học tập</span>
               </div>
               <div class="flex items-center space-x-3">
                 <i class="fas fa-clock text-purple-600"></i>
-                <span class="text-sm">Smart review schedule</span>
+                <span>Lịch ôn tập thông minh</span>
               </div>
               <div class="flex items-center space-x-3">
                 <i class="fas fa-star text-purple-600"></i>
-                <span class="text-sm">Evaluate memory level</span>
+                <span>Đánh giá mức độ ghi nhớ</span>
               </div>
             </div>
 
@@ -86,7 +86,7 @@
             <button 
               class="w-full btn-primary bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800" 
               (click)="viewAllProgress()">
-              <i class="fas fa-chart-bar mr-2"></i>View All Progress
+              <i class="fas fa-chart-bar mr-2"></i>Xem tất cả tiến độ
             </button>
           </div>
         </div>
@@ -100,20 +100,20 @@
       <div class="flex justify-center mb-6">  
         <div class="text-center mb-12">
           <div class="flex items-center justify-center gap-4 mb-4">
-            <h2 class="text-3xl font-bold text-gray-900">Vocabulary Topics</h2>
+            <h2 class="text-3xl font-bold text-gray-900">Chủ đề từ vựng</h2>
             <button 
               class="btn-primary flex items-center gap-2 px-4 py-2 text-sm"
               (click)="openCreateListModal()"
               title="Tạo folder vocabulary mới">
               <i class="fas fa-folder-plus"></i>
-              <span>Add Folder</span>
+              <span>Thêm thư mục</span>
             </button>
           </div>
-          <p class="text-lg text-gray-600">Learn vocabulary by common TOEIC topics</p>
+          <p class="text-lg text-gray-600">Học từ vựng theo các chủ đề TOEIC phổ biến</p>
         </div>
       </div>
-      <div *ngIf="isLoadingLists" class="text-gray-600">Loading lists...</div>
-      <div *ngIf="!isLoadingLists && userLists.length === 0" class="text-gray-500">No lists yet. Create from AI chat and save to folder to get started.</div>
+      <div *ngIf="isLoadingLists" class="text-gray-600">Đang tải danh sách...</div>
+      <div *ngIf="!isLoadingLists && userLists.length === 0" class="text-gray-500">Chưa có danh sách. Tạo từ trò chuyện AI và lưu vào thư mục để bắt đầu.</div>
       <div *ngIf="!isLoadingLists && userLists.length > 0">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <div *ngFor="let list of showLimitedUserLists" class="vocab-card cursor-pointer relative" (click)="navigateToVocabularyList(list)">
@@ -130,7 +130,7 @@
                   </button>
                 </div>
               </div>
-              <p class="text-gray-600 text-sm mb-3">{{ list.vocabularyCount }} words</p>
+              <p class="text-gray-600 text-sm mb-3">{{ list.vocabularyCount }} từ</p>
               <div class="progress-bar mb-2"><div class="progress-fill" [style.width]="(Math.min(list.vocabularyCount,100)) + '%'" ></div></div>
             </div>
           </div>
@@ -142,7 +142,7 @@
             (click)="prevPage()" 
             [disabled]="currentPage === 1"
           >
-            Previous
+            Trước
           </button>
           
           <button
@@ -162,12 +162,12 @@
             (click)="nextPage()" 
             [disabled]="currentPage === totalPages"
           >
-            Next
+            Tiếp theo
           </button>
         </div>
         <div class="flex justify-center mt-8" *ngIf="userLists.length > 6">
           <button class="btn-primary px-6 py-2 rounded shadow text-white bg-blue-500 hover:bg-blue-600 transition" (click)="toggleShowAllLists()">
-            {{ showAllLists ? 'Show Less' : 'View More' }}
+            {{ showAllLists ? 'Ẩn bớt' : 'Xem thêm' }}
           </button>
 
         </div>
@@ -176,7 +176,7 @@
       <!-- Overlay displaying list detail as modal -->
       <div *ngIf="selectedVocabularyListDetail" class="fixed inset-0 z-50 bg-black/30 flex items-center justify-center" (click)="closeVocabularyListDetail()">
         <div class="relative bg-white rounded-2xl w-[90vw] max-w-[900px] max-h-[90vh] overflow-auto p-6" (click)="$event.stopPropagation()">
-          <button (click)="closeVocabularyListDetail()" class="absolute top-4 right-4 btn-primary">Close</button>
+          <button (click)="closeVocabularyListDetail()" class="absolute top-4 right-4 btn-primary">Đóng</button>
           <app-vocabulary-list-detail [vocabularyList]="selectedVocabularyListDetail" (close)="closeVocabularyListDetail()"></app-vocabulary-list-detail>
         </div>
       </div>
@@ -273,20 +273,20 @@
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl p-8 text-white text-center">
         <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6"><i class="fas fa-fire text-4xl"></i></div>
-        <h2 class="text-3xl font-bold mb-4">Daily Challenge</h2>
-        <p class="text-xl text-orange-100 mb-6">Learn 10 new words every day to maintain your learning streak</p>
+        <h2 class="text-3xl font-bold mb-4">Thử thách hàng ngày</h2>
+        <p class="text-xl text-orange-100 mb-6">Học 10 từ mới mỗi ngày để duy trì chuỗi học tập của bạn</p>
         <div class="flex items-center justify-center space-x-8 mb-8">
           <div class="text-center">
             <div class="text-3xl font-bold">{{ getConsecutiveDays() }}</div>
-            <div class="text-orange-200 text-sm">Consecutive Days</div>
+            <div class="text-orange-200 text-sm">Ngày liên tiếp</div>
           </div>
           <div class="text-center">
             <div class="text-3xl font-bold">{{ getStreakEmoji() }}</div>
-            <div class="text-orange-200 text-sm">Streak</div>
+            <div class="text-orange-200 text-sm">Chuỗi</div>
           </div>
         </div>
         <button class="btn-primary bg-white text-orange-600 hover:bg-gray-100" (click)="startDailyChallenge()">
-          <i class="fas fa-play mr-2"></i>Continue Challenge
+          <i class="fas fa-play mr-2"></i>Tiếp tục thử thách
         </button>
       </div>
     </div>

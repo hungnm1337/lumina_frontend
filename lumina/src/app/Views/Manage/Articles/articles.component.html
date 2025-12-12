@@ -296,3 +296,40 @@
     </div>
   </div>
 </div>
+
+<!-- Approval Modal -->
+<div *ngIf="showApproveModal" class="modal-overlay" (click)="cancelApprove()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">Xác nhận duyệt bài viết</h3>
+      <button class="modal-close" (click)="cancelApprove()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="approve-info">
+        <div class="approve-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h4>Bài viết: {{ approvingArticle?.title }}</h4>
+        <p>Tác giả: {{ approvingArticle?.author }}</p>
+        <p class="approve-warning">Bạn có chắc chắn muốn duyệt và xuất bản bài viết này?</p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="cancelApprove()" [disabled]="isApproving">
+        Hủy
+      </button>
+      <button 
+        class="btn btn-success" 
+        (click)="confirmApprove()"
+        [disabled]="isApproving">
+        <i *ngIf="isApproving" class="fas fa-spinner fa-spin"></i>
+        <i *ngIf="!isApproving" class="fas fa-check"></i>
+        {{isApproving ? 'Đang duyệt...' : 'Xác nhận duyệt'}}
+      </button>
+    </div>
+  </div>
+</div>

@@ -72,7 +72,7 @@
               <i class="fas fa-clock"></i>
               <span>Đang chờ duyệt</span>
             </div>
-            <div *ngIf="list.status?.toLowerCase() === 'draft' || list.status?.toLowerCase() === 'rejected'" class="action-buttons">
+            <div *ngIf="(list.status?.toLowerCase() === 'draft' || list.status?.toLowerCase() === 'rejected') && list.vocabularyCount > 0" class="action-buttons">
               <button class="btn-request-approval" (click)="requestApproval(list, $event); $event.stopPropagation()" 
                       [disabled]="isSubmitting">
                 <i class="fas fa-paper-plane"></i> 
@@ -83,7 +83,6 @@
           </div>
         </div>
         
-        <!-- Rejection Reason Alert -->
         <div *ngIf="list.rejectionReason" class="rejection-alert-wrapper">
           <div class="rejection-alert">
             <div class="alert-header">
@@ -150,7 +149,6 @@
         </div>
         <div *ngIf="!isLoading" class="vocabulary-grid">
           <div *ngFor="let vocab of pagedVocabularies" class="vocabulary-card">
-            <!-- Card Top Section -->
             <div class="card-top">
               <div class="word-main">
                 <div class="word-header">
@@ -183,9 +181,7 @@
               </div>
             </div>
 
-            <!-- Card Content Section -->
             <div class="card-body">
-              <!-- Image Section -->
               <div *ngIf="vocab.imageUrl" class="vocab-image-section">
                 <img [src]="vocab.imageUrl" [alt]="'Image for ' + vocab.word" class="vocab-image" 
                      (error)="handleImageError($event, vocab)" />
@@ -338,7 +334,6 @@
 
       </div>
 
-      <!-- Definition -->
       <div class="form-group full-width">
         <label for="definition">ĐỊNH NGHĨA <span class="required">*</span></label>
         <textarea
@@ -350,7 +345,6 @@
         ></textarea>
       </div>
 
-      <!-- Vietnamese Translation -->
       <div class="form-group full-width">
         <label for="translation">BẢN DỊCH TIẾNG VIỆT <span class="required">*</span></label>
         <textarea
@@ -362,7 +356,6 @@
         ></textarea>
       </div>
 
-      <!-- Example Sentence -->
       <div class="form-group full-width">
         <label for="example">VÍ DỤ <span class="required">*</span></label>
         <textarea
@@ -374,11 +367,9 @@
         ></textarea>
       </div>
 
-      <!-- Image Upload -->
       <div class="form-group full-width">
         <label for="vocab-image">Hình Ảnh (tùy chọn)</label>
         
-        <!-- Current Image Preview -->
         <div *ngIf="imagePreview" class="image-preview-container">
           <img [src]="imagePreview" alt="Vocabulary image" class="image-preview" />
           <button type="button" class="btn-remove-image" (click)="removeImage()" title="Xóa hình ảnh">
@@ -388,7 +379,6 @@
           </button>
         </div>
         
-        <!-- Image Upload Controls -->
         <div class="image-upload-controls">
           <input
             type="file"
@@ -411,7 +401,6 @@
         <p class="image-upload-hint">Chọn ảnh để upload lên Cloudinary khi lưu (tối đa 5MB)</p>
       </div>
 
-      <!-- Actions -->
       <div class="modal-actions">
         <button type="button" class="btn-secondary" (click)="closeModal()">
           Hủy
@@ -427,7 +416,6 @@
   </div>
 </div>
 
-<!-- Confirmation Modal -->
 <div *ngIf="showConfirmModal" class="modal-overlay" (click)="closeConfirmModal()">
   <div class="modal-content modal-confirm" (click)="$event.stopPropagation()">
     <div class="modal-header">

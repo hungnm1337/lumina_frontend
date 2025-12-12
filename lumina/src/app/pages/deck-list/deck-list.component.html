@@ -6,13 +6,13 @@
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="back-icon">
         <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
       </svg>
-      <span>Back</span>
+      <span>Quay lại</span>
     </button>
-    <h1 class="page-title">TOEIC Vocabulary Set</h1>
-    <p class="page-subtitle">Learn and practice TOEIC vocabulary effectively with smart flashcard system</p>
+    <h1 class="page-title">Bộ từ vựng TOEIC</h1>
+    <p class="page-subtitle">Học và luyện tập từ vựng TOEIC hiệu quả với hệ thống thẻ ghi nhớ thông minh</p>
   </div>
 
-  <!-- Search Section -->
+ 
   <div class="search-section" *ngIf="!isLoading && !error && decks.length > 0">
     <div class="search-container">
       <div class="search-input-wrapper">
@@ -21,7 +21,7 @@
           type="text" 
           [(ngModel)]="searchTerm"
           (ngModelChange)="onSearchChange()"
-          placeholder="Search vocabulary sets..." 
+          placeholder="Tìm kiếm bộ từ vựng..." 
           class="search-input">
         <button 
           *ngIf="searchTerm" 
@@ -33,34 +33,33 @@
     </div>
   </div>
 
-  <!-- Loading State -->
+
   <div *ngIf="isLoading" class="loading-state">
     <div class="loading-spinner"></div>
-    <p>Loading vocabulary list...</p>
+    <p>Đang tải danh sách từ vựng...</p>
   </div>
 
-  <!-- Error State -->
+
   <div *ngIf="error && !isLoading" class="error-state">
     <div class="error-icon">⚠️</div>
     <p>{{ error }}</p>
-    <button class="retry-button" (click)="loadDecks()">Retry</button>
+    <button class="retry-button" (click)="loadDecks()">Thử lại</button>
   </div>
 
-  <!-- Empty State -->
+
   <div *ngIf="!isLoading && !error && decks.length === 0" class="empty-state">
     <div class="empty-icon">📚</div>
-    <h3>No vocabulary sets yet</h3>
-    <p>Currently no vocabulary sets have been approved and published.</p>
+    <h3>Chưa có bộ từ vựng nào</h3>
+    <p>Hiện tại chưa có bộ từ vựng nào được phê duyệt và xuất bản.</p>
   </div>
 
-  <!-- Decks Grid -->
   <div *ngIf="!isLoading && !error && decks.length > 0">
-    <!-- Empty Search Result -->
+   
     <div *ngIf="filteredDecks.length === 0 && searchTerm" class="empty-search-state">
       <div class="empty-icon">🔍</div>
-      <h3>No results found</h3>
-      <p>No vocabulary sets match your search "{{ searchTerm }}"</p>
-      <button class="clear-search-link" (click)="clearSearch()">Clear search</button>
+      <h3>Không tìm thấy kết quả</h3>
+      <p>Không có bộ từ vựng nào khớp với tìm kiếm "{{ searchTerm }}"</p>
+      <button class="clear-search-link" (click)="clearSearch()">Xóa tìm kiếm</button>
     </div>
 
     <div class="decks-grid" *ngIf="filteredDecks.length > 0">
@@ -87,7 +86,7 @@
         <div class="card-footer">
           <div class="term-count">
             <span class="count-number">{{ deck.termCount }}</span>
-            <span class="count-label">terms</span>
+            <span class="count-label">thuật ngữ</span>
           </div>
           <div class="arrow-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -98,14 +97,14 @@
       </a>
     </div>
 
-    <!-- Pagination -->
+
     <div class="pagination-section" *ngIf="filteredDecks.length > 0 && totalPages > 1">
       <div class="pagination-controls">
-        <button class="btn-page" [disabled]="currentPage === 1" (click)="prevPage()">Previous</button>
+        <button class="btn-page" [disabled]="currentPage === 1" (click)="prevPage()">Trước</button>
         <div class="page-numbers">
           <button *ngFor="let p of getPageNumbers()" class="page-number" [class.active]="p === currentPage" (click)="goToPage(p)">{{ p }}</button>
         </div>
-        <button class="btn-page" [disabled]="currentPage === totalPages" (click)="nextPage()">Next</button>
+        <button class="btn-page" [disabled]="currentPage === totalPages" (click)="nextPage()">Tiếp theo</button>
       </div>
     </div>
   </div>

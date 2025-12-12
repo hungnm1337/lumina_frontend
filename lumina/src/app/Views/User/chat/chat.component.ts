@@ -24,15 +24,13 @@ export class ChatComponent implements OnInit, OnDestroy {
   @Input() messages: ChatMessage[] = [];
   @Output() messageAdded = new EventEmitter<ChatMessage>();
   
-  // messages: ChatMessage[] = []; // Removed, now using @Input
   currentMessage = '';
   isGenerating = false;
   conversationType = 'general';
   showSaveButton = false;
   generatedVocabularies: GeneratedVocabularyDTO[] = [];
-  vocabularyImageUrl: string | null = null; // URL ảnh từ AI
+  vocabularyImageUrl: string | null = null;
   
-  // Modal state for folder name input
   showFolderModal = false;
   folderName = 'Vocabulary Folder';
   pendingVocabularies: GeneratedVocabularyDTO[] = [];
@@ -45,18 +43,14 @@ export class ChatComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Không thêm welcome message ở đây nữa vì đã được quản lý bởi FloatingChatComponent
-    // Messages sẽ được truyền vào qua @Input từ FloatingChatComponent
   }
 
   ngOnDestroy(): void {
-    // Cleanup nếu cần
   }
 
   async sendMessage(): Promise<void> {
     if (!this.currentMessage.trim() || this.isGenerating) return;
 
-    // Thêm tin nhắn user
     const userMessage: ChatMessage = {
       type: 'user',
       content: this.currentMessage,
@@ -64,7 +58,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     };
     
     this.messages.push(userMessage);
-    this.messageAdded.emit(userMessage); // Emit tin nhắn user
+    this.messageAdded.emit(userMessage);
 
     this.isGenerating = true;
     const userMessageText = this.currentMessage;
@@ -80,32 +74,24 @@ export class ChatComponent implements OnInit, OnDestroy {
       const response = await this.chatService.askQuestion(request).toPromise();
 
       if (response) {
-        // Xử lý câu trả lời ngoài phạm vi TOEIC
         if (response.conversationType === 'out_of_scope') {
           this.toastService.info('Tôi chỉ hỗ trợ về TOEIC và học tiếng Anh thôi nhé!');
         }
         
-        // Xử lý answer text - đảm bảo không có raw JSON
-        // Backend đã parse JSON rồi, nên không cần parse lại ở đây
         let answerText = response.answer || '';
         
-        // Nếu có vocabularies, không cần hiển thị answer text (sẽ hiển thị trong vocabulary list)
         if (response.vocabularies && response.vocabularies.length > 0) {
-          // Set answer text rỗng để chỉ hiển thị vocabulary list
           answerText = '';
         } else {
-          // Loại bỏ bất kỳ JSON fragments nào còn sót lại (phòng trường hợp backend chưa xử lý hết)
           if (answerText.includes('"word"') || answerText.includes('"definition"') || 
               answerText.includes('"example"') || answerText.includes('"typeOfWord"') ||
               answerText.includes('"vocabularies"') || answerText.trim().startsWith('{')) {
-            answerText = ''; // Nếu có vẻ như là JSON, set rỗng
+            answerText = '';
           }
         }
         
-        // Format câu trả lời AI (chỉ format nếu có text)
         const formattedContent = answerText ? this.formatAIResponse(answerText) : '';
         
-        // Thêm tin nhắn AI
         const aiMessage: ChatMessage = {
           type: 'ai',
           content: formattedContent,
@@ -116,25 +102,21 @@ export class ChatComponent implements OnInit, OnDestroy {
           relatedWords: response.relatedWords,
           vocabularies: response.vocabularies,
           hasSaveOption: response.hasSaveOption,
-          imageUrl: response.imageUrl // Lưu URL ảnh vào message
+          imageUrl: response.imageUrl
         };
         
         this.messages.push(aiMessage);
-        this.messageAdded.emit(aiMessage); // Emit tin nhắn AI
+        this.messageAdded.emit(aiMessage);
 
-        // Cập nhật loại cuộc trò chuyện
         this.conversationType = response.conversationType;
 
-        // Nếu có từ vựng được tạo
         if (response.vocabularies && response.vocabularies.length > 0) {
           console.log(`✅ Received ${response.vocabularies.length} vocabularies from backend`);
           
-          // Log số lượng vocabularies có imageUrl
           const vocabWithImage = response.vocabularies.filter(v => v.imageUrl && v.imageUrl.trim() !== '').length;
           const vocabWithoutImage = response.vocabularies.length - vocabWithImage;
           console.log(`📊 Vocabularies with images: ${vocabWithImage}, without: ${vocabWithoutImage}`);
           
-          // Log một vài vocabularies để kiểm tra
           if (response.vocabularies.length > 0) {
             console.log('Sample vocabulary:', {
               word: response.vocabularies[0].word,
@@ -144,7 +126,7 @@ export class ChatComponent implements OnInit, OnDestroy {
           }
           
           this.generatedVocabularies = response.vocabularies;
-          this.vocabularyImageUrl = response.imageUrl || null; // Lưu URL ảnh từ AI
+          this.vocabularyImageUrl = response.imageUrl || null;
           this.showSaveButton = true;
         } else {
           console.warn('⚠️ No vocabularies in response or empty array');
@@ -164,11 +146,10 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.conversationType = type;
     this.showSaveButton = false;
     this.generatedVocabularies = [];
-    this.vocabularyImageUrl = null; // Reset image URL
+    this.vocabularyImageUrl = null;
   }
 
   async saveVocabularies(vocabularies?: GeneratedVocabularyDTO[]): Promise<void> {
-    // Sử dụng vocabularies từ parameter hoặc từ this.generatedVocabularies
     const vocabToSave = vocabularies || this.generatedVocabularies;
     
     if (!vocabToSave || vocabToSave.length === 0) {
@@ -176,7 +157,6 @@ export class ChatComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Store vocabularies and open modal
     this.pendingVocabularies = vocabToSave;
     this.folderName = 'Vocabulary Folder';
     this.showFolderModal = true;
@@ -205,13 +185,11 @@ export class ChatComponent implements OnInit, OnDestroy {
         return;
       }
 
-      // Log vocabularies trước khi gửi
       const vocabWithImage = vocabToSave.filter(v => v.imageUrl && v.imageUrl.trim() !== '').length;
       const vocabWithoutImage = vocabToSave.length - vocabWithImage;
       console.log(`💾 Preparing to save ${vocabToSave.length} vocabularies`);
       console.log(`📊 Vocabularies with images: ${vocabWithImage}, without: ${vocabWithoutImage}`);
       
-      // Log sample vocabulary để kiểm tra
       if (vocabToSave.length > 0) {
         console.log('Sample vocabulary to save:', {
           word: vocabToSave[0].word,
@@ -223,8 +201,8 @@ export class ChatComponent implements OnInit, OnDestroy {
       const request: SaveVocabularyRequestDTO = {
         userId: userId,
         folderName: folderName,
-        vocabularies: vocabToSave, // Mỗi vocabulary đã có imageUrl riêng (Cloudinary URL)
-        imageUrl: this.vocabularyImageUrl || undefined // Gửi URL ảnh folder nếu có (deprecated, giữ để backward compatibility)
+        vocabularies: vocabToSave,
+        imageUrl: this.vocabularyImageUrl || undefined
       };
 
       console.log('Saving vocabularies request:', {
@@ -239,15 +217,12 @@ export class ChatComponent implements OnInit, OnDestroy {
       if (response && response.success) {
         this.toastService.success(response.message);
         
-        // Đóng modal
         this.closeFolderModal();
         
-        // Ẩn nút lưu
         this.showSaveButton = false;
         this.generatedVocabularies = [];
-        this.vocabularyImageUrl = null; // Reset image URL
+        this.vocabularyImageUrl = null;
 
-        // Thêm tin nhắn xác nhận
         const confirmMessage: ChatMessage = {
           type: 'ai',
           content: response.message,
@@ -256,20 +231,16 @@ export class ChatComponent implements OnInit, OnDestroy {
         };
         
         this.messages.push(confirmMessage);
-        // Emit tin nhắn để lưu vào savedMessages của FloatingChatComponent
         this.messageAdded.emit(confirmMessage);
 
-        // Kiểm tra xem đang ở trang vocabulary hay không
         const currentUrl = this.router.url;
         const isOnVocabularyPage = currentUrl.startsWith('/vocabulary') && !currentUrl.includes('/vocabulary/list/');
 
         if (isOnVocabularyPage) {
-          // Nếu đang ở trang vocabulary, reload lại trang để cập nhật danh sách
           setTimeout(() => {
             window.location.reload();
           }, 500);
         } else {
-          // Nếu không ở trang vocabulary, navigate đến trang đó
           setTimeout(() => {
             try {
               const listId = response.vocabularyListId;
@@ -291,7 +262,6 @@ export class ChatComponent implements OnInit, OnDestroy {
       console.error('Error saving vocabularies:', error);
       const errorMessage = error?.error?.message || error?.message || 'Lỗi khi lưu từ vựng!';
       this.toastService.error(errorMessage);
-      // Không đóng modal khi có lỗi để user có thể thử lại
     }
   }
 
@@ -318,17 +288,14 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   onInput(event: any): void {
-    // Auto-resize textarea
     const textarea = event.target;
     textarea.style.height = 'auto';
     textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
   }
 
   formatAIResponse(content: string): string {
-    // Format câu trả lời AI với emoji và styling đẹp mắt
     let formatted = content;
 
-    // Thêm emoji cho các section chính
     formatted = formatted.replace(/\*\*Giải thích:\*\*/g, '📚 **Giải thích:**');
     formatted = formatted.replace(/\*\*Ví dụ trong tiếng Anh:\*\*/g, '💡 **Ví dụ trong tiếng Anh:**');
     formatted = formatted.replace(/\*\*Ngữ cảnh TOEIC:\*\*/g, '🎯 **Ngữ cảnh TOEIC:**');
@@ -338,78 +305,58 @@ export class ChatComponent implements OnInit, OnDestroy {
     formatted = formatted.replace(/\*\*Lưu ý:\*\*/g, '⚠️ **Lưu ý:**');
     formatted = formatted.replace(/\*\*Tips:\*\*/g, '🎯 **Tips:**');
 
-    // Format các phương pháp học tập
     formatted = formatted.replace(/(\d+\.\s*[^:]+:)/g, '🎯 **$1**');
     formatted = formatted.replace(/^(\d+\.\s*[^:]+:)/gm, '🎯 **$1**');
 
-    // Thêm emoji cho các bullet points
     formatted = formatted.replace(/^\* /gm, '• ');
     formatted = formatted.replace(/^- /gm, '• ');
 
-    // Format các từ khóa quan trọng trong ngoặc kép
     formatted = formatted.replace(/'([^']+)'/g, '**"$1"**');
 
-    // Format các từ vựng tiếng Anh quan trọng
     formatted = formatted.replace(/\b(acquire|merger|negotiate|revenue|expenditure|profitability|strategy|outsource|investment|cost-cutting)\b/g, '**$1**');
 
-    // Thêm emoji cho các câu hỏi
     if (formatted.includes('Bạn có thể gặp') || formatted.includes('bạn có thể gặp')) {
       formatted = formatted.replace(/(Bạn có thể gặp[^:]*:)/g, '🔍 $1');
     }
 
-    // Thêm emoji cho các cụm từ quan trọng
     formatted = formatted.replace(/(\*\*[^*]+\*\*):/g, '📌 $1:');
 
-    // Format các ví dụ câu
     formatted = formatted.replace(/(Ví dụ[^:]*:)/g, '💡 **$1**');
     formatted = formatted.replace(/(Tương tự[^:]*:)/g, '🔄 **$1**');
 
-    // Format các nguồn tài liệu
     formatted = formatted.replace(/(Wall Street Journal|Financial Times|báo kinh tế)/g, '📰 **$1**');
 
-    // Thêm emoji cho các phương pháp cụ thể
     formatted = formatted.replace(/(Contextual Learning|Related Word Groups|Spaced Repetition|flashcards)/g, '🎓 **$1**');
 
-    // Format các phần kết luận
     formatted = formatted.replace(/(Tóm lại|Kết luận|Chúc bạn)/g, '🎉 **$1**');
 
     return formatted;
   }
 
   handleImageError(event: Event, vocab: GeneratedVocabularyDTO): void {
-    // Mark vocabulary as having image error
     vocab.imageError = true;
     console.warn(`Failed to load image for vocabulary: ${vocab.word}`, event);
   }
 
   formatMessageContent(content: string): string {
-    // Convert markdown-style formatting to HTML
     let formatted = content;
 
-    // Convert **bold** to <strong> with better styling
     formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong style="color: #4F46E5; font-weight: 600;">$1</strong>');
 
-    // Convert *italic* to <em>
     formatted = formatted.replace(/\*([^*]+)\*/g, '<em style="color: #6B7280;">$1</em>');
 
-    // Convert bullet points to HTML list with better styling
     formatted = formatted.replace(/^• (.+)$/gm, '<li style="margin: 8px 0; padding-left: 8px;">$1</li>');
     formatted = formatted.replace(/(<li style="margin: 8px 0; padding-left: 8px;">.*<\/li>)/s, '<ul style="margin: 12px 0; padding-left: 20px;">$1</ul>');
 
-    // Format numbered lists
     formatted = formatted.replace(/^(\d+\.\s*[^:]+:)/gm, '<div style="background: #F3F4F6; padding: 12px; margin: 8px 0; border-radius: 8px; border-left: 4px solid #4F46E5;">$1</div>');
 
-    // Convert line breaks
     formatted = formatted.replace(/\n/g, '<br>');
 
-    // Convert multiple line breaks to paragraphs with better spacing
     formatted = formatted.replace(/(<br>){2,}/g, '</p><p style="margin: 16px 0; line-height: 1.6;">');
     formatted = '<p style="margin: 0; line-height: 1.6;">' + formatted + '</p>';
 
-    // Add special styling for examples
     formatted = formatted.replace(/(Ví dụ[^:]*:)/g, '<div style="background: #FEF3C7; padding: 12px; margin: 12px 0; border-radius: 8px; border-left: 4px solid #F59E0B;"><strong>$1</strong></div>');
 
-    // Add special styling for tips
     formatted = formatted.replace(/(Tips[^:]*:)/g, '<div style="background: #ECFDF5; padding: 12px; margin: 12px 0; border-radius: 8px; border-left: 4px solid #10B981;"><strong>$1</strong></div>');
 
     return formatted;

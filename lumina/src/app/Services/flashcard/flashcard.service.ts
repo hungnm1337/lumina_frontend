@@ -4,19 +4,19 @@ import { Observable, map, of, catchError, tap, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment.development';
 import { VocabularyService } from '../Vocabulary/vocabulary.service';
 
-// Định nghĩa cấu trúc cho một thuật ngữ (Term)
+
 export interface Term {
   id: number;
   question: string;
   answer: string;
   options?: string[]; 
-  audioUrl?: string; // URL của audio file hoặc undefined nếu không có
-  imageUrl?: string; // URL ảnh từ Cloudinary cho từng vocabulary
-  imageError?: boolean; // Flag để track lỗi load ảnh
-  // Dành cho câu hỏi trắc nghiệm
+  audioUrl?: string; 
+  imageUrl?: string; 
+  imageError?: boolean; 
+
 }
 
-// Định nghĩa cấu trúc cho một Học phần (Deck)
+
 export interface Deck {
   id: string;
   title: string;
@@ -41,7 +41,6 @@ export class FlashcardService {
     private vocabularyService: VocabularyService
   ) { }
 
-  // Lấy các học phần từ API (vocabulary lists của user hiện tại + folder của staff)
   getDecks(): Observable<Deck[]> {
     return this.vocabularyService.getMyAndStaffVocabularyLists().pipe(
       map(vocabularyLists => 
@@ -50,13 +49,12 @@ export class FlashcardService {
           title: list.name,
           author: list.makeByName,
           termCount: list.vocabularyCount,
-          terms: [] // Sẽ được load khi cần thiết
+          terms: [] 
         }))
       )
     );
   }
 
-  // Lấy một học phần cụ thể bằng ID (để hiển thị ở trang chi tiết)
   getDeckById(id: string): Observable<Deck | undefined> {
     const listId = parseInt(id);
     if (isNaN(listId)) {
@@ -65,26 +63,20 @@ export class FlashcardService {
     }
 
     console.log('Loading deck with ID:', listId);
-
-    // Thử load từ public endpoint trước (cho folder đã publish)
     return this.vocabularyService.getPublicVocabularyByList(listId).pipe(
       tap(vocabularies => {
         console.log('Public vocabulary response:', vocabularies);
       }),
       map(vocabularies => {
-        // Nếu có vocabulary từ public endpoint, trả về
         if (vocabularies && vocabularies.length > 0) {
           return this.createDeckFromVocabularies(id, vocabularies);
         }
-        // Nếu không có, return null để trigger fallback
         return null;
       }),
       switchMap(deck => {
-        // Nếu đã có deck từ public endpoint, trả về
         if (deck) {
           return of(deck);
         }
-        // Nếu không có, thử load từ student-list endpoint (cho folder của user)
         console.log('Public endpoint returned empty, trying student-list endpoint for list ID:', listId);
         return this.vocabularyService.getVocabularies(listId).pipe(
           tap(vocabularies => {
@@ -105,7 +97,6 @@ export class FlashcardService {
       }),
       catchError(error => {
         console.error('Error in getDeckById (public endpoint):', error);
-        // Nếu public endpoint lỗi, thử fallback sang student-list
         console.log('Public endpoint failed, trying student-list endpoint for list ID:', listId);
         return this.vocabularyService.getVocabularies(listId).pipe(
           tap(vocabularies => {
@@ -127,12 +118,11 @@ export class FlashcardService {
     );
   }
 
-  // Helper method để tạo deck từ vocabularies
   private createDeckFromVocabularies(id: string, vocabularies: any[]): Deck {
     return {
       id: id,
-      title: 'Loading...', // Sẽ được cập nhật sau
-      author: 'Loading...', // Sẽ được cập nhật sau
+      title: 'Loading...',
+      author: 'Loading...',
       termCount: vocabularies.length,
       terms: vocabularies.map(vocab => ({
         id: vocab.id,
@@ -140,22 +130,19 @@ export class FlashcardService {
         answer: vocab.definition || '',
         options: vocab.example ? [vocab.example] : undefined,
         audioUrl: vocab.audioUrl || undefined,
-        imageUrl: vocab.imageUrl || undefined // Lấy imageUrl từ API response
+        imageUrl: vocab.imageUrl || undefined 
       }))
     };
   }
 
-  // Lấy terms cho một deck cụ thể
   getDeckTerms(deckId: string): Observable<Term[]> {
     const listId = parseInt(deckId);
     if (isNaN(listId)) {
       return of([]);
     }
 
-    // Thử load từ public endpoint trước
     return this.vocabularyService.getPublicVocabularyByList(listId).pipe(
       map(vocabularies => {
-        // Nếu có vocabulary, trả về
         if (vocabularies && vocabularies.length > 0) {
           return vocabularies.map(vocab => ({
             id: vocab.id,
@@ -165,15 +152,12 @@ export class FlashcardService {
             imageUrl: vocab.imageUrl || undefined // Lấy imageUrl từ API response
           }));
         }
-        // Nếu không có, return null để trigger fallback
         return null;
       }),
       switchMap(terms => {
-        // Nếu đã có terms từ public endpoint, trả về
         if (terms) {
           return of(terms);
         }
-        // Nếu không có, thử load từ student-list endpoint
         console.log('Public endpoint returned empty for getDeckTerms, trying student-list');
         return this.vocabularyService.getVocabularies(listId).pipe(
           map(vocabularies => 
@@ -182,7 +166,7 @@ export class FlashcardService {
               question: vocab.word,
               answer: vocab.definition,
               options: vocab.example ? [vocab.example] : undefined,
-              imageUrl: vocab.imageUrl || undefined // Lấy imageUrl từ API response
+              imageUrl: vocab.imageUrl || undefined 
             }))
           ),
           catchError(fallbackError => {
@@ -192,7 +176,6 @@ export class FlashcardService {
         );
       }),
       catchError(error => {
-        // Nếu public endpoint lỗi, thử fallback sang student-list
         console.log('Public endpoint failed for getDeckTerms, trying student-list');
         return this.vocabularyService.getVocabularies(listId).pipe(
           map(vocabularies => 
@@ -201,7 +184,7 @@ export class FlashcardService {
               question: vocab.word,
               answer: vocab.definition,
               options: vocab.example ? [vocab.example] : undefined,
-              imageUrl: vocab.imageUrl || undefined // Lấy imageUrl từ API response
+              imageUrl: vocab.imageUrl || undefined 
             }))
           ),
           catchError(fallbackError => {

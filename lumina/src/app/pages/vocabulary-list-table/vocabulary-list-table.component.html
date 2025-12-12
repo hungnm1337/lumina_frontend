@@ -21,17 +21,16 @@
     </div>
   </div>
 
-  <!-- Filters and Search Section -->
+
   <div class="filters-section">
     <div class="filters-container">
-      <!-- Search -->
+  
       <div class="search-box">
         <i class="fas fa-search"></i>
         <input type="text" [(ngModel)]="searchQuery" (input)="applyFilters()"
           placeholder="Tìm kiếm từ hoặc định nghĩa..." class="search-input">
       </div>
 
-      <!-- Status Filter -->
       <div class="filter-group">
         <label class="filter-label">Trạng thái:</label>
         <select [(ngModel)]="statusFilter" (change)="applyFilters()" class="filter-select">
@@ -42,7 +41,6 @@
         </select>
       </div>
 
-      <!-- Stats Summary -->
       <div class="stats-summary">
         <div class="stat-item">
           <i class="fas fa-book"></i>
@@ -53,23 +51,19 @@
     </div>
   </div>
 
-  <!-- Loading State -->
   <div *ngIf="isLoading" class="loading-state">
     <div class="loading-spinner"></div>
     <p>Đang tải danh sách từ vựng...</p>
   </div>
 
-  <!-- Empty State -->
   <div *ngIf="!isLoading && filteredRows.length === 0" class="empty-state">
     <div class="empty-icon">📚</div>
     <h3>Không tìm thấy từ vựng nào</h3>
     <p *ngIf="searchQuery">Thử tìm kiếm với từ khóa khác</p>
     <p *ngIf="!searchQuery">Bạn chưa có từ vựng nào trong hệ thống spaced repetition</p>
   </div>
-
-  <!-- Vocabulary Table -->
   <div *ngIf="!isLoading && filteredRows.length > 0" class="table-container">
-    <!-- Desktop Table View -->
+
     <div class="desktop-table">
       <table class="vocabulary-table">
         <thead>
@@ -122,7 +116,7 @@
         </thead>
         <tbody>
           <tr *ngFor="let row of paginatedRows" (click)="goToDeck(row.vocabularyListId)" class="vocabulary-row">
-            <!-- Word -->
+ 
             <td class="word-cell">
               <div class="word-content">
                 <span class="word">{{ row.word }}</span>
@@ -130,7 +124,6 @@
               </div>
             </td>
 
-            <!-- Definition -->
             <td class="definition-cell">
               <div class="definition-content">
                 <p class="definition">{{ row.definition }}</p>
@@ -141,14 +134,12 @@
               </div>
             </td>
 
-            <!-- Status -->
             <td class="status-cell">
               <span class="status-badge" [ngClass]="getStatusClass(row.status)">
                 {{ row.status }}
               </span>
             </td>
 
-            <!-- Intervals -->
             <td class="intervals-cell">
               <div class="intervals-content">
                 <span class="intervals-value">{{ row.intervals }} ngày</span>
@@ -156,7 +147,6 @@
               </div>
             </td>
 
-            <!-- Quality -->
             <td class="quality-cell">
               <div class="quality-content" *ngIf="row.quality !== undefined">
                 <div class="quality-bar-container">
@@ -168,7 +158,6 @@
               <span *ngIf="row.quality === undefined" class="no-data">-</span>
             </td>
 
-            <!-- Review Count -->
             <td class="review-count-cell">
               <div class="review-count-content">
                 <i class="fas fa-redo-alt"></i>
@@ -176,7 +165,6 @@
               </div>
             </td>
 
-            <!-- Next Review -->
             <td class="next-review-cell">
               <div class="next-review-content">
                 <span class="date">{{ formatDate(row.nextReviewAt) }}</span>
@@ -195,7 +183,6 @@
               </div>
             </td>
 
-            <!-- Folder -->
             <td class="folder-cell">
               <span class="folder-name">{{ row.vocabularyListName }}</span>
             </td>
@@ -204,7 +191,6 @@
       </table>
     </div>
 
-    <!-- Mobile Card View -->
     <div class="mobile-cards">
       <div *ngFor="let row of paginatedRows" class="vocab-card" (click)="goToDeck(row.vocabularyListId)">
         <div class="card-header">
@@ -245,7 +231,6 @@
       </div>
     </div>
 
-    <!-- Pagination -->
     <div class="pagination-container" *ngIf="totalPages > 1">
       <button class="pagination-btn" [disabled]="currentPage === 1" (click)="previousPage()">
         <i class="fas fa-chevron-left"></i>
