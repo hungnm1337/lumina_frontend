@@ -1,7 +1,7 @@
+// src/environments/environment.prod.ts (hoặc environment.ts)
 export const environment = {
-  production: false,
-
-  apiUrl: 'https://localhost:7162/api',
-  googleClientId:
-    '915342543668-lmk1k04qubfovip3394nh18c67l2u9pk.apps.googleusercontent.com',
+  production: true,
+  // Sửa lỗi TypeScript bằng cách truy cập thông qua [key]
+  apiUrl: process.env['NG_APP_API_URL'] || 'https://default-prod-url.com/api/', 
+  googleClientId: '...',
 };
