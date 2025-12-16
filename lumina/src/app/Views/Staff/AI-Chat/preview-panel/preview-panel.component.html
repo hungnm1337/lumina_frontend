@@ -67,7 +67,32 @@
       </div>
 
       <div class="media-image" *ngIf="prompt.referenceImageUrl && prompt.referenceImageUrl.startsWith('http')">
-        <img [src]="prompt.referenceImageUrl" alt="AI Generated Image" />
+        <!-- Loading Skeleton -->
+        <div class="image-loading" *ngIf="!prompt._imageLoaded">
+          <div class="loading-spinner">
+            <i class="fas fa-circle-notch fa-spin"></i>
+          </div>
+          <p class="loading-text">Đang tạo ảnh từ AI...</p>
+          <small class="loading-hint">Có thể mất vài giây</small>
+        </div>
+        
+        <!-- Actual Image -->
+        <img 
+          [src]="prompt.referenceImageUrl" 
+          alt="AI Generated Image"
+          (load)="onImageLoad(prompt)"
+          (error)="onImageError(prompt)"
+          [style.display]="prompt._imageLoaded ? 'block' : 'none'"
+          class="fade-in" />
+        
+        <!-- Error State -->
+        <div class="image-error" *ngIf="prompt._imageError">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>Không thể tải ảnh</p>
+          <button class="retry-btn" (click)="retryImageLoad(prompt)">
+            <i class="fas fa-redo"></i> Thử lại
+          </button>
+        </div>
       </div>
 
       <!-- ✅ Audio Player - Nếu là URL
