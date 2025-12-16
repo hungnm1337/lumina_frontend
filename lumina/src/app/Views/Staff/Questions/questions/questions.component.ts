@@ -11,7 +11,7 @@ import {
 import { QuestionService } from '../../../../Services/Question/question.service';
 import { CommonModule } from '@angular/common';
 import { UploadService } from '../../../../Services/Upload/upload.service';
-import { noWhitespaceValidator } from '../../../../../environments/custom-validators';
+import { noWhitespaceValidator, meaningfulContentValidator } from '../../../../../environments/custom-validators';
 import { PopupComponent } from '../../../Common/popup/popup.component';
 
 @Component({
@@ -53,8 +53,8 @@ export class QuestionsComponent implements OnInit {
     private mediaService: UploadService
   ) {
     this.promptForm = this.fb.group({
-      contentText: ['', [Validators.required, noWhitespaceValidator()]],
-      title: ['', [Validators.required, noWhitespaceValidator()]],
+      contentText: ['', [Validators.required, noWhitespaceValidator(), meaningfulContentValidator()]],
+      title: ['', [Validators.required, noWhitespaceValidator(), meaningfulContentValidator()]],
       skill: ['', Validators.required],
       partId: ['', Validators.required],
       promptId: [null],
@@ -72,11 +72,18 @@ export class QuestionsComponent implements OnInit {
   initData() {
     this.examPartService.getExamsParts().subscribe((res) => {
       this.parts = res || [];
-      // ✅ Lấy danh sách ExamSetKey unique
+      // ✅ Lấy danh sách ExamSetKey unique và sắp xếp
       this.examSetKeys = Array.from(
         new Set(this.parts.map((p) => p.examSetKey))
-      );
-      console.log('📋 ExamSetKeys:', this.examSetKeys);
+      ).sort((a, b) => {
+        // Chuyển đổi từ MM-YYYY sang YYYY-MM để sắp xếp đúng
+        const [monthA, yearA] = a.split('-');
+        const [monthB, yearB] = b.split('-');
+        const dateA = `${yearA}-${monthA}`;
+        const dateB = `${yearB}-${monthB}`;
+        return dateA.localeCompare(dateB);
+      });
+      console.log('📋 ExamSetKeys (sorted):', this.examSetKeys);
     });
     this.loadPrompts();
     this.loadStatistics();
@@ -93,6 +100,7 @@ export class QuestionsComponent implements OnInit {
   // ✅ Thêm biến cho ExamSetKey filter
   examSetKeys: string[] = [];
   selectedExamSetKey: string | null = null;
+  selectedSkillFilter: string | null = null;
   filteredPartsForView: any[] = [];
 
   // Lấy danh sách câu hỏi từ API, hỗ trợ filter, search, paging
@@ -120,19 +128,48 @@ export class QuestionsComponent implements OnInit {
   // ✅ Hàm xử lý khi chọn ExamSetKey
   onExamSetKeyFilterChange() {
     console.log('🔍 ExamSetKey filter changed:', this.selectedExamSetKey);
-    if (this.selectedExamSetKey) {
-      this.filteredPartsForView = this.parts.filter(
-        (p) => p.examSetKey === this.selectedExamSetKey
-      );
-      console.log('📋 Filtered parts for view:', this.filteredPartsForView);
-    } else {
-      this.filteredPartsForView = [];
-    }
-    // Reset selectedPartId khi đổi ExamSetKey
+    // Reset skill và part khi đổi ExamSetKey
+    this.selectedSkillFilter = null;
     this.selectedPartId = '';
+    this.filterPartsForView();
     // Reset về trang 1 và load lại
     this.page = 1;
     this.loadPrompts();
+  }
+
+  // Hàm xử lý khi chọn Skill filter
+  onSkillFilterChange() {
+    console.log('🔍 Skill filter changed:', this.selectedSkillFilter);
+    // Reset part khi đổi Skill
+    this.selectedPartId = '';
+    this.filterPartsForView();
+    // Reset về trang 1 và load lại
+    this.page = 1;
+    this.loadPrompts();
+  }
+
+  // Hàm filter parts cho view
+  filterPartsForView() {
+    if (!this.selectedExamSetKey) {
+      this.filteredPartsForView = [];
+      return;
+    }
+
+    this.filteredPartsForView = this.parts.filter((p) => {
+      const matchesExamSetKey = p.examSetKey === this.selectedExamSetKey;
+      
+      if (!this.selectedSkillFilter) {
+        return matchesExamSetKey;
+      }
+      
+      const skillUpper = this.selectedSkillFilter.toUpperCase();
+      const partCodeUpper = p.partCode?.toUpperCase() || '';
+      const matchesSkill = partCodeUpper.includes(skillUpper);
+      
+      return matchesExamSetKey && matchesSkill;
+    });
+    
+    console.log('📋 Filtered parts for view:', this.filteredPartsForView);
   }
 
   onPartFilterChange() {
@@ -203,8 +240,8 @@ export class QuestionsComponent implements OnInit {
   addQuestion() {
     // Tạo cấu hình đầy đủ trường mỗi lần add
     const questionGroup: any = {
-      stemText: ['', Validators.required],
-      questionExplain: [''],
+      stemText: ['', [Validators.required, noWhitespaceValidator(), meaningfulContentValidator()]],
+      questionExplain: ['', [meaningfulContentValidator()]],
       scoreWeight: [1, [Validators.required, Validators.min(1)]],
       time: [30, Validators.required],
     };
@@ -228,7 +265,7 @@ export class QuestionsComponent implements OnInit {
   createOption(option?: any): FormGroup {
     return this.fb.group({
       optionId: [option?.optionId ?? null],
-      content: [option?.content ?? '', Validators.required],
+      content: [option?.content ?? '', [Validators.required, noWhitespaceValidator(), meaningfulContentValidator()]],
       isCorrect: [option?.isCorrect ?? false],
     });
   }
@@ -256,6 +293,31 @@ export class QuestionsComponent implements OnInit {
 
   closeModal() {
     this.isModalOpen = false;
+    this.resetPromptForm();
+  }
+
+  // Reset form về trạng thái ban đầu
+  resetPromptForm() {
+    this.promptForm.reset({
+      contentText: '',
+      title: '',
+      skill: '',
+      partId: '',
+      promptId: null,
+      referenceImageUrl: '',
+      referenceAudioUrl: ''
+    });
+    
+    // Xóa tất cả câu hỏi
+    while (this.questions.length !== 0) {
+      this.questions.removeAt(0);
+    }
+    
+    // Reset các biến liên quan
+    this.selectedSkill = '';
+    this.filteredParts = [];
+    this.selectedPartQuestionCount = 0;
+    this.selectedExamSetKeyForCreate = '';
   }
 
   uploadMedia(event: any, field: 'referenceImageUrl' | 'referenceAudioUrl') {
@@ -300,6 +362,7 @@ export class QuestionsComponent implements OnInit {
   selectedSkill: string = '';
   filteredParts: any[] = [];
   selectedPartQuestionCount: number = 0;
+  selectedExamSetKeyForCreate: string = '';
 
   // Hard code số lượng câu hỏi theo Part
   private readonly partQuestionCounts: { [key: string]: number } = {
@@ -356,6 +419,22 @@ export class QuestionsComponent implements OnInit {
   //   }
   // }
 
+  onExamSetKeyChangeForCreate(): void {
+    console.log('=== onExamSetKeyChangeForCreate ===');
+    console.log('selectedExamSetKeyForCreate:', this.selectedExamSetKeyForCreate);
+
+    // Xóa tất cả câu hỏi cũ
+    while (this.questions.length !== 0) {
+      this.questions.removeAt(0);
+    }
+
+    // Reset skill và part
+    this.selectedSkill = '';
+    this.filteredParts = [];
+    this.promptForm.patchValue({ skill: '', partId: '' });
+    this.selectedPartQuestionCount = 0;
+  }
+
   onSkillChange(event: any): void {
     this.selectedSkill = event.target.value;
 
@@ -367,7 +446,7 @@ export class QuestionsComponent implements OnInit {
       this.questions.removeAt(0);
     }
 
-    // Lọc parts theo skill
+    // Lọc parts theo skill và ExamSetKey
     this.filterPartsBySkill();
 
     // Reset partId và selectedPartQuestionCount
@@ -381,13 +460,15 @@ export class QuestionsComponent implements OnInit {
   }
 
   filterPartsBySkill() {
-    if (!this.selectedSkill) {
+    if (!this.selectedSkill || !this.selectedExamSetKeyForCreate) {
       this.filteredParts = [];
     } else {
       const skillUpper = this.selectedSkill.toUpperCase();
       this.filteredParts = this.parts.filter((p) => {
         const partCodeUpper = p.partCode?.toUpperCase() || '';
-        return partCodeUpper.includes(skillUpper);
+        const matchesSkill = partCodeUpper.includes(skillUpper);
+        const matchesExamSetKey = p.examSetKey === this.selectedExamSetKeyForCreate;
+        return matchesSkill && matchesExamSetKey;
       });
     }
   }
@@ -463,7 +544,8 @@ export class QuestionsComponent implements OnInit {
 
   savePrompt() {
     if (this.promptForm.invalid) {
-      alert('Vui lòng nhập đủ thông tin');
+      const errors = this.getFormValidationErrors(this.promptForm);
+      this.showMessage(errors || 'Vui lòng nhập đủ thông tin hợp lệ!', 'error');
       return;
     }
 
@@ -474,7 +556,7 @@ export class QuestionsComponent implements OnInit {
       if (Array.isArray(q.options) && q.options.length > 0) {
         const hasCorrect = q.options.some((opt: any) => !!opt.isCorrect);
         if (!hasCorrect) {
-          alert('Mỗi câu hỏi phải có ít nhất 1 đáp án đúng!');
+          this.showMessage('Mỗi câu hỏi phải có ít nhất 1 đáp án đúng!', 'error');
           return;
         }
       }
@@ -521,6 +603,7 @@ export class QuestionsComponent implements OnInit {
     this.questionService.createPromptWithQuestions(dto).subscribe({
       next: (res) => {
         this.showMessage('Prompt created successfully!', 'success');
+        this.resetPromptForm();
         this.closeModal();
         this.loadPrompts();
       },
@@ -606,10 +689,10 @@ export class QuestionsComponent implements OnInit {
     this.isEditModalOpen = true;
     this.editPromptForm = this.fb.group({
       promptId: [prompt.promptId],
-      title: [prompt.title, [Validators.required, noWhitespaceValidator()]],
+      title: [prompt.title, [Validators.required, noWhitespaceValidator(), meaningfulContentValidator()]],
       contentText: [
         prompt.contentText,
-        [Validators.required, noWhitespaceValidator()],
+        [Validators.required, noWhitespaceValidator(), meaningfulContentValidator()],
       ],
       skill: [prompt.skill || '', Validators.required],
       promptText: [prompt.promptText || ''],
@@ -621,7 +704,8 @@ export class QuestionsComponent implements OnInit {
   // Hàm lưu khi submit modal
   saveEditPrompt() {
     if (this.editPromptForm.invalid) {
-      alert('Vui lòng điền đầy đủ thông tin');
+      const errors = this.getFormValidationErrors(this.editPromptForm);
+      this.showMessage(errors || 'Vui lòng điền đầy đủ thông tin hợp lệ!', 'error');
       return;
     }
     const dto = this.editPromptForm.value;
@@ -661,8 +745,8 @@ export class QuestionsComponent implements OnInit {
     this.currentPromptId = prompt.promptId || null;
     console.log('openModalAdd - currentPartId:', this.currentPartId);
     const formObj: any = {
-      stemText: ['', [Validators.required, noWhitespaceValidator()]],
-      questionExplain: [''],
+      stemText: ['', [Validators.required, noWhitespaceValidator(), meaningfulContentValidator()]],
+      questionExplain: ['', [meaningfulContentValidator()]],
       scoreWeight: [1, [Validators.required, Validators.min(1)]],
       time: [30, Validators.required],
     };
@@ -706,8 +790,8 @@ export class QuestionsComponent implements OnInit {
     this.currentSkill = prompt.skill || '';
 
     const formObj: any = {
-      stemText: [q.stemText, Validators.required],
-      questionExplain: [q.questionExplain || ''],
+      stemText: [q.stemText, [Validators.required, noWhitespaceValidator(), meaningfulContentValidator()]],
+      questionExplain: [q.questionExplain || '', [meaningfulContentValidator()]],
       scoreWeight: [
         q.scoreWeight ?? 1,
         [Validators.required, Validators.min(1)],
@@ -717,7 +801,7 @@ export class QuestionsComponent implements OnInit {
 
     // Thêm Sample Answer cho Speaking questions
     if (this.isSpeakingSkill(this.currentSkill)) {
-      formObj.sampleAnswer = [q.sampleAnswer || ''];
+      formObj.sampleAnswer = [q.sampleAnswer || '', [meaningfulContentValidator()]];
     }
 
     if (
@@ -744,7 +828,7 @@ export class QuestionsComponent implements OnInit {
     return this.questionForm.get('options') as FormArray;
   }
 
-  // Xử lý submit
+
   // Thêm mới câu hỏi
   saveQuestion() {
     if (this.questionForm.invalid) {
@@ -753,7 +837,8 @@ export class QuestionsComponent implements OnInit {
         this.showMessage('Điểm mỗi câu hỏi phải lớn hơn 0!', 'error');
         return;
       }
-      this.showMessage('Vui lòng nhập đủ thông tin!', 'error');
+      const errors = this.getFormValidationErrors(this.questionForm);
+      this.showMessage(errors || 'Vui lòng nhập đủ thông tin hợp lệ!', 'error');
       return;
     }
     const value = this.questionForm.value;
@@ -882,7 +967,7 @@ export class QuestionsComponent implements OnInit {
   }
 
   deletePrompt(prompt: any) {
-    // ✅ Kiểm tra xem prompt có câu hỏi không
+    // Kiểm tra xem prompt có câu hỏi không
     const questionCount = prompt.questions?.length || 0;
 
     this.pendingDeletePrompt = prompt;
@@ -947,5 +1032,76 @@ export class QuestionsComponent implements OnInit {
 
   getMaxDisplayCount(): number {
     return Math.min(this.page * this.size, this.totalPages);
+  }
+
+  // Helper function để lấy thông báo lỗi validation
+  getFormValidationErrors(form: FormGroup): string | null {
+    const errors: string[] = [];
+    
+    Object.keys(form.controls).forEach(key => {
+      const control = form.get(key);
+      
+      if (control && control.invalid && control.errors) {
+        const fieldName = this.getFieldDisplayName(key);
+        
+        // Chỉ hiển thị lỗi đầu tiên cho mỗi field
+        if (control.errors['required']) {
+          errors.push(`${fieldName} không được để trống`);
+        } else if (control.errors['whitespace']) {
+          errors.push(`${fieldName} không được chỉ chứa khoảng trắng`);
+        } else if (control.errors['meaninglessContent']) {
+          errors.push(`${fieldName} phải chứa ít nhất một ký tự chữ hoặc số`);
+        } else if (control.errors['repeatedCharacters']) {
+          errors.push(`${fieldName} không được chỉ chứa ký tự lặp lại`);
+        } else if (control.errors['min']) {
+          errors.push(`${fieldName} phải lớn hơn hoặc bằng ${control.errors['min'].min}`);
+        }
+      }
+      
+      // Kiểm tra FormArray (như questions và options)
+      if (control instanceof FormArray) {
+        control.controls.forEach((arrayControl, index) => {
+          if (arrayControl instanceof FormGroup) {
+            Object.keys(arrayControl.controls).forEach(subKey => {
+              const subControl = arrayControl.get(subKey);
+              if (subControl && subControl.invalid && subControl.errors) {
+                const subFieldName = this.getFieldDisplayName(subKey);
+                
+                // Chỉ hiển thị lỗi đầu tiên cho mỗi field
+                if (subControl.errors['required']) {
+                  errors.push(`${subFieldName} (${key} ${index + 1}) không được để trống`);
+                } else if (subControl.errors['whitespace']) {
+                  errors.push(`${subFieldName} (${key} ${index + 1}) không được chỉ chứa khoảng trắng`);
+                } else if (subControl.errors['meaninglessContent']) {
+                  errors.push(`${subFieldName} (${key} ${index + 1}) phải chứa ít nhất một ký tự chữ hoặc số`);
+                } else if (subControl.errors['repeatedCharacters']) {
+                  errors.push(`${subFieldName} (${key} ${index + 1}) không được chỉ chứa ký tự lặp lại`);
+                }
+              }
+            });
+          }
+        });
+      }
+    });
+    
+    return errors.length > 0 ? errors.join('\n') : null;
+  }
+
+  // Helper function để chuyển tên field thành tên hiển thị tiếng Việt
+  private getFieldDisplayName(fieldName: string): string {
+    const displayNames: { [key: string]: string } = {
+      'title': 'Tiêu đề',
+      'contentText': 'Nội dung',
+      'stemText': 'Nội dung câu hỏi',
+      'questionExplain': 'Giải thích',
+      'content': 'Nội dung đáp án',
+      'sampleAnswer': 'Câu trả lời mẫu',
+      'scoreWeight': 'Điểm',
+      'time': 'Thời gian',
+      'questions': 'Câu hỏi',
+      'options': 'Đáp án'
+    };
+    
+    return displayNames[fieldName] || fieldName;
   }
 }
