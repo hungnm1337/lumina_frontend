@@ -160,7 +160,7 @@ export class NoteComponent implements OnInit, OnDestroy, OnChanges {
         this.lastSavedContent = this.noteContent;
         this.saveMessage = 'Saved successfully';
 
-        this.toastService.success('Note saved successfully');
+        this.toastService.success('Lưu ghi chú thành công');
         // If it was a new note, reload to get the noteId
         if (this.currentNoteId === 0) {
           this.loadExistingNote();

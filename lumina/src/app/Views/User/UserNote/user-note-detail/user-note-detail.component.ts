@@ -21,13 +21,14 @@ export class UserNoteDetailComponent implements OnInit, OnDestroy {
   private lastSavedContent: string = '';
   isSaving: boolean = false;
   saveMessage: string = '';
+  showDeleteModal: boolean = false;
 
   constructor(
     private toastService: ToastService,
     private route: ActivatedRoute,
     private router: Router,
     private userNoteService: UserNoteService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
@@ -81,11 +82,20 @@ export class UserNoteDetailComponent implements OnInit, OnDestroy {
   async saveNote(): Promise<void> {
     if (!this.note || !this.hasUnsavedChanges || this.isSaving) return;
 
+    // Kiểm tra nếu nội dung note là null, undefined, rỗng hoặc chỉ có khoảng trắng
+    const content = this.note.noteContent;
+    if (content == "" || (typeof content === 'string' && (!content || content.trim() === ''))) {
+      if (confirm('Bạn muốn xóa note?')) {
+        this.router.navigate(['homepage/user-dashboard/notes']);
+      }
+      return;
+    }
+
     this.isSaving = true;
     this.saveMessage = 'Saving...';
 
     const noteData: UserNoteRequestDTO = {
-      noteId : this.note.noteId,
+      noteId: this.note.noteId,
       noteContent: this.note.noteContent,
       articleId: this.note.articleId,
       userId: this.note.userId,
@@ -101,11 +111,47 @@ export class UserNoteDetailComponent implements OnInit, OnDestroy {
         setTimeout(() => {
           this.saveMessage = '';
         }, 3000);
-        this.toastService.success('Note saved successfully');
+        this.toastService.success('Lưu ghi chú thành công');
       }
     } catch (error) {
       console.error('Error saving note:', error);
       this.saveMessage = 'Error saving note';
+    } finally {
+      this.isSaving = false;
+    }
+  }
+
+  openDeleteModal(): void {
+    this.showDeleteModal = true;
+  }
+
+  closeDeleteModal(): void {
+    this.showDeleteModal = false;
+  }
+
+  async confirmDelete(): Promise<void> {
+    if (!this.note) return;
+
+    this.isSaving = true;
+
+    const noteData: UserNoteRequestDTO = {
+      noteId: this.note.noteId,
+      noteContent: "", // Set content to empty string
+      articleId: this.note.articleId,
+      userId: this.note.userId,
+      sectionId: this.note.sectionId
+    };
+
+    try {
+      const result = await this.userNoteService.UpSertUserNote(noteData).toPromise();
+      if (result) {
+        this.toastService.success('Xóa ghi chú thành công');
+        this.showDeleteModal = false;
+        this.router.navigate(['homepage/user-dashboard/notes']);
+      }
+    } catch (error) {
+      console.error('Error deleting note:', error);
+      this.toastService.error('Lỗi khi xóa ghi chú');
     } finally {
       this.isSaving = false;
     }
