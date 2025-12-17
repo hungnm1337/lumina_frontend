@@ -1,0 +1,36 @@
+<div *ngIf="visible" class="modal-overlay" (click)="handleExit()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <i class="icon-microphone"></i>
+      <h2>Cần quyền truy cập Microphone</h2>
+    </div>
+    
+    <div class="modal-body">
+      <p class="warning-message">
+        Bài thi {{ examType }} yêu cầu quyền truy cập microphone để ghi âm câu trả lời của bạn.
+      </p>
+      
+      <div class="browser-info">
+        <p class="browser-name"> Hướng dẫn cho {{ detectBrowser() }}:</p>
+        <ol class="instructions-list">
+          <li *ngFor="let instruction of getBrowserInstructions()">
+            {{ instruction }}
+          </li>
+        </ol>
+      </div>
+      
+      <div class="help-note">
+        <p><strong>Lưu ý:</strong> Nếu bạn đã chặn quyền trước đó, bạn cần vào cài đặt trình duyệt để bật lại.</p>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn-retry" (click)="handleRetry()">
+       Thử lại
+      </button>
+      <button class="btn-exit" (click)="handleExit()">
+        ← Quay lại danh sách đề thi
+      </button>
+    </div>
+  </div>
+</div>

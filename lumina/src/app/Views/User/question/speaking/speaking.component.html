@@ -5,6 +5,13 @@
   (close)="closeQuotaModal()"
 ></app-quota-limit-modal>
 
+<app-microphone-permission-modal
+  [visible]="showMicPermissionModal"
+  [examType]="'Speaking'"
+  (onRetry)="onMicPermissionRetry()"
+  (onExit)="onMicPermissionExit()"
+></app-microphone-permission-modal>
+
 @if (questions && questions.length > 0 && !finished) {
 <!-- Speaking Layout - Centered 70% width -->
 <div class="flex justify-center w-full">
