@@ -771,6 +771,9 @@ export class SpeakingAnswerBoxComponent
           if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
             this.mediaRecorder.stop();
             this.clearTimer();
+            
+            // Dừng timer service để ẩn UI đếm ngược ngay lập tức
+            this.timerService.reset();
 
             // Set error state với flag đặc biệt
             this.state = 'error';
