@@ -375,12 +375,123 @@
 .media-image {
   margin: 16px 0;
   text-align: center;
+  position: relative;
+  min-height: 200px;
   
   img {
     max-width: 100%;
     height: auto;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    
+    &.fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+  }
+}
+
+// ✅ Loading State cho ảnh
+.image-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8eeff 100%);
+  border-radius: 12px;
+  border: 2px dashed #667eea;
+  min-height: 200px;
+  
+  .loading-spinner {
+    font-size: 2.5rem;
+    color: #667eea;
+    margin-bottom: 1rem;
+    
+    i {
+      animation: spin 1s linear infinite;
+    }
+  }
+  
+  .loading-text {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #334155;
+    margin: 0 0 0.5rem 0;
+  }
+  
+  .loading-hint {
+    font-size: 0.875rem;
+    color: #64748b;
+    font-style: italic;
+  }
+}
+
+// ✅ Error State cho ảnh
+.image-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, #fff0f0 0%, #ffe8e8 100%);
+  border-radius: 12px;
+  border: 2px dashed #ef4444;
+  min-height: 200px;
+  
+  i {
+    font-size: 2.5rem;
+    color: #ef4444;
+    margin-bottom: 1rem;
+  }
+  
+  p {
+    font-size: 1rem;
+    color: #991b1b;
+    margin: 0 0 1rem 0;
+  }
+  
+  .retry-btn {
+    padding: 0.5rem 1rem;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background: #dc2626;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+    
+    i {
+      font-size: 0.875rem;
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+// ✅ Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 

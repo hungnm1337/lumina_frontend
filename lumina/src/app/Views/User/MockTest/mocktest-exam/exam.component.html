@@ -139,9 +139,12 @@
           <div class="col-span-6 flex flex-col">
             <!-- Question StemText -->
             @if (currentQuestion.stemText) {
-            <div class="mb-2 p-2 bg-purple-50 border-l-4 border-purple-500 rounded">
+            <div
+              class="mb-2 p-2 bg-purple-50 border-l-4 border-purple-500 rounded"
+            >
               <h4 class="text-sm font-semibold text-gray-900">
-                Question {{ currentQuestionIndex + 1 }}: {{ currentQuestion.stemText }}
+                Question {{ currentQuestionIndex + 1 }}:
+                {{ currentQuestion.stemText }}
               </h4>
             </div>
             }
@@ -260,9 +263,12 @@
           <div class="col-span-6 flex flex-col">
             <!-- Question StemText -->
             @if (currentQuestion.stemText) {
-            <div class="mb-2 p-2 bg-emerald-50 border-l-4 border-emerald-500 rounded">
+            <div
+              class="mb-2 p-2 bg-emerald-50 border-l-4 border-emerald-500 rounded"
+            >
               <h4 class="text-sm font-semibold text-gray-900">
-                Question {{ currentQuestionIndex + 1 }}: {{ currentQuestion.stemText }}
+                Question {{ currentQuestionIndex + 1 }}:
+                {{ currentQuestion.stemText }}
               </h4>
             </div>
             }
@@ -343,20 +349,56 @@
       </div>
 
       <!-- Speaking Component -->
-      <div class="bg-white rounded-lg shadow-md">
+      <div
+        class="bg-white rounded-lg shadow-md"
+        *ngIf="!showSpeakingNextPartButton"
+      >
         <app-speaking
           [questions]="currentPart.questions"
           [partInfo]="currentPart"
           [isInMockTest]="true"
+          [mockTestAttemptId]="attemptId"
           (speakingAnswered)="onSpeakingAnswered($event)"
           (speakingPartCompleted)="onSpeakingPartCompleted()"
         >
         </app-speaking>
       </div>
+
+      <!-- Nút chuyển Part tiếp theo cho Speaking -->
+      <div
+        *ngIf="showSpeakingNextPartButton"
+        class="bg-white rounded-lg shadow-md p-8"
+      >
+        <div class="text-center">
+          <div
+            class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full mb-4"
+          >
+            <i class="fas fa-check text-white text-3xl"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-800 mb-2">
+            Hoàn thành Part {{ currentPartIndex + 1 }}!
+          </h3>
+          <p class="text-gray-600 mb-2">
+            Bạn đã hoàn thành {{ currentPart.title }}
+          </p>
+          <p class="text-sm text-gray-500 mb-6">
+            Đã chấm xong {{ currentPart.questions.length }} câu hỏi Speaking
+          </p>
+          <button
+            (click)="moveToNextPart()"
+            class="px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg text-lg"
+          >
+            Tiếp tục Part tiếp theo <i class="fas fa-arrow-right ml-2"></i>
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- WRITING PART: Let Writing component handle its own layout with navigator -->
-    <div *ngIf="isWritingPart && !showPartCompletionMessage" class="min-h-[calc(100vh-200px)]">
+    <div
+      *ngIf="isWritingPart && !showPartCompletionMessage"
+      class="min-h-[calc(100vh-200px)]"
+    >
       <!-- Compact Header -->
       <div
         class="mb-3 p-3 bg-gradient-to-r from-pink-600 to-rose-600 rounded-lg text-white"

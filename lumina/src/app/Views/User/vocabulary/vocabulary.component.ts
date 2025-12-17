@@ -21,7 +21,6 @@ import { AuthService } from '../../../Services/Auth/auth.service';
 export class UserVocabularyComponent implements OnInit {
   Math = Math;
 
-  // Sample data for category list
   categoryList = [
     {
       id: 'business',
@@ -47,12 +46,14 @@ export class UserVocabularyComponent implements OnInit {
   pageSize = 12;
   selectedVocabularyListDetail: any = null;
   
-  // Modal state for creating new folder
   isListModalOpen = false;
   listForm: FormGroup;
   isSubmitting = false;
 
-  // Streak data
+  showDeleteModal = false;
+  listToDelete: VocabularyListResponse | null = null;
+  isDeleting = false;
+
   streakData: any = null;
   isLoadingStreak = false;
 
@@ -61,7 +62,6 @@ export class UserVocabularyComponent implements OnInit {
     if (!this.showAllLists) {
       return this.userLists.slice(0, 6);
     } else {
-      // Pagination when showAllLists
       const startIdx = (this.currentPage - 1) * this.pageSize;
       return this.userLists.slice(startIdx, startIdx + this.pageSize);
     }
@@ -110,20 +110,17 @@ export class UserVocabularyComponent implements OnInit {
     private streakService: StreakService,
     private authService: AuthService
   ) {
-    // Form for creating new vocabulary list (private folder only)
     this.listForm = this.fb.group({
       name: ['', [Validators.required, Validators.maxLength(100)]]
     });
   }
 
   ngOnInit() {
-    // Vocabulary component for User
     this.loadUserLists();
     this.loadStreakData();
   }
 
   openVocabularyListDetail(list: VocabularyListResponse) {
-    // Assume API returns correct detail
     this.vocabularyService.getVocabularyListDetail(list.vocabularyListId).subscribe({
       next: (detail) => {
         this.selectedVocabularyListDetail = detail;
@@ -137,33 +134,27 @@ export class UserVocabularyComponent implements OnInit {
     this.selectedVocabularyListDetail = null;
   }
 
-  // Event handler functions
   startFlashcards(): void {
     this.router.navigate(['/flashcards']); 
   }
 
   startQuiz(): void {
-    // Navigate to quiz config page to select folder
     this.router.navigate(['/quiz/config']);
   }
 
   browseWords(): void {
-    // Navigate to flashcards page to view all decks
     this.router.navigate(['/flashcards']);
   }
 
-  // View all progress - Navigate to Spaced Repetition Dashboard
   viewAllProgress(): void {
     this.router.navigate(['/spaced-repetition/dashboard']);
   }
 
   openCategory(categoryId: string): void {
     console.log(`Open category: ${categoryId}`);
-    // Handle navigation logic to vocabulary list page with filter
   }
 
   startDailyChallenge(): void {
-    // Navigate to Practice page (user dashboard)
     this.router.navigate(['/homepage/user-dashboard']);
   }
 
@@ -175,12 +166,20 @@ export class UserVocabularyComponent implements OnInit {
 
     this.isLoadingStreak = true;
     this.streakService.getStreakSummary(userId).subscribe({
-      next: (data) => {
-        this.streakData = data;
+      next: (response) => {
+        if (response && response.success && response.data) {
+          this.streakData = response.data;
+        } else if (response && response.currentStreak !== undefined) {
+          this.streakData = response;
+        } else {
+          this.streakData = null;
+        }
         this.isLoadingStreak = false;
+        console.log('Streak data loaded:', this.streakData);
       },
       error: (error: any) => {
         console.error('Error loading streak data:', error);
+        this.streakData = null;
         this.isLoadingStreak = false;
       }
     });
@@ -188,7 +187,8 @@ export class UserVocabularyComponent implements OnInit {
 
 
   getConsecutiveDays(): number {
-    return this.streakData?.currentStreak || 0;
+    if (!this.streakData) return 0;
+    return this.streakData.currentStreak ?? 0;
   }
 
   getStreakEmoji(): string {
@@ -206,7 +206,6 @@ export class UserVocabularyComponent implements OnInit {
     });
   }
 
-  // Modal methods for creating new folder
   openCreateListModal(): void {
     this.isListModalOpen = true;
     this.listForm.reset();
@@ -223,7 +222,6 @@ export class UserVocabularyComponent implements OnInit {
     }
 
     this.isSubmitting = true;
-    // Always set isPublic to false for personal folders
     const listData: VocabularyListCreate = {
       name: this.listForm.value.name,
       isPublic: false
@@ -234,12 +232,44 @@ export class UserVocabularyComponent implements OnInit {
         this.toastService.success(`Đã tạo folder "${newList.name}" thành công!`);
         this.isSubmitting = false;
         this.closeCreateListModal();
-        this.loadUserLists(); // Refresh the list
+        this.loadUserLists();
       },
       error: (err) => {
         this.toastService.error('Tạo folder thất bại. Vui lòng thử lại.');
         this.isSubmitting = false;
         console.error('Error creating vocabulary list:', err);
+      }
+    });
+  }
+
+  openDeleteModal(list: VocabularyListResponse, event: Event): void {
+    event.stopPropagation();
+    this.listToDelete = list;
+    this.showDeleteModal = true;
+  }
+
+  closeDeleteModal(): void {
+    this.showDeleteModal = false;
+    this.listToDelete = null;
+  }
+
+  confirmDeleteList(): void {
+    if (!this.listToDelete || this.isDeleting) {
+      return;
+    }
+
+    this.isDeleting = true;
+    this.vocabularyService.deleteVocabularyList(this.listToDelete.vocabularyListId).subscribe({
+      next: () => {
+        this.toastService.success(`Đã xóa folder "${this.listToDelete!.name}" thành công!`);
+        this.isDeleting = false;
+        this.closeDeleteModal();
+        this.loadUserLists();
+      },
+      error: (err) => {
+        this.toastService.error('Xóa folder thất bại. Vui lòng thử lại.');
+        this.isDeleting = false;
+        console.error('Error deleting vocabulary list:', err);
       }
     });
   }

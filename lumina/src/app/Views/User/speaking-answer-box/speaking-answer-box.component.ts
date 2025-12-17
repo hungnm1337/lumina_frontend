@@ -762,7 +762,6 @@ export class SpeakingAnswerBoxComponent
   private setupVisibilityHandler(): void {
     this.visibilityChangeHandler = async () => {
       if (document.hidden) {
-        // 🚨 ANTI-CHEAT: Tự động hủy khi người dùng chuyển tab
         if (this.state === 'recording') {
           console.warn(
             '[ANTI-CHEAT] User switched tab while recording - cancelling'
@@ -772,6 +771,9 @@ export class SpeakingAnswerBoxComponent
           if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
             this.mediaRecorder.stop();
             this.clearTimer();
+            
+            // Dừng timer service để ẩn UI đếm ngược ngay lập tức
+            this.timerService.reset();
 
             // Set error state với flag đặc biệt
             this.state = 'error';

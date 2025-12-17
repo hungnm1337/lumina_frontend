@@ -15,13 +15,13 @@ interface VocabularyTableRow {
     category?: string;
     type?: string;
 
-    // Spaced Repetition Data
+    
     status: string;
     intervals: number;
     reviewCount: number;
-    quality?: number; // Calculated from last performance
+    quality?: number; 
 
-    // Dates
+  
     lastReviewedAt?: string | null;
     nextReviewAt?: string | null;
 

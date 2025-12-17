@@ -24,13 +24,13 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.googleAnalyticsService.initializePageTracking();
-    console.log('✅ Google Analytics initialized');
+    console.log(' Google Analytics initialized');
 
     // Start SignalR connection if user is logged in
     this.authService.currentUser$.subscribe(user => {
       if (user) {
         this.signalRService.startConnection();
-        console.log('✅ SignalR connection initiated for user:', user.id);
+        console.log(' SignalR connection initiated for user:', user.id);
       }
     });
   }

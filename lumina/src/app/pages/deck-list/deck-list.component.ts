@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Deck, FlashcardService } from '../../Services/flashcard/flashcard.service'; 
 import { HeaderComponent } from '../../Views/Common/header/header.component'; 
@@ -7,16 +8,18 @@ import { HeaderComponent } from '../../Views/Common/header/header.component';
 @Component({
   selector: 'app-deck-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, HeaderComponent], // Thêm RouterModule để dùng routerLink
+  imports: [CommonModule, RouterModule, FormsModule, HeaderComponent], // Thêm RouterModule để dùng routerLink
   templateUrl: './deck-list.component.html',
   styleUrls: ['./deck-list.component.scss']
 })
 export class DeckListComponent implements OnInit {
   decks: Deck[] = [];
+  filteredDecks: Deck[] = [];
   isLoading = true;
   error: string | null = null;
   currentPage = 1;
   pageSize = 9;
+  searchTerm: string = '';
 
   constructor(
     private flashcardService: FlashcardService,
@@ -29,11 +32,11 @@ export class DeckListComponent implements OnInit {
 
   get paginatedDecks(): Deck[] {
     const startIdx = (this.currentPage - 1) * this.pageSize;
-    return this.decks.slice(startIdx, startIdx + this.pageSize);
+    return this.filteredDecks.slice(startIdx, startIdx + this.pageSize);
   }
 
   get totalPages(): number {
-    return Math.max(1, Math.ceil(this.decks.length / this.pageSize));
+    return Math.max(1, Math.ceil(this.filteredDecks.length / this.pageSize));
   }
 
   nextPage(): void {
@@ -80,6 +83,7 @@ export class DeckListComponent implements OnInit {
     this.flashcardService.getDecks().subscribe({
       next: (decks) => {
         this.decks = decks;
+        this.filterDecks();
         this.isLoading = false;
       },
       error: (error) => {
@@ -88,5 +92,27 @@ export class DeckListComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  filterDecks(): void {
+    if (!this.searchTerm.trim()) {
+      this.filteredDecks = this.decks;
+    } else {
+      const term = this.searchTerm.toLowerCase().trim();
+      this.filteredDecks = this.decks.filter(deck => 
+        deck.title.toLowerCase().includes(term) ||
+        deck.author.toLowerCase().includes(term)
+      );
+    }
+    this.currentPage = 1; // Reset về trang đầu khi search
+  }
+
+  onSearchChange(): void {
+    this.filterDecks();
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.filterDecks();
   }
 }

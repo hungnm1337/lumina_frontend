@@ -100,11 +100,7 @@ export const routes: Routes = [
 
     ],
   },
-  // {
-  //   path: 'speaking-exam',
-  //   canActivate: [QuotaGuard],
-  //   data: { skill: 'speaking' },
-  // },
+ 
   {
     path: 'profile',
     loadComponent: () =>
@@ -158,7 +154,6 @@ export const routes: Routes = [
       ),
   },
 
-  // <-- DI CHUYỂN 2 ROUTE FLASHCARDS RA ĐÂY, ĐẶT Ở CẤP CAO NHẤT
   { path: 'flashcards', component: DeckListComponent },
   { path: 'flashcards/:id', component: DeckDetailComponent },
 

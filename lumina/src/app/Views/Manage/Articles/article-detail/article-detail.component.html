@@ -39,13 +39,15 @@
 
         <!-- Action Buttons -->
         <div class="action-buttons" *ngIf="canApproveReject()">
-          <button class="btn-action btn-approve" (click)="approveArticle()">
-            <i class="fas fa-check"></i>
-            Duyệt bài viết
+          <button class="btn-action btn-approve" (click)="approveArticle()" [disabled]="isApproving || isRejecting">
+            <i *ngIf="isApproving" class="fas fa-spinner fa-spin"></i>
+            <i *ngIf="!isApproving" class="fas fa-check"></i>
+            {{isApproving ? 'Đang duyệt...' : 'Duyệt bài viết'}}
           </button>
-          <button class="btn-action btn-reject" (click)="rejectArticle()">
-            <i class="fas fa-times"></i>
-            Từ chối
+          <button class="btn-action btn-reject" (click)="rejectArticle()" [disabled]="isApproving || isRejecting">
+            <i *ngIf="isRejecting" class="fas fa-spinner fa-spin"></i>
+            <i *ngIf="!isRejecting" class="fas fa-times"></i>
+            {{isRejecting ? 'Đang từ chối...' : 'Từ chối'}}
           </button>
         </div>
       </div>
@@ -104,17 +106,56 @@
       </button>
     </div>
     <div class="modal-body">
-      <p class="modal-description">Vui lòng nhập lý do từ chối bài viết này:</p>
+      <p class="modal-description">Vui lòng nhập lý do từ chối bài viết này (tối thiểu 10 ký tự):</p>
       <textarea
         [(ngModel)]="rejectionReason"
-        placeholder="Nhập lý do từ chối..."
+        placeholder="Nhập lý do từ chối (tối thiểu 10 ký tự)..."
         class="rejection-textarea"
-        rows="5"></textarea>
+        rows="5"
+        maxlength="500"></textarea>
+      <div class="char-counter">
+        {{rejectionReason.length || 0}} / 500
+      </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-cancel" (click)="cancelReject()">Hủy</button>
-      <button class="btn-confirm" (click)="confirmReject()">Xác nhận từ chối</button>
+      <button class="btn-cancel" (click)="cancelReject()" [disabled]="isRejecting">Hủy</button>
+      <button 
+        class="btn-confirm" 
+        (click)="confirmReject()"
+        [disabled]="!rejectionReason.trim() || isRejecting || rejectionReason.trim().length < 10">
+        <i *ngIf="isRejecting" class="fas fa-spinner fa-spin"></i>
+        {{isRejecting ? 'Đang xử lý...' : 'Xác nhận từ chối'}}
+      </button>
     </div>
   </div>
 </div>
 
+<!-- Approval Modal -->
+<div *ngIf="showApproveModal" class="modal-overlay" (click)="cancelApprove()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Xác nhận duyệt bài viết</h3>
+      <button class="modal-close" (click)="cancelApprove()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="approve-info">
+        <i class="fas fa-check-circle approve-icon"></i>
+        <h4>{{ article?.title }}</h4>
+        <p>Tác giả: {{ article?.authorName }}</p>
+        <p class="approve-warning">Bạn có chắc chắn muốn duyệt và xuất bản bài viết này?</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cancelApprove()" [disabled]="isApproving">Hủy</button>
+      <button 
+        class="btn-confirm" 
+        (click)="confirmApprove()"
+        [disabled]="isApproving">
+        <i *ngIf="isApproving" class="fas fa-spinner fa-spin"></i>
+        {{isApproving ? 'Đang duyệt...' : 'Xác nhận duyệt'}}
+      </button>
+    </div>
+  </div>
+</div>

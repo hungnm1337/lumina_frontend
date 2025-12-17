@@ -1029,6 +1029,45 @@ $toeic-purple: #8b5cf6;
       }
     }
 
+    .category-actions {
+      padding: 12px 0 0 0;
+      border-top: 1px solid #f1f5f9;
+      margin-top: 8px;
+
+      .show-more-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border: 1px solid #fbbf24;
+        border-radius: 8px;
+        color: #92400e;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        i {
+          font-size: 12px;
+          transition: transform 0.2s ease;
+        }
+
+        &:hover {
+          background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
+          border-color: #f59e0b;
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+      }
+    }
+
     .action-buttons-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;

@@ -33,6 +33,7 @@ import {
   QuestionNavigatorComponent,
   NavigatorLegendItem,
 } from '../../question-navigator/question-navigator.component';
+import { TimeComponent } from '../../time/time.component';
 
 @Component({
   selector: 'app-listening',
@@ -46,6 +47,7 @@ import {
     ReportPopupComponent,
     PopupComponent,
     QuestionNavigatorComponent,
+    TimeComponent,
   ],
   templateUrl: './listening.component.html',
   styleUrl: './listening.component.scss',
@@ -105,6 +107,11 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   showQuotaModal = false;
   quotaMessage = '';
 
+  // Timer management - Part-based countdown
+  partTotalTime: number = 0;
+  timerResetTrigger: number = 0;
+  hasShownTimeWarning = false;
+
   // Navigator configuration
   navigatorLegendItems: NavigatorLegendItem[] = [
     { color: 'bg-gray-200', label: 'Chưa làm' },
@@ -137,6 +144,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     this.examStartTime = new Date();
     this.clearCachedAudioState();
     this.sidebarService.hideSidebar(); // Ẩn sidebar khi bắt đầu làm bài
+    this.initializePartTimer(); // Initialize countdown timer
 
     setTimeout(() => {
       if (this.questions?.length > 0) {
@@ -148,6 +156,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['questions'] && this.questions?.length > 0) {
       this.resetQuiz();
+      this.initializePartTimer(); // Re-initialize timer when questions change
     }
 
     if (changes['currentIndex'] && !changes['currentIndex'].firstChange) {
@@ -158,6 +167,53 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.saveProgressOnExit();
     this.sidebarService.showSidebar(); // Hiển thị lại sidebar khi thoát
+  }
+
+  // ============= TIMER MANAGEMENT =============
+
+  // Calculate total time for part (sum of all question times)
+  private calculatePartTotalTime(): number {
+    if (!this.questions || this.questions.length === 0) return 0;
+    return this.questions.reduce((total, question) => {
+      return total + (question.time || 0);
+    }, 0);
+  }
+
+  // Initialize timer when starting the part
+  private initializePartTimer(): void {
+    this.partTotalTime = this.calculatePartTotalTime();
+    this.timerResetTrigger = Date.now(); // Force timer reset
+    this.hasShownTimeWarning = false;
+    console.log(`🕐 Listening Part timer initialized: ${this.partTotalTime}s`);
+  }
+
+  // Handle timer tick events
+  onPartTimerTick(remainingTime: number): void {
+    // Show warning at 30 seconds
+    if (remainingTime <= 30 && !this.hasShownTimeWarning) {
+      this.hasShownTimeWarning = true;
+      console.log('⚠️ Listening: 30 seconds remaining!');
+    }
+  }
+
+  // Handle timeout - auto submit
+  onPartTimeout(): void {
+    console.log('⏱️ Listening time expired!');
+    this.submitPopupTitle = 'Hết thời gian!';
+    this.submitPopupMessage =
+      'Thời gian làm bài đã hết. Bài thi sẽ được nộp tự động.';
+    this.showSubmitPopup = true;
+    // Auto submit after showing popup
+    setTimeout(() => {
+      this.showSubmitPopup = false;
+      this.finishExamByTimeout();
+    }, 2000);
+  }
+
+  // Finish exam due to timeout - auto submit to get score
+  private finishExamByTimeout(): void {
+    console.log('🏁 Auto-submitting Listening exam due to timeout...');
+    this.finishQuiz();
   }
 
   private loadAttemptId(): void {

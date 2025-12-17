@@ -1,5 +1,3 @@
-// src/app/components/staff/vocabulary/vocabulary.component.ts
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -23,46 +21,42 @@ import {
   styleUrls: ['./vocabulary.component.scss']
 })
 export class VocabularyComponent implements OnInit {
-  // ----- TRẠNG THÁI GIAO DIỆN -----
   currentView: 'lists' | 'words' = 'lists';
   selectedList: VocabularyListResponse | null = null;
 
-  // ----- DỮ LIỆU -----
   vocabularies: Vocabulary[] = [];
   filteredVocabularies: Vocabulary[] = [];
   vocabularyLists: VocabularyListResponse[] = [];
   stats: VocabularyStats[] = [];
 
-  // ----- TRẠNG THÁI BỘ LỌC VÀ TÌM KIẾM -----
   searchTerm = '';
 
-  // ----- TRẠNG THÁI MODAL TẠO TỪ VỰNG -----
   isModalOpen = false;
   editingVocabulary: Vocabulary | null = null;
   vocabularyForm: FormGroup;
 
-  // ----- TRẠNG THÁI MODAL TẠO DANH SÁCH -----
   isListModalOpen = false;
   listForm: FormGroup;
 
-  // ----- TRẠNG THÁI CONFIRMATION MODAL -----
   showConfirmModal = false;
   confirmTitle = '';
   confirmMessage = '';
-  confirmType: 'delete' | 'approval' = 'delete';
+  confirmType: 'delete' | 'approval' | 'cancel' = 'delete';
   pendingDeleteId: number | null = null;
   pendingApprovalList: VocabularyListResponse | null = null;
+  
+  initialVocabularyFormValue: any = null;
+  initialListFormValue: any = null;
+  initialImagePreview: string | null = null;
+  initialSelectedImageFile: File | null = null;
 
-  // ----- TRẠNG THÁI KHÁC -----
   isLoading = false;
   isSubmitting = false;
   
-  // ----- IMAGE UPLOAD STATE -----
   isUploadingImage = false;
   selectedImageFile: File | null = null;
   imagePreview: string | null = null;
 
-  // ----- DỮ LIỆU TĨNH -----
   categories: VocabularyCategory[] = [
     { id: 'business', name: 'Business', icon: '💼', count: 0, color: 'blue' },
     { id: 'technology', name: 'Technology', icon: '💻', count: 0, color: 'purple' },
@@ -73,9 +67,8 @@ export class VocabularyComponent implements OnInit {
   ];
   partsOfSpeech = ['Noun', 'Verb', 'Adjective', 'Adverb', 'Preposition', 'Conjunction', 'Phrasal Verb'];
   
-  // ----- PHÂN TRANG -----
   page: number = 1;
-  pageSize: number = 5;
+  pageSize: number = 6;
   totalItems: number = 0;
   totalPages: number = 0;
 
@@ -86,7 +79,6 @@ export class VocabularyComponent implements OnInit {
     private toastService: ToastService,
     private speechService: SpeechService
   ) {
-    // Form cho việc thêm/sửa từ vựng
     this.vocabularyForm = this.fb.group({
       word: ['', Validators.required],
       category: ['', Validators.required],
@@ -94,10 +86,9 @@ export class VocabularyComponent implements OnInit {
       definition: ['', Validators.required],
       example: ['', Validators.required],
       translation: ['', Validators.required],
-      imageUrl: [''] // Image URL
+      imageUrl: ['']
     });
 
-    // Form cho việc tạo danh sách mới
     this.listForm = this.fb.group({
       name: ['', [Validators.required, Validators.maxLength(100)]],
       isPublic: [false]
@@ -108,14 +99,12 @@ export class VocabularyComponent implements OnInit {
     this.loadVocabularyLists();
   }
 
-  // ----- QUẢN LÝ GIAO DIỆN -----
   selectList(list: VocabularyListResponse) {
     this.selectedList = list;
     this.currentView = 'words';
     this.loadVocabularies(list.vocabularyListId);
   }
 
-  // Reload selected list để cập nhật status
   reloadSelectedList() {
     if (this.selectedList) {
       this.vocabularyService.getVocabularyLists(this.searchTerm).subscribe({
@@ -138,7 +127,6 @@ export class VocabularyComponent implements OnInit {
     this.loadVocabularyLists();
   }
 
-  // ----- TẢI DỮ LIỆU -----
   loadVocabularyLists() {
     this.isLoading = true;
     this.vocabularyService.getVocabularyLists(this.searchTerm).subscribe({
@@ -159,7 +147,6 @@ export class VocabularyComponent implements OnInit {
     });
   }
 
-  // ----- TÌM KIẾM & LỌC -----
   filterVocabularies() {
     this.filteredVocabularies = this.vocabularies.filter(vocab =>
       vocab.word.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
@@ -182,7 +169,6 @@ export class VocabularyComponent implements OnInit {
     this.onSearchChange();
   }
 
-  // ----- STATS METHODS -----
   getPendingCount(): number {
     return this.vocabularyLists.filter(list => 
       list.status?.toLowerCase() === 'pending' || 
@@ -196,45 +182,101 @@ export class VocabularyComponent implements OnInit {
     ).length;
   }
 
-  // ----- MODAL DANH SÁCH -----
-  openCreateListModal() { this.isListModalOpen = true; this.listForm.reset({ isPublic: false }); }
-  closeCreateListModal() { this.isListModalOpen = false; }
+  openCreateListModal() { 
+    this.isListModalOpen = true; 
+    this.listForm.reset({ isPublic: false }); 
+    this.initialListFormValue = JSON.stringify(this.listForm.value);
+  }
+  
+  closeCreateListModal() { 
+    if (this.hasListFormChanged()) {
+      this.showCancelConfirm('list');
+    } else {
+      this.isListModalOpen = false;
+      this.initialListFormValue = null;
+    }
+  }
+  
+  forceCloseCreateListModal() {
+    this.isListModalOpen = false;
+    this.initialListFormValue = null;
+  }
+  
+  hasListFormChanged(): boolean {
+    if (!this.initialListFormValue) return false;
+    const currentValue = JSON.stringify(this.listForm.value);
+    return currentValue !== this.initialListFormValue;
+  }
   saveNewList() {
     if (this.listForm.invalid || this.isSubmitting) return;
     this.isSubmitting = true;
     this.vocabularyService.createVocabularyList(this.listForm.value).subscribe({
       next: (newList) => {
         this.toastService.success(`Đã tạo danh sách "${newList.name}"!`);
-        this.isSubmitting = false; this.closeCreateListModal(); this.loadVocabularyLists();
+        this.isSubmitting = false; 
+        this.forceCloseCreateListModal(); 
+        this.loadVocabularyLists();
       },
       error: (err) => { this.toastService.error("Tạo danh sách thất bại."); this.isSubmitting = false; }
     });
   }
 
-  // ----- MODAL TỪ VỰNG (CRUD) -----
   openModal(vocabulary: Vocabulary | null = null) {
     this.editingVocabulary = vocabulary;
     this.isModalOpen = true;
     if (vocabulary) {
-      // Dùng patchValue để điền dữ liệu vào form khi chỉnh sửa
       this.vocabularyForm.patchValue({
         ...vocabulary,
         imageUrl: vocabulary.imageUrl || ''
       });
       this.imagePreview = vocabulary.imageUrl || null;
     } else {
-      // Reset form khi tạo mới
       this.vocabularyForm.reset();
       this.imagePreview = null;
     }
     this.selectedImageFile = null;
+    
+    this.initialVocabularyFormValue = JSON.stringify(this.vocabularyForm.value);
+    this.initialImagePreview = this.imagePreview;
+    this.initialSelectedImageFile = this.selectedImageFile;
   }
 
   closeModal() {
+    if (this.hasVocabularyFormChanged()) {
+      this.showCancelConfirm('vocabulary');
+    } else {
+      this.forceCloseModal();
+    }
+  }
+  
+  forceCloseModal() {
     this.isModalOpen = false;
     this.editingVocabulary = null;
     this.selectedImageFile = null;
     this.imagePreview = null;
+    this.initialVocabularyFormValue = null;
+    this.initialImagePreview = null;
+    this.initialSelectedImageFile = null;
+  }
+  
+  hasVocabularyFormChanged(): boolean {
+    if (!this.initialVocabularyFormValue) return false;
+    
+    const currentFormValue = JSON.stringify(this.vocabularyForm.value);
+    const formChanged = currentFormValue !== this.initialVocabularyFormValue;
+    
+    const imageChanged = this.imagePreview !== this.initialImagePreview || 
+                         this.selectedImageFile !== this.initialSelectedImageFile;
+    
+    return formChanged || imageChanged;
+  }
+  
+  showCancelConfirm(modalType: 'vocabulary' | 'list') {
+    this.confirmType = 'cancel';
+    this.confirmTitle = 'Xác nhận hủy';
+    this.confirmMessage = 'Bạn có thay đổi chưa được lưu. Bạn có chắc chắn muốn hủy?';
+    this.pendingApprovalList = modalType === 'list' ? {} as VocabularyListResponse : null;
+    this.showConfirmModal = true;
   }
   
   onImageSelected(event: Event): void {
@@ -242,13 +284,11 @@ export class VocabularyComponent implements OnInit {
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
       
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         this.toastService.error('Vui lòng chọn file ảnh hợp lệ!');
         return;
       }
       
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         this.toastService.error('Kích thước ảnh không được vượt quá 5MB!');
         return;
@@ -256,7 +296,6 @@ export class VocabularyComponent implements OnInit {
       
       this.selectedImageFile = file;
       
-      // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
         this.imagePreview = e.target?.result as string;
@@ -295,15 +334,11 @@ export class VocabularyComponent implements OnInit {
     const formData = this.vocabularyForm.value;
     console.log('Form data to submit:', formData);
 
-    // Lưu translation vào definition field với format "DEFINITION|||TRANSLATION"
-    // Vì backend không có translation field riêng
     const definitionWithTranslation = formData.translation 
       ? `${formData.definition}|||${formData.translation}`
       : formData.definition;
 
-    // Logic cho CHỈNH SỬA
     if (this.editingVocabulary) {
-      // Nếu có file ảnh mới được chọn, upload lên Cloudinary trước
       if (this.selectedImageFile) {
         this.isUploadingImage = true;
         this.toastService.info('Hệ thống đang lưu lại từ vựng...');
@@ -315,7 +350,6 @@ export class VocabularyComponent implements OnInit {
             console.log('📥 [STAFF] Upload response for UPDATE:', response);
             if (response && response.url) {
               console.log('✅ [STAFF] Image uploaded successfully for UPDATE, URL:', response.url);
-              // Sau khi upload thành công, tiếp tục update vocabulary với imageUrl mới
               this.updateVocabularyWithImageUrl(formData, definitionWithTranslation, response.url);
             } else {
               console.error('❌ [STAFF] Upload response missing URL for UPDATE:', response);
@@ -333,15 +367,12 @@ export class VocabularyComponent implements OnInit {
         });
       } else {
         console.log('ℹ️ [STAFF] No image file selected for UPDATE, using existing imageUrl:', formData.imageUrl);
-        // Không có file mới, update vocabulary với imageUrl hiện tại (hoặc rỗng nếu đã xóa)
         const currentImageUrl = formData.imageUrl?.trim();
         const imageUrlToSend = currentImageUrl === '' ? null : (currentImageUrl || undefined);
         this.updateVocabularyWithImageUrl(formData, definitionWithTranslation, imageUrlToSend);
       }
     }
-    // Logic cho TẠO MỚI
     else {
-      // Nếu có file ảnh mới được chọn, upload lên Cloudinary trước
       if (this.selectedImageFile) {
         this.isUploadingImage = true;
         this.toastService.info('Hệ thống đang lưu lại từ vựng...');
@@ -353,7 +384,6 @@ export class VocabularyComponent implements OnInit {
             console.log('📥 [STAFF] Upload response for CREATE:', response);
             if (response && response.url) {
               console.log('✅ [STAFF] Image uploaded successfully for CREATE, URL:', response.url);
-              // Sau khi upload thành công, tiếp tục tạo vocabulary với imageUrl mới
               this.createVocabularyWithImageUrl(formData, definitionWithTranslation, response.url);
             } else {
               console.error('❌ [STAFF] Upload response missing URL for CREATE:', response);
@@ -371,7 +401,6 @@ export class VocabularyComponent implements OnInit {
         });
       } else {
         console.log('ℹ️ [STAFF] No image file selected for CREATE, creating vocabulary without image');
-        // Không có file mới, tạo vocabulary với imageUrl hiện tại (nếu có)
         this.createVocabularyWithImageUrl(formData, definitionWithTranslation, formData.imageUrl?.trim() || undefined);
       }
     }
@@ -386,9 +415,8 @@ export class VocabularyComponent implements OnInit {
       example: formData.example
     };
     
-    // Chỉ thêm imageUrl vào request nếu có giá trị
     if (imageUrl !== undefined) {
-      updateData.imageUrl = imageUrl || null; // Nếu empty string, gửi null để xóa ảnh
+      updateData.imageUrl = imageUrl || null;
     }
     
     console.log('Updating vocabulary:', updateData);
@@ -400,12 +428,10 @@ export class VocabularyComponent implements OnInit {
           } else {
             this.toastService.success('Cập nhật từ vựng thành công!');
           }
-          // Reload cả vocabulary list để cập nhật status
           this.loadVocabularyLists();
-          // Reload selected list để cập nhật status hiển thị
           this.reloadSelectedList();
           this.loadVocabularies(this.selectedList!.vocabularyListId);
-          this.closeModal();
+          this.forceCloseModal();
           this.isSubmitting = false;
           this.isUploadingImage = false;
           this.selectedImageFile = null; // Reset selected file
@@ -436,7 +462,6 @@ export class VocabularyComponent implements OnInit {
         example: formData.example
       };
       
-      // Chỉ thêm imageUrl vào request nếu có giá trị
       if (imageUrl !== undefined && imageUrl !== null && imageUrl !== '') {
         vocabularyData.imageUrl = imageUrl;
         console.log('✅ [STAFF] Adding imageUrl to request:', imageUrl);
@@ -453,12 +478,10 @@ export class VocabularyComponent implements OnInit {
           } else {
             this.toastService.success('Tạo từ vựng thành công!');
           }
-          // Reload cả vocabulary list để cập nhật status
           this.loadVocabularyLists();
-          // Reload selected list để cập nhật status hiển thị
           this.reloadSelectedList();
           this.loadVocabularies(this.selectedList!.vocabularyListId);
-          this.closeModal();
+          this.forceCloseModal();
           this.isSubmitting = false;
           this.isUploadingImage = false;
           this.selectedImageFile = null; // Reset selected file
@@ -498,7 +521,6 @@ export class VocabularyComponent implements OnInit {
     }
   }
 
-  // ----- PHÂN TRANG -----
   get pagedVocabularies() { const start = (this.page - 1) * this.pageSize; return this.filteredVocabularies.slice(start, start + this.pageSize); }
   updatePagination() { this.totalItems = this.filteredVocabularies.length; this.totalPages = Math.ceil(this.totalItems / this.pageSize) || 1; if (this.page > this.totalPages) this.page = this.totalPages; }
   nextPage() { if (this.page < this.totalPages) this.page++; }
@@ -516,6 +538,12 @@ export class VocabularyComponent implements OnInit {
     }
     return pages;
   }
+
+  handleImageError(event: Event, vocab: Vocabulary): void {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+    console.warn('Failed to load image for vocabulary:', vocab.word, 'URL:', vocab.imageUrl);
+  }
   
   getStartIndex(): number {
     return (this.page - 1) * this.pageSize + 1;
@@ -525,14 +553,12 @@ export class VocabularyComponent implements OnInit {
     return Math.min(this.page * this.pageSize, this.totalItems);
   }
 
-  // ----- HELPERS & TEXT-TO-SPEECH -----
   speakWord(word: string) { this.speechService.speakWord(word); }
   getCategoryName(categoryId: string): string { const category = this.categories.find(c => c.id === categoryId); return category?.name || categoryId; }
   getPartOfSpeechClass(partOfSpeech: string): string { const lower = partOfSpeech.toLowerCase(); if (lower.includes('verb')) return 'pos-verb'; if (lower.includes('noun')) return 'pos-noun'; return 'pos-other'; }
 
-  // ===== APPROVAL METHODS =====
   requestApproval(list: VocabularyListResponse, event: Event): void {
-    event.stopPropagation(); // Ngăn click vào card
+    event.stopPropagation();
     this.pendingApprovalList = list;
     this.confirmType = 'approval';
     this.confirmTitle = 'Xác nhận gửi phê duyệt';
@@ -546,7 +572,7 @@ export class VocabularyComponent implements OnInit {
       this.vocabularyService.requestApproval(this.pendingApprovalList.vocabularyListId).subscribe({
         next: () => {
           this.toastService.success('Đã gửi yêu cầu phê duyệt!');
-          this.loadVocabularyLists(); // Reload lists
+          this.loadVocabularyLists();
           this.isSubmitting = false;
           this.closeConfirmModal();
         },
@@ -566,6 +592,15 @@ export class VocabularyComponent implements OnInit {
     this.pendingApprovalList = null;
     this.confirmTitle = '';
     this.confirmMessage = '';
+  }
+  
+  confirmCancel() {
+    if (this.pendingApprovalList) {
+      this.forceCloseCreateListModal();
+    } else {
+      this.forceCloseModal();
+    }
+    this.closeConfirmModal();
   }
 
   getStatusClass(status: string | undefined): string {

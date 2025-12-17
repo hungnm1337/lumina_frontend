@@ -244,7 +244,7 @@ export class AiChatComponent implements OnInit, OnDestroy {
     const isExamRequest = this.detectExamRequest(content);
     
     if (isExamRequest) {
-      this.addAssistantMessage('⏳ Đang tạo đề, quá trình có thể mất nhiều thời gian, vui lòng đợi...');
+      this.addAssistantMessage('Đang tạo đề,vui lòng đợi...');
     }
     
     this.handleSmartChat(content);
@@ -364,9 +364,8 @@ export class AiChatComponent implements OnInit, OnDestroy {
   private removeLoadingMessage(): void {
     if (this.messages.length > 0) {
       const lastMessage = this.messages[this.messages.length - 1];
-      if (lastMessage.content.startsWith('⏳')) {
+      if (lastMessage.content.startsWith('Đang tạo đề')) {
         this.messages.pop();
-        // ✅ Lưu lại sau khi remove
         this.saveToStorage();
       }
     }

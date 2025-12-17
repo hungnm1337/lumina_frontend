@@ -5,6 +5,13 @@
   (close)="closeQuotaModal()"
 ></app-quota-limit-modal>
 
+<app-microphone-permission-modal
+  [visible]="showMicPermissionModal"
+  [examType]="'Speaking'"
+  (onRetry)="onMicPermissionRetry()"
+  (onExit)="onMicPermissionExit()"
+></app-microphone-permission-modal>
+
 @if (questions && questions.length > 0 && !finished) {
 <!-- Speaking Layout - Centered 70% width -->
 <div class="flex justify-center w-full">
@@ -79,8 +86,8 @@
     }
   </div>
 </div>
-} @if (finished) {
-<!-- Summary Screen - Centered 70% width -->
+} @if (finished && !isInMockTest) {
+<!-- Summary Screen - Centered 70% width - Chỉ hiển thị khi KHÔNG phải MockTest -->
 <div class="flex justify-center w-full">
   <div class="w-[70%] bg-white rounded-lg shadow-md p-6">
     <div class="text-center py-8">
@@ -132,7 +139,8 @@
     </div>
   </div>
 </div>
-} @if (showSpeakingSummary) {
+} @if (showSpeakingSummary && !isInMockTest) {
+<!-- Speaking Summary Modal - Chỉ hiển thị khi KHÔNG phải MockTest -->
 <div
   class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
 >
@@ -143,26 +151,29 @@
       class="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center z-10 flex-shrink-0"
     >
       <h2 class="text-2xl font-bold text-gray-800">
-        📊 Kết quả TOEIC Speaking Test
+         Kết quả TOEIC Speaking Test
       </h2>
-      <button
-        (click)="showReportPopup = true"
-        class="px-6 py-4 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 font-semibold shadow-lg"
-      >
-        <i class="fas fa-flag mr-2"></i>Báo cáo bài thi
-      </button>
-      <app-report-popup
-        *ngIf="showReportPopup"
-        [type]="'Exam - ' + examId"
-        (close)="onReportPopupClose()"
-      ></app-report-popup>
-      <button
-        (click)="closeSpeakingSummary()"
-        class="text-gray-500 hover:text-gray-700 text-2xl font-bold w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-        aria-label="Đóng"
-      >
-        ×
-      </button>
+      <div class="flex items-center gap-2">
+        <button
+          (click)="showReportPopup = true"
+          class="px-3 py-2 rounded-lg bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 font-medium shadow-md text-sm transition-all hover:shadow-lg"
+          title="Báo cáo bài thi"
+        >
+          <i class="fas fa-flag mr-1.5"></i>Báo cáo bài thi
+        </button>
+        <app-report-popup
+          *ngIf="showReportPopup"
+          [type]="'Exam - ' + examId"
+          (close)="onReportPopupClose()"
+        ></app-report-popup>
+        <button
+          (click)="closeSpeakingSummary()"
+          class="text-gray-500 hover:text-gray-700 text-2xl font-bold w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+          aria-label="Đóng"
+        >
+          ×
+        </button>
+      </div>
     </div>
 
     <div class="p-6 overflow-y-auto flex-1">

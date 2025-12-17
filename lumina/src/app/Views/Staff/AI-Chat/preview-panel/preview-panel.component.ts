@@ -234,4 +234,29 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
   getOptionLabel(index: number): string {
     return String.fromCharCode(65 + index);
   }
+
+  // ✅ Xử lý khi ảnh load thành công
+  onImageLoad(prompt: any) {
+    console.log('✅ Image loaded successfully');
+    prompt._imageLoaded = true;
+    prompt._imageError = false;
+  }
+
+  // ✅ Xử lý khi ảnh load thất bại
+  onImageError(prompt: any) {
+    console.error('❌ Image failed to load');
+    prompt._imageLoaded = false;
+    prompt._imageError = true;
+  }
+
+  // ✅ Thử load lại ảnh
+  retryImageLoad(prompt: any) {
+    console.log('🔄 Retrying image load...');
+    prompt._imageLoaded = false;
+    prompt._imageError = false;
+    
+    // Force reload bằng cách thêm timestamp
+    const originalUrl = prompt.referenceImageUrl.split('?')[0];
+    prompt.referenceImageUrl = `${originalUrl}?retry=${Date.now()}`;
+  }
 }
