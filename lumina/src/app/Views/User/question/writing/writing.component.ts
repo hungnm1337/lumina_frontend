@@ -55,7 +55,6 @@ import {
   styleUrl: './writing.component.scss',
 })
 export class WritingComponent implements OnChanges, OnDestroy, OnInit {
-  // Popup state cho xác nhận nộp bài và lưu tiến trình
   showPopup = false;
   popupMessage = '';
   popupTitle = '';
@@ -68,17 +67,15 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   onPopupCancel() {
     if (this.popupCancelHandler) this.popupCancelHandler();
   }
-  // Show report popup state
   showReportPopup: boolean = false;
 
-  // Exam ID getter for popup type
   get examId(): number | null {
     return this.attemptId;
   }
   @Input() questions: QuestionDTO[] | null = null;
-  @Input() isInMockTest: boolean = false; // Để biết đang thi trong mock test hay standalone
+  @Input() isInMockTest: boolean = false;
   @Output() finished = new EventEmitter<void>();
-  @Output() writingPartCompleted = new EventEmitter<void>(); // Phát sự kiện khi hoàn thành part
+  @Output() writingPartCompleted = new EventEmitter<void>();
 
   isShowHint: boolean = false;
   currentIndex = 0;
@@ -98,15 +95,12 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   attemptId: number | null = null;
   submittingQuestions: Set<number> = new Set();
 
-  // ✅ Track question states for parallel scoring
   questionStates: Map<number, WritingQuestionStateData> = new Map();
 
-  // Quota modal
   showQuotaModal = false;
   quotaMessage =
     'Kỹ năng Writing chỉ dành cho tài khoản Premium. Vui lòng nâng cấp để sử dụng tính năng này!';
 
-  // Navigator configuration
   navigatorLegendItems: NavigatorLegendItem[] = [
     { color: 'bg-gray-200', label: 'Chưa làm' },
     { color: 'bg-orange-500', label: 'Đã làm' },
@@ -141,11 +135,9 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     this.startAutoSave();
   }
 
-  // Handler called when report popup requests close
   onReportPopupClose(): void {
     console.log('[WritingComponent] Report popup close received');
     this.showReportPopup = false;
-    // Force change detection in case needed
     this.cdr.detectChanges();
   }
 
@@ -160,13 +152,11 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     this.sidebarService.hideSidebar(); // Ẩn sidebar khi bắt đầu làm bài
     if (this.questions && this.questions.length > 0) {
       this.preloadAllCaptions();
-      // ✅ Initialize all questions in state service
       this.questions.forEach((q) => {
         this.writingStateService.initializeQuestion(q.questionId);
       });
     }
 
-    // ✅ Subscribe to state changes
     this.writingStateService.getStates().subscribe((states) => {
       this.questionStates = states;
       this.cdr.markForCheck();
@@ -191,10 +181,8 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     this.stopAutoSave();
     this.saveCurrentState();
     this.saveProgressOnExit();
-    this.sidebarService.showSidebar(); // Hiển thị lại sidebar khi thoát
+    this.sidebarService.showSidebar();
   }
-
-  // ============= ATTEMPT MANAGEMENT (NEW) =============
 
   private clearPreviousWritingAnswers(): void {
     try {
@@ -220,14 +208,13 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       if (!this.attemptId) {
         console.error('[Writing] No attemptId found');
 
-        // ✅ Nếu trong mock test, chỉ cảnh báo (mock test sẽ tạo)
         if (this.isInMockTest) {
           console.warn(
-            '[Writing] ⚠️ In mock test mode - waiting for mock test to create attempt'
+            '[Writing] In mock test mode - waiting for mock test to create attempt'
           );
         }
       } else {
-        console.log('[Writing] ✅ Loaded attemptId:', this.attemptId);
+        console.log('[Writing] Loaded attemptId:', this.attemptId);
       }
     } catch (error) {
       console.error('[Writing] Error loading attemptId:', error);
@@ -242,7 +229,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
         }
       },
       error: (err) => {
-        console.error('❌ Failed to check quota:', err);
+        console.error(' Failed to check quota:', err);
       },
     });
   }
@@ -273,15 +260,12 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       const parsed = JSON.parse(raw);
       if (!parsed || typeof parsed !== 'object') return {};
 
-      // Convert new format {questionId, feedback} to old format for backward compatibility
       const result: Record<string, WritingResponseDTO> = {};
       for (const key in parsed) {
         const data = parsed[key];
         if (data && typeof data === 'object' && data.feedback) {
-          // New format: {questionId, feedback, savedAt}
           result[key] = data.feedback;
         } else {
-          // Old format: direct feedback object
           result[key] = data;
         }
       }
@@ -296,7 +280,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       const key = this.getFeedbackStorageKey();
       if (!key) return;
 
-      // Save in new format with questionId
       const newFormat: Record<string, any> = {};
       for (const qId in map) {
         newFormat[qId] = {
@@ -307,7 +290,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       }
       localStorage.setItem(key, JSON.stringify(newFormat));
     } catch {
-      // ignore
     }
   }
 
@@ -329,9 +311,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       }
       const parsed = JSON.parse(raw);
 
-      // Handle both old array format and new object format
       if (Array.isArray(parsed)) {
-        // Old format: [{questionId, answer}]
         this.savedAnswers = parsed
           .map((x: any) => ({
             questionId: Number(x?.questionId),
@@ -339,7 +319,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
           }))
           .filter((x: any) => Number.isFinite(x.questionId));
       } else if (parsed && typeof parsed === 'object') {
-        // New format: {questionId: {questionId, answer, savedAt}}
         this.savedAnswers = [];
         for (const qId in parsed) {
           const data = parsed[qId];
@@ -368,7 +347,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       if (!key) return;
       localStorage.setItem(key, JSON.stringify(this.savedAnswers));
     } catch {
-      // Best-effort only; ignore storage errors
     }
   }
 
@@ -407,7 +385,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   onAnswerSubmitted(questionId: number, score: number): void {
-    // Nhận điểm từng câu từ writing-answer-box
     this.totalScore += typeof score === 'number' ? score : 0;
   }
 
@@ -470,7 +447,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       this.showExplain = false;
       this.isShowHint = false;
 
-      // ✅ Force immediate change detection
       this.cdr.detectChanges();
     } else {
       this.finishExam();
@@ -483,7 +459,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       this.showExplain = false;
       this.isShowHint = false;
 
-      // ✅ Force immediate change detection
       this.cdr.detectChanges();
     }
   }
@@ -494,7 +469,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       this.showExplain = false;
       this.isShowHint = false;
 
-      // ✅ Force immediate change detection to update UI
       this.cdr.detectChanges();
 
       console.log(
@@ -506,25 +480,20 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   finishExam(): void {
     this.saveCurrentState();
 
-    // ✅ Nếu đang trong mock test, chỉ phát sự kiện và KHÔNG hiển thị kết quả
     if (this.isInMockTest) {
       console.log(
-        '[Writing] ✅ Writing part completed in mock test - emitting event'
+        '[Writing] Writing part completed in mock test - emitting event'
       );
-      // ❌ KHÔNG set isFinished = true trong mock test để tránh hiển thị kết quả
       this.writingPartCompleted.emit();
       return;
     }
 
-    // ✅ Nếu thi standalone, hiển thị kết quả như cũ
     this.isFinished = true;
     this.showExplain = true;
     this.callEndExamAPI();
 
-    // Xóa dữ liệu bài làm trong localStorage sau khi nộp bài
     this.clearSavedData();
 
-    // After submit, fetch feedback for all questions and save to localStorage
     this.fetchAllFeedbackAndFinalize();
   }
 
@@ -551,7 +520,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
 
       this.examAttemptService.endExam(endExamRequest).subscribe({
         next: (response) => {
-          // Exam ended successfully
+          console.log('Exam ended successfully:', response);
         },
         error: (error) => {
           console.error('Error ending writing exam:', error);
@@ -634,10 +603,9 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
           feedbackMap[String(qid)] = resp;
           this.feedbackDone++;
           pending--;
-          // ✅ Force change detection ngay khi nhận feedback
           this.cdr.detectChanges();
           console.log(
-            `[WritingComponent] 🟢 Question ${qid} feedback received`
+            `[WritingComponent] Question ${qid} feedback received`
           );
           maybeComplete();
         },
@@ -665,7 +633,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     const question = this.questions[this.currentIndex];
     // Debug log để kiểm tra stemText
     if (question && !question.stemText) {
-      console.log('[Writing] ⚠️ Question stemText is empty:', {
+      console.log('[Writing] Question stemText is empty:', {
         questionId: question.questionId,
         stemText: question.stemText,
         promptTitle: question.prompt?.title,
@@ -773,7 +741,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   isQuestionSubmitting(questionId: number): boolean {
-    // ✅ Check both old mechanism and new state service
+    // Check both old mechanism and new state service
     const stateData = this.questionStates.get(questionId);
     return (
       this.submittingQuestions.has(questionId) || stateData?.state === 'scoring'
@@ -781,7 +749,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   isAnyQuestionSubmitting(): boolean {
-    // ✅ Check both old mechanism and new state service
+    // Check both old mechanism and new state service
     if (this.submittingQuestions.size > 0) return true;
 
     for (const state of this.questionStates.values()) {
@@ -795,7 +763,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
    * Trạng thái này chỉ áp dụng cho Speaking và Writing
    */
   hasQuestionFeedback(questionId: number): boolean {
-    // ✅ Check state service first, then fallback to localStorage
+    // Check state service first, then fallback to localStorage
     const stateData = this.questionStates.get(questionId);
     if (stateData?.state === 'scored' && stateData.feedback) {
       return true;
@@ -811,16 +779,16 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
 
   onSubmitStart(questionId: number): void {
     this.submittingQuestions.add(questionId);
-    // ✅ Force change detection để Navigator cập nhật trạng thái ngay
+    // Force change detection để Navigator cập nhật trạng thái ngay
     this.cdr.detectChanges();
     console.log(
-      `[WritingComponent] 🟡 Question ${questionId} submitting started`
+      `[WritingComponent] Question ${questionId} submitting started`
     );
   }
 
   onSubmitEnd(questionId: number): void {
     this.submittingQuestions.delete(questionId);
-    // ✅ Force change detection để Navigator cập nhật trạng thái ngay
+    // Force change detection để Navigator cập nhật trạng thái ngay
     this.cdr.detectChanges();
     console.log(
       `[WritingComponent] 🟣 Question ${questionId} submitting ended`
@@ -830,13 +798,13 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   finishWritingExam(): void {
     const totalQuestions = this.questions?.length || 0;
 
-    // ✅ Nếu trong mock test, trực tiếp finish mà KHÔNG check
+    // Nếu trong mock test, trực tiếp finish mà KHÔNG check
     if (this.isInMockTest) {
       this.finishExam();
       return;
     }
 
-    // ✅ Chỉ check questions in progress khi thi standalone
+    // Chỉ check questions in progress khi thi standalone
     const questionsInProgress =
       this.questions?.filter((q) => {
         const hasAnswer = this.hasAnswer(q.questionId);
@@ -851,7 +819,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
 
       this.toastService.warning(
         `Bạn có ${questionsInProgress.length} câu đang làm dở chưa nộp: ${questionNumbers}. ` +
-          'Vui lòng nộp các câu này trước khi nộp bài.'
+        'Vui lòng nộp các câu này trước khi nộp bài.'
       );
       return;
     }
@@ -860,7 +828,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       this.questions?.filter((q) => this.isQuestionSubmitted(q.questionId))
         .length || 0;
 
-    // ✅ Nếu thi standalone, hiển thị confirm như cũ
+    // Nếu thi standalone, hiển thị confirm như cũ
     this.showPopup = true;
     this.popupTitle = 'Xác nhận nộp bài';
     this.popupMessage =
@@ -877,8 +845,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     };
   }
 
-  // ============= EXIT HANDLING (NEW) =============
-
   @HostListener('window:beforeunload', ['$event'])
   unloadNotification($event: any): void {
     if (!this.isFinished && this.attemptId) {
@@ -894,7 +860,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       };
 
       this.examAttemptService.saveProgress(model).subscribe({
-        next: () => {},
+        next: () => { },
         error: (error) =>
           console.error('Error saving writing progress:', error),
       });

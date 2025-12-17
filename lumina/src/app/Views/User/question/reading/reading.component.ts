@@ -124,7 +124,7 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
     private quotaService: QuotaService,
     private leaderboardService: LeaderboardService,
     private sidebarService: SidebarService
-  ) {}
+  ) { }
 
   // Handler for report popup close
   onReportPopupClose(): void {
@@ -152,8 +152,6 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
     }
   }
 
-  // ============= TIMER MANAGEMENT =============
-
   // Calculate total time for part (sum of all question times)
   private calculatePartTotalTime(): number {
     if (!this.questions || this.questions.length === 0) return 0;
@@ -167,7 +165,7 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
     this.partTotalTime = this.calculatePartTotalTime();
     this.timerResetTrigger = Date.now(); // Force timer reset
     this.hasShownTimeWarning = false;
-    console.log(`🕐 Reading Part timer initialized: ${this.partTotalTime}s`);
+    console.log(` Reading Part timer initialized: ${this.partTotalTime}s`);
   }
 
   // Handle timer tick events
@@ -175,13 +173,13 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
     // Show warning at 30 seconds
     if (remainingTime <= 30 && !this.hasShownTimeWarning) {
       this.hasShownTimeWarning = true;
-      console.log('⚠️ Reading: 30 seconds remaining!');
+      console.log('Reading: 30 seconds remaining!');
     }
   }
 
   // Handle timeout - auto submit
   onPartTimeout(): void {
-    console.log('⏱️ Reading time expired!');
+    console.log('Reading time expired!');
     this.popupTitle = 'Hết thời gian!';
     this.popupMessage =
       'Thời gian làm bài đã hết. Bài thi sẽ được nộp tự động.';
@@ -195,11 +193,10 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
 
   // Finish exam due to timeout - auto submit to get score
   private finishExamByTimeout(): void {
-    console.log('🏁 Auto-submitting Reading exam due to timeout...');
+    console.log('Auto-submitting Reading exam due to timeout...');
     this.finishExam();
   }
 
-  // ============= ATTEMPT MANAGEMENT =============
 
   private loadAttemptId(): void {
     try {
@@ -222,10 +219,10 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
   private incrementQuotaOnStart(): void {
     this.quotaService.incrementQuota('reading').subscribe({
       next: () => {
-        console.log('✅ Reading quota incremented');
+        console.log(' Reading quota incremented');
       },
       error: (err) => {
-        console.error('❌ Failed to increment quota:', err);
+        console.error('Failed to increment quota:', err);
         if (err.status === 400 || err.status === 403) {
           this.quotaMessage =
             'Bạn đã hết lượt thi Reading miễn phí (20 lượt/tháng). Vui lòng nâng cấp Premium để tiếp tục!';
@@ -240,14 +237,13 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
     this.router.navigate(['/homepage/user-dashboard/exams']);
   }
 
-  // ============= ANSWER SUBMISSION =============
 
   markAnswered(selectedOptionId: number): void {
     if (this.isSubmitting || !this.attemptId) return;
 
     const currentQuestion = this.questions[this.currentIndex];
 
-    // ✅ Check if this question was already answered
+    //  Check if this question was already answered
     const previousAnswer = this.answeredQuestions.get(
       currentQuestion.questionId
     );
@@ -271,7 +267,7 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
       next: (response) => {
         console.log('Reading answer submitted:', response);
 
-        // ✅ If updating answer, adjust previous scores first
+        //  If updating answer, adjust previous scores first
         if (isUpdatingAnswer) {
           if (previousAnswer.isCorrect) {
             this.correctCount--;
@@ -306,7 +302,6 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
     });
   }
 
-  // ============= NAVIGATION =============
 
   previousQuestion(): void {
     if (this.currentIndex > 0) {
@@ -339,9 +334,8 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
     const totalQuestions = this.questions.length;
     const unansweredCount = totalQuestions - answeredCount;
 
-    let message = `Bạn có chắc chắn muốn nộp bài thi ${
-      this.partInfo?.partCode || 'Reading'
-    } không?\nSố câu đã trả lời: ${answeredCount}/${totalQuestions}`;
+    let message = `Bạn có chắc chắn muốn nộp bài thi ${this.partInfo?.partCode || 'Reading'
+      } không?\nSố câu đã trả lời: ${answeredCount}/${totalQuestions}`;
 
     if (unansweredCount > 0) {
       message += `\nSố câu chưa trả lời: ${unansweredCount}\nCác câu chưa trả lời sẽ không được tính điểm!`;
@@ -370,7 +364,6 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
     this.showExplain = this.answeredQuestions.has(currentQuestionId);
   }
 
-  // ============= QUIZ COMPLETION =============
 
   private finishExam(): void {
     if (!this.attemptId) {
@@ -394,7 +387,6 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
         this.finished = true;
         localStorage.removeItem('currentExamAttempt');
 
-        // 🎯 CALCULATE LEADERBOARD SCORE (CHỈ READING)
         this.calculateLeaderboardScore();
       },
       error: (error) => {
@@ -404,12 +396,10 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
     });
   }
 
-  // ============= LEADERBOARD INTEGRATION =============
-
   private calculateLeaderboardScore(): void {
     if (!this.attemptId || !this.partInfo) {
       console.log(
-        '⚠️ Missing attemptId or partInfo for leaderboard calculation'
+        ' Missing attemptId or partInfo for leaderboard calculation'
       );
       return;
     }
@@ -430,16 +420,10 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
       expectedTimeSeconds: expectedTimeSeconds,
     };
 
-    console.log('📊 [Reading] Calculating leaderboard score:', request);
-    console.log('   - AttemptId:', this.attemptId);
-    console.log('   - CorrectAnswers:', this.correctCount);
-    console.log('   - TotalQuestions:', this.questions.length);
-    console.log('   - ExamPartId:', examPartId);
-
     this.leaderboardService.calculateScore(request).subscribe({
       next: (response) => {
         console.log(
-          '✅ [Reading] Leaderboard score calculated successfully:',
+          'Leaderboard score calculated successfully:',
           response
         );
         console.log('   - SeasonScore:', response.seasonScore);
@@ -456,7 +440,7 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
         // Thông báo nếu làm lần đầu
         if (response.isFirstAttempt) {
           console.log(
-            '🎯 Lần đầu làm đề này! TOEIC đã được cập nhật:',
+            ' Lần đầu làm đề này! TOEIC đã được cập nhật:',
             response.estimatedTOEIC
           );
         } else {
@@ -465,7 +449,7 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
       },
       error: (error) => {
         console.error(
-          '❌ [Reading] Error calculating leaderboard score:',
+          '[Reading] Error calculating leaderboard score:',
           error
         );
         console.error('   - Error details:', JSON.stringify(error, null, 2));
@@ -484,16 +468,15 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
     const message = `
 ${response.toeicMessage}
 
-📊 Thông tin chi tiết:
+Thông tin chi tiết:
 • Điểm lần này: ${response.seasonScore}
 • Tổng điểm tích lũy: ${response.totalAccumulatedScore}
 • TOEIC ước tính: ${response.estimatedTOEIC}
 • Trình độ: ${response.toeicLevel}
-${
-  response.isFirstAttempt
-    ? '\n🎯 Lần đầu làm đề này!'
-    : '\n🔄 Làm lại đề - TOEIC giữ nguyên'
-}
+${response.isFirstAttempt
+        ? '\n Lần đầu làm đề này!'
+        : '\nLàm lại đề - TOEIC giữ nguyên'
+      }
     `.trim();
 
     this.showPopup = true;
@@ -514,11 +497,10 @@ ${
 
     this.showPopup = true;
     this.popupTitle = 'Chúc mừng!';
-    this.popupMessage = `${icon} CHÚC MỪNG!\n\nBạn đã lên cấp độ: ${levelText}\n${
-      previousLevel
+    this.popupMessage = `${icon} CHÚC MỪNG!\n\nBạn đã lên cấp độ: ${levelText}\n${previousLevel
         ? `Từ: ${this.leaderboardService.getTOEICLevelText(previousLevel)}`
         : ''
-    }\n\nHãy tiếp tục phát huy!`;
+      }\n\nHãy tiếp tục phát huy!`;
     this.popupOkHandler = () => {
       this.showPopup = false;
     };
@@ -528,14 +510,12 @@ ${
   private showMilestoneNotification(milestone: number): void {
     this.showPopup = true;
     this.popupTitle = 'Thành tích mới!';
-    this.popupMessage = `🎯 THÀNH TÍCH MỚI!\n\nBạn đã đạt mốc ${milestone} điểm TOEIC ước tính!\n\nChúc mừng bạn!`;
+    this.popupMessage = ` THÀNH TÍCH MỚI!\n\nBạn đã đạt mốc ${milestone} điểm TOEIC ước tính!\n\nChúc mừng bạn!`;
     this.popupOkHandler = () => {
       this.showPopup = false;
     };
     this.popupCancelHandler = null;
   }
-
-  // ============= EXAM HISTORY =============
 
   showExamAttemptDetails(): void {
     if (!this.attemptId) return;

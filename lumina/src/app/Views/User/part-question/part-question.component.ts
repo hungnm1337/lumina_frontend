@@ -21,8 +21,8 @@ import { flush } from '@angular/core/testing';
     ReadingComponent,
     ListeningComponent,
   ],
-    templateUrl: './part-question.component.html',
-    styleUrls: ['./part-question.component.scss'],
+  templateUrl: './part-question.component.html',
+  styleUrls: ['./part-question.component.scss'],
 })
 export class PartQuestionComponent {
   partId: number | null = null;
@@ -53,16 +53,16 @@ export class PartQuestionComponent {
 
           // tùy vào part code có chứa "writing , reading, listening"
 
-          if(this.partDetail.partCode.search('WRI')){
+          if (this.partDetail.partCode.search('WRI')) {
             this.isWritingExam = true;
-          }else if(this.partDetail.partCode.search('REA')){
+          } else if (this.partDetail.partCode.search('REA')) {
             this.isReadingExam = true;
           }
-          else if(this.partDetail.partCode.search('LIS')){
+          else if (this.partDetail.partCode.search('LIS')) {
             this.isListeningExam = true;
           }
 
-          this.partInfo ={
+          this.partInfo = {
             partId: this.partDetail.partId,
             partCode: this.partDetail.partCode,
             title: this.partDetail.title,
@@ -131,7 +131,7 @@ export class PartQuestionComponent {
       this.isSpeakingExam = type.includes('SPEAKING');
       this.isReadingExam = type.includes('READING');
       this.isListeningExam = type.includes('LISTENING');
-      this.isWritingExam = type.includes('WRIT'); 
+      this.isWritingExam = type.includes('WRIT');
     }
   }
 

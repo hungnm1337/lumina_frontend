@@ -58,30 +58,26 @@ export class ExamComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private toastService: ToastService,
     private examAttemptService: ExamAttemptService
-  ) {}
+  ) { }
 
   exampartDetailsAndQustions: ExamPartDTO[] = [];
   currentPartIndex: number = 0;
   currentQuestionIndex: number = 0;
-  selectedAnswers: { [questionId: number]: number } = {}; // questionId -> optionId (for Listening/Reading)
+  selectedAnswers: { [questionId: number]: number } = {};
   showPartCompletionMessage: boolean = false;
 
-  // Speaking tracking in MockTest
-  speakingCompletedQuestions: { [partId: number]: number } = {}; // partId -> number of completed questions
-  showSpeakingNextPartButton: boolean = false; // Hiển thị nút chuyển part cho Speaking
+  speakingCompletedQuestions: { [partId: number]: number } = {};
+  showSpeakingNextPartButton: boolean = false;
 
-  // Attempt management
   attemptId: number | null = null;
   examId: number | null = null;
   isSubmitting: boolean = false;
   totalScore: number = 0;
 
-  // Timer management - Part-based timer
-  currentPartTime: number = 0; // Total time for current part
+  currentPartTime: number = 0;
   timerResetTrigger: number = 0;
-  hasShownWarning: boolean = false; // Track if 30s warning shown
+  hasShownWarning: boolean = false;
 
-  // Audio player for Listening
   @ViewChild('audioPlayer', { static: false })
   audioPlayer?: ElementRef<HTMLAudioElement>;
   audioPlayCounts = new Map<number, number>();
@@ -90,8 +86,6 @@ export class ExamComponent implements OnInit, OnDestroy {
   audioCurrentTime = 0;
   audioDuration = 0;
   audioProgress = 0;
-
-  // Navigator configuration
   navigatorLegendItems: NavigatorLegendItem[] = [
     { color: 'bg-gray-200', label: 'Chưa làm' },
     { color: 'bg-green-500', label: 'Đã làm' },
@@ -118,7 +112,6 @@ export class ExamComponent implements OnInit, OnDestroy {
     return this.currentPart?.questions[this.currentQuestionIndex] || null;
   }
 
-  // Skill type detection
   get currentSkillType():
     | 'listening'
     | 'reading'
@@ -152,7 +145,6 @@ export class ExamComponent implements OnInit, OnDestroy {
     return this.currentSkillType === 'writing';
   }
 
-  // Helper method to get skill type from part
   private getSkillType(
     part: ExamPartDTO
   ): 'listening' | 'reading' | 'speaking' | 'writing' | 'unknown' {
@@ -168,9 +160,7 @@ export class ExamComponent implements OnInit, OnDestroy {
     return 'unknown';
   }
 
-  // Sort parts by skill type order and partId
   private sortPartsBySkillAndId(parts: ExamPartDTO[]): ExamPartDTO[] {
-    // Define skill order priority
     const skillOrder = {
       listening: 1,
       reading: 2,
@@ -179,27 +169,21 @@ export class ExamComponent implements OnInit, OnDestroy {
       unknown: 5,
     };
 
-    // Sort by skill type first, then by partId
     return parts.sort((a, b) => {
       const skillA = this.getSkillType(a);
       const skillB = this.getSkillType(b);
 
-      // Compare skill type priority
       const skillDiff = skillOrder[skillA] - skillOrder[skillB];
       if (skillDiff !== 0) return skillDiff;
 
-      // If same skill type, sort by partId
       return (a.partId || 0) - (b.partId || 0);
     });
   }
 
   ngOnInit(): void {
-    // Get examId from route params
     this.route.params.subscribe((params) => {
       this.examId = +params['examId'] || null;
-      console.log('📋 ExamId from route:', this.examId);
 
-      // Create attempt after getting examId
       if (this.examId) {
         this.createExamAttempt();
       }
@@ -212,7 +196,7 @@ export class ExamComponent implements OnInit, OnDestroy {
     this.saveProgressOnExit();
   }
 
-  // ============ AUDIO PLAYER METHODS ============
+
   getCurrentAudioUrl(): string {
     return this.currentQuestion?.prompt?.referenceAudioUrl || '';
   }
@@ -305,7 +289,7 @@ export class ExamComponent implements OnInit, OnDestroy {
           this.isAudioPlaying = true;
         })
         .catch((error) => {
-          console.error('Cannot resume audio:', error);
+
         });
       return;
     }
@@ -323,15 +307,15 @@ export class ExamComponent implements OnInit, OnDestroy {
 
     audio
       .play()
-      .then(() => {})
+      .then(() => { })
       .catch((error) => {
         this.audioPlayCounts.set(currentQuestionId, currentCount);
         this.isAudioPlaying = false;
-        console.error('Cannot play audio:', error);
+
       });
   }
 
-  // ============ NAVIGATOR HELPER METHODS ============
+
   getSelectedOptionId(questionId: number): number | null {
     return this.selectedAnswers[questionId] ?? null;
   }
@@ -340,7 +324,7 @@ export class ExamComponent implements OnInit, OnDestroy {
     if (index >= 0 && index < (this.currentPart?.questions.length || 0)) {
       this.currentQuestionIndex = index;
       this.showPartCompletionMessage = false;
-      // Don't reset timer when navigating within same part
+
       this.resetAudioState();
       if (this.currentSkillType === 'listening') {
         this.autoPlayAudio();
@@ -363,18 +347,14 @@ export class ExamComponent implements OnInit, OnDestroy {
   private createExamAttempt(): void {
     const user = this.authService.getCurrentUser();
     if (!user) {
-      this.toastService.error('Please login to start exam');
+      this.toastService.error('Vui lòng đăng nhập để bắt đầu bài thi');
       this.router.navigate(['/auth/login']);
       return;
     }
 
-    // Clear any existing attempt - always create new for mock test
     localStorage.removeItem('currentExamAttempt');
-    console.log('🗑️ Cleared old exam attempt - creating new mock test attempt');
 
-    // Create new attempt
     if (!this.examId) {
-      console.error('No examId available for creating attempt');
       return;
     }
 
@@ -382,7 +362,7 @@ export class ExamComponent implements OnInit, OnDestroy {
       attemptID: 0,
       userID: Number(user.id),
       examID: this.examId,
-      examPartId: null, // Mock test covers all parts
+      examPartId: null,
       startTime: new Date().toISOString(),
       endTime: null,
       score: null,
@@ -392,16 +372,10 @@ export class ExamComponent implements OnInit, OnDestroy {
     this.examAttemptService.startExam(attemptRequest).subscribe({
       next: (response) => {
         this.attemptId = response.attemptID;
-        // Save to localStorage
         localStorage.setItem('currentExamAttempt', JSON.stringify(response));
-        console.log(
-          '✅ Created new mock test attemptId and saved to localStorage:',
-          this.attemptId
-        );
       },
       error: (error) => {
-        console.error('❌ Failed to create exam attempt:', error);
-        this.toastService.error('Failed to start exam. Please try again.');
+        this.toastService.error('Không thể bắt đầu bài thi. Vui lòng thử lại.');
       },
     });
   }
@@ -409,36 +383,25 @@ export class ExamComponent implements OnInit, OnDestroy {
   loadMocktestQuestions() {
     this.mockTestService.getMocktestQuestions().subscribe({
       next: (data: ExamPartDTO[]) => {
-        // Sort parts by skill type and partId
         this.exampartDetailsAndQustions = this.sortPartsBySkillAndId(data);
-        console.log(
-          'Mocktest questions loaded and sorted:',
-          this.exampartDetailsAndQustions
-        );
 
-        // Set examId from first part if not set from route
         if (!this.examId && data.length > 0) {
           this.examId = data[0].examId;
-          console.log('📋 ExamId from mocktest data:', this.examId);
 
-          // Create attempt after getting examId from data
           this.createExamAttempt();
         }
 
-        // Initialize at first part and first question
         this.currentPartIndex = 0;
         this.currentQuestionIndex = 0;
         this.initializePartTimer();
 
-        // Auto play audio for first question if it's a listening part
         if (this.currentSkillType === 'listening') {
           this.autoPlayAudio();
         }
       },
       error: (error) => {
-        console.error('Error loading mocktest questions:', error);
         this.toastService.error(
-          'Failed to load mocktest questions. Please try again later.'
+          'Không thể tải câu hỏi bài thi. Vui lòng thử lại sau.'
         );
       },
     });
@@ -452,18 +415,13 @@ export class ExamComponent implements OnInit, OnDestroy {
   }
 
   getOptionLabel(index: number): string {
-    return String.fromCharCode(65 + index); // A, B, C, D, etc.
+    return String.fromCharCode(65 + index);
   }
 
   selectAnswer(optionId: number) {
     if (this.currentQuestion) {
       this.selectedAnswers[this.currentQuestion.questionId] = optionId;
-      console.log('Answer selected:', {
-        questionId: this.currentQuestion.questionId,
-        optionId,
-      });
 
-      // Auto-submit answer to backend for Listening/Reading
       if (this.attemptId && this.isMultipleChoicePart) {
         this.submitAnswerToBackend(this.currentQuestion.questionId, optionId);
       }
@@ -498,37 +456,30 @@ export class ExamComponent implements OnInit, OnDestroy {
 
     submitService.subscribe({
       next: (response) => {
-        console.log('✅ Answer submitted:', response);
         if (response.isCorrect) {
           this.totalScore += response.score;
         }
       },
       error: (error) => {
-        console.error('❌ Failed to submit answer:', error);
       },
     });
   }
 
   isQuestionAnswered(questionId: number): boolean {
-    // For Listening/Reading: check selectedAnswers
     if (this.isMultipleChoicePart) {
       return this.selectedAnswers[questionId] !== undefined;
     }
 
-    // For Speaking/Writing: always show as not answered in pills
-    // (they don't use the pills navigation)
     return false;
   }
 
-  // Check if current part has all questions answered (for MC only)
   isCurrentPartComplete(): boolean {
-    if (!this.isMultipleChoicePart) return true; // Speaking/Writing always passable
+    if (!this.isMultipleChoicePart) return true;
 
     const currentQuestions = this.currentPart?.questions || [];
     return currentQuestions.every((q) => this.isQuestionAnswered(q.questionId));
   }
 
-  // Get count of unanswered questions in current part (for MC only)
   getUnansweredCount(): number {
     if (!this.isMultipleChoicePart) return 0;
 
@@ -538,7 +489,6 @@ export class ExamComponent implements OnInit, OnDestroy {
     ).length;
   }
 
-  // Get count of answered questions in current part
   getAnsweredCountInPart(): number {
     if (!this.currentPart) return 0;
     return this.currentPart.questions.filter((q) =>
@@ -546,7 +496,6 @@ export class ExamComponent implements OnInit, OnDestroy {
     ).length;
   }
 
-  // Get total questions in current part
   getTotalQuestionsInPart(): number {
     return this.currentPart?.questions.length || 0;
   }
@@ -554,14 +503,13 @@ export class ExamComponent implements OnInit, OnDestroy {
   goToQuestion(questionIndex: number) {
     this.currentQuestionIndex = questionIndex;
     this.showPartCompletionMessage = false;
-    // Don't reset timer when navigating within same part
+
     this.resetAudioState();
     if (this.currentSkillType === 'listening') {
       this.autoPlayAudio();
     }
   }
 
-  // Calculate total time for current part (sum of all question times)
   private calculatePartTotalTime(): number {
     if (!this.currentPart || !this.isMultipleChoicePart) return 0;
 
@@ -570,23 +518,15 @@ export class ExamComponent implements OnInit, OnDestroy {
     }, 0);
   }
 
-  // Initialize timer when starting a new part
   private initializePartTimer(): void {
     if (this.isMultipleChoicePart) {
       this.currentPartTime = this.calculatePartTotalTime();
-      this.timerResetTrigger = Date.now(); // Force timer reset
-      this.hasShownWarning = false; // Reset warning flag
-      console.log(
-        `🕐 Part ${this.currentPartIndex + 1} timer initialized: ${
-          this.currentPartTime
-        }s`
-      );
+      this.timerResetTrigger = Date.now();
+      this.hasShownWarning = false;
     }
   }
 
-  // Handle timer events from time component
   onPartTimerTick(remainingTime: number): void {
-    // Show warning at 30 seconds
     if (
       remainingTime <= 30 &&
       !this.hasShownWarning &&
@@ -604,7 +544,7 @@ export class ExamComponent implements OnInit, OnDestroy {
       '⏰ Hết thời gian! Tự động chuyển sang part tiếp theo'
     );
 
-    // Auto-move to next part or finish exam
+
     setTimeout(() => {
       if (this.isLastQuestionInExam()) {
         this.finishExam();
@@ -617,18 +557,14 @@ export class ExamComponent implements OnInit, OnDestroy {
   nextQuestion() {
     if (!this.currentPart || !this.currentQuestion) return;
 
-    // For Speaking/Writing parts, don't validate answer selection (handled by their own components)
     if (this.isMultipleChoicePart) {
-      // Check if answer is selected for current question
       if (!this.selectedAnswers[this.currentQuestion.questionId]) {
         this.toastService.warning('Vui lòng chọn đáp án trước khi tiếp tục');
         return;
       }
     }
 
-    // Check if this is the last question in the part
     if (this.isLastQuestionInPart()) {
-      // For MC parts, validate all questions are answered before proceeding
       if (this.isMultipleChoicePart && !this.isCurrentPartComplete()) {
         const unanswered = this.getUnansweredCount();
         this.toastService.warning(
@@ -638,16 +574,12 @@ export class ExamComponent implements OnInit, OnDestroy {
       }
 
       if (this.isLastQuestionInExam()) {
-        // Finish exam
         this.finishExam();
       } else {
-        // Show part completion message (Option B)
         this.showPartCompletionMessage = true;
       }
     } else {
-      // Move to next question in current part
       this.currentQuestionIndex++;
-      // Don't reset timer when moving to next question in same part
       this.resetAudioState();
       if (this.currentSkillType === 'listening') {
         this.autoPlayAudio();
@@ -655,51 +587,23 @@ export class ExamComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Speaking/Writing event handlers
   onSpeakingAnswered(isCorrect: boolean): void {
-    console.log('[ExamComponent] Speaking answer submitted:', isCorrect);
-    // Speaking component handles its own scoring and navigation
   }
 
   onSpeakingPartCompleted(): void {
-    console.log('[ExamComponent] onSpeakingPartCompleted called:', {
-      currentPartIndex: this.currentPartIndex,
-      currentPartTitle: this.currentPart?.title,
-      currentPartId: this.currentPart?.partId,
-      totalParts: this.exampartDetailsAndQustions.length,
-      isLastQuestionInExam: this.isLastQuestionInExam(),
-      showPartCompletionMessage: this.showPartCompletionMessage,
-    });
-
-    // ✅ FIX: Lưu số câu Speaking đã hoàn thành cho part hiện tại
     if (this.currentPart) {
       this.speakingCompletedQuestions[this.currentPart.partId] =
         this.currentPart.questions.length;
-      console.log(
-        '[ExamComponent] Speaking completed questions updated:',
-        this.speakingCompletedQuestions
-      );
     }
 
-    // Speaking finished all questions in mock test
     if (this.isLastQuestionInExam()) {
-      console.log(
-        '[ExamComponent] onSpeakingPartCompleted: Last question in exam, finishing exam'
-      );
       this.finishExam();
     } else {
-      console.log(
-        '[ExamComponent] onSpeakingPartCompleted: Showing next part button for Speaking'
-      );
-      // ✅ FIX: Hiển thị nút chuyển part thay vì tự động chuyển
       this.showSpeakingNextPartButton = true;
     }
   }
 
   onWritingPartCompleted(): void {
-    console.log('[ExamComponent] Writing part completed in mock test');
-    // Writing finished all questions in mock test
-    // Auto-advance to next part or finish exam
     if (this.isLastQuestionInExam()) {
       this.finishExam();
     } else {
@@ -708,9 +612,6 @@ export class ExamComponent implements OnInit, OnDestroy {
   }
 
   onWritingFinished(): void {
-    console.log('[ExamComponent] Writing part finished');
-    // Writing finished all questions
-    // Auto-advance to next part or finish exam
     if (this.isLastQuestionInExam()) {
       this.finishExam();
     } else {
@@ -718,10 +619,8 @@ export class ExamComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Check if current part needs validation before moving to next
   canProceedToNextPart(): boolean {
     if (this.isMultipleChoicePart) {
-      // For Listening/Reading: check all questions answered
       return (
         this.currentPart?.questions.every(
           (q) => this.selectedAnswers[q.questionId] !== undefined
@@ -729,23 +628,18 @@ export class ExamComponent implements OnInit, OnDestroy {
       );
     }
 
-    // For Speaking/Writing: they handle their own completion
-    // Always return true since they control their own flow
     return true;
   }
 
   previousQuestion() {
-    // Block going back to previous part
     if (this.currentQuestionIndex === 0 && this.currentPartIndex > 0) {
       this.toastService.warning('Không thể quay lại part trước');
       return;
     }
 
     if (this.currentQuestionIndex > 0) {
-      // Go to previous question in current part
       this.currentQuestionIndex--;
       this.showPartCompletionMessage = false;
-      // Don't reset timer when moving to previous question in same part
       this.resetAudioState();
       if (this.currentSkillType === 'listening') {
         this.autoPlayAudio();
@@ -758,13 +652,11 @@ export class ExamComponent implements OnInit, OnDestroy {
       this.currentPartIndex++;
       this.currentQuestionIndex = 0;
       this.showPartCompletionMessage = false;
-      this.showSpeakingNextPartButton = false; // Reset nút chuyển part Speaking
-      this.toastService.success(`Starting ${this.currentPart?.title}`);
+      this.showSpeakingNextPartButton = false;
+      this.toastService.success(`Bắt đầu ${this.currentPart?.title}`);
       this.updatePartCodeStorage();
-      // Initialize timer for new part
       this.initializePartTimer();
 
-      // Auto play audio for first question if it's a listening part
       if (this.currentSkillType === 'listening') {
         this.autoPlayAudio();
       }
@@ -792,10 +684,8 @@ export class ExamComponent implements OnInit, OnDestroy {
   }
 
   getAnsweredCount(): number {
-    // Đếm câu trả lời multiple choice (Listening/Reading)
     const multipleChoiceCount = Object.keys(this.selectedAnswers).length;
 
-    // Đếm câu Speaking đã hoàn thành
     const speakingCount = Object.values(this.speakingCompletedQuestions).reduce(
       (sum, count) => sum + count,
       0
@@ -806,7 +696,7 @@ export class ExamComponent implements OnInit, OnDestroy {
 
   finishExam() {
     if (!this.attemptId) {
-      this.toastService.error('No exam attempt found');
+      this.toastService.error('Không tìm thấy phiên thi');
       return;
     }
 
@@ -815,17 +705,17 @@ export class ExamComponent implements OnInit, OnDestroy {
 
     if (answeredQuestions < totalQuestions && this.isMultipleChoicePart) {
       const confirmed = confirm(
-        `You have answered ${answeredQuestions} out of ${totalQuestions} questions. Do you want to submit anyway?`
+        `Bạn đã trả lời ${answeredQuestions}/${totalQuestions} câu hỏi. Bạn có muốn nộp bài không?`
       );
       if (!confirmed) return;
     }
 
     this.isSubmitting = true;
 
-    // Call endExam API
+
     const storedAttempt = localStorage.getItem('currentExamAttempt');
     if (!storedAttempt) {
-      this.toastService.error('Exam session not found');
+      this.toastService.error('Không tìm thấy phiên thi');
       return;
     }
 
@@ -844,22 +734,16 @@ export class ExamComponent implements OnInit, OnDestroy {
 
       this.examAttemptService.endExam(endExamRequest).subscribe({
         next: (response) => {
-          console.log('✅ Exam ended successfully:', response);
-
-          // Finalize to calculate final score
           this.examAttemptService.finalizeAttempt(this.attemptId!).subscribe({
             next: (finalizeResponse) => {
-              console.log('✅ Exam finalized:', finalizeResponse);
               this.isSubmitting = false;
 
-              // Clean up
               localStorage.removeItem('currentExamAttempt');
 
               this.toastService.success(
-                `Exam completed! Score: ${finalizeResponse.totalScore}/${finalizeResponse.totalQuestions}`
+                `Hoàn thành bài thi! Điểm: ${finalizeResponse.totalScore}/${finalizeResponse.totalQuestions}`
               );
 
-              // Navigate to mocktest results page
               setTimeout(() => {
                 this.router.navigate([
                   '/homepage/user-dashboard/mocktest/result',
@@ -868,13 +752,11 @@ export class ExamComponent implements OnInit, OnDestroy {
               }, 1500);
             },
             error: (error) => {
-              console.error('❌ Error finalizing exam:', error);
               this.isSubmitting = false;
               this.toastService.warning(
-                'Exam submitted but failed to calculate final score'
+                'Đã nộp bài nhưng không thể tính điểm cuối cùng'
               );
 
-              // Still navigate to result page to show feedback
               setTimeout(() => {
                 this.router.navigate([
                   '/homepage/user-dashboard/mocktest/result',
@@ -885,15 +767,13 @@ export class ExamComponent implements OnInit, OnDestroy {
           });
         },
         error: (error) => {
-          console.error('❌ Error ending exam:', error);
           this.isSubmitting = false;
-          this.toastService.error('Failed to submit exam. Please try again.');
+          this.toastService.error('Không thể nộp bài. Vui lòng thử lại.');
         },
       });
     } catch (error) {
-      console.error('❌ Error parsing exam attempt:', error);
       this.isSubmitting = false;
-      this.toastService.error('Error submitting exam');
+      this.toastService.error('Lỗi khi nộp bài thi');
     }
   }
 
@@ -906,16 +786,16 @@ export class ExamComponent implements OnInit, OnDestroy {
     };
 
     this.examAttemptService.saveProgress(model).subscribe({
-      next: () => console.log('✅ Progress saved'),
-      error: (error) => console.error('❌ Error saving progress:', error),
+      next: () => { },
+      error: (error) => { },
     });
   }
 
   confirmExit(): void {
     const confirmResult = confirm(
       'Bạn có muốn lưu tiến trình và thoát không?\n\n' +
-        '- Chọn "OK" để lưu và thoát\n' +
-        '- Chọn "Cancel" để tiếp tục làm bài'
+      '- Chọn "OK" để lưu và thoát\n' +
+      '- Chọn "Cancel" để tiếp tục làm bài'
     );
 
     if (confirmResult) {
@@ -936,17 +816,13 @@ export class ExamComponent implements OnInit, OnDestroy {
 
     this.examAttemptService.saveProgress(model).subscribe({
       next: () => {
-        console.log('✅ Progress saved successfully');
         localStorage.removeItem('currentExamAttempt');
-        // Navigate to result page to show feedback
         this.router.navigate([
           '/homepage/user-dashboard/mocktest/result',
           this.attemptId,
         ]);
       },
       error: (error) => {
-        console.error('❌ Error saving progress:', error);
-        // Still navigate to result page even if save fails
         this.router.navigate([
           '/homepage/user-dashboard/mocktest/result',
           this.attemptId,
