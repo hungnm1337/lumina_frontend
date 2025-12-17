@@ -37,6 +37,7 @@ import { QuotaLimitModalComponent } from '../../quota-limit-modal/quota-limit-mo
 import { ExamCoordinationService } from '../../../../Services/exam-coordination.service';
 import { ToastService } from '../../../../Services/Toast/toast.service';
 import { SidebarService } from '../../../../Services/sidebar.service';
+import { MicrophonePermissionModalComponent } from '../../microphone-permission-modal/microphone-permission-modal.component';
 
 interface QuestionResult {
   questionNumber: number;
@@ -55,6 +56,7 @@ interface QuestionResult {
     SpeakingSummaryComponent,
     QuotaLimitModalComponent,
     ReportPopupComponent,
+    MicrophonePermissionModalComponent,
   ],
   templateUrl: './speaking.component.html',
   styleUrl: './speaking.component.scss',
@@ -95,6 +97,10 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   private isAutoSubmitting = false;
 
   private isWaitingForAllScored = false;
+
+  // Microphone permission tracking
+  showMicPermissionModal = false;
+  hasMicrophonePermission = false;
 
   constructor(
     private router: Router,
@@ -223,6 +229,9 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     this.loadAttemptId();
     this.checkQuotaAccess();
     this.sidebarService.hideSidebar(); // Ẩn sidebar khi bắt đầu làm bài
+
+    // Check microphone permission for speaking exams
+    this.checkMicrophonePermission();
 
     this.routerSubscription = this.router.events
       .pipe(filter((event) => event instanceof NavigationStart))
@@ -402,6 +411,46 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   closeQuotaModal(): void {
     this.showQuotaModal = false;
+    this.router.navigate(['/homepage/user-dashboard/exams']);
+  }
+
+  /**
+   * Check microphone permission before starting speaking exam
+   */
+  private async checkMicrophonePermission(): Promise<void> {
+    try {
+      // Try to request microphone access
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      // Permission granted - stop the stream immediately (we just needed to check)
+      stream.getTracks().forEach(track => track.stop());
+      
+      this.hasMicrophonePermission = true;
+      console.log(' Microphone permission granted');
+    } catch (error: any) {
+      console.error(' Microphone permission denied:', error);
+      this.hasMicrophonePermission = false;
+      this.showMicPermissionModal = true;
+      
+      this.toastService.error(
+        'Không thể truy cập microphone. Vui lòng cho phép quyền truy cập để tiếp tục.'
+      );
+    }
+  }
+
+  /**
+   * Handle retry from microphone permission modal
+   */
+  onMicPermissionRetry(): void {
+    this.showMicPermissionModal = false;
+    this.checkMicrophonePermission();
+  }
+
+  /**
+   * Handle exit from microphone permission modal
+   */
+  onMicPermissionExit(): void {
+    this.showMicPermissionModal = false;
     this.router.navigate(['/homepage/user-dashboard/exams']);
   }
 
