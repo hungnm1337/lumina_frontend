@@ -14,7 +14,7 @@ export class MessageItemComponent {
   formatMessage(content: string): string {
     if (!content) return '';
     
-    // ✅ Convert markdown patterns sang HTML
+    // Convert markdown patterns sang HTML
     let formatted = content
       // **bold** → <strong>
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')

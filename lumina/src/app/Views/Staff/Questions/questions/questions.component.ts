@@ -72,7 +72,7 @@ export class QuestionsComponent implements OnInit {
   initData() {
     this.examPartService.getExamsParts().subscribe((res) => {
       this.parts = res || [];
-      // ✅ Lấy danh sách ExamSetKey unique và sắp xếp
+      // Lấy danh sách ExamSetKey unique và sắp xếp
       this.examSetKeys = Array.from(
         new Set(this.parts.map((p) => p.examSetKey))
       ).sort((a, b) => {
@@ -97,7 +97,7 @@ export class QuestionsComponent implements OnInit {
   loading = false;
   uploading = false;
 
-  // ✅ Thêm biến cho ExamSetKey filter
+  // ExamSetKey filter
   examSetKeys: string[] = [];
   selectedExamSetKey: string | null = null;
   selectedSkillFilter: string | null = null;

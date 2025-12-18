@@ -118,7 +118,7 @@ export class ExamsComponent implements OnInit {
     this.showCreateExamModal = false;
   }
 
-  // ✅ Removed fromSetKey parameter
+  // Removed fromSetKey parameter
   createExamForMonth(toSetKey: string) {
     this.examService.createExamForMonth(toSetKey).subscribe({
       next: (res: any) => {

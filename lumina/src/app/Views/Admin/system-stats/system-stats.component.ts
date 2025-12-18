@@ -7,7 +7,7 @@ import { StatisticService } from '../../../Services/Statistic/statistic.service'
 @Component({
   selector: 'app-system-stats',
   standalone: true,
-  imports: [CommonModule, FormsModule], // ✅ Thêm FormsModule vào imports
+  imports: [CommonModule, FormsModule], // Thêm FormsModule vào imports
   templateUrl: './system-stats.component.html',
   styleUrl: './system-stats.component.scss'
 })
@@ -43,7 +43,7 @@ export class SystemStatsComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
   }
 
-  // ✅ Load tất cả dữ liệu
+  // Load tất cả dữ liệu
   loadAllData(): void {
     this.isLoading = true;
 
@@ -106,7 +106,7 @@ export class SystemStatsComponent implements OnInit, AfterViewInit {
     });
   }
 
-  // ✅ Biểu đồ Doanh thu
+  // Biểu đồ Doanh thu
   createRevenueChart(): void {
     if (!this.revenueChartData) return;
 
@@ -170,7 +170,7 @@ export class SystemStatsComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // ✅ Biểu đồ Tăng trưởng người dùng
+  // Biểu đồ Tăng trưởng người dùng
   createUserGrowthChart(): void {
     if (!this.userGrowthData) return;
 
@@ -216,7 +216,7 @@ export class SystemStatsComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // ✅ Biểu đồ Phân bổ gói dịch vụ
+  // Biểu đồ Phân bổ gói dịch vụ
   createPlanDistributionChart(): void {
     if (!this.planDistributionData) return;
 
@@ -257,7 +257,7 @@ export class SystemStatsComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // ✅ Format currency VNĐ
+  // Format currency VNĐ
   formatCurrency(amount: number): string {
     if (amount >= 1000000000) {
       // >= 1 tỷ
@@ -272,12 +272,12 @@ export class SystemStatsComponent implements OnInit, AfterViewInit {
     return amount.toLocaleString('vi-VN') + ' đ';
   }
 
-  // ✅ Format currency đầy đủ (cho tooltip)
+  // Format currency đầy đủ (cho tooltip)
   formatCurrencyFull(amount: number): string {
     return amount.toLocaleString('vi-VN') + ' VNĐ';
   }
 
-  // ✅ Format date
+  // Format date
   formatDate(dateString: string): string {
     const date = new Date(dateString);
     const today = new Date();
@@ -294,22 +294,22 @@ export class SystemStatsComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // ✅ Get trend class
+  // Get trend class
   getTrendClass(trend: number): string {
     return trend >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
   }
 
-  // ✅ Get trend icon
+  // Get trend icon
   getTrendIcon(trend: number): string {
     return trend >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
   }
 
-  // ✅ Export report
+  // Export report
   exportReport(): void {
     alert('Chức năng xuất báo cáo đang được phát triển...');
   }
 
-  // ✅ Change period
+  // Change period
   onPeriodChange(event: any): void {
     this.selectedPeriod = event.target.value;
     // TODO: Reload data based on selected period

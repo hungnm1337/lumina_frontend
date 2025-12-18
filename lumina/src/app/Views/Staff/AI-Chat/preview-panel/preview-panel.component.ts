@@ -36,10 +36,9 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
     this.loadExamParts();
   }
 
-  // ✅ Khi previewData thay đổi (xem preview khác), reset selectors
+  // Khi previewData thay đổi (xem preview khác), reset selectors
   ngOnChanges(changes: SimpleChanges) {
     if (changes['previewData'] && !changes['previewData'].firstChange) {
-      console.log('🔄 Preview data changed, resetting selectors...');
       this.resetSelectors();
     }
   }
@@ -49,12 +48,11 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   loadExamParts() {
-    console.log('🔄 Loading exam parts...');
+
     this.isLoadingParts = true;
 
     this.examPartService.getExamsParts().subscribe({
       next: (parts: any[]) => {
-        console.log('✅ Exam parts loaded:', parts);
         this.examParts = parts;
         
         // Lấy unique examSetKeys và sắp xếp theo tháng-năm
@@ -71,23 +69,23 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
           return monthA - monthB;
         });
         
-        console.log('📋 ExamSetKeys (sorted):', this.examSetKeys);
+        console.log('ExamSetKeys (sorted):', this.examSetKeys);
         this.isLoadingParts = false;
       },
       error: (err) => {
-        console.error('❌ Error loading exam parts:', err);
+        console.error('Error loading exam parts:', err);
         this.isLoadingParts = false;
       }
     });
   }
 
   onExamSetKeyChange() {
-    console.log('🔍 ExamSetKey changed:', this.selectedExamSetKey);
+    console.log('ExamSetKey changed:', this.selectedExamSetKey);
     if (this.selectedExamSetKey) {
       this.filteredParts = this.examParts.filter(
         p => p.examSetKey === this.selectedExamSetKey
       );
-      console.log('📋 Filtered parts:', this.filteredParts);
+      console.log('Filtered parts:', this.filteredParts);
     } else {
       this.filteredParts = [];
     }
@@ -95,19 +93,19 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   onPartChange() {
-    console.log('✅ Part selected:', this.selectedPartId);
+    console.log('Part selected:', this.selectedPartId);
   }
 
   async onSaveExam() {
     if (!this.selectedExamSetKey || !this.selectedPartId) {
-      console.error('❌ Chưa chọn đủ thông tin');
-      this.showToastMessage('⚠️ Vui lòng chọn đầy đủ Exam Set và Part!');
+      console.error('Chưa chọn đủ thông tin');
+      this.showToastMessage('Vui lòng chọn đầy đủ Exam Set và Part!');
       return;
     }
 
     if (!this.previewData || this.previewData.length === 0) {
-      console.error('❌ Không có dữ liệu đề thi để lưu');
-      this.showToastMessage('⚠️ Không có dữ liệu để lưu!');
+      console.error('Không có dữ liệu đề thi để lưu');
+      this.showToastMessage('Không có dữ liệu để lưu!');
       return;
     }
 
@@ -118,38 +116,38 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
       // BƯỚC 1: Đếm tổng số câu hỏi
       let totalQuestions = 0;
 
-      console.log('🔍 Preview Data:', this.previewData);
+      console.log('Preview Data:', this.previewData);
 
       for (const prompt of this.previewData) {
-        console.log('🔍 Prompt:', prompt);
+        console.log('Prompt:', prompt);
 
         if (prompt.Questions && Array.isArray(prompt.Questions)) {
           totalQuestions += prompt.Questions.length;
-          console.log(`  ✅ Tìm thấy ${prompt.Questions.length} câu hỏi trong Questions`);
+          console.log(`  Tìm thấy ${prompt.Questions.length} câu hỏi trong Questions`);
         }
         else if (prompt.questions && Array.isArray(prompt.questions)) {
           totalQuestions += prompt.questions.length;
-          console.log(`  ✅ Tìm thấy ${prompt.questions.length} câu hỏi trong questions`);
+          console.log(`  Tìm thấy ${prompt.questions.length} câu hỏi trong questions`);
         }
         else if (prompt.Question && Array.isArray(prompt.Question)) {
           totalQuestions += prompt.Question.length;
-          console.log(`  ✅ Tìm thấy ${prompt.Question.length} câu hỏi trong Question`);
+          console.log(`  Tìm thấy ${prompt.Question.length} câu hỏi trong Question`);
         }
         else if (prompt.questionCount) {
           totalQuestions += prompt.questionCount;
-          console.log(`  ✅ Tìm thấy ${prompt.questionCount} câu hỏi từ questionCount`);
+          console.log(`  Tìm thấy ${prompt.questionCount} câu hỏi từ questionCount`);
         }
         else {
-          console.warn('  ⚠️ Không tìm thấy câu hỏi trong prompt này');
+          console.warn('  Không tìm thấy câu hỏi trong prompt này');
         }
       }
 
-      console.log('📊 Tổng số câu hỏi cần thêm:', totalQuestions);
+      console.log('Tổng số câu hỏi cần thêm:', totalQuestions);
 
       if (totalQuestions === 0) {
         this.isSaving = false;
         this.savingStateChange.emit(false);
-        this.showToastMessage('⚠️ Không tìm thấy câu hỏi nào để lưu!');
+        this.showToastMessage('Không tìm thấy câu hỏi nào để lưu!');
         return;
       }
 
@@ -161,7 +159,7 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
       if (!checkResponse?.canAdd) {
         this.isSaving = false;
         this.savingStateChange.emit(false);
-        this.showToastMessage('❌ ' + (checkResponse?.error || 'Không đủ slot để thêm câu hỏi!'));
+        this.showToastMessage((checkResponse?.error || 'Không đủ slot để thêm câu hỏi!'));
         return;
       }
 
@@ -190,34 +188,34 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
 
       this.questionService.savePromptsWithQuestions(payload).subscribe({
         next: (res) => {
-          console.log('✅ Lưu đề thi thành công', res);
+          console.log('Lưu đề thi thành công', res);
           this.isSaving = false;
           this.savingStateChange.emit(false);
-          this.showToastMessage('✅ Lưu đề thi thành công!');
+          this.showToastMessage('Lưu đề thi thành công!');
 
-          // ✅ Reset selectors sau khi save thành công
+          // Reset selectors sau khi save thành công
           setTimeout(() => {
             this.resetSelectors();
           }, 1500);
         },
         error: (err) => {
-          console.error('❌ Lưu đề thi thất bại', err);
+          console.error('Lưu đề thi thất bại', err);
           this.isSaving = false;
           this.savingStateChange.emit(false);
-          this.showToastMessage('❌ Lưu đề thi thất bại!');
+          this.showToastMessage('Lưu đề thi thất bại!');
         }
       });
     } catch (error: any) {
-      console.error('❌ Lỗi khi xử lý:', error);
+      console.error('Lỗi khi xử lý:', error);
       this.isSaving = false;
       this.savingStateChange.emit(false);
-      this.showToastMessage('❌ ' + (error?.error?.error || 'Có lỗi xảy ra!'));
+      this.showToastMessage((error?.error?.error || 'Có lỗi xảy ra!'));
     }
   }
 
-  // ✅ Hàm reset tất cả selectors
+  // Reset all selectors
   resetSelectors() {
-    console.log('🔄 Resetting selectors...');
+    console.log('Resetting selectors...');
     this.selectedExamSetKey = null;
     this.selectedPartId = null;
     this.filteredParts = [];
@@ -235,23 +233,23 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
     return String.fromCharCode(65 + index);
   }
 
-  // ✅ Xử lý khi ảnh load thành công
+  // Handle when image loads successfully
   onImageLoad(prompt: any) {
-    console.log('✅ Image loaded successfully');
+    console.log('Image loaded successfully');
     prompt._imageLoaded = true;
     prompt._imageError = false;
   }
 
-  // ✅ Xử lý khi ảnh load thất bại
+  // Handle when image fails to load
   onImageError(prompt: any) {
-    console.error('❌ Image failed to load');
+    console.error('Image failed to load');
     prompt._imageLoaded = false;
     prompt._imageError = true;
   }
 
-  // ✅ Thử load lại ảnh
+  // Retry loading image
   retryImageLoad(prompt: any) {
-    console.log('🔄 Retrying image load...');
+    console.log('Retrying image load...');
     prompt._imageLoaded = false;
     prompt._imageError = false;
     
