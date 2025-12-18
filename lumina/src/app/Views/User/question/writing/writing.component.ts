@@ -179,8 +179,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
 
   ngOnDestroy(): void {
     this.stopAutoSave();
-    this.saveCurrentState();
-    this.saveProgressOnExit();
+    this.clearAllWritingData();
     this.sidebarService.showSidebar();
   }
 
@@ -194,6 +193,22 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       });
     } catch (error) {
       console.error('Error clearing previous writing answers:', error);
+    }
+  }
+
+  private clearAllWritingData(): void {
+    try {
+      const answersKey = this.getStorageKey();
+      const feedbackKey = this.getFeedbackStorageKey();
+      const submittedKey = this.getSubmittedStorageKey();
+
+      if (answersKey) localStorage.removeItem(answersKey);
+      if (feedbackKey) localStorage.removeItem(feedbackKey);
+      if (submittedKey) localStorage.removeItem(submittedKey);
+
+      this.writingStateService.clearAllStates();
+    } catch (error) {
+      console.error('[Writing] Error clearing writing data:', error);
     }
   }
 
@@ -289,8 +304,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
         };
       }
       localStorage.setItem(key, JSON.stringify(newFormat));
-    } catch {
-    }
+    } catch {}
   }
 
   private loadSavedData(): void {
@@ -346,8 +360,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       const key = this.getStorageKey();
       if (!key) return;
       localStorage.setItem(key, JSON.stringify(this.savedAnswers));
-    } catch {
-    }
+    } catch {}
   }
 
   private startAutoSave(): void {
@@ -478,8 +491,6 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   finishExam(): void {
-    this.saveCurrentState();
-
     if (this.isInMockTest) {
       console.log(
         '[Writing] Writing part completed in mock test - emitting event'
@@ -601,11 +612,12 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       this.writingService.GetFeedbackOfWritingPartOne(req).subscribe({
         next: (resp: WritingResponseDTO) => {
           feedbackMap[String(qid)] = resp;
+          this.totalScore += resp.totalScore || 0;
           this.feedbackDone++;
           pending--;
           this.cdr.detectChanges();
           console.log(
-            `[WritingComponent] Question ${qid} feedback received`
+            `[WritingComponent] Question ${qid} feedback received, score: ${resp.totalScore}`
           );
           maybeComplete();
         },
@@ -637,7 +649,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
         questionId: question.questionId,
         stemText: question.stemText,
         promptTitle: question.prompt?.title,
-        promptContent: question.prompt?.contentText?.substring(0, 50)
+        promptContent: question.prompt?.contentText?.substring(0, 50),
       });
     }
     return question;
@@ -781,9 +793,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     this.submittingQuestions.add(questionId);
     // Force change detection để Navigator cập nhật trạng thái ngay
     this.cdr.detectChanges();
-    console.log(
-      `[WritingComponent] Question ${questionId} submitting started`
-    );
+    console.log(`[WritingComponent] Question ${questionId} submitting started`);
   }
 
   onSubmitEnd(questionId: number): void {
@@ -819,7 +829,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
 
       this.toastService.warning(
         `Bạn có ${questionsInProgress.length} câu đang làm dở chưa nộp: ${questionNumbers}. ` +
-        'Vui lòng nộp các câu này trước khi nộp bài.'
+          'Vui lòng nộp các câu này trước khi nộp bài.'
       );
       return;
     }
@@ -848,22 +858,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   @HostListener('window:beforeunload', ['$event'])
   unloadNotification($event: any): void {
     if (!this.isFinished && this.attemptId) {
-      $event.returnValue = 'Bạn có muốn lưu tiến trình và thoát không?';
-    }
-  }
-
-  private saveProgressOnExit(): void {
-    if (!this.isFinished && this.attemptId) {
-      const model = {
-        examAttemptId: this.attemptId,
-        currentQuestionIndex: this.currentIndex,
-      };
-
-      this.examAttemptService.saveProgress(model).subscribe({
-        next: () => { },
-        error: (error) =>
-          console.error('Error saving writing progress:', error),
-      });
+      $event.returnValue = 'Dữ liệu nháp sẽ bị mất. Bạn có chắc muốn thoát?';
     }
   }
 
@@ -871,38 +866,19 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     this.showPopup = true;
     this.popupTitle = 'Xác nhận thoát';
     this.popupMessage =
-      'Bạn có muốn lưu tiến trình và thoát không?\n\n- Chọn "OK" để lưu và thoát\n- Chọn "Cancel" để tiếp tục làm bài';
+      'Bạn có chắc chắn muốn thoát?\n\n⚠️ Dữ liệu nháp sẽ KHÔNG được lưu lại.';
     this.popupOkHandler = () => {
       this.showPopup = false;
-      this.saveProgressAndExit();
+      this.exitWithoutSaving();
     };
     this.popupCancelHandler = () => {
       this.showPopup = false;
     };
-    // Popup component should only be in the template, not here
   }
 
-  private saveProgressAndExit(): void {
-    if (!this.attemptId) {
-      this.router.navigate(['homepage/user-dashboard/exams']);
-      return;
-    }
-
-    const model = {
-      examAttemptId: this.attemptId,
-      currentQuestionIndex: this.currentIndex,
-    };
-
-    this.examAttemptService.saveProgress(model).subscribe({
-      next: () => {
-        localStorage.removeItem('currentExamAttempt');
-        this.router.navigate(['homepage/user-dashboard/exams']);
-      },
-      error: (error) => {
-        console.error('Error saving writing progress:', error);
-        this.router.navigate(['homepage/user-dashboard/exams']);
-      },
-    });
+  private exitWithoutSaving(): void {
+    this.clearAllWritingData();
+    this.router.navigate(['homepage/user-dashboard/exams']);
   }
 
   getCurrentCaption(): string {

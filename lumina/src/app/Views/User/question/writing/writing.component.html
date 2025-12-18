@@ -54,7 +54,11 @@
             <div>
               <h4 class="font-medium text-gray-900 mb-1 text-sm">
                 Question {{ currentIndex + 1 }}:
-                {{ getCurrentQuestion()?.stemText || getCurrentQuestion()?.prompt?.title || 'Write a response based on the image and content below' }}
+                {{
+                  getCurrentQuestion()?.stemText ||
+                    getCurrentQuestion()?.prompt?.title ||
+                    "Write a response based on the image and content below"
+                }}
               </h4>
               @if (getCurrentQuestion()?.prompt?.contentText) {
               <div class="font-medium text-gray-600 mb-1 text-sm">
@@ -199,6 +203,12 @@
           {{ correctCount }}/{{ questions?.length || 0 }}
         </div>
         <div class="text-sm text-green-700">Số câu</div>
+      </div>
+      <div class="bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl p-6">
+        <div class="text-4xl font-bold text-purple-600 mb-2">
+          {{ totalScore }}
+        </div>
+        <div class="text-sm text-purple-700">Tổng điểm</div>
       </div>
       <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6">
         <div class="text-4xl font-bold text-blue-600 mb-2">
