@@ -18,7 +18,6 @@ export class ChatPanelComponent implements AfterViewChecked {
 
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef<HTMLDivElement>;
 
-  // ✅ Khai báo đúng kiểu - không có null/undefined
   newMessage = '';
 
   sendMessage() {

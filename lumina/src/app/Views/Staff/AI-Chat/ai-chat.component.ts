@@ -52,7 +52,7 @@ export class AiChatComponent implements OnInit, OnDestroy {
 
   private currentUserId: string = '';
   
-  // ✅ Key để lưu userId hiện tại
+  // Key to store current userId
   private readonly LAST_USER_KEY = 'ai_chat_last_user';
 
   private get STORAGE_KEY_MESSAGES(): string {
@@ -66,10 +66,10 @@ export class AiChatComponent implements OnInit, OnDestroy {
   constructor(private aiExamService: ExamGeneratorService) {}
 
   ngOnInit(): void {
-    // ✅ Lấy userId từ token
+    // Get userId from token
     this.currentUserId = this.getUserIdFromToken();
     
-    // ✅ Kiểm tra xem có phải user mới không
+    // Check if it's a new user
     this.checkAndClearOldUserData();
     
     // Load data từ sessionStorage theo userId
@@ -88,13 +88,13 @@ export class AiChatComponent implements OnInit, OnDestroy {
     }, this.getRandomInterval(120000, 180000)); // 2-3 phút
   }
 
-  // ✅ Kiểm tra và xóa data của user cũ nếu login user mới
+  // Check and clear old user data if a new user logs in
   private checkAndClearOldUserData(): void {
     try {
       const lastUserId = sessionStorage.getItem(this.LAST_USER_KEY);
       
       if (lastUserId && lastUserId !== this.currentUserId) {
-        console.log(`🔄 User changed from ${lastUserId} to ${this.currentUserId} - Clearing old chat`);
+        console.log(`User changed from ${lastUserId} to ${this.currentUserId} - Clearing old chat`);
         
         // Xóa chat của user cũ
         sessionStorage.removeItem(`ai_chat_messages_${lastUserId}`);
@@ -105,7 +105,7 @@ export class AiChatComponent implements OnInit, OnDestroy {
       sessionStorage.setItem(this.LAST_USER_KEY, this.currentUserId);
       
     } catch (error) {
-      console.error('❌ Error checking user data:', error);
+      console.error('Error checking user data:', error);
     }
   }
 
@@ -131,7 +131,7 @@ export class AiChatComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ✅ Load dữ liệu từ sessionStorage
+  // Load data from sessionStorage
   private loadFromStorage(): void {
     try {
       const savedMessages = sessionStorage.getItem(this.STORAGE_KEY_MESSAGES);
@@ -139,12 +139,12 @@ export class AiChatComponent implements OnInit, OnDestroy {
 
       if (savedMessages) {
         this.messages = JSON.parse(savedMessages);
-        console.log(`✅ Loaded messages for user ${this.currentUserId}:`, this.messages.length);
+        console.log(`Loaded messages for user ${this.currentUserId}:`, this.messages.length);
       }
 
       if (savedPreview) {
         this.previewDataList = JSON.parse(savedPreview);
-        console.log(`✅ Loaded preview data for user ${this.currentUserId}:`, this.previewDataList.length);
+        console.log(`Loaded preview data for user ${this.currentUserId}:`, this.previewDataList.length);
       }
 
       // Nếu chưa có message nào, thêm welcome message
@@ -152,21 +152,21 @@ export class AiChatComponent implements OnInit, OnDestroy {
         this.addWelcomeMessage();
       }
     } catch (error) {
-      console.error('❌ Error loading from storage:', error);
+      console.error('Error loading from storage:', error);
       this.messages = [];
       this.previewDataList = [];
       this.addWelcomeMessage();
     }
   }
 
-  // ✅ Lưu dữ liệu vào sessionStorage
+  // Save data to sessionStorage
   private saveToStorage(): void {
     try {
       sessionStorage.setItem(this.STORAGE_KEY_MESSAGES, JSON.stringify(this.messages));
       sessionStorage.setItem(this.STORAGE_KEY_PREVIEW, JSON.stringify(this.previewDataList));
-      console.log(`💾 Saved to storage for user ${this.currentUserId} - Messages:`, this.messages.length, 'Previews:', this.previewDataList.length);
+      console.log(`Saved to storage for user ${this.currentUserId} - Messages:`, this.messages.length, 'Previews:', this.previewDataList.length);
     } catch (error) {
-      console.error('❌ Error saving to storage:', error);
+      console.error('Error saving to storage:', error);
     }
   }
 
@@ -223,17 +223,17 @@ export class AiChatComponent implements OnInit, OnDestroy {
   togglePreview() {
     this.showPreview = !this.showPreview;
     
-    // ✅ Nếu đóng preview, reset selectors
+    // If closing preview, reset selectors
     if (!this.showPreview) {
       this.resetPreviewSelectors();
     }
   }
 
-  // ✅ Hàm helper để reset preview selectors
+  // Helper function to reset preview selectors
   private resetPreviewSelectors() {
     // Trigger reset trong preview panel component
     // Sẽ được xử lý bởi ngOnDestroy hoặc ngOnChanges
-    console.log('🔄 Closing preview - selectors will reset');
+    console.log('Closing preview - selectors will reset');
   }
 
   sendMessage(content: string) {
@@ -284,7 +284,7 @@ export class AiChatComponent implements OnInit, OnDestroy {
           
           this.saveToStorage();
         } else {
-          // ✅ ĐƠN GIẢN: Chỉ lấy message ra (đã là plain text)
+          // Simple: Just get the message (already plain text)
           const displayMessage = response.message || 'Không có phản hồi';
           this.addAssistantMessage(displayMessage);
         }
@@ -325,7 +325,7 @@ export class AiChatComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ✅ Handle saving state từ preview panel
+  // Handle saving state from preview panel
   onSavingStateChange(isSaving: boolean): void {
     this.isSaving = isSaving;
   }
@@ -342,7 +342,7 @@ export class AiChatComponent implements OnInit, OnDestroy {
     };
     this.messages.push(message);
     
-    // ✅ Lưu vào storage sau mỗi message
+    // Save to storage after each message
     this.saveToStorage();
   }
 
@@ -357,7 +357,7 @@ export class AiChatComponent implements OnInit, OnDestroy {
     };
     this.messages.push(message);
     
-    // ✅ Lưu vào storage sau mỗi message
+    // Save to storage after each message
     this.saveToStorage();
   }
 

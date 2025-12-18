@@ -27,7 +27,7 @@ export class StreakComponent implements OnInit {
   loading = true;
   error = false;
 
-  // ✅ UPDATE: Milestones với Listening & Reading tests
+  // UPDATE: Milestones với Listening & Reading tests
   milestones: MilestoneReward[] = [
     { 
       days: 3, 
@@ -225,7 +225,7 @@ export class StreakComponent implements OnInit {
     return this.nextMilestone.days - this.getPreviousMilestoneDays();
   }
 
-  // ✅ THÊM: Helper method format rewards
+  // THÊM: Helper method format rewards
   getRewardSummary(milestone: MilestoneReward): string {
     if (milestone.freezeTokens > 0) {
       return `${milestone.freezeTokens} Freeze Token${milestone.freezeTokens > 1 ? 's' : ''}`;
@@ -233,7 +233,7 @@ export class StreakComponent implements OnInit {
     return '';
   }
 
-  // ✅ THÊM: Methods cho fire animation
+  // THÊM: Methods cho fire animation
   getFireEmoji(): string {
     return this.currentStreak === 0 ? '🌱' : '🔥';
   }

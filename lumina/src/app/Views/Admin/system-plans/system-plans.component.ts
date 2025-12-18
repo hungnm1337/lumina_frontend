@@ -186,7 +186,7 @@ export class SystemPlansComponent implements OnInit {
     );
   }
 
-  // ✅ Định dạng tiền tệ VNĐ
+  //  Định dạng tiền tệ VNĐ
   formatCurrency(amount: number): string {
     if (amount >= 1000000000) {
       return (amount / 1000000000).toFixed(1) + ' tỷ';
