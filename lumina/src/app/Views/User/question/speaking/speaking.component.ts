@@ -43,6 +43,7 @@ interface QuestionResult {
   questionNumber: number;
   questionText: string;
   result: SpeakingScoringResult;
+  sampleAnswer?: string;
 }
 
 @Component({
@@ -421,17 +422,17 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     try {
       // Try to request microphone access
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
+
       // Permission granted - stop the stream immediately (we just needed to check)
-      stream.getTracks().forEach(track => track.stop());
-      
+      stream.getTracks().forEach((track) => track.stop());
+
       this.hasMicrophonePermission = true;
       console.log(' Microphone permission granted');
     } catch (error: any) {
       console.error(' Microphone permission denied:', error);
       this.hasMicrophonePermission = false;
       this.showMicPermissionModal = true;
-      
+
       this.toastService.error(
         'Không thể truy cập microphone. Vui lòng cho phép quyền truy cập để tiếp tục.'
       );
@@ -524,10 +525,11 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       const existingIndex = this.speakingQuestionResults.findIndex(
         (x) => x.questionNumber === questionIndex + 1
       );
-      const item = {
+      const item: QuestionResult = {
         questionNumber: questionIndex + 1,
         questionText: q.stemText,
         result: result,
+        sampleAnswer: q.sampleAnswer,
       };
       if (existingIndex >= 0) {
         this.speakingQuestionResults[existingIndex] = item;
@@ -719,20 +721,74 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   private updateSpeakingResults(states: Map<number, any>): void {
     const newResults: QuestionResult[] = [];
+
+    console.log('[updateSpeakingResults] Starting update...');
+    console.log('[updateSpeakingResults] States:', states);
+    console.log('[updateSpeakingResults] Questions array:', this.questions);
+
     states.forEach((state, questionId) => {
       if (state.result) {
+        // Use questionId from the Map key, not from state.result
         const question = this.questions.find(
           (q) => q.questionId === questionId
         );
+
+        console.log(
+          `[updateSpeakingResults] Processing questionId ${questionId}:`,
+          {
+            found: !!question,
+            questionData: question,
+            sampleAnswer: question?.sampleAnswer,
+            resultQuestionId: state.result.questionId,
+          }
+        );
+
         if (question) {
-          newResults.push({
+          const sampleAnswerValue = question.sampleAnswer;
+          console.log(
+            `[updateSpeakingResults] Question ${questionId} sampleAnswer value:`,
+            sampleAnswerValue
+          );
+
+          const resultItem: QuestionResult = {
             questionNumber: this.questions.indexOf(question) + 1,
             questionText: question.stemText,
             result: state.result,
-          });
+            sampleAnswer: sampleAnswerValue,
+          };
+
+          console.log(
+            `[updateSpeakingResults] Created result item for question ${questionId}:`,
+            resultItem
+          );
+          console.log(
+            `[updateSpeakingResults] Result item sampleAnswer:`,
+            resultItem.sampleAnswer
+          );
+
+          newResults.push(resultItem);
+
+          console.log(
+            `[updateSpeakingResults] After push, newResults length:`,
+            newResults.length
+          );
+          console.log(
+            `[updateSpeakingResults] Last item in newResults:`,
+            newResults[newResults.length - 1]
+          );
+        } else {
+          console.error(
+            `[updateSpeakingResults] Question not found for questionId ${questionId}`
+          );
         }
       }
     });
+
+    console.log('[updateSpeakingResults] Final newResults:', newResults);
+    console.log(
+      '[updateSpeakingResults] Final newResults COUNT:',
+      newResults.length
+    );
 
     const hasChanges =
       newResults.length !== this.speakingQuestionResults.length ||
@@ -745,8 +801,32 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         );
       });
 
+    console.log('[updateSpeakingResults] hasChanges:', hasChanges);
+    console.log(
+      '[updateSpeakingResults] Current speakingQuestionResults length:',
+      this.speakingQuestionResults.length
+    );
+    console.log(
+      '[updateSpeakingResults] New results length:',
+      newResults.length
+    );
+
     if (hasChanges) {
-      this.speakingQuestionResults = newResults;
+      console.log(
+        '[updateSpeakingResults] BEFORE assignment:',
+        JSON.parse(JSON.stringify(this.speakingQuestionResults))
+      );
+      this.speakingQuestionResults = [...newResults]; // Use spread to create new array
+      console.log(
+        '[updateSpeakingResults] AFTER assignment:',
+        JSON.parse(JSON.stringify(this.speakingQuestionResults))
+      );
+      console.log(
+        '[updateSpeakingResults] Updated speakingQuestionResults:',
+        this.speakingQuestionResults
+      );
+    } else {
+      console.log('[updateSpeakingResults] NO CHANGES - skipping update');
     }
   }
 
@@ -897,6 +977,11 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         if (summary.totalScore !== undefined) {
           this.baseQuestionService.setTotalScore(summary.totalScore);
         }
+
+        console.log(
+          '[finishSpeakingExam] Final speakingQuestionResults:',
+          this.speakingQuestionResults
+        );
 
         this.showSpeakingSummary = true;
         this.baseQuestionService.finishQuiz();
