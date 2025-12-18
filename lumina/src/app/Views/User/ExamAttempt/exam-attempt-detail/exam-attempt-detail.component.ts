@@ -146,6 +146,7 @@ export class ExamAttemptDetailComponent implements OnInit {
     return speakingAnswers.map((answer) => ({
       questionNumber: answer.question?.questionNumber || 0,
       questionText: answer.question?.stemText || '',
+      sampleAnswer: answer.question?.sampleAnswer,
       result: {
         pronunciationScore: answer.pronunciationScore || 0,
         accuracyScore: answer.accuracyScore || 0,

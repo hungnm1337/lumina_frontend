@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SpeakingScoringResult } from '../../../Interfaces/exam.interfaces';
 
@@ -6,6 +6,7 @@ interface QuestionResult {
   questionNumber: number;
   questionText: string;
   result: SpeakingScoringResult;
+  sampleAnswer?: string;
 }
 
 @Component({
@@ -15,13 +16,25 @@ interface QuestionResult {
   templateUrl: './speaking-summary.component.html',
   styleUrls: ['./speaking-summary.component.scss'],
 })
-export class SpeakingSummaryComponent {
+export class SpeakingSummaryComponent implements OnInit {
   @Input() results: QuestionResult[] = [];
   @Output() retryTest = new EventEmitter<void>();
   @Output() tryOtherTest = new EventEmitter<void>();
 
   // Track which questions are expanded
   expandedQuestions: Set<number> = new Set();
+
+  ngOnInit(): void {
+    console.log('[SpeakingSummary] Results received:', this.results);
+    this.results.forEach((item, index) => {
+      console.log(`[SpeakingSummary] Question ${index + 1}:`, {
+        questionNumber: item.questionNumber,
+        questionText: item.questionText,
+        sampleAnswer: item.sampleAnswer,
+        hasSampleAnswer: !!item.sampleAnswer,
+      });
+    });
+  }
 
   // Tính tổng điểm TOEIC Speaking (0-200 scale)
   get toeicScore(): number {

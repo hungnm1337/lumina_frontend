@@ -1,15 +1,45 @@
 /* Custom styles for popup component */
 
+/* Overlay - Optimized for GPU acceleration */
+.popup-overlay {
+  animation: fadeIn 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity;
+}
+
+/* Modal container - GPU accelerated */
+.popup-modal {
+  animation: slideUp 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 420px;
+  /* Enable GPU acceleration */
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Buttons - GPU accelerated */
+.popup-btn {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
 /* Override Tailwind classes for softer appearance */
 .fixed.inset-0 {
-  backdrop-filter: blur(3px);
-  animation: fadeIn 0.2s ease-out;
+  /* Removed heavy backdrop-filter blur for better performance */
+  animation: fadeIn 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity;
 }
 
 /* Modal container */
 .bg-white.rounded-xl.shadow-2xl {
-  animation: slideUp 0.25s ease-out;
+  animation: slideUp 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   max-width: 420px;
+  /* Enable GPU acceleration */
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 /* Header styling */
@@ -41,12 +71,15 @@ button.bg-blue-500 {
   padding: 9px 16px;
   border-radius: 8px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  transition: all 0.2s ease;
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 button.bg-blue-500:hover {
   background: linear-gradient(135deg, #5568d3 0%, #6b3f9a 100%);
-  transform: translateY(-1px);
+  transform: translateY(-1px) translateZ(0);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
@@ -59,17 +92,21 @@ button.bg-gray-100 {
   background: white;
   border: 1.5px solid #e2e8f0;
   color: #64748b;
-  transition: all 0.2s ease;
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 button.bg-gray-100:hover {
   background: #f8fafc;
   border-color: #cbd5e1;
-  transform: translateY(-1px);
+  transform: translateY(-1px) translateZ(0);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-/* Animations */
+/* Animations - Optimized for GPU */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -79,15 +116,44 @@ button.bg-gray-100:hover {
   }
 }
 
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.96);
+    transform: translate3d(0, 15px, 0) scale(0.97);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.98);
+  }
+}
+
+/* Closing animations */
+.popup-overlay.closing {
+  animation: fadeOut 0.15s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.popup-modal.closing {
+  animation: slideDown 0.15s cubic-bezier(0.4, 0, 1, 1) forwards;
 }
 
 /* Responsive adjustments */
