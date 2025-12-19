@@ -1,16 +1,17 @@
 import { Component, OnInit, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ChatService } from '../../../Services/Chat/chat.service';
 import { AuthService } from '../../../Services/Auth/auth.service';
 import { ToastService } from '../../../Services/Toast/toast.service';
 import { Router } from '@angular/router';
-import { 
-  ChatRequestDTO, 
-  ChatResponseDTO, 
-  ChatMessage, 
+import {
+  ChatRequestDTO,
+  ChatResponseDTO,
+  ChatMessage,
   GeneratedVocabularyDTO,
-  SaveVocabularyRequestDTO 
+  SaveVocabularyRequestDTO
 } from '../../../Interfaces/Chat/ChatResponseDTO.interface';
 
 @Component({
@@ -23,24 +24,32 @@ import {
 export class ChatComponent implements OnInit, OnDestroy {
   @Input() messages: ChatMessage[] = [];
   @Output() messageAdded = new EventEmitter<ChatMessage>();
-  
+
   currentMessage = '';
   isGenerating = false;
   conversationType = 'general';
   showSaveButton = false;
   generatedVocabularies: GeneratedVocabularyDTO[] = [];
   vocabularyImageUrl: string | null = null;
-  
+
   showFolderModal = false;
   folderName = 'Vocabulary Folder';
   pendingVocabularies: GeneratedVocabularyDTO[] = [];
+  isSaving = false;
+  imageLoadingStates: Map<string, boolean> = new Map();
+
+  // Rate limiting & spam prevention
+  private lastMessageTime: number = 0;
+  private readonly MESSAGE_COOLDOWN = 1000; // 1 second cooldown
+  private isProcessing = false;
 
   constructor(
     private chatService: ChatService,
     private authService: AuthService,
     private toastService: ToastService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private sanitizer: DomSanitizer
+  ) { }
 
   ngOnInit(): void {
   }
@@ -49,14 +58,24 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   async sendMessage(): Promise<void> {
-    if (!this.currentMessage.trim() || this.isGenerating) return;
+    if (!this.currentMessage.trim() || this.isGenerating || this.isProcessing) return;
+
+    // Rate limiting check
+    const now = Date.now();
+    if (now - this.lastMessageTime < this.MESSAGE_COOLDOWN) {
+      this.toastService.warning('Vui lòng đợi một chút trước khi gửi tin nhắn tiếp theo!');
+      return;
+    }
+
+    this.isProcessing = true;
+    this.lastMessageTime = now;
 
     const userMessage: ChatMessage = {
       type: 'user',
       content: this.currentMessage,
       timestamp: new Date()
     };
-    
+
     this.messages.push(userMessage);
     this.messageAdded.emit(userMessage);
 
@@ -77,21 +96,21 @@ export class ChatComponent implements OnInit, OnDestroy {
         if (response.conversationType === 'out_of_scope') {
           this.toastService.info('Tôi chỉ hỗ trợ về TOEIC và học tiếng Anh thôi nhé!');
         }
-        
+
         let answerText = response.answer || '';
-        
+
         if (response.vocabularies && response.vocabularies.length > 0) {
           answerText = '';
         } else {
-          if (answerText.includes('"word"') || answerText.includes('"definition"') || 
-              answerText.includes('"example"') || answerText.includes('"typeOfWord"') ||
-              answerText.includes('"vocabularies"') || answerText.trim().startsWith('{')) {
+          if (answerText.includes('"word"') || answerText.includes('"definition"') ||
+            answerText.includes('"example"') || answerText.includes('"typeOfWord"') ||
+            answerText.includes('"vocabularies"') || answerText.trim().startsWith('{')) {
             answerText = '';
           }
         }
-        
+
         const formattedContent = answerText ? this.formatAIResponse(answerText) : '';
-        
+
         const aiMessage: ChatMessage = {
           type: 'ai',
           content: formattedContent,
@@ -104,7 +123,7 @@ export class ChatComponent implements OnInit, OnDestroy {
           hasSaveOption: response.hasSaveOption,
           imageUrl: response.imageUrl
         };
-        
+
         this.messages.push(aiMessage);
         this.messageAdded.emit(aiMessage);
 
@@ -112,11 +131,11 @@ export class ChatComponent implements OnInit, OnDestroy {
 
         if (response.vocabularies && response.vocabularies.length > 0) {
           console.log(`✅ Received ${response.vocabularies.length} vocabularies from backend`);
-          
+
           const vocabWithImage = response.vocabularies.filter(v => v.imageUrl && v.imageUrl.trim() !== '').length;
           const vocabWithoutImage = response.vocabularies.length - vocabWithImage;
           console.log(`📊 Vocabularies with images: ${vocabWithImage}, without: ${vocabWithoutImage}`);
-          
+
           if (response.vocabularies.length > 0) {
             console.log('Sample vocabulary:', {
               word: response.vocabularies[0].word,
@@ -124,7 +143,7 @@ export class ChatComponent implements OnInit, OnDestroy {
               imageUrl: response.vocabularies[0].imageUrl?.substring(0, 50) + '...'
             });
           }
-          
+
           this.generatedVocabularies = response.vocabularies;
           this.vocabularyImageUrl = response.imageUrl || null;
           this.showSaveButton = true;
@@ -139,6 +158,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.toastService.error('Lỗi khi gửi tin nhắn!');
     } finally {
       this.isGenerating = false;
+      this.isProcessing = false;
     }
   }
 
@@ -151,7 +171,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   async saveVocabularies(vocabularies?: GeneratedVocabularyDTO[]): Promise<void> {
     const vocabToSave = vocabularies || this.generatedVocabularies;
-    
+
     if (!vocabToSave || vocabToSave.length === 0) {
       this.toastService.warning('Không có từ vựng để lưu!');
       return;
@@ -169,13 +189,31 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   async confirmSaveFolder(): Promise<void> {
-    if (!this.folderName || this.folderName.trim() === '') {
+    const trimmedName = this.folderName?.trim() || '';
+
+    // Validation: Empty check
+    if (!trimmedName) {
       this.toastService.warning('Vui lòng nhập tên folder!');
       return;
     }
 
-    const folderName = this.folderName.trim();
+    // Validation: Max length
+    if (trimmedName.length > 100) {
+      this.toastService.warning('Tên folder không được vượt quá 100 ký tự!');
+      return;
+    }
+
+    // Validation: Pattern check (optional - allow alphanumeric, spaces, and common punctuation)
+    const validPattern = /^[a-zA-Z0-9\s._-]+$/;
+    if (!validPattern.test(trimmedName)) {
+      this.toastService.warning('Tên folder chỉ được chứa chữ, số, khoảng trắng và ký tự . _ -');
+      return;
+    }
+
+    const folderName = trimmedName;
     const vocabToSave = this.pendingVocabularies;
+
+    this.isSaving = true;
 
     try {
       const userId = this.authService.getCurrentUserId();
@@ -189,7 +227,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       const vocabWithoutImage = vocabToSave.length - vocabWithImage;
       console.log(`💾 Preparing to save ${vocabToSave.length} vocabularies`);
       console.log(`📊 Vocabularies with images: ${vocabWithImage}, without: ${vocabWithoutImage}`);
-      
+
       if (vocabToSave.length > 0) {
         console.log('Sample vocabulary to save:', {
           word: vocabToSave[0].word,
@@ -216,9 +254,9 @@ export class ChatComponent implements OnInit, OnDestroy {
 
       if (response && response.success) {
         this.toastService.success(response.message);
-        
+
         this.closeFolderModal();
-        
+
         this.showSaveButton = false;
         this.generatedVocabularies = [];
         this.vocabularyImageUrl = null;
@@ -229,7 +267,7 @@ export class ChatComponent implements OnInit, OnDestroy {
           timestamp: new Date(),
           conversationType: this.conversationType
         };
-        
+
         this.messages.push(confirmMessage);
         this.messageAdded.emit(confirmMessage);
 
@@ -262,6 +300,8 @@ export class ChatComponent implements OnInit, OnDestroy {
       console.error('Error saving vocabularies:', error);
       const errorMessage = error?.error?.message || error?.message || 'Lỗi khi lưu từ vựng!';
       this.toastService.error(errorMessage);
+    } finally {
+      this.isSaving = false;
     }
   }
 
@@ -335,7 +375,22 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   handleImageError(event: Event, vocab: GeneratedVocabularyDTO): void {
     vocab.imageError = true;
+    this.imageLoadingStates.set(vocab.word, false);
     console.warn(`Failed to load image for vocabulary: ${vocab.word}`, event);
+  }
+
+  onImageLoad(vocab: GeneratedVocabularyDTO): void {
+    this.imageLoadingStates.set(vocab.word, false);
+  }
+
+  isImageLoading(vocab: GeneratedVocabularyDTO): boolean {
+    if (!vocab.imageUrl) return false;
+    return this.imageLoadingStates.get(vocab.word) ?? true;
+  }
+
+  // Sanitize HTML content to prevent XSS
+  getSafeHtml(content: string): SafeHtml {
+    return this.sanitizer.sanitize(1, content) || ''; // 1 = SecurityContext.HTML
   }
 
   formatMessageContent(content: string): string {
