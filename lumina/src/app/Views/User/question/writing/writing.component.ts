@@ -304,7 +304,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
         };
       }
       localStorage.setItem(key, JSON.stringify(newFormat));
-    } catch {}
+    } catch { }
   }
 
   private loadSavedData(): void {
@@ -360,7 +360,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       const key = this.getStorageKey();
       if (!key) return;
       localStorage.setItem(key, JSON.stringify(this.savedAnswers));
-    } catch {}
+    } catch { }
   }
 
   private startAutoSave(): void {
@@ -406,7 +406,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
 
     const question = this.questions[questionIndex];
     if (!question.prompt?.referenceImageUrl) {
-      this.captions[question.questionId] = 'Can not generate caption';
+      this.captions[question.questionId] = '';
       this.captionLoading[question.questionId] = false;
       return;
     }
@@ -417,11 +417,11 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
       .subscribe({
         next: (response) => {
           this.captions[question.questionId] =
-            response.caption || 'Can not generate caption';
+            response.caption || '';
           this.captionLoading[question.questionId] = false;
         },
         error: (error) => {
-          this.captions[question.questionId] = 'Can not generate caption';
+          this.captions[question.questionId] = '';
           this.captionLoading[question.questionId] = false;
         },
       });
@@ -438,17 +438,19 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
             .subscribe({
               next: (response) => {
                 this.captions[q.questionId] =
-                  response.caption || 'Can not generate caption';
+                  response.caption || '';
                 this.captionLoading[q.questionId] = false;
+                console.log(`[Writing] Caption loaded for Q${q.questionId}`);
               },
               error: (error) => {
-                this.captions[q.questionId] = 'Can not generate caption';
+                this.captions[q.questionId] = '';
                 this.captionLoading[q.questionId] = false;
+                console.warn(`[Writing] Caption failed for Q${q.questionId}:`, error);
               },
             });
         }
       } else {
-        this.captions[q.questionId] = 'Can not generate caption';
+        this.captions[q.questionId] = '';
         this.captionLoading[q.questionId] = false;
       }
     }
@@ -829,7 +831,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
 
       this.toastService.warning(
         `Bạn có ${questionsInProgress.length} câu đang làm dở chưa nộp: ${questionNumbers}. ` +
-          'Vui lòng nộp các câu này trước khi nộp bài.'
+        'Vui lòng nộp các câu này trước khi nộp bài.'
       );
       return;
     }

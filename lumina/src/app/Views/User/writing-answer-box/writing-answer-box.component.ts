@@ -283,6 +283,16 @@ export class WritingAnswerBoxComponent implements OnInit, OnChanges, OnDestroy {
     const submittedQuestionId = this.questionId;
     const submittedDisplayIndex = (this.resetAt || 0) + 1;
 
+    // ✅ Get caption if available, use empty string if still loading or undefined
+    const currentCaption = this.pictureCaption || '';
+
+    // ✅ Log warning if caption is not available but allow submission to proceed
+    if (!this.pictureCaption) {
+      console.warn(
+        `[WritingAnswerBox] Caption not available for Q${this.questionId}, submitting with empty caption`
+      );
+    }
+
     this.isActivelySubmitting = true;
     this.isLoadingFeedback = true;
     this.submitStart.emit(submittedQuestionId);
@@ -293,7 +303,7 @@ export class WritingAnswerBoxComponent implements OnInit, OnChanges, OnDestroy {
         attemptId,
         partCode,
         this.contentText,
-        this.pictureCaption
+        currentCaption  // ✅ Use current caption or empty string
       )
       .then((feedback) => {
         this.saveFeedbackToLocalStorage(submittedQuestionId, feedback);
@@ -318,7 +328,15 @@ export class WritingAnswerBoxComponent implements OnInit, OnChanges, OnDestroy {
         this.isActivelySubmitting = false;
         this.submitEnd.emit(submittedQuestionId);
 
-        this.toast.error('Lỗi khi chấm bài. Vui lòng thử lại!');
+        // ✅ Improved error message with more context
+        const errorMsg = error?.message || 'Lỗi khi chấm bài';
+        console.error('[WritingAnswerBox] Submission error:', {
+          questionId: submittedQuestionId,
+          error: error,
+          hasCaption: !!currentCaption,
+          hasAnswer: !!this.userAnswer
+        });
+        this.toast.error(`${errorMsg}. Vui lòng thử lại!`);
       });
   }
 
