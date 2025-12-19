@@ -5,8 +5,10 @@
   <section class="bg-gradient-to-br from-purple-600 to-blue-700 text-white py-16 relative overflow-hidden">
     <div class="absolute inset-0">
       <div class="floating-element absolute top-10 left-10 w-16 h-16 bg-white/10 rounded-full"></div>
-      <div class="floating-element absolute top-20 right-20 w-12 h-12 bg-white/10 rounded-full" style="animation-delay: -2s;"></div>
-      <div class="floating-element absolute bottom-20 left-1/4 w-20 h-20 bg-white/10 rounded-full" style="animation-delay: -4s;"></div>
+      <div class="floating-element absolute top-20 right-20 w-12 h-12 bg-white/10 rounded-full"
+        style="animation-delay: -2s;"></div>
+      <div class="floating-element absolute bottom-20 left-1/4 w-20 h-20 bg-white/10 rounded-full"
+        style="animation-delay: -4s;"></div>
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -23,44 +25,70 @@
   <!-- Learning Methods -->
   <section class="py-16">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-12"><h2 class="text-3xl font-bold text-gray-900 mb-4">Phương pháp học</h2><p class="text-lg text-gray-600">Chọn phương pháp học phù hợp với bạn</p></div>
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-gray-900 mb-4">Phương pháp học</h2>
+        <p class="text-lg text-gray-600">Chọn phương pháp học phù hợp với bạn</p>
+      </div>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <!-- Flashcards Card -->
         <div class="vocab-card flex flex-col">
-          <div class="bg-gradient-to-br from-blue-500 to-blue-700 p-6 text-white flex flex-col" style="min-height: 180px;"><div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4"><i class="fas fa-layer-group text-2xl"></i></div><h3 class="text-2xl font-bold mb-2">Thẻ ghi nhớ</h3><p class="text-blue-100">Học từ vựng với thẻ ghi nhớ</p></div>
+          <div class="bg-gradient-to-br from-blue-500 to-blue-700 p-6 text-white flex flex-col"
+            style="min-height: 180px;">
+            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4"><i
+                class="fas fa-layer-group text-2xl"></i></div>
+            <h3 class="text-2xl font-bold mb-2">Thẻ ghi nhớ</h3>
+            <p class="text-blue-100">Học từ vựng với thẻ ghi nhớ</p>
+          </div>
           <div class="p-6 flex flex-col flex-grow">
             <div class="space-y-3 mb-6 flex-grow">
-              <div class="flex items-center space-x-3"><i class="fas fa-eye text-blue-600"></i><span>Xem từ và nghĩa</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-volume-up text-blue-600"></i><span>Nghe phát âm chuẩn</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-repeat text-blue-600"></i><span>Lặp lại thông minh</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-heart text-blue-600"></i><span>Lưu từ yêu thích</span></div>
+              <div class="flex items-center space-x-3"><i class="fas fa-eye text-blue-600"></i><span>Xem từ và
+                  nghĩa</span></div>
+              <div class="flex items-center space-x-3"><i class="fas fa-volume-up text-blue-600"></i><span>Nghe phát âm
+                  chuẩn</span></div>
+              <div class="flex items-center space-x-3"><i class="fas fa-repeat text-blue-600"></i><span>Lặp lại thông
+                  minh</span></div>
+              <div class="flex items-center space-x-3"><i class="fas fa-heart text-blue-600"></i><span>Lưu từ yêu
+                  thích</span></div>
             </div>
-            <button class="w-full btn-primary" (click)="startFlashcards()"><i class="fas fa-play mr-2"></i>Bắt đầu học</button>
+            <button class="w-full btn-primary" (click)="startFlashcards()"><i class="fas fa-play mr-2"></i>Bắt đầu
+              học</button>
           </div>
         </div>
         <!-- Quiz Card -->
         <div class="vocab-card flex flex-col">
-          <div class="bg-gradient-to-br from-green-500 to-green-700 p-6 text-white flex flex-col" style="min-height: 180px;"><div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4"><i class="fas fa-question-circle text-2xl"></i></div><h3 class="text-2xl font-bold mb-2">Câu đố</h3><p class="text-green-100">Kiểm tra kiến thức từ vựng của bạn</p></div>
+          <div class="bg-gradient-to-br from-green-500 to-green-700 p-6 text-white flex flex-col"
+            style="min-height: 180px;">
+            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4"><i
+                class="fas fa-question-circle text-2xl"></i></div>
+            <h3 class="text-2xl font-bold mb-2">Câu đố</h3>
+            <p class="text-green-100">Kiểm tra kiến thức từ vựng của bạn</p>
+          </div>
           <div class="p-6 flex flex-col flex-grow">
             <div class="space-y-3 mb-6 flex-grow">
-              <div class="flex items-center space-x-3"><i class="fas fa-list text-green-600"></i><span>Câu hỏi trắc nghiệm</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-clock text-green-600"></i><span>Có giới hạn thời gian</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-chart-bar text-green-600"></i><span>Xem kết quả chi tiết</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-trophy text-green-600"></i><span>Kiếm điểm</span></div>
+              <div class="flex items-center space-x-3"><i class="fas fa-list text-green-600"></i><span>Câu hỏi trắc
+                  nghiệm</span></div>
+              <div class="flex items-center space-x-3"><i class="fas fa-clock text-green-600"></i><span>Có giới hạn thời
+                  gian</span></div>
+              <div class="flex items-center space-x-3"><i class="fas fa-chart-bar text-green-600"></i><span>Xem kết quả
+                  chi tiết</span></div>
+              <div class="flex items-center space-x-3"><i class="fas fa-trophy text-green-600"></i><span>Kiếm
+                  điểm</span></div>
             </div>
-            <button class="w-full btn-primary bg-gradient-to-r from-green-500 to-green-700" (click)="startQuiz()"><i class="fas fa-play mr-2"></i>Làm bài kiểm tra</button>
+            <button class="w-full btn-primary bg-gradient-to-r from-green-500 to-green-700" (click)="startQuiz()"><i
+                class="fas fa-play mr-2"></i>Làm bài kiểm tra</button>
           </div>
         </div>
         <!-- Word Lists Card with Spaced Repetition Dashboard -->
         <div class="vocab-card flex flex-col">
-          <div class="bg-gradient-to-br from-purple-500 to-purple-700 p-6 text-white flex flex-col" style="min-height: 180px;">
+          <div class="bg-gradient-to-br from-purple-500 to-purple-700 p-6 text-white flex flex-col"
+            style="min-height: 180px;">
             <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
               <i class="fas fa-brain text-2xl"></i>
             </div>
             <h3 class="text-2xl font-bold mb-2">Học thông minh</h3>
             <p class="text-purple-100">Theo dõi và ôn tập từ vựng với Lặp lại ngắt quãng</p>
           </div>
-          
+
           <div class="p-6 flex flex-col flex-grow">
             <!-- Features List -->
             <div class="space-y-3 mb-6 flex-grow">
@@ -83,8 +111,8 @@
             </div>
 
             <!-- Action Button -->
-            <button 
-              class="w-full btn-primary bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800" 
+            <button
+              class="w-full btn-primary bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800"
               (click)="viewAllProgress()">
               <i class="fas fa-chart-bar mr-2"></i>Xem tất cả tiến độ
             </button>
@@ -97,13 +125,11 @@
   <!-- Categories Section -->
   <section class="py-12 bg-white border-b border-gray-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-center mb-6">  
+      <div class="flex justify-center mb-6">
         <div class="text-center mb-12">
           <div class="flex items-center justify-center gap-4 mb-4">
             <h2 class="text-3xl font-bold text-gray-900">Chủ đề từ vựng</h2>
-            <button 
-              class="btn-primary flex items-center gap-2 px-4 py-2 text-sm"
-              (click)="openCreateListModal()"
+            <button class="btn-primary flex items-center gap-2 px-4 py-2 text-sm" (click)="openCreateListModal()"
               title="Tạo folder vocabulary mới">
               <i class="fas fa-folder-plus"></i>
               <span>Thêm thư mục</span>
@@ -113,60 +139,53 @@
         </div>
       </div>
       <div *ngIf="isLoadingLists" class="text-gray-600">Đang tải danh sách...</div>
-      <div *ngIf="!isLoadingLists && userLists.length === 0" class="text-gray-500">Chưa có danh sách. Tạo từ trò chuyện AI và lưu vào thư mục để bắt đầu.</div>
+      <div *ngIf="!isLoadingLists && userLists.length === 0" class="text-gray-500">Chưa có danh sách. Tạo từ trò chuyện
+        AI và lưu vào thư mục để bắt đầu.</div>
       <div *ngIf="!isLoadingLists && userLists.length > 0">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div *ngFor="let list of showLimitedUserLists" class="vocab-card cursor-pointer relative" (click)="navigateToVocabularyList(list)">
+          <div *ngFor="let list of showLimitedUserLists" class="vocab-card cursor-pointer relative"
+            (click)="navigateToVocabularyList(list)">
             <div class="p-6">
               <div class="flex items-center justify-between mb-3">
                 <h3 class="font-bold text-gray-900">{{ list.name }}</h3>
                 <div class="flex items-center gap-2">
                   <span class="text-xs text-gray-500">{{ list.createAt | date:'dd/MM/yyyy' }}</span>
-                  <button 
-                    class="delete-btn"
-                    (click)="openDeleteModal(list, $event)"
-                    title="Xóa folder">
+                  <button class="delete-btn" (click)="openDeleteModal(list, $event)" title="Xóa folder">
                     <i class="fas fa-trash"></i>
                   </button>
                 </div>
               </div>
               <p class="text-gray-600 text-sm mb-3">{{ list.vocabularyCount }} từ</p>
-              <div class="progress-bar mb-2"><div class="progress-fill" [style.width]="(Math.min(list.vocabularyCount,100)) + '%'" ></div></div>
+              <div class="progress-bar mb-2">
+                <div class="progress-fill" [style.width]="(Math.min(list.vocabularyCount,100)) + '%'"></div>
+              </div>
             </div>
           </div>
         </div>
         <!-- Pagination controls when viewing all and count > pageSize -->
         <div *ngIf="showAllLists && userLists.length > pageSize" class="flex items-center justify-center gap-2 mt-8">
-          <button 
-            class="px-4 py-2 rounded-lg border border-gray-300 bg-blue-50 text-blue-400 hover:bg-blue-100 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium" 
-            (click)="prevPage()" 
-            [disabled]="currentPage === 1"
-          >
+          <button
+            class="px-4 py-2 rounded-lg border border-gray-300 bg-blue-50 text-blue-400 hover:bg-blue-100 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            (click)="prevPage()" [disabled]="currentPage === 1">
             Trước
           </button>
-          
-          <button
-            *ngFor="let page of getPageNumbers()"
-            type="button"
-            (click)="goToPage(page)"
-            [class]="'px-4 py-2 rounded-lg border transition font-medium ' +
+
+          <button *ngFor="let page of getPageNumbers()" type="button" (click)="goToPage(page)" [class]="'px-4 py-2 rounded-lg border transition font-medium ' +
                      (currentPage === page 
                        ? 'bg-blue-400 border-blue-400 text-blue-800' 
-                       : 'bg-white border-gray-300 text-blue-600 hover:bg-gray-50')"
-          >
+                       : 'bg-white border-gray-300 text-blue-600 hover:bg-gray-50')">
             {{ page }}
           </button>
-          
-          <button 
-            class="px-4 py-2 rounded-lg border border-gray-300 bg-blue-50 text-blue-600 hover:bg-blue-100 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium" 
-            (click)="nextPage()" 
-            [disabled]="currentPage === totalPages"
-          >
+
+          <button
+            class="px-4 py-2 rounded-lg border border-gray-300 bg-blue-50 text-blue-600 hover:bg-blue-100 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            (click)="nextPage()" [disabled]="currentPage === totalPages">
             Tiếp theo
           </button>
         </div>
         <div class="flex justify-center mt-8" *ngIf="userLists.length > 6">
-          <button class="btn-primary px-6 py-2 rounded shadow text-white bg-blue-500 hover:bg-blue-600 transition" (click)="toggleShowAllLists()">
+          <button class="btn-primary px-6 py-2 rounded shadow text-white bg-blue-500 hover:bg-blue-600 transition"
+            (click)="toggleShowAllLists()">
             {{ showAllLists ? 'Ẩn bớt' : 'Xem thêm' }}
           </button>
 
@@ -174,13 +193,16 @@
 
       </div>
       <!-- Overlay displaying list detail as modal -->
-      <div *ngIf="selectedVocabularyListDetail" class="fixed inset-0 z-50 bg-black/30 flex items-center justify-center" (click)="closeVocabularyListDetail()">
-        <div class="relative bg-white rounded-2xl w-[90vw] max-w-[900px] max-h-[90vh] overflow-auto p-6" (click)="$event.stopPropagation()">
+      <div *ngIf="selectedVocabularyListDetail" class="fixed inset-0 z-50 bg-black/30 flex items-center justify-center"
+        (click)="closeVocabularyListDetail()">
+        <div class="relative bg-white rounded-2xl w-[90vw] max-w-[900px] max-h-[90vh] overflow-auto p-6"
+          (click)="$event.stopPropagation()">
           <button (click)="closeVocabularyListDetail()" class="absolute top-4 right-4 btn-primary">Đóng</button>
-          <app-vocabulary-list-detail [vocabularyList]="selectedVocabularyListDetail" (close)="closeVocabularyListDetail()"></app-vocabulary-list-detail>
+          <app-vocabulary-list-detail [vocabularyList]="selectedVocabularyListDetail"
+            (close)="closeVocabularyListDetail()"></app-vocabulary-list-detail>
         </div>
       </div>
-      
+
       <!-- Modal for creating new vocabulary folder -->
       <div *ngIf="isListModalOpen" class="modal-overlay" (click)="closeCreateListModal()">
         <div class="modal-content" (click)="$event.stopPropagation()">
@@ -201,11 +223,7 @@
           <form [formGroup]="listForm" (ngSubmit)="saveNewList()" class="modal-form">
             <div class="form-group">
               <label for="list-name">Tên Folder *</label>
-              <input 
-                id="list-name" 
-                type="text" 
-                formControlName="name" 
-                placeholder="Ví dụ: TOEIC Business Vocabulary" 
+              <input id="list-name" type="text" formControlName="name" placeholder="Ví dụ: TOEIC Business Vocabulary"
                 class="form-input">
               <div *ngIf="listForm.get('name')?.invalid && listForm.get('name')?.touched" class="error-message">
                 Tên folder là bắt buộc.
@@ -228,7 +246,8 @@
         <div class="modal-content" (click)="$event.stopPropagation()">
           <div class="modal-header">
             <div class="modal-header-content">
-              <div class="modal-icon" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #dc2626;">
+              <div class="modal-icon"
+                style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #dc2626;">
                 <i class="fas fa-exclamation-triangle"></i>
               </div>
               <div class="modal-title-section">
@@ -240,7 +259,7 @@
               <i class="fas fa-times"></i>
             </button>
           </div>
-          
+
           <div class="modal-body">
             <div class="delete-warning">
               <p class="warning-text">
@@ -251,7 +270,7 @@
               </p>
             </div>
           </div>
-          
+
           <div class="modal-actions">
             <button type="button" class="btn-secondary" (click)="closeDeleteModal()" [disabled]="isDeleting">
               Hủy
@@ -272,7 +291,8 @@
   <section class="py-16">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl p-8 text-white text-center">
-        <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6"><i class="fas fa-fire text-4xl"></i></div>
+        <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6"><i
+            class="fas fa-fire text-4xl"></i></div>
         <h2 class="text-3xl font-bold mb-4">Thử thách hàng ngày</h2>
         <p class="text-xl text-orange-100 mb-6">Học 10 từ mới mỗi ngày để duy trì chuỗi học tập của bạn</p>
         <div class="flex items-center justify-center space-x-8 mb-8">
@@ -291,4 +311,41 @@
       </div>
     </div>
   </section>
+
+  <!-- Login Required Modal -->
+  <div *ngIf="showLoginRequiredModal" class="modal-overlay" (click)="closeLoginModal()">
+    <div class="modal-content login-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-header-content">
+          <div class="modal-icon"
+            style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); color: #f59e0b;">
+            <i class="fas fa-lock"></i>
+          </div>
+          <div class="modal-title-section">
+            <h2>Yêu cầu đăng nhập</h2>
+            <p>{{ loginRequiredMessage }}</p>
+          </div>
+        </div>
+        <button class="btn-close" (click)="closeLoginModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="login-message">
+          Bạn cần đăng nhập để sử dụng tính năng này. Vui lòng đăng nhập để tiếp tục.
+        </p>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeLoginModal()">
+          Hủy
+        </button>
+        <button type="button" class="btn-primary" (click)="navigateToLogin()">
+          <i class="fas fa-sign-in-alt mr-2"></i>
+          Đăng nhập
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

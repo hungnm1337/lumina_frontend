@@ -5,11 +5,10 @@
   <div class="chat-messages">
     <div *ngFor="let message of messages" class="message" [ngClass]="message.type">
       <!-- Chỉ hiển thị content nếu không có vocabularies (để tránh trùng lặp) -->
-      <div *ngIf="!message.vocabularies || message.vocabularies.length === 0" 
-           class="message-content" 
-           [innerHTML]="formatMessageContent(message.content)">
+      <div *ngIf="!message.vocabularies || message.vocabularies.length === 0" class="message-content"
+        [innerHTML]="formatMessageContent(message.content)">
       </div>
-      
+
       <!-- Hiển thị examples nếu có -->
       <div *ngIf="message.examples && message.examples.length > 0" class="examples">
         <h5>📝 Ví dụ:</h5>
@@ -17,7 +16,7 @@
           <li *ngFor="let example of message.examples">{{ example }}</li>
         </ul>
       </div>
-      
+
       <!-- Hiển thị related words nếu có -->
       <div *ngIf="message.relatedWords && message.relatedWords.length > 0" class="related-words">
         <h5>🔗 Từ liên quan:</h5>
@@ -34,26 +33,28 @@
           <h4>📚 Từ vựng được tạo</h4>
           <span class="vocab-count">{{ message.vocabularies.length }} từ</span>
         </div>
-        
+
         <div class="vocabulary-grid">
           <div *ngFor="let vocab of message.vocabularies" class="vocabulary-item">
             <!-- Hiển thị ảnh cho từng từ vựng nếu có -->
             <div *ngIf="vocab.imageUrl" class="vocab-image">
-              <img 
-                [src]="vocab.imageUrl" 
-                [alt]="'Image for ' + vocab.word" 
-                loading="lazy"
-                (error)="handleImageError($event, vocab)"
-                [class.image-error]="vocab.imageError" />
+              <!-- Loading Spinner -->
+              <div *ngIf="isImageLoading(vocab)" class="image-loading-spinner">
+                <div class="spinner-circle"></div>
+              </div>
+
+              <img [src]="vocab.imageUrl" [alt]="'Image for ' + vocab.word" loading="lazy" (load)="onImageLoad(vocab)"
+                (error)="handleImageError($event, vocab)" [class.image-error]="vocab.imageError"
+                [class.image-loaded]="!isImageLoading(vocab)" />
               <div *ngIf="vocab.imageError" class="image-placeholder">
                 <i class="fas fa-image"></i>
                 <span>Image for {{ vocab.word }}</span>
               </div>
             </div>
-            
+
             <div class="vocab-content">
               <div class="vocab-header">
-                <strong class="vocab-word">{{ vocab.word }}</strong> 
+                <strong class="vocab-word">{{ vocab.word }}</strong>
                 <div class="vocab-badges">
                   <span class="word-type">{{ vocab.typeOfWord }}</span>
                   <span class="category">{{ vocab.category }}</span>
@@ -67,10 +68,11 @@
           </div>
         </div>
       </div>
-      
+
 
       <!-- Nút lưu từ vựng -->
-      <div *ngIf="message.hasSaveOption && message.vocabularies && message.vocabularies.length > 0" class="save-actions">
+      <div *ngIf="message.hasSaveOption && message.vocabularies && message.vocabularies.length > 0"
+        class="save-actions">
         <button (click)="saveVocabularies(message.vocabularies!)" class="save-btn">
           <i class="fas fa-save"></i>
           <span>Lưu vào folder</span>
@@ -91,68 +93,68 @@
 
   <!-- Chat Input -->
   <div class="chat-input">
-    <textarea 
-      [(ngModel)]="currentMessage" 
-      [placeholder]="getPlaceholderText()"
-      (keypress)="onKeyPress($event)"
-      (input)="onInput($event)"
-      [disabled]="isGenerating"
-      class="message-input"
-      rows="1"
-      #messageInput></textarea>
-    <button 
-      (click)="sendMessage()" 
-      [disabled]="isGenerating || !currentMessage.trim()"
-      class="send-btn">
+    <textarea [(ngModel)]="currentMessage" [placeholder]="getPlaceholderText()" (keypress)="onKeyPress($event)"
+      (input)="onInput($event)" [disabled]="isGenerating" class="message-input" rows="1" #messageInput></textarea>
+    <button (click)="sendMessage()" [disabled]="isGenerating || !currentMessage.trim()" class="send-btn">
       @if (isGenerating) {
-        <i class="fas fa-spinner fa-spin"></i>
+      <i class="fas fa-spinner fa-spin"></i>
       } @else {
-        <i class="fas fa-paper-plane"></i>
+      <i class="fas fa-paper-plane"></i>
       }
     </button>
   </div>
 </div>
 
 <!-- Folder Name Modal -->
-<div *ngIf="showFolderModal" class="folder-modal-overlay" (click)="closeFolderModal()">
+<div *ngIf="showFolderModal" class="folder-modal-overlay" [class.saving]="isSaving"
+  (click)="isSaving ? null : closeFolderModal()">
   <div class="folder-modal-content" (click)="$event.stopPropagation()">
-    <div class="folder-modal-header">
-      <div class="folder-modal-header-content">
-        <div class="folder-modal-icon">
-          <i class="fas fa-folder-plus"></i>
+    <!-- Normal State: Folder Input Form -->
+    <ng-container *ngIf="!isSaving">
+      <div class="folder-modal-header">
+        <div class="folder-modal-header-content">
+          <div class="folder-modal-icon">
+            <i class="fas fa-folder-plus"></i>
+          </div>
+          <div class="folder-modal-title-section">
+            <h2>Lưu từ vựng vào folder</h2>
+            <p>Nhập tên folder để lưu từ vựng</p>
+          </div>
         </div>
-        <div class="folder-modal-title-section">
-          <h2>Lưu từ vựng vào folder</h2>
-          <p>Nhập tên folder để lưu từ vựng</p>
+        <button class="folder-modal-close" (click)="closeFolderModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="folder-modal-body">
+        <div class="folder-form-group">
+          <label for="folder-name-input">Tên Folder *</label>
+          <input id="folder-name-input" type="text" [(ngModel)]="folderName"
+            placeholder="Ví dụ: TOEIC Business Vocabulary" class="folder-form-input" maxlength="100"
+            (keyup.enter)="confirmSaveFolder()" autofocus>
         </div>
       </div>
-      <button class="folder-modal-close" (click)="closeFolderModal()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-    
-    <div class="folder-modal-body">
-      <div class="folder-form-group">
-        <label for="folder-name-input">Tên Folder *</label>
-        <input 
-          id="folder-name-input"
-          type="text" 
-          [(ngModel)]="folderName"
-          placeholder="Ví dụ: TOEIC Business Vocabulary" 
-          class="folder-form-input"
-          (keyup.enter)="confirmSaveFolder()"
-          autofocus>
+
+      <div class="folder-modal-actions">
+        <button type="button" class="folder-btn-secondary" (click)="closeFolderModal()">
+          Hủy
+        </button>
+        <button type="button" class="folder-btn-primary" (click)="confirmSaveFolder()">
+          <i class="fas fa-save"></i>
+          Lưu
+        </button>
       </div>
-    </div>
-    
-    <div class="folder-modal-actions">
-      <button type="button" class="folder-btn-secondary" (click)="closeFolderModal()">
-        Hủy
-      </button>
-      <button type="button" class="folder-btn-primary" (click)="confirmSaveFolder()">
-        <i class="fas fa-save"></i>
-        Lưu
-      </button>
-    </div>
+    </ng-container>
+
+    <!-- Loading State: Save in Progress -->
+    <ng-container *ngIf="isSaving">
+      <div class="folder-modal-loading">
+        <div class="loading-spinner">
+          <div class="spinner-circle"></div>
+        </div>
+        <h3>Vui lòng đợi</h3>
+        <p>Hệ thống đang lưu vào danh sách từ vựng cá nhân...</p>
+      </div>
+    </ng-container>
   </div>
 </div>

@@ -45,7 +45,7 @@ export class UserVocabularyComponent implements OnInit {
   currentPage = 1;
   pageSize = 12;
   selectedVocabularyListDetail: any = null;
-  
+
   isListModalOpen = false;
   listForm: FormGroup;
   isSubmitting = false;
@@ -56,6 +56,10 @@ export class UserVocabularyComponent implements OnInit {
 
   streakData: any = null;
   isLoadingStreak = false;
+
+  // Login required modal
+  showLoginRequiredModal = false;
+  loginRequiredMessage = '';
 
 
   get showLimitedUserLists() {
@@ -101,7 +105,7 @@ export class UserVocabularyComponent implements OnInit {
     }
     return pages;
   }
-  
+
   constructor(
     private router: Router,
     private vocabularyService: VocabularyService,
@@ -135,10 +139,18 @@ export class UserVocabularyComponent implements OnInit {
   }
 
   startFlashcards(): void {
-    this.router.navigate(['/flashcards']); 
+    if (!this.isLoggedIn()) {
+      this.showLoginModal('bắt đầu học');
+      return;
+    }
+    this.router.navigate(['/flashcards']);
   }
 
   startQuiz(): void {
+    if (!this.isLoggedIn()) {
+      this.showLoginModal('làm bài kiểm tra');
+      return;
+    }
     this.router.navigate(['/quiz/config']);
   }
 
@@ -147,6 +159,10 @@ export class UserVocabularyComponent implements OnInit {
   }
 
   viewAllProgress(): void {
+    if (!this.isLoggedIn()) {
+      this.showLoginModal('xem tiến độ học tập');
+      return;
+    }
     this.router.navigate(['/spaced-repetition/dashboard']);
   }
 
@@ -207,6 +223,10 @@ export class UserVocabularyComponent implements OnInit {
   }
 
   openCreateListModal(): void {
+    if (!this.isLoggedIn()) {
+      this.showLoginModal('tạo thư mục mới');
+      return;
+    }
     this.isListModalOpen = true;
     this.listForm.reset();
   }
@@ -226,7 +246,7 @@ export class UserVocabularyComponent implements OnInit {
       name: this.listForm.value.name,
       isPublic: false
     };
-    
+
     this.vocabularyService.createVocabularyList(listData).subscribe({
       next: (newList) => {
         this.toastService.success(`Đã tạo folder "${newList.name}" thành công!`);
@@ -272,5 +292,25 @@ export class UserVocabularyComponent implements OnInit {
         console.error('Error deleting vocabulary list:', err);
       }
     });
+  }
+
+  // Helper methods for login check
+  private isLoggedIn(): boolean {
+    return this.authService.getCurrentUser() !== null;
+  }
+
+  private showLoginModal(action: string): void {
+    this.loginRequiredMessage = `Vui lòng đăng nhập để ${action}`;
+    this.showLoginRequiredModal = true;
+  }
+
+  closeLoginModal(): void {
+    this.showLoginRequiredModal = false;
+    this.loginRequiredMessage = '';
+  }
+
+  navigateToLogin(): void {
+    this.closeLoginModal();
+    this.router.navigate(['/login']);
   }
 }
