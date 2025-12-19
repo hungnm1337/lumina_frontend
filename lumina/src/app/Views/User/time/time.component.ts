@@ -32,7 +32,16 @@ export class TimeComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['time'] || changes['resetAt']) {
+    // Only reset timer if 'time' changes AND it's the first change (previousValue is undefined)
+    if (changes['time']) {
+      const isFirstChange = changes['time'].firstChange;
+      if (isFirstChange && this.time > 0) {
+        this.startCountdown();
+      }
+      return;
+    }
+    // Keep resetAt for backward compatibility with other components
+    if (changes['resetAt']) {
       this.startCountdown();
       return;
     }
