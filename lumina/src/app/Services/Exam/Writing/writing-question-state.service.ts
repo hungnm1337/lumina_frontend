@@ -303,6 +303,12 @@ export class WritingQuestionStateService {
     }
   }
 
+  clearAllStates(): void {
+    this.questionStates.clear();
+    this.pendingSubmissions.clear();
+    this.emitStates();
+  }
+
   private emitStates(): void {
     const statesMap = new Map(this.questionStates);
     this.statesSubject.next(statesMap);
