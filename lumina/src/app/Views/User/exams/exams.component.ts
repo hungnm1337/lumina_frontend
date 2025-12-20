@@ -18,6 +18,10 @@ interface SkillGroup {
   color: string;
 }
 
+interface PaginationState {
+  [skillCode: string]: number; // Current page for each skill
+}
+
 @Component({
   selector: 'app-exams',
   standalone: true,
@@ -36,6 +40,10 @@ export class ExamsComponent {
   searchTerm: string = '';
   selectedSkill: string = '';
   sortBy: string = 'name';
+
+  // Pagination properties
+  readonly ITEMS_PER_PAGE = 3;
+  currentPages: PaginationState = {};
 
   constructor(
     private examService: ExamService,
@@ -328,6 +336,42 @@ export class ExamsComponent {
     }));
 
     this.filteredSkillGroups = filtered;
+
+    // Reset pagination to page 1 when filters change
+    this.resetPagination();
+  }
+
+  // Pagination methods
+  getPaginatedExams(skillGroup: SkillGroup): ExamDTO[] {
+    const currentPage = this.currentPages[skillGroup.skillCode] || 1;
+    const startIndex = (currentPage - 1) * this.ITEMS_PER_PAGE;
+    const endIndex = startIndex + this.ITEMS_PER_PAGE;
+    return skillGroup.exams.slice(startIndex, endIndex);
+  }
+
+  getTotalPages(skillGroup: SkillGroup): number {
+    return Math.ceil(skillGroup.exams.length / this.ITEMS_PER_PAGE);
+  }
+
+  getCurrentPage(skillCode: string): number {
+    return this.currentPages[skillCode] || 1;
+  }
+
+  changePage(skillCode: string, page: number): void {
+    this.currentPages[skillCode] = page;
+  }
+
+  getPageNumbers(skillGroup: SkillGroup): number[] {
+    const totalPages = this.getTotalPages(skillGroup);
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  hasPagination(skillGroup: SkillGroup): boolean {
+    return skillGroup.exams.length > this.ITEMS_PER_PAGE;
+  }
+
+  private resetPagination(): void {
+    this.currentPages = {};
   }
 
   private sortExams(exams: ExamDTO[]): ExamDTO[] {

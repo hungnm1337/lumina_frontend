@@ -1,14 +1,7 @@
-<div
-  class="max-w-6xl mx-auto p-8 min-h-screen bg-gradient-to-br from-slate-50 to-blue-100"
->
+<div class="max-w-6xl mx-auto p-8 min-h-screen bg-gradient-to-br from-slate-50 to-blue-100">
   <!-- Loading State -->
-  <div
-    *ngIf="isLoading"
-    class="flex flex-col items-center justify-center py-16"
-  >
-    <div
-      class="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-4"
-    ></div>
+  <div *ngIf="isLoading" class="flex flex-col items-center justify-center py-16">
+    <div class="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
     <p class="text-gray-600 text-lg">Đang tải danh sách bài thi...</p>
   </div>
 
@@ -19,21 +12,12 @@
         <!-- Search Box -->
         <div class="flex-1">
           <div class="relative">
-            <i
-              class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-            ></i>
-            <input
-              type="text"
-              [(ngModel)]="searchTerm"
-              (ngModelChange)="applyFilters()"
+            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()"
               placeholder="Tìm kiếm bài thi theo tên hoặc mô tả..."
-              class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-            />
-            <button
-              *ngIf="searchTerm"
-              (click)="clearSearch()"
-              class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
+              class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" />
+            <button *ngIf="searchTerm" (click)="clearSearch()"
+              class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
               <i class="fas fa-times"></i>
             </button>
           </div>
@@ -41,11 +25,8 @@
 
         <!-- Skill Filter -->
         <div class="md:w-64">
-          <select
-            [(ngModel)]="selectedSkill"
-            (ngModelChange)="applyFilters()"
-            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
-          >
+          <select [(ngModel)]="selectedSkill" (ngModelChange)="applyFilters()"
+            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white">
             <option value="">Tất cả kỹ năng</option>
             <option value="LISTENING">Listening</option>
             <option value="READING">Reading</option>
@@ -56,11 +37,8 @@
 
         <!-- Sort By -->
         <div class="md:w-64">
-          <select
-            [(ngModel)]="sortBy"
-            (ngModelChange)="applyFilters()"
-            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
-          >
+          <select [(ngModel)]="sortBy" (ngModelChange)="applyFilters()"
+            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white">
             <option value="name">Sắp xếp theo tên</option>
             <option value="date">Sắp xếp theo ngày</option>
             <option value="creator">Sắp xếp theo người tạo</option>
@@ -69,38 +47,25 @@
       </div>
 
       <!-- Active Filters Display -->
-      <div
-        *ngIf="searchTerm || selectedSkill !== ''"
-        class="mt-4 flex items-center gap-2 flex-wrap"
-      >
+      <div *ngIf="searchTerm || selectedSkill !== ''" class="mt-4 flex items-center gap-2 flex-wrap">
         <span class="text-sm text-gray-600">Bộ lọc đang áp dụng:</span>
-        <span
-          *ngIf="searchTerm"
-          class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"
-        >
+        <span *ngIf="searchTerm"
+          class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
           <i class="fas fa-search text-xs"></i>
           {{ searchTerm }}
           <button (click)="clearSearch()" class="ml-1 hover:text-blue-900">
             <i class="fas fa-times text-xs"></i>
           </button>
         </span>
-        <span
-          *ngIf="selectedSkill"
-          class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm"
-        >
+        <span *ngIf="selectedSkill"
+          class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
           <i class="fas fa-filter text-xs"></i>
           {{ selectedSkill }}
-          <button
-            (click)="clearSkillFilter()"
-            class="ml-1 hover:text-green-900"
-          >
+          <button (click)="clearSkillFilter()" class="ml-1 hover:text-green-900">
             <i class="fas fa-times text-xs"></i>
           </button>
         </span>
-        <button
-          (click)="clearAllFilters()"
-          class="text-sm text-red-600 hover:text-red-700 font-medium"
-        >
+        <button (click)="clearAllFilters()" class="text-sm text-red-600 hover:text-red-700 font-medium">
           Xóa tất cả
         </button>
       </div>
@@ -114,33 +79,22 @@
 
   <!-- Skills Grid -->
   <div *ngIf="!isLoading" class="space-y-8">
-    <div
-      *ngFor="let skillGroup of filteredSkillGroups"
-      class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
-    >
+    <div *ngFor="let skillGroup of filteredSkillGroups"
+      class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
       <!-- Skill Header -->
-      <div
-        class="flex items-center p-4 text-white"
-        [class]="'bg-gradient-to-r ' + getSkillGradient(skillGroup.color)"
-      >
-        <div
-          class="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center mr-3"
-        >
+      <div class="flex items-center p-4 text-white" [class]="'bg-gradient-to-r ' + getSkillGradient(skillGroup.color)">
+        <div class="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center mr-3">
           <i [class]="skillGroup.icon" class="text-lg"></i>
         </div>
         <div class="flex-1">
           <div class="flex items-center gap-2">
             <h2 class="text-lg font-bold">{{ skillGroup.skillName }}</h2>
 
-            <!-- ✅ Quota Badge for Reading/Listening -->
-            <span
-              *ngIf="
+            <span *ngIf="
                 (skillGroup.skillName === 'Listening' ||
                   skillGroup.skillName === 'Reading') &&
                 quotaInfo
-              "
-              class="text-sm px-2 py-0.5 rounded-md bg-white bg-opacity-20 backdrop-blur-sm"
-            >
+              " class="text-sm px-2 py-0.5 rounded-md bg-white bg-opacity-20 backdrop-blur-sm">
               {{ getRemainingText(skillGroup.skillName) }}
             </span>
           </div>
@@ -163,69 +117,51 @@
 
         <!-- Exams Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div
-            *ngFor="let exam of skillGroup.exams"
-            (click)="startExam(exam)"
-            class="relative bg-white border rounded-xl p-4 transition-all duration-200 cursor-pointer group"
-            [ngClass]="{
+          <div *ngFor="let exam of getPaginatedExams(skillGroup)" (click)="startExam(exam)"
+            class="relative bg-white border rounded-xl p-4 transition-all duration-200 cursor-pointer group" [ngClass]="{
               'border-gray-200 hover:border-blue-400 hover:shadow-lg hover:-translate-y-1':
                 !exam.completionStatus?.isCompleted,
               'border-green-300 bg-green-50 hover:border-green-500 hover:shadow-green-200 opacity-90':
                 exam.completionStatus?.isCompleted
-            }"
-          >
+            }">
             <!-- ✅ Completed Badge -->
-            <div
-              *ngIf="exam.completionStatus?.isCompleted"
-              class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10 animate-slideInRight"
-            >
+            <div *ngIf="exam.completionStatus?.isCompleted"
+              class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10 animate-slideInRight">
               <i class="fas fa-check-circle"></i>
               <span class="font-medium">Đã hoàn thành</span>
             </div>
 
             <!-- ✅ Progress Indicator (for in-progress exams) -->
-            <div
-              *ngIf="
+            <div *ngIf="
                 exam.completionStatus &&
                 !exam.completionStatus.isCompleted &&
                 exam.completionStatus.completedPartsCount > 0
-              "
-              class="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium z-10"
-            >
+              " class="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium z-10">
               {{ exam.completionStatus.completedPartsCount }}/{{
-                exam.completionStatus.totalPartsCount
+              exam.completionStatus.totalPartsCount
               }}
             </div>
 
             <!-- Header -->
             <div class="flex items-start gap-3 mb-3">
-              <div
-                class="w-10 h-10 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
                 [ngClass]="{
                   'bg-gray-100 group-hover:bg-blue-50':
                     !exam.completionStatus?.isCompleted,
                   'bg-green-200 group-hover:bg-green-300':
                     exam.completionStatus?.isCompleted
-                }"
-              >
-                <i
-                  [class]="skillGroup.icon"
-                  [ngClass]="{
+                }">
+                <i [class]="skillGroup.icon" [ngClass]="{
                     'text-gray-400 group-hover:text-blue-500':
                       !exam.completionStatus?.isCompleted,
                     'text-green-600': exam.completionStatus?.isCompleted
-                  }"
-                  class="transition-colors"
-                ></i>
+                  }" class="transition-colors"></i>
               </div>
               <div class="flex-1 min-w-0">
-                <h3
-                  class="text-base font-bold line-clamp-2 leading-snug mb-1"
-                  [ngClass]="{
+                <h3 class="text-base font-bold line-clamp-2 leading-snug mb-1" [ngClass]="{
                     'text-gray-900': !exam.completionStatus?.isCompleted,
                     'text-green-800': exam.completionStatus?.isCompleted
-                  }"
-                >
+                  }">
                   {{ exam.name }}
                 </h3>
                 <p class="text-xs text-gray-600 line-clamp-2">
@@ -235,87 +171,118 @@
             </div>
 
             <!-- ✅ Progress Bar -->
-            <div
-              *ngIf="
+            <div *ngIf="
                 exam.completionStatus &&
                 exam.completionStatus.totalPartsCount > 0
-              "
-              class="mb-3"
-            >
+              " class="mb-3">
               <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                <div
-                  class="h-2 transition-all duration-500 ease-out rounded-full"
-                  [ngClass]="{
+                <div class="h-2 transition-all duration-500 ease-out rounded-full" [ngClass]="{
                     'bg-gradient-to-r from-blue-400 to-blue-600':
                       !exam.completionStatus.isCompleted,
                     'bg-gradient-to-r from-green-400 to-green-600':
                       exam.completionStatus.isCompleted
-                  }"
-                  [style.width.%]="
+                  }" [style.width.%]="
                     (exam.completionStatus.completedPartsCount /
                       exam.completionStatus.totalPartsCount) *
                     100
-                  "
-                ></div>
+                  "></div>
               </div>
               <div class="flex justify-between items-center mt-1">
                 <span class="text-xs text-gray-500">
                   {{ exam.completionStatus.completedPartsCount }}/{{
-                    exam.completionStatus.totalPartsCount
+                  exam.completionStatus.totalPartsCount
                   }}
                   phần
                 </span>
-                <span
-                  class="text-xs font-medium"
-                  [ngClass]="{
+                <span class="text-xs font-medium" [ngClass]="{
                     'text-blue-600': !exam.completionStatus.isCompleted,
                     'text-green-600': exam.completionStatus.isCompleted
-                  }"
-                >
+                  }">
                   {{ exam.completionStatus.completionPercentage }}%
                 </span>
               </div>
             </div>
 
             <!-- Footer -->
-            <div
-              class="flex items-center justify-between text-xs text-gray-500 pt-3 border-t border-gray-100"
-            >
+            <div class="flex items-center justify-between text-xs text-gray-500 pt-3 border-t border-gray-100">
               <div class="flex flex-col gap-1.5">
                 <span class="flex items-center gap-1">
                   <i class="fas fa-user"></i>
                   <span class="truncate max-w-32">{{
                     exam.createdByName
-                  }}</span>
+                    }}</span>
                 </span>
                 <span class="flex items-center gap-1">
                   <i class="fas fa-calendar-alt"></i>
                   {{ formatDate(exam.createdAt) }}
                 </span>
               </div>
-              <button
-                class="flex items-center gap-1 px-2 py-1 rounded-lg text-white transition-all"
-                [ngClass]="
+              <button class="flex items-center gap-1 px-2 py-1 rounded-lg text-white transition-all" [ngClass]="
                   exam.completionStatus?.isCompleted
                     ? 'bg-green-500 hover:bg-green-600'
                     : getButtonColor(skillGroup.color)
-                "
-              >
-                <i
-                  [ngClass]="
+                ">
+                <i [ngClass]="
                     exam.completionStatus?.isCompleted
                       ? 'fas fa-redo'
                       : 'fas fa-play'
-                  "
-                  class="text-xs"
-                ></i>
+                  " class="text-xs"></i>
                 <span class="text-xs font-medium">
                   {{
-                    exam.completionStatus?.isCompleted ? "Làm lại" : "Bắt đầu"
+                  exam.completionStatus?.isCompleted ? "Làm lại" : "Bắt đầu"
                   }}
                 </span>
               </button>
             </div>
+          </div>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div *ngIf="hasPagination(skillGroup)"
+          class="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
+          <!-- Page Info -->
+          <div class="text-sm text-gray-600">
+            Trang {{ getCurrentPage(skillGroup.skillCode) }} / {{ getTotalPages(skillGroup) }}
+            <span class="text-gray-400 ml-2">({{ skillGroup.exams.length }} bài thi)</span>
+          </div>
+
+          <!-- Navigation Buttons -->
+          <div class="flex items-center gap-2">
+            <!-- Previous Button -->
+            <button (click)="changePage(skillGroup.skillCode, getCurrentPage(skillGroup.skillCode) - 1)"
+              [disabled]="getCurrentPage(skillGroup.skillCode) === 1"
+              class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1"
+              [ngClass]="{
+                'bg-gray-100 text-gray-400 cursor-not-allowed': getCurrentPage(skillGroup.skillCode) === 1,
+                'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400': getCurrentPage(skillGroup.skillCode) !== 1
+              }">
+              <i class="fas fa-chevron-left text-xs"></i>
+              <span>Trước</span>
+            </button>
+
+            <!-- Page Numbers -->
+            <div class="flex items-center gap-1">
+              <button *ngFor="let pageNum of getPageNumbers(skillGroup)"
+                (click)="changePage(skillGroup.skillCode, pageNum)"
+                class="w-9 h-9 rounded-lg text-sm font-medium transition-all duration-200" [ngClass]="{
+                  'bg-blue-500 text-white shadow-md': getCurrentPage(skillGroup.skillCode) === pageNum,
+                  'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-blue-400': getCurrentPage(skillGroup.skillCode) !== pageNum
+                }">
+                {{ pageNum }}
+              </button>
+            </div>
+
+            <!-- Next Button -->
+            <button (click)="changePage(skillGroup.skillCode, getCurrentPage(skillGroup.skillCode) + 1)"
+              [disabled]="getCurrentPage(skillGroup.skillCode) === getTotalPages(skillGroup)"
+              class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1"
+              [ngClass]="{
+                'bg-gray-100 text-gray-400 cursor-not-allowed': getCurrentPage(skillGroup.skillCode) === getTotalPages(skillGroup),
+                'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400': getCurrentPage(skillGroup.skillCode) !== getTotalPages(skillGroup)
+              }">
+              <span>Sau</span>
+              <i class="fas fa-chevron-right text-xs"></i>
+            </button>
           </div>
         </div>
       </div>

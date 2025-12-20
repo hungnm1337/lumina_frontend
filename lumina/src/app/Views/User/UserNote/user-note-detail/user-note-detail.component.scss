@@ -1,0 +1,11 @@
+// Increase the width of the note detail container
+.max-w-4xl {
+    max-width: 1200px !important; // Increased from default 896px (4xl) to 1200px
+}
+
+// Optional: Make the content area even wider on large screens
+@media (min-width: 1536px) {
+    .max-w-4xl {
+        max-width: 1400px !important;
+    }
+}
