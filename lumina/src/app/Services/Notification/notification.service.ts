@@ -105,17 +105,39 @@ export class NotificationService {
   }
 
   formatDate(dateString: string): string {
-    const date = new Date(dateString);
+    if (!dateString) return 'Không xác định';
+    
     const now = new Date();
+    
+    // Parse date - handle both UTC and local time formats
+    let date: Date;
+    
+    // If string doesn't end with 'Z' but looks like ISO format, treat as UTC
+    if (dateString.includes('T') && !dateString.endsWith('Z') && !dateString.includes('+')) {
+      date = new Date(dateString + 'Z'); // Force UTC parsing
+    } else {
+      date = new Date(dateString);
+    }
+    
+    // If date is invalid, try alternative parsing
+    if (isNaN(date.getTime())) {
+      date = new Date(dateString.replace(' ', 'T'));
+    }
+    
     const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+    const diffSeconds = Math.floor(diffMs / 1000);
 
-    if (diffMins < 1) return 'Vừa xong';
-    if (diffMins < 60) return `${diffMins} phút trước`;
-    if (diffHours < 24) return `${diffHours} giờ trước`;
-    if (diffDays < 7) return `${diffDays} ngày trước`;
+    if (diffSeconds < 0) return 'Vừa xong';
+    if (diffSeconds < 60) return 'Vừa xong';
+    
+    const minutes = Math.floor(diffSeconds / 60);
+    if (minutes < 60) return `${minutes} phút trước`;
+    
+    const hours = Math.floor(diffSeconds / 3600);
+    if (hours < 24) return `${hours} giờ trước`;
+    
+    const days = Math.floor(diffSeconds / 86400);
+    if (days < 7) return `${days} ngày trước`;
     
     return date.toLocaleDateString('vi-VN');
   }

@@ -42,6 +42,14 @@ export class ManageEventsDashboardComponent implements OnInit {
     endDate: ''
   };
 
+  // Validation errors
+  validationErrors: {
+    eventName?: string;
+    content?: string;
+    startDate?: string;
+    endDate?: string;
+  } = {};
+
   constructor(private eventService: EventService) {}
 
   ngOnInit(): void {
@@ -262,32 +270,128 @@ export class ManageEventsDashboardComponent implements OnInit {
     this.selectedEvent = null;
     this.form = { eventName: '', content: '', startDate: '', endDate: '' };
     this.errorMessage = null;
+    this.validationErrors = {};
+  }
+
+  // ===== VALIDATION METHODS =====
+  validateEventName(): boolean {
+    const eventName = this.form.eventName?.trim();
+    if (!eventName) {
+      this.validationErrors.eventName = 'Tên sự kiện là bắt buộc';
+      return false;
+    }
+    if (eventName.length < 5) {
+      this.validationErrors.eventName = 'Tên sự kiện phải có ít nhất 5 ký tự';
+      return false;
+    }
+    if (eventName.length > 200) {
+      this.validationErrors.eventName = 'Tên sự kiện không được vượt quá 200 ký tự';
+      return false;
+    }
+    this.validationErrors.eventName = undefined;
+    return true;
+  }
+
+  validateContent(): boolean {
+    const content = this.form.content?.trim();
+    if (content && content.length > 0 && content.length < 10) {
+      this.validationErrors.content = 'Mô tả phải có ít nhất 10 ký tự';
+      return false;
+    }
+    if (content && content.length > 2000) {
+      this.validationErrors.content = 'Mô tả không được vượt quá 2000 ký tự';
+      return false;
+    }
+    this.validationErrors.content = undefined;
+    return true;
+  }
+
+  validateDates(): boolean {
+    let isValid = true;
+
+    // Kiểm tra ngày bắt đầu
+    if (!this.form.startDate) {
+      this.validationErrors.startDate = 'Ngày bắt đầu là bắt buộc';
+      isValid = false;
+    } else {
+      this.validationErrors.startDate = undefined;
+    }
+
+    // Kiểm tra ngày kết thúc
+    if (!this.form.endDate) {
+      this.validationErrors.endDate = 'Ngày kết thúc là bắt buộc';
+      isValid = false;
+    } else {
+      this.validationErrors.endDate = undefined;
+    }
+
+    // Kiểm tra ngày kết thúc phải sau ngày bắt đầu
+    if (this.form.startDate && this.form.endDate) {
+      const startDate = new Date(this.form.startDate);
+      const endDate = new Date(this.form.endDate);
+      
+      if (endDate <= startDate) {
+        this.validationErrors.endDate = 'Ngày kết thúc phải sau ngày bắt đầu';
+        isValid = false;
+      }
+
+      // Kiểm tra khoảng cách thời gian hợp lý (ít nhất 1 giờ)
+      const diffHours = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
+      if (diffHours < 1) {
+        this.validationErrors.endDate = 'Sự kiện phải diễn ra ít nhất 1 giờ';
+        isValid = false;
+      }
+
+      // Kiểm tra thời gian không quá dài (không quá 1 năm)
+      const diffDays = diffHours / 24;
+      if (diffDays > 365) {
+        this.validationErrors.endDate = 'Sự kiện không thể kéo dài quá 1 năm';
+        isValid = false;
+      }
+    }
+
+    return isValid;
+  }
+
+  onEventNameInput(): void {
+    // Xóa lỗi khi người dùng bắt đầu nhập
+    if (this.validationErrors.eventName) {
+      this.validationErrors.eventName = undefined;
+    }
+    // Xóa lỗi chung
+    if (this.errorMessage) {
+      this.errorMessage = null;
+    }
+  }
+
+  onContentInput(): void {
+    if (this.validationErrors.content) {
+      this.validationErrors.content = undefined;
+    }
+    if (this.errorMessage) {
+      this.errorMessage = null;
+    }
+  }
+
+  validateAllFields(): boolean {
+    const isEventNameValid = this.validateEventName();
+    const isContentValid = this.validateContent();
+    const areDatesValid = this.validateDates();
+
+    return isEventNameValid && isContentValid && areDatesValid;
   }
 
   // ===== CRUD OPERATIONS =====
   submit(): void {
     this.errorMessage = null;
 
-    // Validation
-    if (!this.form.eventName?.trim()) {
-      this.errorMessage = 'Tên sự kiện là bắt buộc';
-      return;
-    }
-
-    if (!this.form.startDate) {
-      this.errorMessage = 'Ngày bắt đầu là bắt buộc';
-      return;
-    }
-
-    if (!this.form.endDate) {
-      this.errorMessage = 'Ngày kết thúc là bắt buộc';
-      return;
-    }
-
-    const startDate = new Date(this.form.startDate);
-    const endDate = new Date(this.form.endDate);
-    if (endDate <= startDate) {
-      this.errorMessage = 'Ngày kết thúc phải sau ngày bắt đầu';
+    // Chạy validation toàn bộ
+    if (!this.validateAllFields()) {
+      this.errorMessage = 'Vui lòng kiểm tra lại các trường nhập liệu';
+      // Tự động ẩn thông báo lỗi sau 3 giây
+      setTimeout(() => {
+        this.errorMessage = null;
+      }, 3000);
       return;
     }
 

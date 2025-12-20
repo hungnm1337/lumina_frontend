@@ -350,4 +350,31 @@ private getAuthHeaders(): HttpHeaders {
       default: return status;
     }
   }
+
+  // ==================== LEVEL BY SCORE ====================
+  
+  // Tính trình độ dựa vào điểm tích lũy
+  getLevelByScore(score: number): string {
+    if (score >= 5000) return 'Proficient';
+    if (score >= 3000) return 'Advanced';
+    if (score >= 2000) return 'Upper-Intermediate';
+    if (score >= 1000) return 'Intermediate';
+    if (score >= 500) return 'Elementary';
+    return 'Beginner';
+  }
+
+  // Get level text by score (theo điểm tích lũy, không phải TOEIC)
+  getLevelTextByScore(score: number): string {
+    if (score >= 5000) return 'Thành thạo';
+    if (score >= 3000) return 'Nâng cao';
+    if (score >= 2000) return 'Trung cấp cao';
+    if (score >= 1000) return 'Trung cấp';
+    if (score >= 500) return 'Sơ cấp';
+    return 'Bắt đầu hành trình';
+  }
+
+  // Get level color by score
+  getLevelColorByScore(score: number): string {
+    return this.getTOEICLevelColor(this.getLevelByScore(score));
+  }
 }

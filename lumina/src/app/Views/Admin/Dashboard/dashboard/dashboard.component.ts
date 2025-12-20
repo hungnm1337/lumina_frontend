@@ -1,4 +1,4 @@
-import { NgClass,NgIf,CommonModule  } from '@angular/common';
+import { NgIf,CommonModule  } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { StatisticService } from '../../../../Services/Statistic/statistic.service';
 import { RouterLink } from '@angular/router'; 
@@ -8,7 +8,7 @@ import { RouterLink } from '@angular/router';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [NgClass,NgIf,CommonModule,RouterLink],
+  imports: [NgIf,CommonModule,RouterLink],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
