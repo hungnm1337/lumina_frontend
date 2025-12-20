@@ -19,7 +19,7 @@ import Quill from 'quill';
 @Component({
   selector: 'app-articles',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule,QuillModule ],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, QuillModule],
   templateUrl: './articles.component.html',
   styleUrls: ['./articles.component.scss']
 })
@@ -30,7 +30,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
   allArticlesForStats: Article[] = []; // All articles for statistics (not paginated)
   categories: ArticleCategory[] = [];
   categoryNames: string[] = [];
-  
+
   // State Properties - CHANGED TO STAFF
   isStaff = false;  // Changed from isManager
   isModalOpen = false;
@@ -38,24 +38,24 @@ export class ArticlesComponent implements OnInit, OnDestroy {
   editingArticle: Article | null = null;
   isLoading = true;
   isSubmitting = false;
-  
+
   // Form Properties
   articleForm: FormGroup;
   categoryForm: FormGroup;
   isSubmittingCategory = false;
-  
+
   // Filter Properties
   searchTerm = '';
   selectedCategory = '';
   selectedStatus: 'draft' | 'pending' | 'published' | '' = '';
-  
+
   // Pagination Properties
   page = 1;
   pageSize = 6;
   total = 0;
   sortBy: 'createdAt' | 'title' | 'category' = 'createdAt';
   sortDir: 'asc' | 'desc' = 'desc';
-  
+
   // Utility Properties
   Math = Math;
 
@@ -69,16 +69,16 @@ export class ArticlesComponent implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private searchSubscription?: Subscription;
 
-  // Form state tracking
-  hasUnsavedChanges = false;
+  // Form state tracking - track initial state for accurate change detection
+  initialArticleFormValue: any = null;
 
   // Confirmation Modal Properties
   showConfirmModal = false;
   confirmTitle = '';
   confirmMessage = '';
-  confirmType: 'delete' | 'approval' | 'reject' = 'delete';
+  confirmType: 'delete' | 'approval' | 'reject' | 'close' = 'delete';
   pendingAction: (() => void) | null = null;
-  
+
   // Quill editor instances - store references to each editor
   quillEditors: Map<number, any> = new Map(); // Map section index to Quill instance
 
@@ -132,10 +132,8 @@ export class ArticlesComponent implements OnInit, OnDestroy {
       this.onSearchChange();
     });
 
-    // Track form changes for unsaved changes warning
-    this.articleForm.valueChanges.subscribe(() => {
-      this.hasUnsavedChanges = true;
-    });
+    // Note: We don't track form changes here anymore
+    // Instead, we compare initial state with current state when closing modal
   }
 
   ngOnDestroy(): void {
@@ -192,11 +190,11 @@ export class ArticlesComponent implements OnInit, OnDestroy {
       (control) => {
         const type = formGroup.get('type')?.value;
         const content = control.value || '';
-        
+
         if (!content || content.trim() === '') {
           return { required: true };
         }
-        
+
         // If type is video, check if content contains YouTube URL
         if (type === 'video') {
           const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
@@ -204,7 +202,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
             return { invalidYoutubeUrl: true };
           }
         }
-        
+
         return null;
       }
     ]);
@@ -288,7 +286,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
     let allArticles: Article[] = [];
     let currentPage = 1;
     const pageSize = 1000; // Reasonable page size
-    
+
     const loadPage = () => {
       this.articleService.queryArticles({
         page: currentPage,
@@ -300,7 +298,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
         next: (res) => {
           const convertedArticles = res.items.map(article => this.articleService.convertToArticle(article));
           allArticles = [...allArticles, ...convertedArticles];
-          
+
           // If we got a full page, there might be more
           if (res.items.length === pageSize && res.total > allArticles.length) {
             currentPage++;
@@ -317,7 +315,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
         }
       });
     };
-    
+
     loadPage();
   }
 
@@ -377,7 +375,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
     this.loadArticles();
   }
 
-  changeSort(sortBy: 'createdAt'|'title'|'category', sortDir: 'asc'|'desc'): void {
+  changeSort(sortBy: 'createdAt' | 'title' | 'category', sortDir: 'asc' | 'desc'): void {
     this.sortBy = sortBy;
     this.sortDir = sortDir;
     this.page = 1;
@@ -388,7 +386,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
   openModal(article: Article | null = null): void {
     this.editingArticle = article;
     this.isModalOpen = true;
-    
+
     // Clear existing sections
     while (this.sections.length !== 0) {
       this.sections.removeAt(0);
@@ -407,7 +405,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
       if (article.sections && article.sections.length > 0) {
         article.sections.forEach(sectionData => {
           let content = sectionData.content || '';
-          
+
           // If section type is video, check if content contains YouTube URL
           // If it's a video section, we need to extract and preserve the YouTube URL in content
           if (sectionData.type === 'video') {
@@ -418,7 +416,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
             // - http://www.youtube.com/watch?v=VIDEO_ID
             // - Also matches URLs in HTML/iframe tags
             const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/;
-            
+
             // Check if content is a plain YouTube URL
             const plainUrlMatch = content.trim().match(youtubeRegex);
             if (plainUrlMatch) {
@@ -436,7 +434,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
               // If no YouTube URL found, keep original content (might be empty or invalid)
             }
           }
-          
+
           this.sections.push(this.fb.group({
             type: [sectionData.type || 'đoạn văn', Validators.required],
             content: [content, Validators.required],
@@ -450,32 +448,57 @@ export class ArticlesComponent implements OnInit, OnDestroy {
       }
     } else {
       // Create mode
-      this.articleForm.reset({ 
-        category: '', 
+      this.articleForm.reset({
+        category: '',
         title: '',
         summary: '',
         tags: ''
       });
       this.addSection(); // Tạo section đầu tiên
     }
+
+    // Save initial form state for change detection
+    // We need to do this after form is populated
+    setTimeout(() => {
+      this.initialArticleFormValue = JSON.stringify(this.articleForm.value);
+    }, 100);
+  }
+
+  // Check if form has actual changes from initial state
+  hasArticleFormChanged(): boolean {
+    if (!this.initialArticleFormValue) return false;
+
+    const currentFormValue = JSON.stringify(this.articleForm.value);
+    return currentFormValue !== this.initialArticleFormValue;
   }
 
   closeModal(): void {
-    if (this.hasUnsavedChanges) {
-      if (!confirm('Bạn có chắc muốn đóng? Dữ liệu chưa lưu sẽ bị mất.')) {
-        return;
-      }
+    if (this.hasArticleFormChanged()) {
+      // Use custom confirmation modal instead of native browser confirm
+      this.confirmType = 'close';
+      this.confirmTitle = 'Xác nhận đóng';
+      this.confirmMessage = 'Bạn có chắc muốn đóng? Dữ liệu chưa lưu sẽ bị mất.';
+      this.pendingAction = () => {
+        this.performCloseModal();
+      };
+      this.showConfirmModal = true;
+      return;
     }
+    this.performCloseModal();
+  }
+
+  private performCloseModal(): void {
     this.isModalOpen = false;
     this.editingArticle = null;
     this.articleForm.reset();
-    this.hasUnsavedChanges = false;
+    this.initialArticleFormValue = null;
     while (this.sections.length !== 0) {
       this.sections.removeAt(0);
     }
     // Clear Quill editor references
     this.quillEditors.clear();
     this.uploadingImages = {};
+    this.closeConfirmModal();
   }
 
   // ===== CRUD OPERATIONS =====
@@ -494,7 +517,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
     this.isSubmitting = true;
     const formData = this.articleForm.value;
     const selectedCategory = this.categories.find(cat => cat.name === formData.category);
-    
+
     if (!selectedCategory) {
       this.toastService.error('Vui lòng chọn danh mục hợp lệ');
       this.isSubmitting = false;
@@ -502,7 +525,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
     }
 
     // Process tags with validation
-    const tagsArray = formData.tags ? 
+    const tagsArray = formData.tags ?
       formData.tags.split(',')
         .map((tag: string) => tag.trim())
         .filter((tag: string) => {
@@ -517,13 +540,13 @@ export class ArticlesComponent implements OnInit, OnDestroy {
             return false;
           }
           return true;
-        }) : 
+        }) :
       [];
 
     // Debug: Log section content before saving
     console.log('=== SAVING ARTICLE ===');
     console.log('Form sections:', formData.sections);
-    
+
     const articlePayload = {
       title: formData.title,
       summary: formData.summary,
@@ -531,7 +554,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
       tags: tagsArray,
       sections: formData.sections.map((section: any, index: number) => {
         let content = section.content;
-        
+
         // Get Quill instance to extract HTML if content is Delta format
         const quill = this.quillEditors.get(index);
         if (quill) {
@@ -546,7 +569,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
             console.warn(`Section ${index} - Could not extract HTML from Quill:`, e);
           }
         }
-        
+
         // Check if content is Delta format (JSON)
         if (typeof content === 'string') {
           try {
@@ -578,17 +601,17 @@ export class ArticlesComponent implements OnInit, OnDestroy {
             content = this.escapeHtml(content);
           }
         }
-        
+
         console.log(`Section ${index} final content:`, content);
         console.log(`Section ${index} contains img tag:`, content?.includes('<img'));
-        
+
         // If type is video, extract YouTube URL from content if it's a plain URL
         let finalContent = content;
         if (section.type === 'video') {
           // Check if content is a plain YouTube URL (not HTML)
           const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
           const match = content.trim().match(youtubeRegex);
-          
+
           if (match) {
             // Content is a plain YouTube URL, use it directly
             finalContent = content.trim();
@@ -600,7 +623,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
             }
           }
         }
-        
+
         return {
           sectionTitle: section.sectionTitle || `Phần ${index + 1}`,
           sectionContent: finalContent,
@@ -609,13 +632,13 @@ export class ArticlesComponent implements OnInit, OnDestroy {
         };
       })
     };
-    
+
     console.log('Article payload to send:', JSON.stringify(articlePayload, null, 2));
 
     if (this.editingArticle) {
       // Update existing article
       const wasPublished = this.editingArticle.status === 'published';
-      
+
       this.articleService.updateArticle(this.editingArticle.id, articlePayload).subscribe({
         next: (response: any) => {
           if (wasPublished && response?.status === 'pending') {
@@ -629,11 +652,11 @@ export class ArticlesComponent implements OnInit, OnDestroy {
       });
     } else {
       // Create new article
-      const createPayload: ArticleCreate = { 
-        ...articlePayload, 
-        publishNow: false 
+      const createPayload: ArticleCreate = {
+        ...articlePayload,
+        publishNow: false
       };
-      
+
       this.articleService.createArticle(createPayload).subscribe({
         next: () => {
           this.toastService.success('Tạo bài viết thành công!');
@@ -673,7 +696,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
     const isResubmission = article?.rejectionReason;
     this.confirmType = 'approval';
     this.confirmTitle = isResubmission ? 'Xác nhận gửi lại' : 'Xác nhận gửi phê duyệt';
-    this.confirmMessage = isResubmission 
+    this.confirmMessage = isResubmission
       ? `Bạn có chắc muốn gửi lại bài viết "${article?.title || 'này'}" để phê duyệt?`
       : `Bạn có chắc muốn gửi bài viết "${article?.title || 'này'}" để phê duyệt?`;
     this.pendingAction = () => {
@@ -688,7 +711,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
           } else {
             this.toastService.success('Đã gửi yêu cầu phê duyệt!');
           }
-          
+
           if (article) {
             article.status = 'pending';
           }
@@ -713,7 +736,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
       this.toastService.error('Bạn không có quyền phê duyệt bài viết.');
       return;
     }
-    
+
     this.isLoading = true;
     this.articleService.reviewArticle(id, true).subscribe({
       next: () => {
@@ -733,7 +756,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
       this.toastService.error('Bạn không có quyền từ chối bài viết.');
       return;
     }
-    
+
     const article = this.filteredArticles.find(a => a.id === id);
     this.confirmType = 'reject';
     this.confirmTitle = 'Xác nhận từ chối';
@@ -773,7 +796,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
   // ===== HELPER METHODS =====
   private finalizeSave(): void {
     this.isSubmitting = false;
-    this.hasUnsavedChanges = false;
+    this.initialArticleFormValue = null;
     this.closeModal();
     this.loadArticles();
     this.loadAllArticlesForStats(); // Reload stats after save
@@ -782,9 +805,9 @@ export class ArticlesComponent implements OnInit, OnDestroy {
   private handleSaveError(error: any, action: string): void {
     this.isSubmitting = false;
     console.error(`Error ${action} article:`, error);
-    
+
     let errorMessage = `Không thể ${action} bài viết.`;
-    
+
     if (error.status === 0) {
       errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
     } else if (error.status === 401) {
@@ -798,7 +821,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
     } else if (error?.message) {
       errorMessage = error.message;
     }
-    
+
     this.toastService.error(errorMessage);
   }
 
@@ -1017,7 +1040,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
   insertImageIntoEditor(imageUrl: string, sectionIndex: number): void {
     // Try to get Quill instance from stored map first
     let quill = this.quillEditors.get(sectionIndex);
-    
+
     // Check if we have a valid Quill instance
     if (quill && typeof quill.getSelection === 'function') {
       try {
@@ -1027,7 +1050,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
         console.error('Error inserting image into Quill, using form control fallback:', error);
       }
     }
-    
+
     // Fallback: Update form control directly (ngx-quill will sync automatically)
     // This is more reliable than trying to manipulate Quill instance
     console.log('Using form control method to insert image');
@@ -1039,7 +1062,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
     const sectionControl = this.sections.at(sectionIndex);
     if (sectionControl) {
       const currentContent = sectionControl.get('content')?.value || '';
-      
+
       // Check if content is Delta format
       let currentHtml = currentContent;
       try {
@@ -1051,10 +1074,10 @@ export class ArticlesComponent implements OnInit, OnDestroy {
       } catch (e) {
         // Already HTML
       }
-      
+
       const imageHtml = `<img src="${imageUrl}" alt="Uploaded image" style="max-width: 100%; height: auto; display: block; margin: 1rem auto;" />`;
       const newContent = currentHtml ? `${currentHtml}<p><br></p>${imageHtml}` : `<p>${imageHtml}</p>`;
-      
+
       // Update form control - ngx-quill will sync automatically
       sectionControl.get('content')?.setValue(newContent);
       console.log('Image inserted via form control:', imageUrl);
@@ -1065,7 +1088,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
   private insertImageToQuill(quill: any, imageUrl: string): void {
     // Ensure we have the actual Quill instance
     let actualQuill = quill;
-    
+
     // If it's not a Quill instance, try to get it
     if (!actualQuill || typeof actualQuill.getSelection !== 'function') {
       // Try to get from stored object
@@ -1077,13 +1100,13 @@ export class ArticlesComponent implements OnInit, OnDestroy {
         actualQuill = quill.getQuill();
       }
     }
-    
+
     // If still not valid, try to find from DOM
     if (!actualQuill || typeof actualQuill.getSelection !== 'function') {
       console.warn('Invalid Quill instance, trying to find from DOM...');
       return; // Will use form control fallback
     }
-    
+
     try {
       // Get current selection or use end of document
       let range = actualQuill.getSelection(true);
@@ -1092,15 +1115,15 @@ export class ArticlesComponent implements OnInit, OnDestroy {
         const length = actualQuill.getLength();
         range = { index: length - 1, length: 0 };
       }
-      
+
       const index = range.index;
-      
+
       // Insert image using insertEmbed
       actualQuill.insertEmbed(index, 'image', imageUrl, 'user');
-      
+
       // Move cursor after image
       actualQuill.setSelection(index + 1);
-      
+
       console.log('Image inserted successfully into Quill:', imageUrl);
     } catch (error) {
       console.error('Error inserting image into Quill:', error);
@@ -1121,13 +1144,13 @@ export class ArticlesComponent implements OnInit, OnDestroy {
   insertVideoIntoEditor(videoUrl: string, sectionIndex: number): void {
     // Try to get Quill instance from stored map first
     let quill = this.quillEditors.get(sectionIndex);
-    
+
     if (!quill) {
       // Fallback: try to find from DOM
       setTimeout(() => {
         const editorElements = document.querySelectorAll('.ql-editor');
         const editorElement = editorElements[sectionIndex] as HTMLElement;
-        
+
         if (!editorElement) {
           console.warn(`Editor element not found for section ${sectionIndex}`);
           return;
@@ -1135,7 +1158,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
 
         // Get Quill instance from the element
         quill = (editorElement as any).__quill || Quill.find(editorElement);
-        
+
         if (quill) {
           this.insertVideoToQuill(quill, videoUrl);
         } else {
@@ -1153,12 +1176,12 @@ export class ArticlesComponent implements OnInit, OnDestroy {
       // Get current selection or use end of document
       const range = quill.getSelection(true);
       const index = range ? range.index : quill.getLength();
-      
+
       // Insert newline and video
       quill.insertText(index, '\n');
       quill.insertEmbed(index + 1, 'video', videoUrl, 'user');
       quill.setSelection(index + 2);
-      
+
       console.log('Video inserted successfully:', videoUrl);
     } catch (error) {
       console.error('Error inserting video:', error);
@@ -1181,9 +1204,9 @@ export class ArticlesComponent implements OnInit, OnDestroy {
           [{ 'size': [] }],
           ['bold', 'italic', 'underline', 'strike'],
           [{ 'color': [] }, { 'background': [] }],
-          [{ 'script': 'sub'}, { 'script': 'super' }],
-          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-          [{ 'indent': '-1'}, { 'indent': '+1' }],
+          [{ 'script': 'sub' }, { 'script': 'super' }],
+          [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+          [{ 'indent': '-1' }, { 'indent': '+1' }],
           [{ 'align': [] }],
           ['link', 'image', 'video'],
           ['clean']
@@ -1202,7 +1225,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
   onEditorCreated(editor: any, sectionIndex: number): void {
     // ngx-quill passes QuillEditorComponent, we need to get quillEditor property
     let quillInstance = null;
-    
+
     if (editor) {
       // Try different ways to get Quill instance
       if (editor.quillEditor && typeof editor.quillEditor.getSelection === 'function') {
@@ -1227,7 +1250,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
         }
       }
     }
-    
+
     if (quillInstance && typeof quillInstance.getSelection === 'function') {
       this.quillEditors.set(sectionIndex, quillInstance);
       console.log(`Quill editor stored for section ${sectionIndex}`, quillInstance);
@@ -1242,7 +1265,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
   // Convert Quill Delta format to HTML string
   private convertDeltaToHtmlString(delta: any): string {
     if (!delta || !delta.ops) return '';
-    
+
     let html = '';
     for (const op of delta.ops) {
       if (op.insert) {
@@ -1299,15 +1322,15 @@ export class ArticlesComponent implements OnInit, OnDestroy {
       .replace(/on\w+\s*=\s*[^\s>]*/gi, '')
       .replace(/javascript:/gi, '')
       .replace(/data:text\/html/gi, '');
-    
+
     // Allow safe HTML tags (you can customize this list)
-    const allowedTags = ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
-                        'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'code', 'pre'];
-    
+    const allowedTags = ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'code', 'pre'];
+
     // Create a temporary element to parse HTML
     const temp = document.createElement('div');
     temp.innerHTML = sanitized;
-    
+
     // Remove disallowed tags
     const allElements = temp.querySelectorAll('*');
     allElements.forEach(el => {
@@ -1330,7 +1353,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
         });
       }
     });
-    
+
     return temp.innerHTML;
   }
 

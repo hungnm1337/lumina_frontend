@@ -25,18 +25,18 @@
           <div class="stat-label">Đã xuất bản</div>
         </div>
       </div>
-    </div>
 
-    <!-- CREATE BUTTON - STAFF CAN CREATE -->
-    <div class="header-actions" *ngIf="isStaff">
-      <button class="btn-create-article" (click)="openModal()">
-        <i class="fas fa-plus"></i>
-        <span class="btn-text">Tạo Bài viết</span>
-      </button>
-      <button class="btn-add-category" (click)="openAddCategoryModal()" title="Thêm Danh mục Mới" type="button">
-        <i class="fas fa-plus"></i>
-        <span class="btn-text">Thêm Danh mục</span>
-      </button>
+      <!-- CREATE BUTTON - STAFF CAN CREATE -->
+      <div class="header-actions" *ngIf="isStaff">
+        <button class="btn-create-article" (click)="openModal()">
+          <i class="fas fa-plus"></i>
+          <span class="btn-text">Tạo Bài viết</span>
+        </button>
+        <button class="btn-add-category" (click)="openAddCategoryModal()" title="Thêm Danh mục Mới" type="button">
+          <i class="fas fa-plus"></i>
+          <span class="btn-text">Thêm Danh mục</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -45,16 +45,9 @@
     <div class="search-section">
       <div class="search-input-wrapper">
         <i class="fas fa-search search-icon"></i>
-        <input
-          type="text"
-          [(ngModel)]="searchTerm"
-          (ngModelChange)="onSearchInput($event)"
-          placeholder="Tìm kiếm bài viết, nội dung, danh mục..."
-          class="search-input">
-        <button
-          *ngIf="searchTerm"
-          (click)="searchTerm = ''; onSearchChange()"
-          class="clear-search-btn">
+        <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchInput($event)"
+          placeholder="Tìm kiếm bài viết, nội dung, danh mục..." class="search-input">
+        <button *ngIf="searchTerm" (click)="searchTerm = ''; onSearchChange()" class="clear-search-btn">
           <i class="fas fa-times"></i>
         </button>
       </div>
@@ -117,9 +110,7 @@
 
       <!-- Articles Grid -->
       <div *ngIf="!isLoading" class="articles-grid">
-        <div
-          *ngFor="let article of filteredArticles; let i = index"
-          class="article-card"
+        <div *ngFor="let article of filteredArticles; let i = index" class="article-card"
           [class.featured]="article.status === 'published'">
 
           <!-- Card Header -->
@@ -134,20 +125,14 @@
             <div class="card-actions">
               <div class="action-buttons">
                 <!-- STAFF CAN EDIT -->
-                <button
-                  *ngIf="isStaff"
-                  class="btn-action btn-edit"
-                  (click)="openModal(article)"
+                <button *ngIf="isStaff" class="btn-action btn-edit" (click)="openModal(article)"
                   title="Chỉnh sửa bài viết">
                   <i class="fas fa-edit"></i>
                 </button>
 
                 <!-- STAFF CAN SUBMIT FOR APPROVAL -->
-                <button
-                  *ngIf="article.status === 'draft' && isStaff"
-                  class="btn-action btn-submit"
-                  [class.btn-resubmit]="article.rejectionReason"
-                  (click)="submitForApproval(article.id)"
+                <button *ngIf="article.status === 'draft' && isStaff" class="btn-action btn-submit"
+                  [class.btn-resubmit]="article.rejectionReason" (click)="submitForApproval(article.id)"
                   [title]="article.rejectionReason ? 'Gửi lại để duyệt' : 'Gửi phê duyệt'">
                   <i class="fas fa-paper-plane"></i>
 
@@ -155,27 +140,18 @@
 
                 <!-- ONLY MANAGER CAN APPROVE/REJECT -->
                 <ng-container *ngIf="canApproveReject()">
-                  <button
-                    *ngIf="article.status === 'pending'"
-                    class="btn-action btn-approve"
-                    (click)="approveArticle(article.id)"
-                    title="Phê duyệt và xuất bản">
+                  <button *ngIf="article.status === 'pending'" class="btn-action btn-approve"
+                    (click)="approveArticle(article.id)" title="Phê duyệt và xuất bản">
                     <i class="fas fa-check"></i>
                   </button>
-                  <button
-                    *ngIf="article.status === 'pending'"
-                    class="btn-action btn-reject"
-                    (click)="rejectArticle(article.id)"
-                    title="Từ chối bài viết">
+                  <button *ngIf="article.status === 'pending'" class="btn-action btn-reject"
+                    (click)="rejectArticle(article.id)" title="Từ chối bài viết">
                     <i class="fas fa-times"></i>
                   </button>
                 </ng-container>
 
                 <!-- STAFF CAN DELETE -->
-                <button
-                  *ngIf="isStaff"
-                  class="btn-action btn-delete"
-                  (click)="deleteArticle(article.id)"
+                <button *ngIf="isStaff" class="btn-action btn-delete" (click)="deleteArticle(article.id)"
                   title="Xóa bài viết">
                   <i class="fas fa-trash"></i>
                 </button>
@@ -269,18 +245,12 @@
           Page {{page}} / {{maxPage || 1}} · Total {{total | number}} articles
         </div>
         <div class="pagination-controls">
-          <button 
-            class="btn-page" 
-            [disabled]="!canGoPrev" 
-            (click)="prevPage()">
+          <button class="btn-page" [disabled]="!canGoPrev" (click)="prevPage()">
             <i class="fas fa-chevron-left"></i>
             Trước
           </button>
           <span class="current-page">{{page}}</span>
-          <button 
-            class="btn-page" 
-            [disabled]="!canGoNext" 
-            (click)="nextPage()">
+          <button class="btn-page" [disabled]="!canGoNext" (click)="nextPage()">
             Tiếp theo
             <i class="fas fa-chevron-right"></i>
           </button>
@@ -419,38 +389,25 @@
             {{category}}
           </option>
         </select>
-        <div *ngIf="articleForm.get('category')?.invalid && articleForm.get('category')?.touched"
-             class="error-message">
+        <div *ngIf="articleForm.get('category')?.invalid && articleForm.get('category')?.touched" class="error-message">
           Danh mục là bắt buộc
         </div>
       </div>
 
       <div class="form-group">
         <label for="title">Tiêu đề Bài viết</label>
-        <input
-          id="title"
-          type="text"
-          formControlName="title"
-          placeholder="Nhập tiêu đề bài viết hấp dẫn..."
-          class="form-input"
-          required>
-        <div *ngIf="articleForm.get('title')?.invalid && articleForm.get('title')?.touched"
-             class="error-message">
+        <input id="title" type="text" formControlName="title" placeholder="Nhập tiêu đề bài viết hấp dẫn..."
+          class="form-input" required>
+        <div *ngIf="articleForm.get('title')?.invalid && articleForm.get('title')?.touched" class="error-message">
           Tiêu đề phải có ít nhất 5 ký tự
         </div>
       </div>
 
       <div class="form-group">
         <label for="summary">Tóm tắt</label>
-        <textarea
-          id="summary"
-          formControlName="summary"
-          rows="3"
-          placeholder="Mô tả ngắn gọn về nội dung bài viết..."
-          class="form-textarea"
-          required></textarea>
-        <div *ngIf="articleForm.get('summary')?.invalid && articleForm.get('summary')?.touched"
-             class="error-message">
+        <textarea id="summary" formControlName="summary" rows="3" placeholder="Mô tả ngắn gọn về nội dung bài viết..."
+          class="form-textarea" required></textarea>
+        <div *ngIf="articleForm.get('summary')?.invalid && articleForm.get('summary')?.touched" class="error-message">
           Tóm tắt phải có ít nhất 20 ký tự
         </div>
       </div>
@@ -464,9 +421,7 @@
 
         <!-- Dynamic Sections -->
         <div formArrayName="sections">
-          <div *ngFor="let sectionGroup of sections.controls; let i = index"
-               class="section-item"
-               [formGroupName]="i">
+          <div *ngFor="let sectionGroup of sections.controls; let i = index" class="section-item" [formGroupName]="i">
 
             <!-- Section Header -->
             <div class="section-header">
@@ -474,13 +429,9 @@
 
               <div class="section-form-group">
                 <label>Tiêu đề Phần</label>
-                <input
-                  type="text"
-                  formControlName="sectionTitle"
-                  placeholder="Nhập tiêu đề phần..."
-                  class="form-input">
+                <input type="text" formControlName="sectionTitle" placeholder="Nhập tiêu đề phần..." class="form-input">
                 <div *ngIf="sectionGroup.get('sectionTitle')?.invalid && sectionGroup.get('sectionTitle')?.touched"
-                     class="error-message">
+                  class="error-message">
                   <span *ngIf="sectionGroup.get('sectionTitle')?.errors?.['required']">
                     Section title is required
                   </span>
@@ -504,60 +455,51 @@
             </div>
 
             <!-- Section Content -->
-<div class="section-content">
-  <label>Nội dung</label>
+            <div class="section-content">
+              <label>Nội dung</label>
 
-  <!-- QUILL-EDITOR với Cloudinary upload -->
-  <quill-editor
-    formControlName="content"
-    [placeholder]="sectionGroup.get('type')?.value === 'video' ? 'Dán URL video YouTube tại đây (ví dụ: https://www.youtube.com/watch?v=...)' : 'Nhập nội dung phần...'"
-    [modules]="getQuillConfig(i)"
-    [styles]="{ 'min-height': '150px' }"
-    (onEditorCreated)="onEditorCreated($event, i)">
-  </quill-editor>
+              <!-- QUILL-EDITOR với Cloudinary upload -->
+              <quill-editor formControlName="content"
+                [placeholder]="sectionGroup.get('type')?.value === 'video' ? 'Dán URL video YouTube tại đây (ví dụ: https://www.youtube.com/watch?v=...)' : 'Nhập nội dung phần...'"
+                [modules]="getQuillConfig(i)" [styles]="{ 'min-height': '150px' }"
+                (onEditorCreated)="onEditorCreated($event, i)">
+              </quill-editor>
 
-  <!-- Upload progress indicator -->
-  <div *ngIf="uploadingImages[i]" class="upload-progress">
-    <i class="fas fa-spinner fa-spin"></i>
-    <span>Đang upload lên Cloudinary...</span>
-  </div>
+              <!-- Upload progress indicator -->
+              <div *ngIf="uploadingImages[i]" class="upload-progress">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Đang upload lên Cloudinary...</span>
+              </div>
 
-  <div *ngIf="sectionGroup.get('content')?.invalid && sectionGroup.get('content')?.touched"
-       class="error-message">
-    <span *ngIf="sectionGroup.get('type')?.value === 'video' && sectionGroup.get('content')?.errors?.['invalidYoutubeUrl']">
-      Vui lòng nhập URL YouTube hợp lệ (ví dụ: https://www.youtube.com/watch?v=...)
-    </span>
-    <span *ngIf="sectionGroup.get('type')?.value === 'video' && sectionGroup.get('content')?.errors?.['required']">
-      Vui lòng nhập URL YouTube
-    </span>
-    <span *ngIf="sectionGroup.get('type')?.value !== 'video' && sectionGroup.get('content')?.errors?.['required']">
-      Content is required
-    </span>
-  </div>
-</div>
+              <div *ngIf="sectionGroup.get('content')?.invalid && sectionGroup.get('content')?.touched"
+                class="error-message">
+                <span
+                  *ngIf="sectionGroup.get('type')?.value === 'video' && sectionGroup.get('content')?.errors?.['invalidYoutubeUrl']">
+                  Vui lòng nhập URL YouTube hợp lệ (ví dụ: https://www.youtube.com/watch?v=...)
+                </span>
+                <span
+                  *ngIf="sectionGroup.get('type')?.value === 'video' && sectionGroup.get('content')?.errors?.['required']">
+                  Vui lòng nhập URL YouTube
+                </span>
+                <span
+                  *ngIf="sectionGroup.get('type')?.value !== 'video' && sectionGroup.get('content')?.errors?.['required']">
+                  Content is required
+                </span>
+              </div>
+            </div>
 
             <!-- Section Controls -->
             <div class="section-controls">
-              <button
-                type="button"
-                class="btn-control btn-up"
-                (click)="moveSectionUp(i)"
-                [disabled]="i === 0">
+              <button type="button" class="btn-control btn-up" (click)="moveSectionUp(i)" [disabled]="i === 0">
                 <i class="fas fa-arrow-up"></i>
                 Lên
               </button>
-              <button
-                type="button"
-                class="btn-control btn-down"
-                (click)="moveSectionDown(i)"
+              <button type="button" class="btn-control btn-down" (click)="moveSectionDown(i)"
                 [disabled]="i === sections.length - 1">
                 <i class="fas fa-arrow-down"></i>
                 Xuống
               </button>
-              <button
-                type="button"
-                class="btn-control btn-remove"
-                (click)="removeSection(i)"
+              <button type="button" class="btn-control btn-remove" (click)="removeSection(i)"
                 [disabled]="sections.length === 1">
                 <i class="fas fa-trash"></i>
                 Xóa
@@ -567,36 +509,19 @@
         </div>
 
         <!-- Add Section Button -->
-        <button
-          type="button"
-          class="btn-add-section"
-          (click)="addSection()">
+        <button type="button" class="btn-add-section" (click)="addSection()">
           <i class="fas fa-plus"></i>
           Thêm Phần
         </button>
       </div>
 
-      <!-- Tags -->
-      <div class="form-group">
-        <label for="tags">Thẻ</label>
-        <input
-          id="tags"
-          type="text"
-          formControlName="tags"
-          placeholder="Nhập thẻ cách nhau bằng dấu phẩy..."
-          class="form-input">
-        <small class="form-hint">Phân tách nhiều thẻ bằng dấu phẩy</small>
-      </div>
 
       <!-- Modal Actions -->
       <div class="modal-actions">
         <button type="button" class="btn-secondary" (click)="closeModal()">
           Hủy
         </button>
-        <button
-          type="submit"
-          class="btn-primary"
-          [disabled]="articleForm.invalid || isSubmitting">
+        <button type="submit" class="btn-primary" [disabled]="articleForm.invalid || isSubmitting">
           <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin"></i>
           <i *ngIf="!isSubmitting && !editingArticle" class="fas fa-plus"></i>
           <i *ngIf="!isSubmitting && editingArticle" class="fas fa-save"></i>
@@ -631,16 +556,10 @@
           <i class="fas fa-tag"></i>
           Tên Danh mục
         </label>
-        <input
-          id="categoryName"
-          type="text"
-          formControlName="name"
-          placeholder="Nhập tên danh mục (ví dụ: Kinh doanh, Giải trí, Ẩm thực...)"
-          class="form-input"
-          [class.error]="categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched"
-          required>
-        <div *ngIf="categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched"
-             class="error-message">
+        <input id="categoryName" type="text" formControlName="name"
+          placeholder="Nhập tên danh mục (ví dụ: Kinh doanh, Giải trí, Ẩm thực...)" class="form-input"
+          [class.error]="categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched" required>
+        <div *ngIf="categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched" class="error-message">
           <i class="fas fa-exclamation-circle"></i>
           <span *ngIf="categoryForm.get('name')?.errors?.['required']">Tên danh mục là bắt buộc</span>
           <span *ngIf="categoryForm.get('name')?.errors?.['minlength']">Tên danh mục phải có ít nhất 2 ký tự</span>
@@ -657,10 +576,7 @@
           <i class="fas fa-times"></i>
           Hủy
         </button>
-        <button
-          type="submit"
-          class="btn-primary"
-          [disabled]="categoryForm.invalid || isSubmittingCategory">
+        <button type="submit" class="btn-primary" [disabled]="categoryForm.invalid || isSubmittingCategory">
           <i *ngIf="isSubmittingCategory" class="fas fa-spinner fa-spin"></i>
           <i *ngIf="!isSubmittingCategory" class="fas fa-plus"></i>
           Tạo Danh mục
@@ -675,10 +591,12 @@
   <div class="modal-content modal-confirm" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <div class="modal-header-content">
-        <div class="modal-icon" [ngClass]="{'icon-danger': confirmType === 'delete', 'icon-warning': confirmType === 'approval' || confirmType === 'reject'}">
+        <div class="modal-icon"
+          [ngClass]="{'icon-danger': confirmType === 'delete', 'icon-warning': confirmType === 'approval' || confirmType === 'reject' || confirmType === 'close'}">
           <i *ngIf="confirmType === 'delete'" class="fas fa-exclamation-triangle"></i>
           <i *ngIf="confirmType === 'approval'" class="fas fa-paper-plane"></i>
           <i *ngIf="confirmType === 'reject'" class="fas fa-times-circle"></i>
+          <i *ngIf="confirmType === 'close'" class="fas fa-exclamation-circle"></i>
         </div>
         <div class="modal-title-section">
           <h2>{{confirmTitle}}</h2>
@@ -701,18 +619,17 @@
       <button type="button" class="btn-secondary" (click)="closeConfirmModal()" [disabled]="isSubmitting || isLoading">
         Hủy
       </button>
-      <button
-        type="button"
-        class="btn-primary"
-        [ngClass]="{'btn-danger': confirmType === 'delete', 'btn-warning': confirmType === 'approval', 'btn-reject': confirmType === 'reject'}"
-        (click)="confirmAction()"
-        [disabled]="isSubmitting || isLoading">
+      <button type="button" class="btn-primary"
+        [ngClass]="{'btn-danger': confirmType === 'delete', 'btn-warning': confirmType === 'approval' || confirmType === 'close', 'btn-reject': confirmType === 'reject'}"
+        (click)="confirmAction()" [disabled]="isSubmitting || isLoading">
         <i *ngIf="isSubmitting || isLoading" class="fas fa-spinner fa-spin"></i>
         <i *ngIf="!isSubmitting && !isLoading && confirmType === 'delete'" class="fas fa-trash"></i>
         <i *ngIf="!isSubmitting && !isLoading && confirmType === 'approval'" class="fas fa-paper-plane"></i>
         <i *ngIf="!isSubmitting && !isLoading && confirmType === 'reject'" class="fas fa-times"></i>
+        <i *ngIf="!isSubmitting && !isLoading && confirmType === 'close'" class="fas fa-check"></i>
         <span *ngIf="!isSubmitting && !isLoading">
-          {{confirmType === 'delete' ? 'Xóa' : confirmType === 'approval' ? 'Gửi phê duyệt' : 'Từ chối'}}
+          {{confirmType === 'delete' ? 'Xóa' : confirmType === 'approval' ? 'Gửi phê duyệt' : confirmType === 'reject' ?
+          'Từ chối' : 'Đóng'}}
         </span>
         <span *ngIf="isSubmitting || isLoading">Đang xử lý...</span>
       </button>
