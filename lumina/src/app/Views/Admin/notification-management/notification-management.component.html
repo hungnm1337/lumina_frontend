@@ -71,12 +71,6 @@
               <i class="fas fa-eye"></i>
             </button>
             <button
-              class="btn-icon btn-edit"
-              (click)="openEditModal(notification)"
-              title="Chỉnh sửa">
-              <i class="fas fa-edit"></i>
-            </button>
-            <button
               class="btn-icon btn-delete"
               (click)="openDeleteModal(notification)"
               title="Xóa">
@@ -138,8 +132,13 @@
           placeholder="Nhập tiêu đề thông báo"
           maxlength="200"
           class="form-control"
+          [class.error]="!createForm.title && createForm.title !== ''"
+          required
         />
-        <small>{{ createForm.title.length }}/200 ký tự</small>
+        <small class="char-count">{{ createForm.title.length }}/200 ký tự</small>
+        <small class="error-text" *ngIf="createForm.title.trim() === '' && createForm.title.length > 0">
+          <i class="fas fa-exclamation-circle"></i> Tiêu đề không được để trống
+        </small>
       </div>
       <div class="form-group">
         <label>Nội dung <span class="required">*</span></label>
@@ -149,8 +148,13 @@
           rows="6"
           maxlength="2000"
           class="form-control"
+          [class.error]="!createForm.content && createForm.content !== ''"
+          required
         ></textarea>
-        <small>{{ createForm.content.length }}/2000 ký tự</small>
+        <small class="char-count">{{ createForm.content.length }}/2000 ký tự</small>
+        <small class="error-text" *ngIf="createForm.content.trim() === '' && createForm.content.length > 0">
+          <i class="fas fa-exclamation-circle"></i> Nội dung không được để trống
+        </small>
       </div>
       <!-- Recipient Selection -->
       <div class="form-group">

@@ -607,7 +607,7 @@ ${
     `.trim();
 
     this.toeicPopupMessage = message;
-    this.showToeicPopup = true;
+    // this.showToeicPopup = true; // Ẩn popup TOEIC
   }
 
   closeToeicPopup(): void {
