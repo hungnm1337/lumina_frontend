@@ -126,33 +126,31 @@ export class NotificationsPageComponent implements OnInit, OnDestroy {
 
   getRelativeTime(dateString: string): string {
     const now = new Date();
+    // Parse the date string - assume it's in ISO format or local time from server
     const date = new Date(dateString);
     
-    // Convert to local timezone
-    const localDate = new Date(date.getTime());
-    const diffInMs = now.getTime() - localDate.getTime();
+    // Calculate difference in milliseconds
+    const diffInMs = now.getTime() - date.getTime();
     const diffInSeconds = Math.floor(diffInMs / 1000);
 
-    if (diffInSeconds < 0) return 'Vừa xong';
+    // Handle future dates or very recent
+    if (diffInSeconds < 0 || diffInSeconds < 10) return 'Vừa xong';
     if (diffInSeconds < 60) return 'Vừa xong';
-    if (diffInSeconds < 3600) {
-      const minutes = Math.floor(diffInSeconds / 60);
-      return `${minutes} phút trước`;
-    }
-    if (diffInSeconds < 86400) {
-      const hours = Math.floor(diffInSeconds / 3600);
-      return `${hours} giờ trước`;
-    }
-    if (diffInSeconds < 604800) {
-      const days = Math.floor(diffInSeconds / 86400);
-      return `${days} ngày trước`;
-    }
-    if (diffInSeconds < 2592000) {
-      const weeks = Math.floor(diffInSeconds / 604800);
-      return `${weeks} tuần trước`;
-    }
     
-    return localDate.toLocaleDateString('vi-VN', {
+    const minutes = Math.floor(diffInSeconds / 60);
+    if (minutes < 60) return `${minutes} phút trước`;
+    
+    const hours = Math.floor(diffInSeconds / 3600);
+    if (hours < 24) return `${hours} giờ trước`;
+    
+    const days = Math.floor(diffInSeconds / 86400);
+    if (days < 7) return `${days} ngày trước`;
+    
+    const weeks = Math.floor(days / 7);
+    if (weeks < 4) return `${weeks} tuần trước`;
+    
+    // For older notifications, show date
+    return date.toLocaleDateString('vi-VN', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'

@@ -97,6 +97,9 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
 
   questionStates: Map<number, WritingQuestionStateData> = new Map();
 
+  // Total time for all questions combined
+  totalTime: number = 0;
+
   showQuotaModal = false;
   quotaMessage =
     'Kỹ năng Writing chỉ dành cho tài khoản Premium. Vui lòng nâng cấp để sử dụng tính năng này!';
@@ -151,6 +154,8 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     this.checkQuotaAccess();
     this.sidebarService.hideSidebar(); // Ẩn sidebar khi bắt đầu làm bài
     if (this.questions && this.questions.length > 0) {
+      // Calculate total time from all questions
+      this.totalTime = this.questions.reduce((sum, q) => sum + (q.time || 0), 0);
       this.preloadAllCaptions();
       this.questions.forEach((q) => {
         this.writingStateService.initializeQuestion(q.questionId);
@@ -172,6 +177,8 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['questions'] && this.questions) {
+      // Recalculate total time when questions change
+      this.totalTime = this.questions.reduce((sum, q) => sum + (q.time || 0), 0);
       this.loadSavedData();
       this.preloadAllCaptions();
     }
@@ -303,6 +310,13 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
           savedAt: new Date().toISOString(),
         };
       }
+
+      console.log('[Writing] Saving feedback map:', {
+        key,
+        questionIds: Object.keys(newFormat),
+        count: Object.keys(newFormat).length
+      });
+
       localStorage.setItem(key, JSON.stringify(newFormat));
     } catch { }
   }
@@ -662,10 +676,43 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     return saved?.answer || '';
   }
 
+  get submittedCount(): number {
+    if (!this.questions) return 0;
+
+    // Count from feedbackMap (questions that have been scored)
+    try {
+      const feedbackMap = this.loadFeedbackMap();
+      let count = 0;
+
+      console.log('[Writing] Counting submitted questions:', {
+        totalQuestions: this.questions.length,
+        feedbackMapKeys: Object.keys(feedbackMap),
+      });
+
+      for (const q of this.questions) {
+        const qid = String(q.questionId);
+        // Check if this question has feedback
+        if (feedbackMap[qid]) {
+          count++;
+        } else if (this.isQuestionSubmitted(q.questionId)) {
+          // Also count questions that are submitted but not yet scored
+          count++;
+        }
+      }
+
+      console.log('[Writing] Final submitted count:', count);
+      return count;
+    } catch {
+      // Fallback: count submitted questions only
+      return this.questions.filter(q => this.isQuestionSubmitted(q.questionId)).length;
+    }
+  }
+
   get percentCorrect(): number {
     const total = this.questions?.length ?? 0;
     if (total === 0) return 0;
-    return Math.round((this.correctCount / total) * 100);
+    // For Writing, calculate based on submitted questions, not correctCount
+    return Math.round((this.submittedCount / total) * 100);
   }
 
   get feedbackText(): string {
@@ -705,12 +752,8 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   clearSavedData(): void {
     try {
       const answersKey = this.getStorageKey();
-      const feedbackKey = this.getFeedbackStorageKey();
-      const submittedKey = this.getSubmittedStorageKey();
-
+      // Only clear draft answers, keep feedback and submitted status for displaying results
       if (answersKey) localStorage.removeItem(answersKey);
-      if (feedbackKey) localStorage.removeItem(feedbackKey);
-      if (submittedKey) localStorage.removeItem(submittedKey);
     } catch {
       // ignore
     }

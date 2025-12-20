@@ -1,5 +1,5 @@
 export interface WritingRequestP1DTO {
-  pictureCaption: string;
+  pictureCaption?: string;
   vocabularyRequest: string;
   userAnswer: string;
 }

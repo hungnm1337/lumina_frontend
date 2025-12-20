@@ -51,7 +51,6 @@
             <tr>
               <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Hạng</th>
               <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Người chơi</th>
-              <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">TOEIC Ước Tính</th>
               <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">Trình Độ</th>
               <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">Điểm</th>
             </tr>
@@ -78,7 +77,7 @@
               </td>
               <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
-                     <img [src]="rank.avatarUrl ? rank.avatarUrl : 'https://www.svgrepo.com/show/452030/avatar-default.svg'"
+                     <img [src]="getAvatarUrl(rank)"
                        alt="avatar"
                        class="w-10 h-10 rounded-full object-cover border-2 border-gray-200">
                   <div>
@@ -87,17 +86,9 @@
                 </div>
               </td>
               <td class="px-6 py-4 text-center">
-                <div class="text-lg font-bold text-gray-900">
-                  {{ rank.estimatedTOEICScore || 'N/A' }}
-                </div>
-                <div class="text-xs text-gray-500" *ngIf="rank.estimatedTOEICScore">
-                  {{ leaderboardService.getTOEICScoreRange(rank.toeicLevel) }}
-                </div>
-              </td>
-              <td class="px-6 py-4 text-center">
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold"
-                      [ngClass]="leaderboardService.getTOEICLevelColor(rank.toeicLevel)">
-                  {{ leaderboardService.getTOEICLevelText(rank.toeicLevel) }}
+                      [ngClass]="leaderboardService.getLevelColorByScore(rank.score)">
+                  {{ leaderboardService.getLevelTextByScore(rank.score) }}
                 </span>
               </td>
               <td class="px-6 py-4 text-center">

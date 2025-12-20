@@ -242,19 +242,38 @@ export class NotificationManagementComponent implements OnInit {
   }
 
   createNotification(): void {
+    // Trim whitespace
+    this.createForm.title = this.createForm.title.trim();
+    this.createForm.content = this.createForm.content.trim();
+
     if (!this.createForm.title || !this.createForm.content) {
-      this.error = 'Vui lòng điền đầy đủ thông tin';
+      this.error = 'Vui lòng điền đầy đủ thông tin bắt buộc';
+      setTimeout(() => this.error = '', 3000);
+      return;
+    }
+
+    if (this.createForm.title.length < 5) {
+      this.error = 'Tiêu đề phải có ít nhất 5 ký tự';
+      setTimeout(() => this.error = '', 3000);
+      return;
+    }
+
+    if (this.createForm.content.length < 10) {
+      this.error = 'Nội dung phải có ít nhất 10 ký tự';
+      setTimeout(() => this.error = '', 3000);
       return;
     }
 
     // Validate recipient selection
     if (this.recipientType === 'roles' && this.selectedRoleIds.length === 0) {
       this.error = 'Vui lòng chọn ít nhất một vai trò';
+      setTimeout(() => this.error = '', 3000);
       return;
     }
 
     if (this.recipientType === 'users' && this.selectedUserIds.length === 0) {
       this.error = 'Vui lòng chọn ít nhất một người dùng';
+      setTimeout(() => this.error = '', 3000);
       return;
     }
 

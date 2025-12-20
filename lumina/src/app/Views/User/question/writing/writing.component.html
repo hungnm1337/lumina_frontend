@@ -1,46 +1,26 @@
-<app-popup
-  *ngIf="showPopup"
-  [title]="popupTitle"
-  [message]="popupMessage"
-  (okClicked)="onPopupOk()"
-  (cancelClicked)="onPopupCancel()"
-></app-popup>
+<app-popup *ngIf="showPopup" [title]="popupTitle" [message]="popupMessage" (okClicked)="onPopupOk()"
+  (cancelClicked)="onPopupCancel()"></app-popup>
 
 <!-- Quota Limit Modal -->
-<app-quota-limit-modal
-  [isVisible]="showQuotaModal"
-  [skill]="'writing'"
-  [message]="quotaMessage"
-  (close)="closeQuotaModal()"
-></app-quota-limit-modal>
+<app-quota-limit-modal [isVisible]="showQuotaModal" [skill]="'writing'" [message]="quotaMessage"
+  (close)="closeQuotaModal()"></app-quota-limit-modal>
 
 @if (questions && questions.length > 0 && !isFinished) {
 <!-- Layout với Navigator bên trái (tỉ lệ 25:50:25) -->
 <div class="grid grid-cols-12 gap-4 min-h-[calc(100vh-200px)]">
   <!-- Left Sidebar: Navigator + Submit Button (3/12 = 25%) -->
   <div class="col-span-3">
-    <app-question-navigator
-      [questions]="questions"
-      [currentIndex]="currentIndex"
-      [getQuestionStatus]="getQuestionStatus"
-      [legendItems]="navigatorLegendItems"
-      [showSubmitButton]="!isInMockTest"
-      [submitButtonText]="'Nộp bài'"
-      (navigateToQuestion)="navigateToQuestion($event)"
-      (submitExam)="finishWritingExam()"
-    ></app-question-navigator>
+    <app-question-navigator [questions]="questions" [currentIndex]="currentIndex"
+      [getQuestionStatus]="getQuestionStatus" [legendItems]="navigatorLegendItems" [showSubmitButton]="!isInMockTest"
+      [submitButtonText]="'Nộp bài'" (navigateToQuestion)="navigateToQuestion($event)"
+      (submitExam)="finishWritingExam()"></app-question-navigator>
   </div>
 
   <!-- Main Content Area (9/12 = 75%, chia thành 6:3 = 50:25) -->
   <div class="col-span-9 bg-white rounded-lg shadow-md p-4">
     <!-- Timer -->
     <div class="mb-4">
-      <app-time
-        [time]="questions[currentIndex].time"
-        [resetAt]="currentIndex"
-        [paused]="showExplain"
-        (timeout)="onTimeout()"
-      ></app-time>
+      <app-time [time]="totalTime" [paused]="showExplain" (timeout)="onTimeout()"></app-time>
     </div>
 
     <!-- Question Content -->
@@ -55,9 +35,9 @@
               <h4 class="font-medium text-gray-900 mb-1 text-sm">
                 Question {{ currentIndex + 1 }}:
                 {{
-                  getCurrentQuestion()?.stemText ||
-                    getCurrentQuestion()?.prompt?.title ||
-                    "Write a response based on the image and content below"
+                getCurrentQuestion()?.stemText ||
+                getCurrentQuestion()?.prompt?.title ||
+                "Write a response based on the image and content below"
                 }}
               </h4>
               @if (getCurrentQuestion()?.prompt?.contentText) {
@@ -72,51 +52,12 @@
 
             @if (getCurrentQuestion()?.prompt?.referenceImageUrl) {
             <div class="flex justify-center my-2">
-              <img
-                [src]="getCurrentQuestion()?.prompt?.referenceImageUrl"
+              <img [src]="getCurrentQuestion()?.prompt?.referenceImageUrl"
                 [alt]="'Question ' + (currentIndex + 1) + ' image'"
-                class="w-[30%] h-auto rounded-lg border border-gray-200"
-              />
+                class="w-[30%] h-auto rounded-lg border border-gray-200" />
             </div>
 
-            <div>
-              <button
-                class="btn border-s-blue-400 inline-flex items-center gap-1 px-3 py-1.5 rounded-md border border-blue-500 text-blue-600 hover:bg-blue-50 active:bg-blue-100 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm text-sm"
-                (click)="showHint()"
-                [disabled]="isCurrentCaptionLoading()"
-              >
-                Show Hint
-              </button>
-              @if (isCurrentCaptionLoading()) {
-              <svg
-                class="animate-spin h-3 w-3 text-blue-600 inline-block ml-1"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  stroke-width="4"
-                />
-                <path
-                  d="M4 12h16"
-                  stroke="currentColor"
-                  stroke-width="4"
-                  stroke-linecap="round"
-                />
-              </svg>
-              } @if (isShowHint && !isCurrentCaptionLoading()) {
-              <span
-                class="ml-1 text-sm text-gray-600"
-                *ngIf="getCurrentCaption()"
-              >
-                Caption: {{ getCurrentCaption() }}
-              </span>
-              }
-            </div>
+
             }
           </div>
         </div>
@@ -124,57 +65,40 @@
         <!-- Right Column: Writing Answer Box (3/9 = 25%) -->
         <div class="col-span-3 flex items-start">
           <div class="w-full">
-            <app-writing-answer-box
-              [questionId]="getCurrentQuestion()?.questionId || 0"
-              [disabled]="showExplain"
-              [resetAt]="currentIndex"
-              [contentText]="getCurrentQuestion()?.prompt?.contentText"
-              [pictureCaption]="getCurrentCaption()"
-              (answered)="
+            <app-writing-answer-box [questionId]="getCurrentQuestion()?.questionId || 0" [disabled]="showExplain"
+              [resetAt]="currentIndex" [contentText]="getCurrentQuestion()?.prompt?.contentText"
+              [pictureCaption]="getCurrentCaption()" (answered)="
                 onAnswerSubmitted(getCurrentQuestion()?.questionId || 0, $event)
-              "
-              (answerChange)="onAnswerChange($event.questionId, $event.answer)"
-              (submitStart)="onSubmitStart($event)"
-              (submitEnd)="onSubmitEnd($event)"
-            ></app-writing-answer-box>
+              " (answerChange)="onAnswerChange($event.questionId, $event.answer)" (submitStart)="onSubmitStart($event)"
+              (submitEnd)="onSubmitEnd($event)"></app-writing-answer-box>
           </div>
         </div>
       </div>
 
       <!-- Navigation Controls -->
       <div class="mt-4 flex items-center justify-between">
-        <button
-          (click)="previousQuestion()"
-          [disabled]="currentIndex === 0"
-          class="px-3 py-1.5 rounded-md bg-gray-500 text-white hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-sm"
-        >
+        <button (click)="previousQuestion()" [disabled]="currentIndex === 0"
+          class="px-3 py-1.5 rounded-md bg-gray-500 text-white hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-sm">
           <i class="fas fa-arrow-left mr-1.5"></i>Câu trước
         </button>
 
         <!-- Nút Câu sau/Hoàn thành Part -->
         @if (isInMockTest && currentIndex === questions.length - 1) {
         <!-- Nếu đang trong mock test và ở câu cuối -->
-        <button
-          (click)="finishWritingExam()"
-          class="px-3 py-1.5 rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-sm"
-        >
+        <button (click)="finishWritingExam()"
+          class="px-3 py-1.5 rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-sm">
           Hoàn thành Part<i class="fas fa-check ml-1.5"></i>
         </button>
         } @else {
         <!-- Nút Câu sau bình thường -->
-        <button
-          (click)="nextQuestion()"
-          [disabled]="currentIndex === questions.length - 1"
-          class="px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-sm"
-        >
+        <button (click)="nextQuestion()" [disabled]="currentIndex === questions.length - 1"
+          class="px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-sm">
           Câu sau<i class="fas fa-arrow-right ml-1.5"></i>
         </button>
         }
       </div>
       @if (showExplain) {
-      <div
-        class="mt-3 p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-800 text-sm"
-      >
+      <div class="mt-3 p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-800 text-sm">
         {{ getCurrentQuestion()?.questionExplain }}
       </div>
       }
@@ -187,8 +111,7 @@
 <div class="w-full bg-white rounded-lg shadow-md p-6">
   <div class="text-center py-8">
     <div
-      class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full mb-4"
-    >
+      class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full mb-4">
       <i class="fas fa-trophy text-white text-4xl"></i>
     </div>
     <h2 class="text-3xl font-bold text-gray-800 mb-2">
@@ -200,9 +123,9 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6">
         <div class="text-4xl font-bold text-green-600 mb-2">
-          {{ correctCount }}/{{ questions?.length || 0 }}
+          {{ submittedCount }}/{{ questions?.length || 0 }}
         </div>
-        <div class="text-sm text-green-700">Số câu</div>
+        <div class="text-sm text-green-700">Số câu đã nộp</div>
       </div>
       <div class="bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl p-6">
         <div class="text-4xl font-bold text-purple-600 mb-2">
@@ -222,23 +145,16 @@
 
     <!-- Action Buttons -->
     <div class="flex gap-4 justify-center">
-      <button
-        (click)="viewHistory()"
-        class="px-6 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 font-semibold shadow-lg"
-      >
+      <button (click)="viewHistory()"
+        class="px-6 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 font-semibold shadow-lg">
         <i class="fas fa-history mr-2"></i>Xem lịch sử làm bài
       </button>
-      <button
-        (click)="showReportPopup = true"
-        class="px-6 py-4 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 font-semibold shadow-lg"
-      >
+      <button (click)="showReportPopup = true"
+        class="px-6 py-4 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 font-semibold shadow-lg">
         <i class="fas fa-flag mr-2"></i>Báo cáo bài thi
       </button>
       @if (showReportPopup) {
-      <app-report-popup
-        [type]="'Exam - ' + examId"
-        (close)="onReportPopupClose()"
-      ></app-report-popup>
+      <app-report-popup [type]="'Exam - ' + examId" (close)="onReportPopupClose()"></app-report-popup>
       }
     </div>
   </div>

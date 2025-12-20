@@ -1,6 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 @import "quill/dist/quill.snow.css";
 @import "@fortawesome/fontawesome-free/css/all.min.css";
+@import 'ngx-toastr/toastr';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -39,8 +40,6 @@ body {
 .nav-item.active {
     @apply bg-blue-50 text-blue-600 font-semibold;
 }
-/* ngx-toastr styles */
-@import 'ngx-toastr/toastr';
 
 /* Custom toast styles */
 #toast-container {
