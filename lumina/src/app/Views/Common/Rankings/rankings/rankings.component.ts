@@ -43,7 +43,6 @@ export class RankingsComponent implements OnInit {
     });
   }
 
-  // Sắp xếp user theo streak cao nhất
   sortedUsers = computed(() => [...this.users()].sort((a, b) => b.streak - a.streak));
   
   top3 = computed(() => this.sortedUsers().slice(0, 3));

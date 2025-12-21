@@ -829,17 +829,42 @@ $toeic-gray: #6b7280;
           border-radius: 6px;
           font-size: 14px;
           font-family: inherit;
+          transition: all 0.3s ease;
 
           &:focus {
             outline: none;
             border-color: $toeic-primary;
             box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
           }
+
+          &.error-input {
+            border-color: $toeic-danger;
+            background-color: #fef2f2;
+
+            &:focus {
+              border-color: $toeic-danger;
+              box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+            }
+          }
         }
 
         textarea {
           resize: vertical;
           min-height: 100px;
+        }
+
+        .error-message {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-top: 6px;
+          font-size: 13px;
+          color: $toeic-danger;
+          font-weight: 500;
+
+          i {
+            font-size: 12px;
+          }
         }
 
         .view-text {

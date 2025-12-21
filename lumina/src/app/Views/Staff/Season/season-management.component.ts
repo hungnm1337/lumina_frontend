@@ -27,6 +27,8 @@ export class SeasonManagementComponent implements OnInit {
   showCreateModal = false;
   showEditModal = false;
   showDeleteModal = false;
+  showResetModal = false;
+  isViewOnly = false;
 
   // Form data
   createForm: CreateLeaderboardDTO = {
@@ -49,6 +51,15 @@ export class SeasonManagementComponent implements OnInit {
   loading = false;
   error = '';
   success = '';
+
+  // Validation errors
+  validationErrors: {
+    seasonName?: string;
+    seasonNumber?: string;
+    startDate?: string;
+    endDate?: string;
+    keyword?: string;
+  } = {};
 
   // Tab
   activeTab: 'all' | 'active' | 'upcoming' | 'ended' = 'all';
@@ -102,6 +113,13 @@ export class SeasonManagementComponent implements OnInit {
   }
 
   onSearch(): void {
+    // Validate keyword
+    if (this.keyword && this.keyword.trim().length > 0 && this.keyword.trim().length < 2) {
+      this.validationErrors.keyword = 'Từ khóa tìm kiếm phải có ít nhất 2 ký tự';
+      return;
+    }
+    
+    this.validationErrors.keyword = undefined;
     this.currentPage = 1;
     this.loadSeasons();
   }
@@ -122,8 +140,37 @@ export class SeasonManagementComponent implements OnInit {
   }
 
   onCreate(): void {
+    // Reset validation errors
+    this.validationErrors = {};
+    this.error = '';
+
+    // Validate seasonNumber (hidden field, auto-generated)
+    if (!this.createForm.seasonNumber || this.createForm.seasonNumber < 1) {
+      this.createForm.seasonNumber = this.getNextSeasonNumber();
+    }
+
+    // Validate seasonName if provided
+    if (this.createForm.seasonName && this.createForm.seasonName.trim()) {
+      if (this.createForm.seasonName.trim().length < 3) {
+        this.validationErrors.seasonName = 'Tên mùa giải phải có ít nhất 3 ký tự';
+        this.error = 'Vui lòng kiểm tra lại các trường nhập liệu';
+        return;
+      }
+      if (this.createForm.seasonName.trim().length > 100) {
+        this.validationErrors.seasonName = 'Tên mùa giải không được vượt quá 100 ký tự';
+        this.error = 'Vui lòng kiểm tra lại các trường nhập liệu';
+        return;
+      }
+    }
+
     // Validate form - Kiểm tra đầy đủ thông tin
     if (!this.createForm.startDate || !this.createForm.endDate) {
+      if (!this.createForm.startDate) {
+        this.validationErrors.startDate = 'Ngày bắt đầu là bắt buộc';
+      }
+      if (!this.createForm.endDate) {
+        this.validationErrors.endDate = 'Ngày kết thúc là bắt buộc';
+      }
       this.error = 'Vui lòng nhập đầy đủ ngày bắt đầu và ngày kết thúc';
       return;
     }
@@ -204,6 +251,7 @@ export class SeasonManagementComponent implements OnInit {
 
   openEditModal(season: LeaderboardDTO): void {
     this.selectedSeason = season;
+    this.isViewOnly = season.status === 'Ended';
 
     // Format dates for datetime-local input (YYYY-MM-DDTHH:mm)
     const formatForInput = (dateStr: string | null): string | null => {
@@ -232,8 +280,32 @@ export class SeasonManagementComponent implements OnInit {
   onUpdate(): void {
     if (!this.selectedSeason) return;
 
+    // Reset validation errors
+    this.validationErrors = {};
+    this.error = '';
+
+    // Validate seasonName if provided
+    if (this.editForm.seasonName && this.editForm.seasonName.trim()) {
+      if (this.editForm.seasonName.trim().length < 3) {
+        this.validationErrors.seasonName = 'Tên mùa giải phải có ít nhất 3 ký tự';
+        this.error = 'Vui lòng kiểm tra lại các trường nhập liệu';
+        return;
+      }
+      if (this.editForm.seasonName.trim().length > 100) {
+        this.validationErrors.seasonName = 'Tên mùa giải không được vượt quá 100 ký tự';
+        this.error = 'Vui lòng kiểm tra lại các trường nhập liệu';
+        return;
+      }
+    }
+
     // Validate form - Kiểm tra đầy đủ thông tin
     if (!this.editForm.startDate || !this.editForm.endDate) {
+      if (!this.editForm.startDate) {
+        this.validationErrors.startDate = 'Ngày bắt đầu là bắt buộc';
+      }
+      if (!this.editForm.endDate) {
+        this.validationErrors.endDate = 'Ngày kết thúc là bắt buộc';
+      }
       this.error = 'Vui lòng nhập đầy đủ ngày bắt đầu và ngày kết thúc';
       return;
     }
@@ -402,30 +474,37 @@ export class SeasonManagementComponent implements OnInit {
   }
 
   resetSeason(season: LeaderboardDTO): void {
-    if (confirm(`CẢNH BÁO: Reset điểm cho "${season.seasonName}"?\n\nTất cả điểm của người chơi sẽ bị xóa!\n\nHành động này KHÔNG THỂ HOÀN TÁC!`)) {
-      this.loading = true;
+    this.selectedSeason = season;
+    this.showResetModal = true;
+    this.error = '';
+  }
 
-      this.leaderboardService.reset(season.leaderboardId, true).subscribe({
-        next: (result) => {
-          this.success = result.message;
-          this.loadSeasons();
-          this.loading = false;
-          setTimeout(() => this.success = '', 5000);
-        },
-        error: (err) => {
-          if (err.status === 401) {
-            this.error = 'Bạn không có quyền reset mùa giải. Vui lòng đăng nhập lại';
-          } else if (err.status === 403) {
-            this.error = 'Bạn không có quyền thực hiện thao tác này';
-          } else if (err.error?.message) {
-            this.error = err.error.message;
-          } else {
-            this.error = 'Không thể reset mùa giải';
-          }
-          this.loading = false;
+  confirmReset(): void {
+    if (!this.selectedSeason) return;
+    
+    this.loading = true;
+    this.showResetModal = false;
+
+    this.leaderboardService.reset(this.selectedSeason.leaderboardId, true).subscribe({
+      next: (result) => {
+        this.success = result.message;
+        this.loadSeasons();
+        this.loading = false;
+        setTimeout(() => this.success = '', 5000);
+      },
+      error: (err) => {
+        if (err.status === 401) {
+          this.error = 'Bạn không có quyền reset mùa giải. Vui lòng đăng nhập lại';
+        } else if (err.status === 403) {
+          this.error = 'Bạn không có quyền thực hiện thao tác này';
+        } else if (err.error?.message) {
+          this.error = err.error.message;
+        } else {
+          this.error = 'Không thể reset mùa giải';
         }
-      });
-    }
+        this.loading = false;
+      }
+    });
   }
 
   autoManage(): void {
@@ -502,6 +581,8 @@ export class SeasonManagementComponent implements OnInit {
     this.showCreateModal = false;
     this.showEditModal = false;
     this.showDeleteModal = false;
+    this.showResetModal = false;
+    this.isViewOnly = false;
     this.error = '';
   }
 }

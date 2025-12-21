@@ -191,7 +191,11 @@ export class AiChatComponent implements OnInit, OnDestroy {
       '   • "Gen 10 câu Listening Part 1"\n\n' +
       '💡 **Tư vấn & Hỗ trợ**\n' +
       '   • "Cách học TOEIC hiệu quả?"\n' +
-      '   • "Giải thích cấu trúc câu này"\n\n' +
+      '   • "Luyện tập kỹ năng Listening, Reading, Speaking, Writing"\n' +
+      '   • "Phân tích điểm mạnh, điểm yếu trong quá trình học"\n\n' +
+      '⚠️ **Lưu ý:**\n' +
+      '   • AI có thể tạo tối đa 30 câu hỏi mỗi lần\n' +
+      '   • Số lượng câu hỏi tối thiểu là 10 câu\n\n' +
       '🎯 **Tips**: Mô tả càng chi tiết, kết quả càng tốt!\n\n' +
       'Bạn muốn tôi giúp gì nào? 😊'
     );
@@ -240,12 +244,6 @@ export class AiChatComponent implements OnInit, OnDestroy {
     if (!content.trim()) return;
 
     this.addUserMessage(content.trim());
-    
-    const isExamRequest = this.detectExamRequest(content);
-    
-    if (isExamRequest) {
-      this.addAssistantMessage('Đang tạo đề,vui lòng đợi...');
-    }
     
     this.handleSmartChat(content);
   }
@@ -362,13 +360,7 @@ export class AiChatComponent implements OnInit, OnDestroy {
   }
 
   private removeLoadingMessage(): void {
-    if (this.messages.length > 0) {
-      const lastMessage = this.messages[this.messages.length - 1];
-      if (lastMessage.content.startsWith('Đang tạo đề')) {
-        this.messages.pop();
-        this.saveToStorage();
-      }
-    }
+    // Not needed anymore - using isLoading flag for UI feedback
   }
 
   private detectExamRequest(userRequest: string): boolean {

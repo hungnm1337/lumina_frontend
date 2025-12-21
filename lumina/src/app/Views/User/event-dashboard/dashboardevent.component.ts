@@ -26,9 +26,32 @@ export class UserEventsDashboardComponent implements OnInit {
     this.errorMessage = null;
     this.eventService.GetAllEventsPaginated(1, 1000).subscribe({
       next: (result) => {
-        // Show all events and sort by start date (newest first)
-        this.events = result.items
-          .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+        const now = new Date();
+        
+        // Filter: chỉ lấy sự kiện đang diễn ra hoặc sắp diễn ra
+        const activeAndUpcoming = result.items.filter(event => {
+          const end = new Date(event.endDate);
+          return end >= now; // Chưa kết thúc
+        });
+        
+        // Sort: Ưu tiên đang diễn ra, sau đó sắp diễn ra
+        this.events = activeAndUpcoming.sort((a, b) => {
+          const aStart = new Date(a.startDate);
+          const aEnd = new Date(a.endDate);
+          const bStart = new Date(b.startDate);
+          const bEnd = new Date(b.endDate);
+          
+          const aIsActive = aStart <= now && aEnd >= now;
+          const bIsActive = bStart <= now && bEnd >= now;
+          
+          // Đang diễn ra lên trước
+          if (aIsActive && !bIsActive) return -1;
+          if (!aIsActive && bIsActive) return 1;
+          
+          // Cùng loại thì sort theo startDate gần nhất
+          return aStart.getTime() - bStart.getTime();
+        });
+        
         this.isLoading = false;
       },
       error: () => {

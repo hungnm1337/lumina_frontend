@@ -9,31 +9,31 @@ $toeic-purple: #8b5cf6;
 
 // Confirmation Modal Styles
 .modal-confirm {
-  max-width: 480px;
+  max-width: 280px;
 
   .modal-icon {
     &.icon-danger {
       background: linear-gradient(135deg, $toeic-red 0%, #dc2626 100%);
-      box-shadow: 0 8px 16px rgba(239, 68, 68, 0.3);
+      box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
       border: 2px solid rgba(239, 68, 68, 0.3);
     }
 
     &.icon-warning {
       background: linear-gradient(135deg, $toeic-primary 0%, $toeic-secondary 100%);
-      box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3);
+      box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
       border: 2px solid rgba(245, 158, 11, 0.3);
     }
   }
 
   .modal-body {
-    padding: 32px;
+    padding: 16px 20px;
     text-align: center;
 
     .confirm-message {
-      font-size: 16px;
+      font-size: 14px;
       color: #374151;
-      line-height: 1.6;
-      margin: 0 0 16px 0;
+      line-height: 1.5;
+      margin: 0 0 10px 0;
       font-weight: 500;
     }
 
@@ -41,25 +41,25 @@ $toeic-purple: #8b5cf6;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      font-size: 14px;
+      gap: 6px;
+      font-size: 12px;
       color: $toeic-red;
       background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-      padding: 12px 16px;
-      border-radius: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
       border: 1px solid #fecaca;
       margin: 0;
 
       i {
-        font-size: 16px;
+        font-size: 13px;
       }
     }
   }
 
   .modal-actions {
     display: flex;
-    gap: 12px;
-    padding: 24px 32px;
+    gap: 8px;
+    padding: 14px 20px;
     border-top: 1px solid #e2e8f0;
     justify-content: flex-end;
 
@@ -67,10 +67,10 @@ $toeic-purple: #8b5cf6;
       background: white;
       color: #64748b;
       border: 2px solid #e2e8f0;
-      padding: 12px 24px;
-      border-radius: 12px;
+      padding: 8px 16px;
+      border-radius: 8px;
       font-weight: 600;
-      font-size: 15px;
+      font-size: 13px;
       cursor: pointer;
       transition: all 0.3s ease;
 
@@ -89,11 +89,11 @@ $toeic-purple: #8b5cf6;
     .btn-primary {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 12px 24px;
-      border-radius: 12px;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
       font-weight: 600;
-      font-size: 15px;
+      font-size: 13px;
       cursor: pointer;
       transition: all 0.3s ease;
       border: none;
@@ -136,7 +136,7 @@ $toeic-purple: #8b5cf6;
       }
 
       i {
-        font-size: 16px;
+        font-size: 13px;
       }
     }
   }
@@ -430,7 +430,8 @@ $toeic-purple: #8b5cf6;
         display: flex;
         gap: 8px;
 
-        .btn-clear-filters, .btn-refresh {
+        .btn-clear-filters,
+        .btn-refresh {
           display: flex;
           align-items: center;
           gap: 6px;
@@ -478,6 +479,7 @@ $toeic-purple: #8b5cf6;
 
   // Articles List Section
   .articles-list-section {
+
     // Loading State
     .loading-state {
       display: flex;
@@ -557,7 +559,7 @@ $toeic-purple: #8b5cf6;
             &.status-published {
               background: #d1fae5;
               color: #065f46;
-              
+
               .status-dot {
                 color: #10b981;
               }
@@ -566,7 +568,7 @@ $toeic-purple: #8b5cf6;
             &.status-pending {
               background: #fef3c7;
               color: #92400e;
-              
+
               .status-dot {
                 color: #f59e0b;
               }
@@ -575,7 +577,7 @@ $toeic-purple: #8b5cf6;
             &.status-draft {
               background: #f3f4f6;
               color: #374151;
-              
+
               .status-dot {
                 color: #6b7280;
               }
@@ -878,7 +880,9 @@ $toeic-purple: #8b5cf6;
     flex-direction: column;
     gap: 20px;
 
-    .toeic-content-card, .stats-card, .quick-actions-card {
+    .toeic-content-card,
+    .stats-card,
+    .quick-actions-card {
       background: white;
       border-radius: 16px;
       padding: 20px;
@@ -1149,7 +1153,7 @@ $toeic-purple: #8b5cf6;
       max-width: 800px;
       max-height: 90vh;
       overflow-y: auto;
-      box-shadow: 
+      box-shadow:
         0 25px 50px -12px rgba(0, 0, 0, 0.25),
         0 0 0 1px rgba(255, 255, 255, 0.1);
       animation: modalContentSlideIn 0.3s ease-out;
@@ -1250,7 +1254,9 @@ $toeic-purple: #8b5cf6;
             }
           }
 
-          .form-input, .form-select, .form-textarea {
+          .form-input,
+          .form-select,
+          .form-textarea {
             width: 100%;
             padding: 16px 20px;
             border: 2px solid #e5e7eb;
@@ -1362,13 +1368,15 @@ $toeic-purple: #8b5cf6;
                 font-size: 14px;
               }
 
-              .section-form-group, .section-type-group {
+              .section-form-group,
+              .section-type-group {
                 label {
                   font-size: 12px;
                   margin-bottom: 4px;
                 }
 
-                .form-input, .form-select {
+                .form-input,
+                .form-select {
                   padding: 8px 12px;
                   font-size: 14px;
                 }
@@ -1430,8 +1438,13 @@ $toeic-purple: #8b5cf6;
                 }
 
                 @keyframes spin {
-                  from { transform: rotate(0deg); }
-                  to { transform: rotate(360deg); }
+                  from {
+                    transform: rotate(0deg);
+                  }
+
+                  to {
+                    transform: rotate(360deg);
+                  }
                 }
               }
             }
@@ -1553,6 +1566,7 @@ $toeic-purple: #8b5cf6;
     from {
       opacity: 0;
     }
+
     to {
       opacity: 1;
     }
@@ -1563,6 +1577,7 @@ $toeic-purple: #8b5cf6;
       opacity: 0;
       transform: scale(0.9) translateY(20px);
     }
+
     to {
       opacity: 1;
       transform: scale(1) translateY(0);
@@ -1612,6 +1627,7 @@ $toeic-purple: #8b5cf6;
     }
   }
 }
+
 // Enhanced Modal Styles - TOEIC Design (THÊM VÀO CUỐI FILE)
 .modal-overlay {
   position: fixed;
@@ -1635,11 +1651,22 @@ $toeic-purple: #8b5cf6;
     max-width: 800px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 
+    box-shadow:
       0 25px 50px -12px rgba(0, 0, 0, 0.25),
       0 0 0 1px rgba(255, 255, 255, 0.1);
     animation: modalContentSlideIn 0.3s ease-out;
     position: relative;
+
+    // Hide scrollbar but keep scroll functionality
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+
+    &::-webkit-scrollbar {
+      display: none;
+      /* Chrome, Safari, Opera */
+    }
 
     // Enhanced Modal Header
     .modal-header {
@@ -1675,7 +1702,7 @@ $toeic-purple: #8b5cf6;
             inset: -2px;
             border-radius: 18px;
             padding: 2px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
             mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             mask-composite: xor;
           }
@@ -1763,7 +1790,9 @@ $toeic-purple: #8b5cf6;
         }
 
         // Enhanced Input Styles
-        .form-input, .form-select, .form-textarea {
+        .form-input,
+        .form-select,
+        .form-textarea {
           width: 100%;
           padding: 16px 20px;
           border: 2px solid #e5e7eb;
@@ -1779,7 +1808,7 @@ $toeic-purple: #8b5cf6;
             outline: none;
             border-color: $toeic-primary;
             background: white;
-            box-shadow: 
+            box-shadow:
               0 0 0 4px rgba(245, 158, 11, 0.1),
               0 4px 12px rgba(0, 0, 0, 0.1);
             transform: translateY(-1px);
@@ -1911,13 +1940,15 @@ $toeic-purple: #8b5cf6;
               box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
             }
 
-            .section-form-group, .section-type-group {
+            .section-form-group,
+            .section-type-group {
               label {
                 font-size: 12px;
                 margin-bottom: 4px;
               }
 
-              .form-input, .form-select {
+              .form-input,
+              .form-select {
                 padding: 8px 12px;
                 font-size: 14px;
                 border-width: 1px;
@@ -2065,13 +2096,18 @@ $toeic-purple: #8b5cf6;
 // Enhanced Header Action Button
 .header-actions {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  width: fit-content;
+  min-width: 200px;
 
   .btn-create-article {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 7px;
+    width: 100%;
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;
     border: none;
@@ -2169,7 +2205,9 @@ $toeic-purple: #8b5cf6;
   .btn-add-category {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 7px;
+    width: 100%;
     background: linear-gradient(135deg, $toeic-blue 0%, #2563eb 100%);
     color: white;
     border: none;
@@ -2270,6 +2308,7 @@ $toeic-purple: #8b5cf6;
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -2280,6 +2319,7 @@ $toeic-purple: #8b5cf6;
     opacity: 0;
     transform: scale(0.9) translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -2291,6 +2331,7 @@ $toeic-purple: #8b5cf6;
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -2301,9 +2342,11 @@ $toeic-purple: #8b5cf6;
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.1);
   }
+
   100% {
     transform: scale(1);
   }
@@ -2311,7 +2354,10 @@ $toeic-purple: #8b5cf6;
 
 // Form Validation States
 .form-group {
-  .form-input, .form-select, .form-textarea {
+
+  .form-input,
+  .form-select,
+  .form-textarea {
     &.ng-invalid.ng-touched {
       border-color: #ef4444;
       background: #fef2f2;
@@ -2325,7 +2371,7 @@ $toeic-purple: #8b5cf6;
 
     &.ng-valid.ng-touched {
       border-color: #10b981;
-      
+
       &:focus {
         border-color: $toeic-primary;
       }
@@ -2448,6 +2494,154 @@ $toeic-purple: #8b5cf6;
             }
           }
         }
+      }
+    }
+  }
+}
+
+// Rejection Reason Modal Styles
+.modal-rejection {
+  max-width: 500px;
+
+  .modal-header {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+
+    .modal-icon {
+      &.icon-warning {
+        background: linear-gradient(135deg, $toeic-red 0%, #dc2626 100%);
+        box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+        border: 2px solid rgba(239, 68, 68, 0.3);
+      }
+    }
+
+    .modal-title-section {
+      h2 {
+        color: #991b1b;
+      }
+
+      p {
+        color: #7f1d1d;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .modal-body {
+    padding: 24px;
+
+    .rejection-info {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid #fecaca;
+      padding: 16px;
+      margin-bottom: 16px;
+
+      .rejection-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        color: #991b1b;
+        font-weight: 600;
+        font-size: 14px;
+
+        i {
+          font-size: 16px;
+        }
+      }
+
+      .rejection-content {
+        p {
+          color: #7f1d1d;
+          font-size: 14px;
+          line-height: 1.6;
+          margin: 0;
+          padding: 12px;
+          background: #fef2f2;
+          border-radius: 8px;
+          border-left: 4px solid $toeic-red;
+        }
+      }
+    }
+
+    .rejection-hint {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 12px;
+      background: #eff6ff;
+      border-radius: 8px;
+      border: 1px solid #dbeafe;
+
+      i {
+        color: $toeic-blue;
+        font-size: 14px;
+        margin-top: 2px;
+      }
+
+      p {
+        color: #1e40af;
+        font-size: 13px;
+        line-height: 1.5;
+        margin: 0;
+      }
+    }
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid #e2e8f0;
+    justify-content: flex-end;
+
+    .btn-secondary {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: white;
+      color: #64748b;
+      border: 2px solid #e2e8f0;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #475569;
+      }
+
+      i {
+        font-size: 14px;
+      }
+    }
+
+    .btn-primary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, $toeic-blue 0%, #2563eb 100%);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+      }
+
+      i {
+        font-size: 14px;
       }
     }
   }

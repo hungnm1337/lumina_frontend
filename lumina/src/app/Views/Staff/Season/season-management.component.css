@@ -622,6 +622,29 @@
   color: #ef4444;
 }
 
+/* Validation Errors */
+.error-input {
+  border-color: #ef4444 !important;
+  background-color: #fef2f2;
+}
+
+.error-input:focus {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.error-message {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.error-message i {
+  margin-right: 4px;
+}
+
 .highlight-text {
   font-weight: 700;
   color: #2563eb;

@@ -23,11 +23,34 @@ export class EventPreviewComponent implements OnInit {
   fetchEvents(): void {
     this.isLoading = true;
     this.errorMessage = null;
-    this.eventService.GetAllEventsPaginated(1, 3).subscribe({
+    this.eventService.GetAllEventsPaginated(1, 10).subscribe({
       next: (result) => {
-        // Show only 3 latest events for homepage preview
-        this.events = result.items
-          .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+        const now = new Date();
+        
+        // Filter: chỉ lấy sự kiện đang diễn ra hoặc sắp diễn ra
+        const activeAndUpcoming = result.items.filter(event => {
+          const end = new Date(event.endDate);
+          return end >= now; // Chưa kết thúc
+        });
+        
+        // Sort: Ưu tiên đang diễn ra, sau đó sắp diễn ra
+        this.events = activeAndUpcoming.sort((a, b) => {
+          const aStart = new Date(a.startDate);
+          const aEnd = new Date(a.endDate);
+          const bStart = new Date(b.startDate);
+          const bEnd = new Date(b.endDate);
+          
+          const aIsActive = aStart <= now && aEnd >= now;
+          const bIsActive = bStart <= now && bEnd >= now;
+          
+          // Đang diễn ra lên trước
+          if (aIsActive && !bIsActive) return -1;
+          if (!aIsActive && bIsActive) return 1;
+          
+          // Cùng loại thì sort theo startDate gần nhất
+          return aStart.getTime() - bStart.getTime();
+        }).slice(0, 3); // Chỉ lấy 3 events
+        
         this.isLoading = false;
       },
       error: () => {
