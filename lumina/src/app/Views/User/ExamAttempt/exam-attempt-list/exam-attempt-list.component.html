@@ -117,9 +117,9 @@
     }
 
     <!-- Exam Attempts List -->
-    @if (!isLoading && filteredAttempts.length > 0) {
+    @if (!isLoading && paginatedAttempts.length > 0) {
     <div class="space-y-4">
-      @for (attempt of filteredAttempts; track attempt.attemptID) {
+      @for (attempt of paginatedAttempts; track attempt.attemptID) {
       <div (click)="viewDetail(attempt.attemptID)"
         class="bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-300 p-6 cursor-pointer border-2 border-transparent hover:border-blue-400 group transform hover:-translate-y-1">
 
@@ -168,7 +168,7 @@
             <!-- Status Badge -->
             <div class="px-5 py-2.5 rounded-full text-sm font-bold shadow-sm"
               [ngClass]="getStatusClass(attempt.status)">
-              {{ attempt.status }}
+              {{ attempt.status === 'Completed' ? 'Hoàn thành' : 'Chưa hoàn thành' }}
             </div>
 
             <!-- Score -->
@@ -183,8 +183,6 @@
                 {{ attempt.score }}
               </div>
             </div>
-            } @else {
-            <div class="text-sm text-gray-400 italic bg-gray-50 px-4 py-2 rounded-lg">Chưa có điểm</div>
             }
 
             <!-- View Detail Arrow -->
@@ -196,6 +194,46 @@
       </div>
       }
     </div>
+
+    <!-- Pagination Controls -->
+    @if (totalPages > 1) {
+    <div class="bg-white rounded-xl shadow-lg p-6 mt-6">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <!-- Page Info -->
+        <div class="text-sm text-gray-600">
+          Hiển thị <span class="font-semibold text-gray-800">{{ (currentPage - 1) * itemsPerPage + 1 }}</span>
+          đến <span class="font-semibold text-gray-800">{{ Math.min(currentPage * itemsPerPage, filteredAttempts.length)
+            }}</span>
+          trong tổng số <span class="font-semibold text-gray-800">{{ filteredAttempts.length }}</span> mục
+        </div>
+
+        <!-- Page Numbers -->
+        <div class="flex items-center gap-2">
+          <!-- Previous Button -->
+          <button (click)="previousPage()" [disabled]="currentPage === 1"
+            class="px-4 py-2 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            [ngClass]="currentPage === 1 ? 'bg-gray-100 text-gray-400' : 'bg-blue-500 text-white hover:bg-blue-600'">
+            ← Trước
+          </button>
+
+          <!-- Page Numbers -->
+          @for (page of getPageNumbers(); track page) {
+          <button (click)="goToPage(page)" class="px-4 py-2 rounded-lg font-medium transition-all"
+            [ngClass]="page === currentPage ? 'bg-blue-600 text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'">
+            {{ page }}
+          </button>
+          }
+
+          <!-- Next Button -->
+          <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+            class="px-4 py-2 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            [ngClass]="currentPage === totalPages ? 'bg-gray-100 text-gray-400' : 'bg-blue-500 text-white hover:bg-blue-600'">
+            Sau →
+          </button>
+        </div>
+      </div>
+    </div>
+    }
     }
   </div>
 </div>
