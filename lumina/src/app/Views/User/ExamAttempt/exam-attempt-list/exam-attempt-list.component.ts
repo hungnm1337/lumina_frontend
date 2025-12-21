@@ -17,6 +17,12 @@ import { FormsModule } from '@angular/forms';
 export class ExamAttemptListComponent implements OnInit {
   examAttempts: ExamAttemptResponseDTO[] = [];
   filteredAttempts: ExamAttemptResponseDTO[] = [];
+  paginatedAttempts: ExamAttemptResponseDTO[] = [];
+
+  // Pagination properties
+  currentPage: number = 1;
+  itemsPerPage: number = 10;
+  totalPages: number = 0;
 
   // Filter and Sort properties
   searchTerm: string = '';
@@ -31,12 +37,15 @@ export class ExamAttemptListComponent implements OnInit {
   uniqueExams: string[] = [];
   uniqueParts: string[] = [];
 
+  // Make Math available to template
+  Math = Math;
+
   constructor(
     private examAttemptService: ExamAttemptService,
     private authService: AuthService,
     private router: Router,
     private datePipe: DatePipe
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadExamAttempts();
@@ -99,6 +108,10 @@ export class ExamAttemptListComponent implements OnInit {
     filtered = this.sortAttempts(filtered);
 
     this.filteredAttempts = filtered;
+
+    // Reset to page 1 and update pagination
+    this.currentPage = 1;
+    this.updatePagination();
   }
 
   private sortAttempts(
@@ -162,14 +175,8 @@ export class ExamAttemptListComponent implements OnInit {
   getStatusClass(status: string): string {
     switch (status?.toLowerCase()) {
       case 'completed':
-      case 'hoàn thành':
         return 'bg-green-100 text-green-800';
-      case 'in_progress':
-      case 'đang làm':
-        return 'bg-blue-100 text-blue-800';
-      case 'pending':
-      case 'chờ':
-        return 'bg-yellow-100 text-yellow-800';
+      case 'not completed':
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -214,5 +221,54 @@ export class ExamAttemptListComponent implements OnInit {
     return Math.round(
       scores.reduce((a, b) => (a || 0) + (b || 0), 0) / scores.length
     );
+  }
+
+  // Pagination methods
+  updatePagination(): void {
+    this.totalPages = Math.ceil(this.filteredAttempts.length / this.itemsPerPage);
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedAttempts = this.filteredAttempts.slice(startIndex, endIndex);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePagination();
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.updatePagination();
+    }
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePagination();
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const maxPagesToShow = 5;
+
+    if (this.totalPages <= maxPagesToShow) {
+      for (let i = 1; i <= this.totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      const startPage = Math.max(1, this.currentPage - 2);
+      const endPage = Math.min(this.totalPages, startPage + maxPagesToShow - 1);
+
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+    }
+
+    return pages;
   }
 }

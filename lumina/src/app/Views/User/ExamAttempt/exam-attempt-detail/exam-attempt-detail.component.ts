@@ -46,7 +46,7 @@ export class ExamAttemptDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private examAttemptService: ExamAttemptService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     console.log('=== DEBUG: ngOnInit ===');
@@ -92,6 +92,7 @@ export class ExamAttemptDetailComponent implements OnInit {
         this.buildPartIdToCodeMap();
 
         console.log('=== DEBUG: Exam Attempt Details ===');
+        console.log('Attempt ID:', details);
         console.log('Full details object:', details);
         console.log('Speaking answers:', details?.speakingAnswers);
         console.log(
@@ -278,38 +279,13 @@ export class ExamAttemptDetailComponent implements OnInit {
   }
 
   getListeningCount(): number {
-    // Listening questions are in readingAnswers with partCode starting with 'PART_1' to 'PART_4'
-    return (
-      this.details?.readingAnswers?.filter((answer) => {
-        const partCode = answer.question?.partCode?.toUpperCase();
-        return (
-          partCode &&
-          (partCode === 'PART_1' ||
-            partCode === 'PART_2' ||
-            partCode === 'PART_3' ||
-            partCode === 'PART_4' ||
-            partCode.includes('LISTENING') ||
-            partCode.startsWith('L')) // L1, L2, L3, L4
-        );
-      }).length || 0
-    );
+    // Listening answers are now in a separate array
+    return this.details?.listeningAnswers?.length || 0;
   }
 
   getReadingCount(): number {
-    // Reading questions are in readingAnswers with partCode 'PART_5', 'PART_6', 'PART_7'
-    return (
-      this.details?.readingAnswers?.filter((answer) => {
-        const partCode = answer.question?.partCode?.toUpperCase();
-        return (
-          partCode &&
-          (partCode === 'PART_5' ||
-            partCode === 'PART_6' ||
-            partCode === 'PART_7' ||
-            partCode.includes('READING') ||
-            partCode.startsWith('R')) // R1, R2, R3
-        );
-      }).length || 0
-    );
+    // Reading answers are now in a separate array
+    return this.details?.readingAnswers?.length || 0;
   }
 
   getWritingCount(): number {
