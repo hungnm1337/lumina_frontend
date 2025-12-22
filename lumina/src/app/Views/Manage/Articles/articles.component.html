@@ -99,10 +99,10 @@
           <div class="card-header">
             <div class="article-status-section">
               <span class="status-badge"
-                [ngClass]="[getStatusClass(article.status), (article.status?.toLowerCase() === 'rejected' || article.rejectionReason) ? 'status-rejected clickable' : '']"
-                [class.clickable]="article.status?.toLowerCase() === 'rejected' || article.rejectionReason"
-                (click)="(article.status?.toLowerCase() === 'rejected' || article.rejectionReason) ? openRejectionViewModal(article) : null"
-                [title]="(article.status?.toLowerCase() === 'rejected' || article.rejectionReason) ? 'Click để xem lý do từ chối' : ''">
+                [ngClass]="[getStatusClass(article.status), (article.status.toLowerCase() === 'rejected' || article.rejectionReason) ? 'status-rejected clickable' : '']"
+                [class.clickable]="article.status.toLowerCase() === 'rejected' || article.rejectionReason"
+                (click)="(article.status.toLowerCase() === 'rejected' || article.rejectionReason) ? openRejectionViewModal(article) : null"
+                [title]="(article.status.toLowerCase() === 'rejected' || article.rejectionReason) ? 'Click để xem lý do từ chối' : ''">
                 <i class="fas fa-circle status-dot"></i>
                 {{getStatusText(article.status, article.rejectionReason)}}
               </span>

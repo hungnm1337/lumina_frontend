@@ -30,7 +30,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private notificationService: NotificationService,
     private elementRef: ElementRef
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.currentUser$ = this.authService.currentUser$;
@@ -109,7 +109,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   goToProfile(): void {
     this.isDropdownOpen = false;
-    this.router.navigate(['/profile']);
+    this.router.navigate(['/manager/profile']);
   }
 
   logout(): void {

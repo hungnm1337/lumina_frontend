@@ -20,17 +20,17 @@ export class HeaderComponent implements OnInit {
   currentUser$!: Observable<AuthUserResponse | null>;
 
   constructor(
-    private router: Router, 
-    private activatedRoute: ActivatedRoute, 
+    private router: Router,
+    private activatedRoute: ActivatedRoute,
     private authService: AuthService,
     private userService: UserService,
     private elementRef: ElementRef
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.currentUser$ = this.authService.currentUser$;
     this.loadUserProfile();
-    
+
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd),
       map(() => this.activatedRoute),
@@ -43,7 +43,7 @@ export class HeaderComponent implements OnInit {
       this.pageTitle = data['title'] || 'Admin Panel';
     });
   }
-  
+
   loadUserProfile(): void {
     const userId = this.authService.getCurrentUserId();
     if (!userId || userId === 0) return;
@@ -51,7 +51,7 @@ export class HeaderComponent implements OnInit {
     this.userService.getProfile().subscribe({
       next: (profile) => {
         if (profile.avatarUrl) {
-          this.authService.updateCurrentUser({ 
+          this.authService.updateCurrentUser({
             avatarUrl: profile.avatarUrl,
             name: profile.fullName
           });
@@ -62,24 +62,24 @@ export class HeaderComponent implements OnInit {
       }
     });
   }
-  
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
     if (!this.elementRef.nativeElement.contains(event.target)) {
       this.isDropdownOpen = false;
     }
   }
-  
+
   goToProfile(): void {
     this.isDropdownOpen = false;
-    this.router.navigate(['/profile']);
+    this.router.navigate(['/admin/profile']);
   }
   toggleDropdown(event: Event): void {
     event.stopPropagation();
     this.isDropdownOpen = !this.isDropdownOpen;
   }
 
-    logout(): void {
+  logout(): void {
     this.isDropdownOpen = false;
     this.authService.logout();
   }

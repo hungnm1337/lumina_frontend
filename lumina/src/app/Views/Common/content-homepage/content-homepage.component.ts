@@ -5,6 +5,8 @@ import { EventPreviewComponent } from '../../User/event-preview/event-preview.co
 import { Router } from '@angular/router';
 import { UserSlideDashboardComponent } from '../../User/slide-dashboard/dashboardslide.component';
 import { PackagesService, Package } from '../../../Services/Packages/packages.service';
+import { AuthService } from '../../../Services/Auth/auth.service';
+import { ToastService } from '../../../Services/Toast/toast.service';
 
 interface PackageWithDetails extends Package {
   level?: string;
@@ -71,14 +73,34 @@ export class ContentHomepageComponent implements OnInit {
       originalPriceMultiplier: 2
     }
   ];
-moveToMocktest() {
+  moveToMocktest() {
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      this.toastService.info('Vui lòng đăng nhập để tiếp tục');
+      this.router.navigate(['/login']);
+      return;
+    }
     console.log('Navigating to Mock Test Exams');
     this.router.navigate(['homepage/mocktest/exams']);
   }
+
+  startLearning() {
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      this.toastService.info('Vui lòng đăng nhập để tiếp tục');
+      this.router.navigate(['/login']);
+      return;
+    }
+    // Navigate to learning dashboard or relevant page
+    this.router.navigate(['/homepage/user-dashboard']);
+  }
+
   constructor(
     private router: Router,
-    private packagesService: PackagesService
-  ) {}
+    private packagesService: PackagesService,
+    private authService: AuthService,
+    private toastService: ToastService
+  ) { }
 
   ngOnInit() {
     this.loadPackages();

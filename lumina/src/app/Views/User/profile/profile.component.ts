@@ -44,6 +44,7 @@ export class ProfileComponent implements OnInit {
   subscriptionStatus: SubscriptionStatus | null = null;
   avatarStatus = '';
   passwordStatus = '';
+  showHeader = true;
   passwordMessage = '';
 
   // Custom canvas-based cropper states
@@ -84,9 +85,14 @@ export class ProfileComponent implements OnInit {
     private router: Router,
     private uploadService: UploadService,
     private quotaService: QuotaService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
+    // Check current route to determine if we should show header
+    // Hide header for staff/admin/manager routes, show for user route
+    const currentUrl = this.router.url;
+    this.showHeader = currentUrl === '/profile';
+
     // Kiểm tra xem user đã đăng nhập chưa
     this.authService.currentUser$.subscribe((user) => {
       if (!user) {

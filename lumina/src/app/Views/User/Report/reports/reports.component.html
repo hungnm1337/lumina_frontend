@@ -1,72 +1,187 @@
-<div class="flex flex-row gap-6 min-h-[500px] p-4 md:p-6">
-    <!-- List panel: full width if no detail, animated shrink if detail -->
-    <div class="transition-all duration-500 ease-in-out bg-white rounded-xl shadow p-4 flex flex-col"
-        [ngClass]="selectedReport ? 'w-full md:w-1/3' : 'w-full'" style="min-width: 0;">
-        <div class="flex flex-col md:flex-row gap-3 mb-4 items-center">
-            <label class="flex flex-col text-sm font-medium text-gray-700">
-                Loại
-                <select [(ngModel)]="filterType" (change)="onFilterTypeChange(filterType)"
-                    class="mt-1 rounded border-gray-300 focus:ring-blue-500 focus:border-blue-500 px-2 py-1">
+<div class="reports-container">
+    <!-- Header Section -->
+    <div class="header-section">
+        <div class="header-content">
+            <h1 class="page-title">
+                <i class="fas fa-file-alt"></i>
+                Báo Cáo Của Tôi
+            </h1>
+            <p class="page-subtitle">Quản lý và theo dõi các báo cáo đã gửi</p>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-section">
+        <div class="filters-container">
+            <!-- Type Filter -->
+            <div class="filter-group">
+                <label class="filter-label">Loại báo cáo:</label>
+                <select [(ngModel)]="filterType" (change)="onFilterTypeChange(filterType)" class="filter-select">
                     <option *ngFor="let opt of typeOptions" [value]="opt.value">{{opt.label}}</option>
                 </select>
-            </label>
-            <label class="flex flex-col text-sm font-medium text-gray-700">
-                Ngày gửi
+            </div>
+
+            <!-- Date Filter -->
+            <div class="filter-group">
+                <label class="filter-label">Ngày gửi:</label>
                 <input type="date" [(ngModel)]="filterDate" (change)="onFilterDateChange(filterDate)"
-                    class="mt-1 rounded border-gray-300 focus:ring-blue-500 focus:border-blue-500 px-2 py-1" />
-            </label>
-            <label class="flex flex-col text-sm font-medium text-gray-700">
-                Sắp xếp
-                <select [(ngModel)]="sortDirection" (change)="onSortChange(sortDirection)"
-                    class="mt-1 rounded border-gray-300 focus:ring-blue-500 focus:border-blue-500 px-2 py-1">
+                    class="filter-input" />
+            </div>
+
+            <!-- Sort -->
+            <div class="filter-group">
+                <label class="filter-label">Sắp xếp:</label>
+                <select [(ngModel)]="sortDirection" (change)="onSortChange(sortDirection)" class="filter-select">
                     <option value="desc">Mới nhất trước</option>
                     <option value="asc">Cũ nhất trước</option>
                 </select>
-            </label>
-            <button (click)="clearFilters()"
-                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded shadow">Xóa lọc</button>
-        </div>
-        <div *ngIf="loading" class="text-blue-600 font-semibold">Đang tải...</div>
-        <div *ngIf="error" class="text-red-600 font-semibold">{{error}}</div>
-        <ul class="flex-1 overflow-y-auto divide-y divide-gray-200">
-            <li *ngFor="let report of filteredReports" (click)="onSelectReport(report, $event)"
-                [class.bg-blue-50]="selectedReport?.reportId === report.reportId"
-                class="cursor-pointer px-2 py-3 hover:bg-blue-100 transition rounded flex flex-col">
-                <div class="font-semibold text-gray-800">{{report.title}}</div>
-                <div class="flex gap-2 text-xs text-gray-500 mt-1">
-                    <span class="px-2 py-0.5 rounded bg-gray-100">{{report.type}}</span>
-                    <span>{{report.sendAt | date:'shortDate'}}</span>
+            </div>
+
+            <!-- Clear Button -->
+            <button (click)="clearFilters()" class="btn-clear-filters">
+                <i class="fas fa-times-circle"></i>
+                Xóa lọc
+            </button>
+
+            <!-- Stats -->
+            <div class="stats-summary">
+                <div class="stat-item">
+                    <i class="fas fa-file-alt"></i>
+                    <span class="stat-value">{{ filteredReports.length }}</span>
+                    <span class="stat-label">báo cáo</span>
                 </div>
-            </li>
-            <li *ngIf="!filteredReports.length && !loading" class="text-gray-500 text-center py-4">Không có report nào
-                phù hợp.</li>
-        </ul>
+            </div>
+        </div>
     </div>
 
-    <!-- Detail panel: animated slide-in -->
-    <div *ngIf="selectedReport"
-        class="transition-all duration-500 ease-in-out w-0 md:w-2/3 bg-white rounded-xl shadow p-6 overflow-hidden"
-        [ngClass]="selectedReport ? 'max-w-2xl opacity-100' : 'max-w-0 opacity-0'" style="min-width: 0;">
-        <div class="flex items-start justify-between mb-2">
-            <h3 class="text-2xl font-bold text-blue-700">{{selectedReport.title}}</h3>
-            <button (click)="closeDetail(); $event.stopPropagation()" aria-label="Đóng chi tiết"
-                class="ml-4 px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm">Đóng</button>
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Đang tải báo cáo...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !loading" class="error-state">
+        <i class="fas fa-exclamation-circle"></i>
+        <p>{{error}}</p>
+    </div>
+
+    <!-- Reports Grid -->
+    <div *ngIf="!loading && !error" class="reports-section">
+        <!-- Empty State -->
+        <div *ngIf="filteredReports.length === 0" class="empty-state">
+            <div class="empty-icon">📄</div>
+            <h3>Không có báo cáo nào</h3>
+            <p *ngIf="filterType || filterDate">Thử thay đổi bộ lọc để xem thêm báo cáo</p>
+            <p *ngIf="!filterType && !filterDate">Bạn chưa gửi báo cáo nào</p>
         </div>
-        <div class="flex flex-wrap gap-4 text-sm text-gray-600 mb-2">
-            <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-700">Loại: {{selectedReport.type}}</span>
-            <span>Người gửi: {{selectedReport.sendBy}}</span>
-            <span>Ngày gửi: {{selectedReport.sendAt | date:'medium'}}</span>
+
+        <!-- Reports List -->
+        <div *ngIf="filteredReports.length > 0" class="reports-grid">
+            <div *ngFor="let report of filteredReports" class="report-card" (click)="onSelectReport(report)"
+                [class.selected]="selectedReport?.reportId === report.reportId">
+                <div class="report-card-header">
+                    <div class="report-type-badge" [ngClass]="getTypeBadgeClass(report.type)">
+                        <i [class]="getTypeIcon(report.type)"></i>
+                        {{report.type}}
+                    </div>
+                    <div class="report-date">
+                        <i class="fas fa-clock"></i>
+                        {{report.sendAt | date:'dd/MM/yyyy'}}
+                    </div>
+                </div>
+
+                <div class="report-card-body">
+                    <h3 class="report-title">{{report.title}}</h3>
+                    <p class="report-content-preview">{{report.content}}</p>
+
+                    <div class="report-meta">
+                        <div class="report-sender">
+                            <i class="fas fa-user"></i>
+                            Gửi bởi: {{report.sendBy}}
+                        </div>
+                        <div class="report-status" *ngIf="report.replyContent" [ngClass]="'status-replied'">
+                            <i class="fas fa-check-circle"></i>
+                            Đã phản hồi
+                        </div>
+                        <div class="report-status" *ngIf="!report.replyContent" [ngClass]="'status-pending'">
+                            <i class="fas fa-hourglass-half"></i>
+                            Chờ phản hồi
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-card-footer">
+                    <button class="btn-view-detail" (click)="onSelectReport(report)">
+                        <i class="fas fa-eye"></i>
+                        Xem chi tiết
+                    </button>
+                </div>
+            </div>
         </div>
-        <div class="mb-4">
-            <div class="font-semibold text-gray-700 mb-1">Nội dung:</div>
-            <p class="bg-gray-50 rounded p-3 text-gray-800 whitespace-pre-line">{{selectedReport.content}}</p>
-        </div>
-        <div *ngIf="selectedReport.replyContent" class="mt-6 border-t pt-4">
-            <div class="font-semibold text-green-700 mb-1">Phản hồi:</div>
-            <p class="bg-green-50 rounded p-3 text-gray-800 whitespace-pre-line">{{selectedReport.replyContent}}</p>
-            <div class="flex gap-4 text-xs text-gray-500 mt-2">
-                <span>Người phản hồi: {{selectedReport.replyBy}}</span>
-                <span>Thời gian: {{selectedReport.replyAt | date:'medium'}}</span>
+    </div>
+
+    <!-- Detail Modal -->
+    <div *ngIf="selectedReport" class="detail-modal-overlay" (click)="closeDetail()">
+        <div class="detail-modal" (click)="$event.stopPropagation()">
+            <div class="detail-modal-header">
+                <h2 class="detail-title">
+                    <i class="fas fa-file-alt"></i>
+                    {{selectedReport.title}}
+                </h2>
+                <button class="btn-close" (click)="closeDetail()" aria-label="Đóng">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="detail-modal-body">
+                <div class="detail-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Loại:</span>
+                        <span class="meta-value type-badge" [ngClass]="getTypeBadgeClass(selectedReport.type)">
+                            <i [class]="getTypeIcon(selectedReport.type)"></i>
+                            {{selectedReport.type}}
+                        </span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Người gửi:</span>
+                        <span class="meta-value">{{selectedReport.sendBy}}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Ngày gửi:</span>
+                        <span class="meta-value">{{selectedReport.sendAt | date:'dd/MM/yyyy HH:mm'}}</span>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-align-left"></i>
+                        Nội dung báo cáo
+                    </h3>
+                    <div class="content-box">{{selectedReport.content}}</div>
+                </div>
+
+                <div *ngIf="selectedReport.replyContent" class="detail-section reply-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-reply"></i>
+                        Phản hồi
+                    </h3>
+                    <div class="reply-box">
+                        <p class="reply-content">{{selectedReport.replyContent}}</p>
+                        <div class="reply-meta">
+                            <span><i class="fas fa-user"></i> {{selectedReport.replyBy}}</span>
+                            <span><i class="fas fa-clock"></i> {{selectedReport.replyAt | date:'dd/MM/yyyy
+                                HH:mm'}}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="!selectedReport.replyContent" class="detail-section pending-section">
+                    <div class="pending-notice">
+                        <i class="fas fa-hourglass-half"></i>
+                        <p>Báo cáo này đang chờ phản hồi từ quản lý</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
