@@ -1,4 +1,4 @@
-<app-header></app-header>
+<app-header *ngIf="showHeader"></app-header>
 <div class="wrap">
   <div class="header">
     <div>
@@ -7,7 +7,7 @@
     <div class="toolbar">
       <button class="btn primary" (click)="save()" [disabled]="loading()">
         {{
-          editing() ? (loading() ? "Đang lưu..." : "Lưu thay đổi") : "Chỉnh sửa"
+        editing() ? (loading() ? "Đang lưu..." : "Lưu thay đổi") : "Chỉnh sửa"
         }}
       </button>
     </div>
@@ -20,13 +20,9 @@
       <!-- SIDEBAR -->
       <aside class="card" aria-label="Tổng quan người dùng">
         <div class="avatar">
-          <img
-            [src]="
+          <img [src]="
               p.avatarUrl || 'https://api.dicebear.com/7.x/thumbs/svg?seed=user'
-            "
-            alt="Ảnh đại diện"
-            class="avatar-img"
-          />
+            " alt="Ảnh đại diện" class="avatar-img" />
           <div>
             <strong>{{ p.fullName || "—" }}</strong>
             <div class="muted">{{ p.email || "—" }}</div>
@@ -46,70 +42,49 @@
           </div>
         </div>
         <div style="margin-top: 12px">
-          <input
-            type="file"
-            accept="image/*"
-            (change)="onAvatarChange($event)"
-            #avatarInput
-            style="display: none"
-          />
+          <input type="file" accept="image/*" (change)="onAvatarChange($event)" #avatarInput style="display: none" />
           <button class="btn" (click)="avatarInput.click()">
             Thay đổi ảnh
           </button>
-          <div
-            *ngIf="
+          <div *ngIf="
               subscriptionStatus?.hasActiveSubscription &&
               subscriptionStatus?.subscriptionType === 'PREMIUM'
-            "
-            style="
+            " style="
               margin-top: 12px;
               padding: 12px;
               background: #ffffff;
               border-radius: 12px;
               box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
               border: 1px solid #d7d7d7;
-            "
-          >
-            <div
-              style="
+            ">
+            <div style="
                 display: flex;
                 align-items: center;
                 gap: 8px;
                 margin-bottom: 6px;
-              "
-            >
-             
-              <span style="color: rgb(0, 0, 0); font-weight: bold; font-size: 14px"
-                >Gói Premium</span
-              >
+              ">
+
+              <span style="color: rgb(0, 0, 0); font-weight: bold; font-size: 14px">Gói Premium</span>
             </div>
-            <div
-              style="
+            <div style="
                 color: rgba(88, 88, 88, 0.95);
                 font-size: 12px;
                 line-height: 1.5;
-              "
-            >
-              <div
-                style="
+              ">
+              <div style="
                   display: flex;
                   align-items: center;
                   gap: 6px;
                   margin-bottom: 4px;
-                "
-              >
-                <span
-                  >Đăng ký:
+                ">
+                <span>Đăng ký:
                   {{
-                    subscriptionStatus?.startDate | date : "dd/MM/yyyy"
-                  }}</span
-                >
+                  subscriptionStatus?.startDate | date : "dd/MM/yyyy"
+                  }}</span>
               </div>
               <div style="display: flex; align-items: center; gap: 6px">
-                <span
-                  >Hết hạn:
-                  {{ subscriptionStatus?.endDate | date : "dd/MM/yyyy" }}</span
-                >
+                <span>Hết hạn:
+                  {{ subscriptionStatus?.endDate | date : "dd/MM/yyyy" }}</span>
               </div>
             </div>
           </div>
@@ -124,13 +99,8 @@
           <div class="row">
             <div>
               <label>Họ và tên</label>
-              <input
-                type="text"
-                [(ngModel)]="form.fullName"
-                name="fullName"
-                placeholder="VD: Nguyễn Văn A"
-                [disabled]="!editing()"
-              />
+              <input type="text" [(ngModel)]="form.fullName" name="fullName" placeholder="VD: Nguyễn Văn A"
+                [disabled]="!editing()" />
             </div>
             <div>
               <label>Email</label>
@@ -138,23 +108,13 @@
             </div>
             <div>
               <label>Số điện thoại</label>
-              <input
-                type="tel"
-                [(ngModel)]="form.phone"
-                name="phone"
-                placeholder="VD: 09xxxxxxxx"
-                [disabled]="!editing()"
-              />
+              <input type="tel" [(ngModel)]="form.phone" name="phone" placeholder="VD: 09xxxxxxxx"
+                [disabled]="!editing()" />
             </div>
             <div>
               <label>Giới thiệu</label>
-              <textarea
-                [(ngModel)]="form.bio"
-                name="bio"
-                rows="3"
-                placeholder="Giới thiệu về bản thân..."
-                [disabled]="!editing()"
-              ></textarea>
+              <textarea [(ngModel)]="form.bio" name="bio" rows="3" placeholder="Giới thiệu về bản thân..."
+                [disabled]="!editing()"></textarea>
             </div>
           </div>
           <div class="section-actions" *ngIf="editing()">
@@ -170,51 +130,28 @@
           <div class="row">
             <div>
               <label>Mật khẩu hiện tại</label>
-              <input
-                type="password"
-                [(ngModel)]="passwordForm.currentPassword"
-                name="currentPassword"
-                placeholder="Nhập mật khẩu hiện tại"
-                autocomplete="current-password"
-              />
+              <input type="password" [(ngModel)]="passwordForm.currentPassword" name="currentPassword"
+                placeholder="Nhập mật khẩu hiện tại" autocomplete="current-password" />
             </div>
             <div></div>
             <div>
               <label>Mật khẩu mới (tối thiểu 8 ký tự)</label>
-              <input
-                type="password"
-                [(ngModel)]="passwordForm.newPassword"
-                name="newPassword"
-                placeholder="Nhập mật khẩu mới"
-                autocomplete="new-password"
-              />
+              <input type="password" [(ngModel)]="passwordForm.newPassword" name="newPassword"
+                placeholder="Nhập mật khẩu mới" autocomplete="new-password" />
             </div>
             <div>
               <label>Nhập lại mật khẩu mới</label>
-              <input
-                type="password"
-                [(ngModel)]="passwordForm.confirmPassword"
-                name="confirmPassword"
-                placeholder="Nhập lại mật khẩu mới"
-                autocomplete="new-password"
-              />
+              <input type="password" [(ngModel)]="passwordForm.confirmPassword" name="confirmPassword"
+                placeholder="Nhập lại mật khẩu mới" autocomplete="new-password" />
             </div>
           </div>
           <div class="section-actions">
-            <button
-              class="btn primary"
-              (click)="changePassword()"
-              [disabled]="passwordLoading()"
-            >
+            <button class="btn primary" (click)="changePassword()" [disabled]="passwordLoading()">
               {{ passwordLoading() ? "Đang cập nhật..." : "Cập nhật mật khẩu" }}
             </button>
           </div>
-          <div
-            class="status"
-            [class.success]="passwordStatus === 'success'"
-            [class.error]="passwordStatus === 'error'"
-            *ngIf="passwordStatus"
-          >
+          <div class="status" [class.success]="passwordStatus === 'success'" [class.error]="passwordStatus === 'error'"
+            *ngIf="passwordStatus">
             {{ passwordMessage }}
           </div>
         </section>
@@ -227,23 +164,10 @@
 <div *ngIf="showCropperModal" class="fixed inset-0 z-50 bg-black">
   <!-- Header -->
   <div class="flex items-center justify-between px-4 py-3 bg-gray-900">
-    <button
-      (click)="closeCropperModal()"
-      class="p-2 hover:bg-gray-800 rounded-full transition-colors"
-      aria-label="Close"
-    >
-      <svg
-        class="w-6 h-6 text-white"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M10 19l-7-7m0 0l7-7m-7 7h18"
-        ></path>
+    <button (click)="closeCropperModal()" class="p-2 hover:bg-gray-800 rounded-full transition-colors"
+      aria-label="Close">
+      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
       </svg>
     </button>
     <div class="text-center">
@@ -258,31 +182,17 @@
   <!-- Main Content -->
   <div class="flex flex-col h-[calc(100vh-60px)]">
     <!-- Image Cropper Area -->
-    <div
-      class="flex-1 flex items-center justify-center px-4 py-6 overflow-hidden"
-    >
-      <div
-        class="relative cropper-container"
-        (wheel)="onWheelZoom($event)"
-        style="width: 400px; height: 400px"
-      >
-        <canvas
-          #cropCanvas
-          (mousedown)="onCanvasMouseDown($event)"
-          (mousemove)="onCanvasMouseMove($event)"
-          (mouseup)="onCanvasMouseUp()"
-          (mouseleave)="onCanvasMouseUp()"
-          (touchstart)="onCanvasTouchStart($event)"
-          (touchmove)="onCanvasTouchMove($event)"
-          (touchend)="onCanvasTouchEnd()"
-          [style.cursor]="isDragging ? 'grabbing' : 'grab'"
-          style="
+    <div class="flex-1 flex items-center justify-center px-4 py-6 overflow-hidden">
+      <div class="relative cropper-container" (wheel)="onWheelZoom($event)" style="width: 400px; height: 400px">
+        <canvas #cropCanvas (mousedown)="onCanvasMouseDown($event)" (mousemove)="onCanvasMouseMove($event)"
+          (mouseup)="onCanvasMouseUp()" (mouseleave)="onCanvasMouseUp()" (touchstart)="onCanvasTouchStart($event)"
+          (touchmove)="onCanvasTouchMove($event)" (touchend)="onCanvasTouchEnd()"
+          [style.cursor]="isDragging ? 'grabbing' : 'grab'" style="
             width: 100%;
             height: 100%;
             border-radius: 50%;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-          "
-        ></canvas>
+          "></canvas>
       </div>
     </div>
 
@@ -290,95 +200,43 @@
     <div class="px-4 pb-6 space-y-4">
       <!-- Zoom Controls -->
       <div class="flex items-center justify-center gap-4">
-        <button
-          (click)="zoomOut()"
-          class="p-3 bg-gray-800 hover:bg-gray-700 rounded-full transition-colors"
-          type="button"
-        >
-          <svg
-            class="w-5 h-5 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M20 12H4"
-            ></path>
+        <button (click)="zoomOut()" class="p-3 bg-gray-800 hover:bg-gray-700 rounded-full transition-colors"
+          type="button">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
           </svg>
         </button>
         <div class="flex-1 max-w-xs">
-          <input
-            type="range"
-            min="50"
-            max="300"
-            [value]="scale * 100"
-            (input)="onZoomSlider($event)"
-            class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
-          />
+          <input type="range" min="50" max="300" [value]="scale * 100" (input)="onZoomSlider($event)"
+            class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider" />
         </div>
-        <button
-          (click)="zoomIn()"
-          class="p-3 bg-gray-800 hover:bg-gray-700 rounded-full transition-colors"
-          type="button"
-        >
-          <svg
-            class="w-5 h-5 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 4v16m8-8H4"
-            ></path>
+        <button (click)="zoomIn()" class="p-3 bg-gray-800 hover:bg-gray-700 rounded-full transition-colors"
+          type="button">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
           </svg>
         </button>
       </div>
 
       <!-- Rotate Button -->
       <div class="flex justify-center gap-4">
-        <button
-          (click)="rotateImage()"
+        <button (click)="rotateImage()"
           class="flex flex-col items-center gap-1 px-6 py-3 hover:bg-gray-800 rounded-lg transition-colors"
-          type="button"
-        >
-          <svg
-            class="w-6 h-6 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            ></path>
+          type="button">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+            </path>
           </svg>
           <span class="text-xs text-gray-300">Xoay</span>
         </button>
-        <button
-          (click)="resetPosition()"
+        <button (click)="resetPosition()"
           class="flex flex-col items-center gap-1 px-6 py-3 hover:bg-gray-800 rounded-lg transition-colors"
-          type="button"
-        >
-          <svg
-            class="w-6 h-6 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            ></path>
+          type="button">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+            </path>
           </svg>
           <span class="text-xs text-gray-300">Đặt lại</span>
         </button>
@@ -386,37 +244,17 @@
 
       <!-- Action Buttons -->
       <div class="flex gap-3">
-        <button
-          (click)="closeCropperModal()"
-          [disabled]="uploadingAvatar"
-          class="flex-1 py-3 px-6 bg-gray-800 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
-        >
+        <button (click)="closeCropperModal()" [disabled]="uploadingAvatar"
+          class="flex-1 py-3 px-6 bg-gray-800 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50">
           Hủy
         </button>
-        <button
-          (click)="cropAndUpload()"
-          [disabled]="uploadingAvatar || !sourceImage"
-          class="flex-1 py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-        >
-          <svg
-            *ngIf="uploadingAvatar"
-            class="animate-spin h-5 w-5 text-white"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              class="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              stroke-width="4"
-            ></circle>
-            <path
-              class="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            ></path>
+        <button (click)="cropAndUpload()" [disabled]="uploadingAvatar || !sourceImage"
+          class="flex-1 py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+          <svg *ngIf="uploadingAvatar" class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+            </path>
           </svg>
           <span>{{ uploadingAvatar ? "Đang tải..." : "Tiếp theo" }}</span>
         </button>

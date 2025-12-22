@@ -73,6 +73,14 @@ const routes: Routes = [
             (m) => m.StaffNotificationsComponent
           ),
         data: { title: 'Thông báo' }
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('../User/profile/profile.component').then(
+            (m) => m.ProfileComponent
+          ),
+        data: { title: 'Hồ sơ' }
       }
     ]
   }
