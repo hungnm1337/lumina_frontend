@@ -67,6 +67,10 @@ export class VocabularyManagementComponent implements OnInit, OnDestroy {
   showApproveModal = false;
   approvingList: VocabularyListResponse | null = null;
 
+  // ----- TRẠNG THÁI MODAL REJECTION VIEW -----
+  showRejectionViewModal = false;
+  selectedRejectedList: VocabularyListResponse | null = null;
+
   // ----- TRẠNG THÁI KHÁC -----
   isLoading = false;
   isSubmitting = false;
@@ -571,6 +575,18 @@ export class VocabularyManagementComponent implements OnInit, OnDestroy {
       });
       this.subscriptions.push(sub);
     }
+  }
+
+  // Open rejection view modal
+  openRejectionViewModal(list: VocabularyListResponse): void {
+    this.selectedRejectedList = list;
+    this.showRejectionViewModal = true;
+  }
+
+  // Close rejection view modal
+  closeRejectionViewModal(): void {
+    this.showRejectionViewModal = false;
+    this.selectedRejectedList = null;
   }
 
   // Improved error handling

@@ -79,6 +79,10 @@ export class ArticlesComponent implements OnInit, OnDestroy {
   confirmType: 'delete' | 'approval' | 'reject' | 'close' = 'delete';
   pendingAction: (() => void) | null = null;
 
+  // Rejection Modal Properties
+  showRejectionModal = false;
+  selectedRejectedArticle: Article | null = null;
+
   // Quill editor instances - store references to each editor
   quillEditors: Map<number, any> = new Map(); // Map section index to Quill instance
 
@@ -825,8 +829,13 @@ export class ArticlesComponent implements OnInit, OnDestroy {
     this.toastService.error(errorMessage);
   }
 
-  getStatusClass(status: string): string {
-    switch (status) {
+  getStatusClass(article: Article): string {
+    // Check if article has rejection reason
+    if (article.rejectionReason && article.status === 'draft') {
+      return 'status-rejected';
+    }
+
+    switch (article.status) {
       case 'published': return 'status-published';
       case 'draft': return 'status-draft';
       case 'pending': return 'status-pending';
@@ -834,12 +843,17 @@ export class ArticlesComponent implements OnInit, OnDestroy {
     }
   }
 
-  getStatusText(status: string): string {
-    switch (status) {
+  getStatusText(article: Article): string {
+    // Check if article has rejection reason
+    if (article.rejectionReason && article.status === 'draft') {
+      return 'Đã từ chối';
+    }
+
+    switch (article.status) {
       case 'published': return 'Đã xuất bản';
       case 'draft': return 'Bản nháp';
       case 'pending': return 'Chờ duyệt';
-      default: return status;
+      default: return article.status;
     }
   }
 
@@ -1404,5 +1418,23 @@ export class ArticlesComponent implements OnInit, OnDestroy {
         this.isSubmittingCategory = false;
       }
     });
+  }
+
+  // ===== REJECTION MODAL METHODS =====
+  openRejectionModal(article: Article): void {
+    this.selectedRejectedArticle = article;
+    this.showRejectionModal = true;
+  }
+
+  closeRejectionModal(): void {
+    this.showRejectionModal = false;
+    this.selectedRejectedArticle = null;
+  }
+
+  editRejectedArticle(): void {
+    if (this.selectedRejectedArticle) {
+      this.openModal(this.selectedRejectedArticle);
+      this.closeRejectionModal();
+    }
   }
 }
