@@ -59,6 +59,8 @@ export const routes: Routes = [
   {
     path: 'homepage',
     component: HomepageComponent,
+    canActivate: [AuthGuard, RoleGuard], // Protect homepage - only for regular users
+    data: { roles: [4] }, // Only role 4 (User) can access
     children: [
       { path: '', component: ContentHomepageComponent },
       { path: 'mocktest/exams', component: MockTestExamComponent },
@@ -76,6 +78,8 @@ export const routes: Routes = [
       {
         path: 'user-dashboard',
         component: UserDashboardComponent,
+        canActivate: [RoleGuard], // Prevent admin/staff/manager from accessing user dashboard
+        data: { roles: [4] }, // Only role 4 (User) can access
         children: [
           { path: 'exams', component: ExamsComponent },
           {
@@ -107,14 +111,29 @@ export const routes: Routes = [
       import('./Views/User/profile/profile.component').then(
         (m) => m.ProfileComponent
       ),
-    canActivate: [AuthGuard], // Bảo vệ route profile
+    canActivate: [AuthGuard], // All roles can access profile
   },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
-  { path: 'articles', component: BlogArticlesComponent },
-  { path: 'articles/:id', component: BlogDetailComponent },
-  { path: 'vocabulary', component: UserVocabularyComponent },
+  { 
+    path: 'articles', 
+    component: BlogArticlesComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: [4] }
+  },
+  { 
+    path: 'articles/:id', 
+    component: BlogDetailComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: [4] }
+  },
+  { 
+    path: 'vocabulary', 
+    component: UserVocabularyComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: [4] }
+  },
 
   {
     path: 'vocabulary/list/:id',
@@ -122,6 +141,8 @@ export const routes: Routes = [
       import(
         './Views/User/vocabulary-list-detail/vocabulary-list-detail.component'
       ).then((m) => m.VocabularyListDetailComponent),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: [4] }
   },
 
   // Quiz routes
@@ -131,6 +152,8 @@ export const routes: Routes = [
       import('./Views/User/quiz-config/quiz-config.component').then(
         (m) => m.QuizConfigComponent
       ),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: [4] }
   },
   {
     path: 'quiz/config-detail',
@@ -138,6 +161,8 @@ export const routes: Routes = [
       import(
         './Views/User/quiz-config-detail/quiz-config-detail.component'
       ).then((m) => m.QuizConfigDetailComponent),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: [4] }
   },
   {
     path: 'quiz/do',
@@ -145,6 +170,8 @@ export const routes: Routes = [
       import('./Views/User/quiz-do/quiz-do.component').then(
         (m) => m.QuizDoComponent
       ),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: [4] }
   },
   {
     path: 'quiz/results',
@@ -152,15 +179,29 @@ export const routes: Routes = [
       import('./Views/User/quiz-results/quiz-results.component').then(
         (m) => m.QuizResultsComponent
       ),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: [4] }
   },
 
-  { path: 'flashcards', component: DeckListComponent },
-  { path: 'flashcards/:id', component: DeckDetailComponent },
+  { 
+    path: 'flashcards', 
+    component: DeckListComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: [4] }
+  },
+  { 
+    path: 'flashcards/:id', 
+    component: DeckDetailComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: [4] }
+  },
 
   // Spaced Repetition Dashboard
   {
     path: 'spaced-repetition/dashboard',
     component: SpacedRepetitionDashboardComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: [4] }
   },
   {
     path: 'spaced-repetition/vocabulary-list',
@@ -168,6 +209,8 @@ export const routes: Routes = [
       import('./pages/vocabulary-list-table/vocabulary-list-table.component').then(
         (m) => m.VocabularyListTableComponent
       ),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: [4] }
   },
   {
     path: 'spaced-repetition/review-quiz',
@@ -175,6 +218,8 @@ export const routes: Routes = [
       import('./pages/review-quiz/review-quiz.component').then(
         (m) => m.ReviewQuizComponent
       ),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: [4] }
   },
 
   // Payment Success/Cancel Pages
@@ -184,6 +229,8 @@ export const routes: Routes = [
       import('./Views/User/payment-success/payment-success.component').then(
         (m) => m.PaymentSuccessComponent
       ),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: [4] }
   },
   {
     path: 'payment/cancel',
@@ -191,9 +238,21 @@ export const routes: Routes = [
       import('./Views/User/payment-cancel/payment-cancel.component').then(
         (m) => m.PaymentCancelComponent
       ),
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: [4] }
   },
-  { path: 'rankings', component: RankingsComponent },
-  { path: 'streak', component: StreakComponent },
+  { 
+    path: 'rankings', 
+    component: RankingsComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: [4] }
+  },
+  { 
+    path: 'streak', 
+    component: StreakComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: [4] }
+  },
   { path: '', redirectTo: '/homepage', pathMatch: 'full' },
   { path: '**', component: ErrorComponent },
 ];
