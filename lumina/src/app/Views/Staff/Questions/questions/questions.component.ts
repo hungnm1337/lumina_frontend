@@ -83,7 +83,7 @@ export class QuestionsComponent implements OnInit {
         const dateB = `${yearB}-${monthB}`;
         return dateA.localeCompare(dateB);
       });
-      console.log('📋 ExamSetKeys (sorted):', this.examSetKeys);
+      // console.log('📋 ExamSetKeys (sorted):', this.examSetKeys);
     });
     this.loadPrompts();
     this.loadStatistics();
@@ -127,7 +127,7 @@ export class QuestionsComponent implements OnInit {
 
   // ✅ Hàm xử lý khi chọn ExamSetKey
   onExamSetKeyFilterChange() {
-    console.log('🔍 ExamSetKey filter changed:', this.selectedExamSetKey);
+    // console.log('🔍 ExamSetKey filter changed:', this.selectedExamSetKey);
     // Reset skill và part khi đổi ExamSetKey
     this.selectedSkillFilter = null;
     this.selectedPartId = '';
@@ -139,7 +139,7 @@ export class QuestionsComponent implements OnInit {
 
   // Hàm xử lý khi chọn Skill filter
   onSkillFilterChange() {
-    console.log('🔍 Skill filter changed:', this.selectedSkillFilter);
+    // console.log('🔍 Skill filter changed:', this.selectedSkillFilter);
     // Reset part khi đổi Skill
     this.selectedPartId = '';
     this.filterPartsForView();
@@ -169,11 +169,11 @@ export class QuestionsComponent implements OnInit {
       return matchesExamSetKey && matchesSkill;
     });
     
-    console.log('📋 Filtered parts for view:', this.filteredPartsForView);
+    // console.log('📋 Filtered parts for view:', this.filteredPartsForView);
   }
 
   onPartFilterChange() {
-    console.log('🔍 Part filter changed:', this.selectedPartId);
+    // console.log('🔍 Part filter changed:', this.selectedPartId);
     this.page = 1;
     this.loadPrompts();
   }
@@ -420,8 +420,8 @@ export class QuestionsComponent implements OnInit {
   // }
 
   onExamSetKeyChangeForCreate(): void {
-    console.log('=== onExamSetKeyChangeForCreate ===');
-    console.log('selectedExamSetKeyForCreate:', this.selectedExamSetKeyForCreate);
+    // console.log('=== onExamSetKeyChangeForCreate ===');
+    // console.log('selectedExamSetKeyForCreate:', this.selectedExamSetKeyForCreate);
 
     // Xóa tất cả câu hỏi cũ
     while (this.questions.length !== 0) {
@@ -438,8 +438,8 @@ export class QuestionsComponent implements OnInit {
   onSkillChange(event: any): void {
     this.selectedSkill = event.target.value;
 
-    console.log('=== onSkillChange ===');
-    console.log('selectedSkill:', this.selectedSkill);
+    // console.log('=== onSkillChange ===');
+    // console.log('selectedSkill:', this.selectedSkill);
 
     // Xóa tất cả câu hỏi cũ
     while (this.questions.length !== 0) {
@@ -456,7 +456,7 @@ export class QuestionsComponent implements OnInit {
     // KHÔNG thêm câu hỏi mẫu nữa - chỉ thêm khi chọn Part
     // this.addQuestion();
 
-    console.log('filteredParts:', this.filteredParts);
+    // console.log('filteredParts:', this.filteredParts);
   }
 
   filterPartsBySkill() {
@@ -476,56 +476,56 @@ export class QuestionsComponent implements OnInit {
   onPartSelected(): void {
     const selectedPartId = this.promptForm.get('partId')?.value;
 
-    console.log('=== DEBUG onPartSelected ===');
-    console.log('selectedPartId:', selectedPartId);
-    console.log('selectedPartId type:', typeof selectedPartId);
-    console.log('this.parts:', this.parts);
-    console.log('this.filteredParts:', this.filteredParts);
+    // console.log('=== DEBUG onPartSelected ===');
+    // console.log('selectedPartId:', selectedPartId);
+    // console.log('selectedPartId type:', typeof selectedPartId);
+    // console.log('this.parts:', this.parts);
+    // console.log('this.filteredParts:', this.filteredParts);
 
     // Tìm trong filteredParts thay vì this.parts
     const selectedPart = this.filteredParts.find((p) => {
-      console.log(
-        'Comparing:',
-        p.partId,
-        'with',
-        selectedPartId,
-        'equal?',
-        p.partId == selectedPartId
-      );
+      // console.log(
+      //   'Comparing:',
+      //   p.partId,
+      //   'with',
+      //   selectedPartId,
+      //   'equal?',
+      //   p.partId == selectedPartId
+      // );
       return p.partId == selectedPartId; // Dùng == để so sánh cả string và number
     });
 
-    console.log('selectedPart:', selectedPart);
+    // console.log('selectedPart:', selectedPart);
 
     if (selectedPart && selectedPart.partCode) {
       const partCode = selectedPart.partCode.toUpperCase().trim();
-      console.log('partCode (normalized):', partCode);
-      console.log('partQuestionCounts:', this.partQuestionCounts);
-      console.log('Looking for key:', partCode);
+      // console.log('partCode (normalized):', partCode);
+      // console.log('partQuestionCounts:', this.partQuestionCounts);
+      // console.log('Looking for key:', partCode);
 
       this.selectedPartQuestionCount = this.partQuestionCounts[partCode] || 0;
-      console.log('selectedPartQuestionCount:', this.selectedPartQuestionCount);
+      // console.log('selectedPartQuestionCount:', this.selectedPartQuestionCount);
 
       if (this.selectedPartQuestionCount > 0) {
         this.adjustQuestionsToMatch(this.selectedPartQuestionCount);
       } else {
-        console.warn('Không tìm thấy số lượng câu hỏi cho partCode:', partCode);
-        console.warn('Các key có sẵn:', Object.keys(this.partQuestionCounts));
+        // console.warn('Không tìm thấy số lượng câu hỏi cho partCode:', partCode);
+        // console.warn('Các key có sẵn:', Object.keys(this.partQuestionCounts));
         this.adjustQuestionsToMatch(1);
       }
     } else {
-      console.log('Không tìm thấy part hoặc partCode');
-      console.log('selectedPart:', selectedPart);
+      // console.log('Không tìm thấy part hoặc partCode');
+      // console.log('selectedPart:', selectedPart);
       this.selectedPartQuestionCount = 0;
       this.adjustQuestionsToMatch(1);
     }
-    console.log('=== END DEBUG ===');
+    // console.log('=== END DEBUG ===');
   }
 
   private adjustQuestionsToMatch(count: number): void {
-    console.log('=== adjustQuestionsToMatch ===');
-    console.log('Target count:', count);
-    console.log('Current questions length:', this.questions.length);
+    // console.log('=== adjustQuestionsToMatch ===');
+    // console.log('Target count:', count);
+    // console.log('Current questions length:', this.questions.length);
 
     while (this.questions.length !== 0) {
       this.questions.removeAt(0);
@@ -535,10 +535,10 @@ export class QuestionsComponent implements OnInit {
       for (let i = 0; i < count; i++) {
         this.addQuestion();
       }
-      console.log('Đã thêm', count, 'câu hỏi');
-      console.log('New questions length:', this.questions.length);
+      // console.log('Đã thêm', count, 'câu hỏi');
+      // console.log('New questions length:', this.questions.length);
     } else {
-      console.log('Count = 0, không thêm câu hỏi');
+      // console.log('Count = 0, không thêm câu hỏi');
     }
   }
 
@@ -551,12 +551,18 @@ export class QuestionsComponent implements OnInit {
 
     const f = this.promptForm.value;
 
-    // Validate: mỗi câu hỏi phải có ít nhất 1 option đúng
+    // Validate: mỗi câu hỏi phải có ít nhất 1 option đúng và chỉ được phép 1 đáp án đúng
     for (const q of f.questions) {
       if (Array.isArray(q.options) && q.options.length > 0) {
-        const hasCorrect = q.options.some((opt: any) => !!opt.isCorrect);
-        if (!hasCorrect) {
+        const correctOptions = q.options.filter((opt: any) => !!opt.isCorrect);
+        
+        if (correctOptions.length === 0) {
           this.showMessage('Mỗi câu hỏi phải có ít nhất 1 đáp án đúng!', 'error');
+          return;
+        }
+        
+        if (correctOptions.length > 1) {
+          this.showMessage('Mỗi câu hỏi chỉ được phép có 1 đáp án đúng!', 'error');
           return;
         }
       }
@@ -598,7 +604,7 @@ export class QuestionsComponent implements OnInit {
         };
       }),
     };
-    console.log('Submitting DTO:', dto);
+    // console.log('Submitting DTO:', dto);
 
     this.questionService.createPromptWithQuestions(dto).subscribe({
       next: (res) => {
@@ -743,7 +749,7 @@ export class QuestionsComponent implements OnInit {
     this.currentSkill = prompt.skill || '';
     this.currentPartId = prompt.partId || null;
     this.currentPromptId = prompt.promptId || null;
-    console.log('openModalAdd - currentPartId:', this.currentPartId);
+    // console.log('openModalAdd - currentPartId:', this.currentPartId);
     const formObj: any = {
       stemText: ['', [Validators.required, noWhitespaceValidator(), meaningfulContentValidator()]],
       questionExplain: ['', [meaningfulContentValidator()]],
@@ -843,14 +849,19 @@ export class QuestionsComponent implements OnInit {
     }
     const value = this.questionForm.value;
 
-    // Validate: phải có ít nhất 1 option đúng nếu có options
-    if (
-      Array.isArray(value.options) &&
-      value.options.length > 0 &&
-      !value.options.some((opt: any) => !!opt.isCorrect)
-    ) {
-      this.showMessage('Câu hỏi phải có ít nhất 1 đáp án đúng!', 'error');
-      return;
+    // Validate: phải có ít nhất 1 option đúng và chỉ được phép 1 đáp án đúng nếu có options
+    if (Array.isArray(value.options) && value.options.length > 0) {
+      const correctOptions = value.options.filter((opt: any) => !!opt.isCorrect);
+      
+      if (correctOptions.length === 0) {
+        this.showMessage('Câu hỏi phải có ít nhất 1 đáp án đúng!', 'error');
+        return;
+      }
+      
+      if (correctOptions.length > 1) {
+        this.showMessage('Mỗi câu hỏi chỉ được phép có 1 đáp án đúng!', 'error');
+        return;
+      }
     }
 
     let questionType = 'SINGLE_CHOICE';
@@ -901,7 +912,7 @@ export class QuestionsComponent implements OnInit {
       dto.options = [];
     }
 
-    console.log('Sending DTO:', dto);
+    // console.log('Sending DTO:', dto);
 
     const apiCall =
       this.isEditQuestion && this.editQuestionIdx !== null

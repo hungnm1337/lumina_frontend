@@ -116,9 +116,11 @@
           <!-- Card Header -->
           <div class="card-header">
             <div class="article-status-section">
-              <span class="status-badge" [ngClass]="getStatusClass(article.status)">
+              <span class="status-badge" [ngClass]="getStatusClass(article)" [class.clickable]="article.rejectionReason"
+                (click)="article.rejectionReason ? openRejectionModal(article) : null"
+                [title]="article.rejectionReason ? 'Click để xem lý do từ chối' : ''">
                 <i class="fas fa-circle status-dot"></i>
-                {{getStatusText(article.status)}}
+                {{getStatusText(article)}}
               </span>
             </div>
 
@@ -175,20 +177,7 @@
               <p class="summary-text">{{article.summary}}</p>
             </div>
 
-            <!-- Rejection Reason Alert -->
-            <div *ngIf="article.rejectionReason" class="rejection-alert">
-              <div class="alert-header">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span class="alert-title">Bài viết đã bị từ chối</span>
-              </div>
-              <div class="alert-content">
-                <p class="rejection-reason">{{ article.rejectionReason }}</p>
-                <p class="rejection-hint">
-                  <i class="fas fa-info-circle"></i>
-                  Vui lòng sửa lại bài viết theo góp ý và gửi lại để duyệt.
-                </p>
-              </div>
-            </div>
+
 
             <!-- Article Info -->
             <div class="article-info-section">
@@ -632,6 +621,47 @@
           'Từ chối' : 'Đóng'}}
         </span>
         <span *ngIf="isSubmitting || isLoading">Đang xử lý...</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Rejection Reason Modal -->
+<div *ngIf="showRejectionModal" class="modal-overlay" (click)="closeRejectionModal()">
+  <div class="modal-content modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-content">
+        <div class="modal-icon icon-danger">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="modal-title-section">
+          <h2>Bài viết đã bị từ chối</h2>
+          <p *ngIf="selectedRejectedArticle">{{selectedRejectedArticle.title}}</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeRejectionModal()" type="button">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="rejection-reason-box">
+        <label>Lý do từ chối:</label>
+        <p class="rejection-reason-text">{{selectedRejectedArticle?.rejectionReason}}</p>
+      </div>
+      <p class="rejection-hint">
+        <i class="fas fa-info-circle"></i>
+        Vui lòng sửa lại bài viết theo góp ý và gửi lại để duyệt.
+      </p>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" (click)="closeRejectionModal()">
+        Đóng
+      </button>
+      <button type="button" class="btn-primary" (click)="editRejectedArticle()">
+        <i class="fas fa-edit"></i>
+        Chỉnh sửa Bài viết
       </button>
     </div>
   </div>

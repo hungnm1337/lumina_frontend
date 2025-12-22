@@ -581,7 +581,6 @@ export class SpeakingAnswerBoxComponent
 
       this.mediaRecorder.start();
       this.state = 'recording';
-      this.recordingTime = 0;
       this.startTimer();
       this.toastService.info('Đang ghi âm...');
 

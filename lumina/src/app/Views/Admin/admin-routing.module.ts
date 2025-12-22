@@ -49,10 +49,18 @@ const routes: Routes = [
         path: 'notifications',
         component: NotificationManagementComponent,
         data: { title: 'Quản lý thông báo' }
-      },{
+      }, {
         path: 'user-reports',
         component: ReportListComponent,
         data: { title: 'Báo cáo hệ thống' }
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('../User/profile/profile.component').then(
+            (m) => m.ProfileComponent
+          ),
+        data: { title: 'Hồ sơ' }
       }
 
     ]

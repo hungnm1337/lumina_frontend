@@ -28,7 +28,7 @@ export class ReportsComponent implements OnInit {
     { value: 'Exam', label: 'Exam' }
   ];
 
-  constructor(private reportService: ReportService) {}
+  constructor(private reportService: ReportService) { }
 
   ngOnInit(): void {
     this.fetchReports();
@@ -86,14 +86,7 @@ export class ReportsComponent implements OnInit {
     }
   }
 
-  onSelectReport(report: UserReportResponse, event?: MouseEvent): void {
-    // Ignore clicks that originate from interactive controls inside the list item
-    if (event && event.target) {
-      const target = event.target as HTMLElement;
-      if (target.closest && target.closest('button, a, input, select, textarea')) {
-        return;
-      }
-    }
+  onSelectReport(report: UserReportResponse): void {
     this.selectedReport = report;
   }
 
@@ -121,5 +114,23 @@ export class ReportsComponent implements OnInit {
   // Close/hide the detail panel
   closeDetail(): void {
     this.selectedReport = null;
+  }
+
+  // Helper method to get badge class based on report type
+  getTypeBadgeClass(type: string): string {
+    const typeLC = type.toLowerCase();
+    if (typeLC.includes('system')) return 'type-system';
+    if (typeLC.includes('article')) return 'type-article';
+    if (typeLC.includes('exam')) return 'type-exam';
+    return 'type-default';
+  }
+
+  // Helper method to get icon based on report type
+  getTypeIcon(type: string): string {
+    const typeLC = type.toLowerCase();
+    if (typeLC.includes('system')) return 'fas fa-cog';
+    if (typeLC.includes('article')) return 'fas fa-newspaper';
+    if (typeLC.includes('exam')) return 'fas fa-file-alt';
+    return 'fas fa-flag';
   }
 }
