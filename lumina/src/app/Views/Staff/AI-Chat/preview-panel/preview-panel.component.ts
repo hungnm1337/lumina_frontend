@@ -55,19 +55,28 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
       next: (parts: any[]) => {
         this.examParts = parts;
         
-        // Lấy unique examSetKeys và sắp xếp theo tháng-năm
+        // Lấy unique examSetKeys và sắp xếp: MockTest đầu tiên, còn lại giảm dần theo tháng-năm
         const uniqueKeys = Array.from(new Set(parts.map(p => p.examSetKey)));
-        this.examSetKeys = uniqueKeys.sort((a, b) => {
+        
+        // Tách MockTest và các kỳ đề khác
+        const mockTest = uniqueKeys.filter(key => key === 'MockTest');
+        const otherKeys = uniqueKeys.filter(key => key !== 'MockTest');
+        
+        // Sắp xếp các kỳ đề (không phải MockTest) GIẢM DẦN theo năm-tháng (mới nhất trước)
+        const sortedOtherKeys = otherKeys.sort((a, b) => {
           // Format: MM-YYYY
           const [monthA, yearA] = a.split('-').map(Number);
           const [monthB, yearB] = b.split('-').map(Number);
           
-          // So sánh năm trước, nếu bằng nhau thì so sánh tháng
+          // So sánh năm trước (giảm dần), nếu bằng nhau thì so sánh tháng (giảm dần)
           if (yearA !== yearB) {
-            return yearA - yearB;
+            return yearB - yearA; // Năm mới hơn lên trước
           }
-          return monthA - monthB;
+          return monthB - monthA; // Tháng mới hơn lên trước
         });
+        
+        // MockTest đầu tiên, sau đó là các kỳ đề giảm dần
+        this.examSetKeys = [...mockTest, ...sortedOtherKeys];
         
         console.log('ExamSetKeys (sorted):', this.examSetKeys);
         this.isLoadingParts = false;

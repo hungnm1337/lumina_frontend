@@ -51,7 +51,7 @@ export class ExamsComponent implements OnInit {
         this.updateVisibleGroups(); 
       },
       error: (err) => {
-        console.error('Error loading exams:', err);
+        // console.error('Error loading exams:', err);
       }
     });
   }
@@ -67,7 +67,7 @@ export class ExamsComponent implements OnInit {
   }
 
   openExamModal(exam?: any) {
-    console.log('Open exam modal:', exam);
+    // console.log('Open exam modal:', exam);
   }
 
   toggleExamStatus(exam: any) {
@@ -92,7 +92,7 @@ export class ExamsComponent implements OnInit {
         let msg = 'Error changing exam status';
         if (err?.error?.message) msg = err.error.message;
         this.showMessage(msg, 'error');
-        console.error('Error changing exam status:', err);
+        // console.error('Error changing exam status:', err);
       }
     });
 

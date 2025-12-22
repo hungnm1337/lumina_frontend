@@ -33,7 +33,7 @@ export class GoogleAnalyticsService {
         page_title: document.title
       });
 
-      console.log('📊 GA4 Page View:', event.urlAfterRedirects);
+      // console.log('📊 GA4 Page View:', event.urlAfterRedirects);
     });
   }
 

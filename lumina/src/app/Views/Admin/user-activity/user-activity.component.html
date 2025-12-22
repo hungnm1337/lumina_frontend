@@ -1,16 +1,16 @@
 <div class="user-activity-container">
   <!-- Header -->
   <div class="page-header">
-    <h1>📊 Phân Tích Hoạt Động Người Dùng</h1>
+    <h1>Phân Tích Hoạt Động Người Dùng</h1>
     <button class="btn-refresh" (click)="refreshData()" [disabled]="isLoading">
-      <span *ngIf="!isLoading">🔄 Làm mới</span>
-      <span *ngIf="isLoading">⏳ Đang tải...</span>
+      <span *ngIf="!isLoading">Làm mới</span>
+      <span *ngIf="isLoading">Đang tải...</span>
     </button>
   </div>
 
   <!-- Error Message -->
   <div class="error-message" *ngIf="errorMessage">
-    ⚠️ {{ errorMessage }}
+    {{ errorMessage }}
   </div>
 
   <!-- Loading Spinner -->
@@ -25,38 +25,32 @@
     <!-- Key Metrics Cards -->
     <div class="metrics-grid">
       <div class="metric-card realtime">
-        <div class="metric-icon">🔴</div>
         <div class="metric-value">{{ keyMetrics.activeUsersNow }}</div>
         <div class="metric-label">Đang Online</div>
       </div>
 
       <div class="metric-card">
-        <div class="metric-icon">👥</div>
         <div class="metric-value">{{ keyMetrics.totalUsers | number }}</div>
         <div class="metric-label">Tổng Người Dùng (7 ngày)</div>
-        <div class="metric-sub">{{ keyMetrics.newUsers | number }} mới</div>
+        <!-- <div class="metric-sub">{{ keyMetrics.newUsers | number }} mới</div> -->
       </div>
 
       <div class="metric-card">
-        <div class="metric-icon">🎯</div>
         <div class="metric-value">{{ keyMetrics.sessions | number }}</div>
         <div class="metric-label">Phiên Làm Việc</div>
       </div>
 
       <div class="metric-card">
-        <div class="metric-icon">📄</div>
         <div class="metric-value">{{ keyMetrics.pageViews | number }}</div>
         <div class="metric-label">Lượt Xem Trang</div>
       </div>
 
       <div class="metric-card">
-        <div class="metric-icon">⏱️</div>
         <div class="metric-value">{{ formatDuration(keyMetrics.avgSessionDuration) }}</div>
         <div class="metric-label">Thời Gian Trung Bình Mỗi Phiên</div>
       </div>
 
       <div class="metric-card">
-        <div class="metric-icon">📊</div>
         <div class="metric-value">{{ keyMetrics.bounceRate | number:'1.1-1' }}%</div>
         <div class="metric-label">Tỷ Lệ Thoát</div>
       </div>
@@ -67,7 +61,7 @@
       
       <!-- Top Pages -->
       <div class="chart-card">
-        <h2>🏆 Trang Phổ Biến</h2>
+        <h2>Trang Phổ Biến</h2>
         <div class="table-wrapper">
           <table>
             <thead>
@@ -151,7 +145,7 @@
 
       <!-- Countries -->
       <div class="chart-card">
-        <h2>🌍 Quốc Gia Hàng Đầu</h2>
+        <h2>Quốc Gia Hàng Đầu</h2>
         <div class="table-wrapper">
           <table>
             <thead>
@@ -180,7 +174,7 @@
 
       <!-- Daily Traffic -->
       <div class="chart-card full-width">
-        <h2>📈 Lưu Lượng Hàng Ngày (7 Ngày Gần Nhất)</h2>
+        <h2>Lưu Lượng Hàng Ngày (7 Ngày Gần Nhất)</h2>
         <div class="daily-chart">
           <div class="chart-bar" *ngFor="let day of dailyTraffic">
             <div class="bar-wrapper">
@@ -200,7 +194,7 @@
 
       <!-- Browsers -->
       <div class="chart-card">
-        <h2>🌐 Trình Duyệt</h2>
+        <h2>Trình Duyệt</h2>
         <div class="table-wrapper">
           <table>
             <thead>
