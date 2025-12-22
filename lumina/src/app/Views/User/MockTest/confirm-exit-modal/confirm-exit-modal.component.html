@@ -1,0 +1,49 @@
+<div *ngIf="isVisible" class="modal-overlay" (click)="onCancel()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2 class="modal-title">Xác nhận kết thúc bài thi</h2>
+            <button class="close-button" (click)="onCancel()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div class="warning-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+            </div>
+            <p class="modal-message">
+                Bạn có chắc chắn muốn <strong>kết thúc bài thi</strong> và xem kết quả không?
+            </p>
+            <p class="modal-sub-message">
+                Bài thi sẽ được chấm điểm và bạn không thể tiếp tục làm bài.
+            </p>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-cancel" (click)="onCancel()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+                Tiếp tục làm bài
+            </button>
+            <button class="btn btn-confirm" (click)="onConfirm()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Kết thúc bài thi
+            </button>
+        </div>
+    </div>
+</div>

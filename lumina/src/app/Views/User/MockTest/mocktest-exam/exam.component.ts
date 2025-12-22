@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
+import { ConfirmExitModalComponent } from '../confirm-exit-modal/confirm-exit-modal.component';
 import { MockTestService } from '../../../../Services/MockTest/mocktest.service';
 import { AuthService } from '../../../../Services/Auth/auth.service';
 import {
@@ -46,6 +47,7 @@ import { OptionsComponent } from '../../options/options.component';
     QuestionNavigatorComponent,
     PromptComponent,
     OptionsComponent,
+    ConfirmExitModalComponent,
   ],
   templateUrl: './exam.component.html',
   styleUrls: ['./exam.component.scss'],
@@ -72,6 +74,8 @@ export class ExamComponent implements OnInit, OnDestroy {
   attemptId: number | null = null;
   examId: number | null = null;
   isSubmitting: boolean = false;
+  examFinished: boolean = false; // Track if exam has been submitted
+  showExitModal: boolean = false; // Control exit confirmation modal
   totalScore: number = 0;
 
   currentPartTime: number = 0;
@@ -541,7 +545,7 @@ export class ExamComponent implements OnInit, OnDestroy {
     if (!this.isMultipleChoicePart) return;
 
     this.toastService.warning(
-      '⏰ Hết thời gian! Tự động chuyển sang part tiếp theo'
+      ' Hết thời gian! Tự động chuyển sang part tiếp theo'
     );
 
 
@@ -711,6 +715,7 @@ export class ExamComponent implements OnInit, OnDestroy {
     }
 
     this.isSubmitting = true;
+    this.examFinished = true; // Prevent saveProgress from running during ngOnDestroy
 
 
     const storedAttempt = localStorage.getItem('currentExamAttempt');
@@ -741,7 +746,7 @@ export class ExamComponent implements OnInit, OnDestroy {
               localStorage.removeItem('currentExamAttempt');
 
               this.toastService.success(
-                `Hoàn thành bài thi! Điểm: ${finalizeResponse.totalScore}/${finalizeResponse.totalQuestions}`
+                `Hoàn thành bài thi!`
               );
 
               setTimeout(() => {
@@ -753,9 +758,6 @@ export class ExamComponent implements OnInit, OnDestroy {
             },
             error: (error) => {
               this.isSubmitting = false;
-              this.toastService.warning(
-                'Đã nộp bài nhưng không thể tính điểm cuối cùng'
-              );
 
               setTimeout(() => {
                 this.router.navigate([
@@ -778,7 +780,8 @@ export class ExamComponent implements OnInit, OnDestroy {
   }
 
   private saveProgressOnExit(): void {
-    if (!this.attemptId || this.isSubmitting) return;
+    // Don't save progress if exam is already finished or being submitted
+    if (!this.attemptId || this.isSubmitting || this.examFinished) return;
 
     const model = {
       examAttemptId: this.attemptId,
@@ -792,42 +795,85 @@ export class ExamComponent implements OnInit, OnDestroy {
   }
 
   confirmExit(): void {
-    const confirmResult = confirm(
-      'Bạn có muốn lưu tiến trình và thoát không?\n\n' +
-      '- Chọn "OK" để lưu và thoát\n' +
-      '- Chọn "Cancel" để tiếp tục làm bài'
-    );
-
-    if (confirmResult) {
-      this.saveProgressAndExit();
-    }
+    this.showExitModal = true;
   }
 
-  private saveProgressAndExit(): void {
+  onExitConfirmed(): void {
+    this.showExitModal = false;
+    this.endExamAndExit();
+  }
+
+  onExitCancelled(): void {
+    this.showExitModal = false;
+  }
+
+  private endExamAndExit(): void {
     if (!this.attemptId) {
       this.router.navigate(['/homepage/user-dashboard/exams']);
       return;
     }
 
-    const model = {
-      examAttemptId: this.attemptId,
-      currentQuestionIndex: this.currentQuestionIndex,
-    };
+    const storedAttempt = localStorage.getItem('currentExamAttempt');
+    if (!storedAttempt) {
+      this.toastService.error('Không tìm thấy phiên thi');
+      return;
+    }
 
-    this.examAttemptService.saveProgress(model).subscribe({
-      next: () => {
-        localStorage.removeItem('currentExamAttempt');
-        this.router.navigate([
-          '/homepage/user-dashboard/mocktest/result',
-          this.attemptId,
-        ]);
-      },
-      error: (error) => {
-        this.router.navigate([
-          '/homepage/user-dashboard/mocktest/result',
-          this.attemptId,
-        ]);
-      },
-    });
+    this.isSubmitting = true;
+    this.examFinished = true;
+
+    try {
+      const attemptData = JSON.parse(storedAttempt);
+      const endExamRequest: ExamAttemptRequestDTO = {
+        attemptID: attemptData.attemptID || attemptData.attemptId,
+        userID: attemptData.userID || attemptData.userId,
+        examID: attemptData.examID || attemptData.examId,
+        examPartId: attemptData.examPartId || null,
+        startTime: attemptData.startTime,
+        endTime: new Date().toISOString(),
+        score: Math.round(this.totalScore),
+        status: 'Completed',
+      };
+
+      this.examAttemptService.endExam(endExamRequest).subscribe({
+        next: (response) => {
+          this.examAttemptService.finalizeAttempt(this.attemptId!).subscribe({
+            next: (finalizeResponse) => {
+              this.isSubmitting = false;
+              localStorage.removeItem('currentExamAttempt');
+
+              this.toastService.success(
+                `Đã kết thúc bài thi! Điểm: ${finalizeResponse.totalScore}/${finalizeResponse.totalQuestions}`
+              );
+
+              setTimeout(() => {
+                this.router.navigate([
+                  '/homepage/user-dashboard/mocktest/result',
+                  this.attemptId,
+                ]);
+              }, 1500);
+            },
+            error: (error) => {
+              this.isSubmitting = false;
+              localStorage.removeItem('currentExamAttempt');
+
+              setTimeout(() => {
+                this.router.navigate([
+                  '/homepage/user-dashboard/mocktest/result',
+                  this.attemptId,
+                ]);
+              }, 1500);
+            },
+          });
+        },
+        error: (error) => {
+          this.isSubmitting = false;
+          this.toastService.error('Không thể kết thúc bài thi. Vui lòng thử lại.');
+        },
+      });
+    } catch (error) {
+      this.isSubmitting = false;
+      this.toastService.error('Lỗi khi kết thúc bài thi');
+    }
   }
 }

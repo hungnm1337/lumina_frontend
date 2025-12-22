@@ -30,7 +30,7 @@ export class ResultComponent implements OnInit {
     private examAttemptService: ExamAttemptService,
     private toastService: ToastService,
     private mockTestService: MockTestService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
@@ -96,17 +96,46 @@ export class ResultComponent implements OnInit {
 
   get duration(): string {
     if (!this.examInfo?.startTime || !this.examInfo?.endTime) {
+      console.warn('⚠️ Missing time data:', {
+        startTime: this.examInfo?.startTime,
+        endTime: this.examInfo?.endTime
+      });
       return 'N/A';
     }
-    const start = new Date(this.examInfo.startTime).getTime();
-    const end = new Date(this.examInfo.endTime).getTime();
-    const diff = Math.floor((end - start) / 1000 / 60); // minutes
-    return `${diff} phút`;
+
+    try {
+      const start = new Date(this.examInfo.startTime).getTime();
+      const end = new Date(this.examInfo.endTime).getTime();
+
+      if (isNaN(start) || isNaN(end)) {
+        console.error('❌ Invalid date format:', {
+          startTime: this.examInfo.startTime,
+          endTime: this.examInfo.endTime
+        });
+        return 'N/A';
+      }
+
+      const diffInSeconds = Math.floor((end - start) / 1000);
+      const hours = Math.floor(diffInSeconds / 3600);
+      const minutes = Math.floor((diffInSeconds % 3600) / 60);
+      const seconds = diffInSeconds % 60;
+
+      if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+      } else if (minutes > 0) {
+        return `${minutes} phút`;
+      } else {
+        return `${seconds} giây`;
+      }
+    } catch (error) {
+      console.error('❌ Error calculating duration:', error);
+      return 'N/A';
+    }
   }
 
   getSkillScore(skillType: string): number {
     const lowerSkill = skillType.toLowerCase();
-    
+
     if (lowerSkill === 'listening' && this.attemptDetails?.listeningAnswers) {
       return this.attemptDetails.listeningAnswers.filter(a => a.isCorrect).length;
     }
@@ -124,7 +153,7 @@ export class ResultComponent implements OnInit {
 
   getSkillTotal(skillType: string): number {
     const lowerSkill = skillType.toLowerCase();
-    
+
     if (lowerSkill === 'listening' && this.attemptDetails?.listeningAnswers) {
       return this.attemptDetails.listeningAnswers.length;
     }
