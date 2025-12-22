@@ -87,17 +87,22 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
     const status = this.article.status?.toLowerCase() || '';
     if (status === 'pending') return 'status-pending';
     if (status === 'published') return 'status-published';
-    if (status === 'draft' && this.article.rejectionReason) return 'status-rejected';
+    if (status === 'rejected' || (status === 'draft' && this.article.rejectionReason)) {
+      return 'status-rejected';
+    }
     return 'status-draft';
   }
 
   // Get status text
   getStatusText(): string {
     if (!this.article) return '';
-    if (this.article.status?.toLowerCase() === 'draft' && this.article.rejectionReason) {
+    const status = this.article.status?.toLowerCase() || '';
+    
+    // Check for rejected status (either status is 'rejected' or draft with rejectionReason)
+    if (status === 'rejected' || (status === 'draft' && this.article.rejectionReason)) {
       return 'Đã từ chối';
     }
-    const status = this.article.status?.toLowerCase() || '';
+    
     switch (status) {
       case 'pending': return 'Chờ duyệt';
       case 'published': return 'Đã duyệt';

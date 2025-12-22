@@ -1040,6 +1040,243 @@ $toeic-purple: #8b5cf6;
   }
 }
 
+// Rejection View Modal Styling for Manager - TOEIC Style
+.modal-small {
+  max-width: 540px;
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25),
+              0 0 0 1px rgba(255, 255, 255, 0.1);
+
+  .modal-header {
+    padding: 28px 32px;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-bottom: 2px solid #e2e8f0;
+    border-radius: 20px 20px 0 0;
+
+    .modal-header-content {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex: 1;
+
+      .modal-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        box-shadow: 0 8px 16px rgba(239, 68, 68, 0.3);
+        border: 2px solid rgba(239, 68, 68, 0.3);
+        position: relative;
+        transition: all 0.3s ease;
+
+        &.icon-danger {
+          background: linear-gradient(135deg, $toeic-red 0%, #dc2626 100%);
+
+          &:hover {
+            transform: scale(1.05) rotate(-5deg);
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.4);
+          }
+        }
+      }
+
+      .modal-title-section {
+        flex: 1;
+
+        h2 {
+          font-size: 24px;
+          font-weight: 700;
+          color: #1a202c;
+          margin: 0 0 6px 0;
+          background: linear-gradient(135deg, #1a202c 0%, #4a5568 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+
+        p {
+          font-size: 15px;
+          color: #64748b;
+          margin: 0;
+          font-weight: 500;
+          line-height: 1.4;
+        }
+      }
+    }
+
+    .btn-close {
+      width: 44px;
+      height: 44px;
+      border: none;
+      background: rgba(0, 0, 0, 0.05);
+      color: #6b7280;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: $toeic-red;
+        transform: rotate(90deg);
+      }
+    }
+  }
+
+  .modal-body {
+    padding: 32px;
+  }
+
+  .rejection-reason-box {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border: 2px solid #fca5a5;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(239, 68, 68, 0.1);
+
+    label {
+      display: block;
+      font-weight: 700;
+      color: #991b1b;
+      margin-bottom: 12px;
+      font-size: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .rejection-reason-text {
+      color: #7f1d1d;
+      font-size: 15px;
+      line-height: 1.7;
+      margin: 0;
+      padding: 16px;
+      background: white;
+      border-radius: 12px;
+      border-left: 4px solid $toeic-red;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      font-weight: 500;
+    }
+  }
+
+  .rejection-hint {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: #475569;
+    font-size: 14px;
+    margin: 0;
+    padding: 16px;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border-radius: 12px;
+    border-left: 4px solid $toeic-blue;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+    line-height: 1.6;
+
+    i {
+      color: $toeic-blue;
+      font-size: 18px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+    padding: 24px 32px;
+    border-top: 2px solid #e2e8f0;
+    justify-content: flex-end;
+    background: linear-gradient(135deg, #fafbfc 0%, #f8fafc 100%);
+    border-radius: 0 0 20px 20px;
+
+    .btn-secondary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      color: #64748b;
+      border: 2px solid #e2e8f0;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+      &:hover:not(:disabled) {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #475569;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0);
+      }
+    }
+
+    .btn-primary {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, $toeic-blue 0%, #2563eb 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      i {
+        font-size: 16px;
+      }
+    }
+  }
+}
+
+// Make status badge and rejection alert clickable
+.status-badge.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+  }
+}
+
+.rejection-alert.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.2);
+  }
+}
+
 @keyframes scaleIn {
   from {
     transform: scale(0);

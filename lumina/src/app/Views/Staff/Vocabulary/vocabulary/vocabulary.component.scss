@@ -2491,3 +2491,207 @@ $toeic-purple: #8b5cf6;
   color: #6b7280;
   font-style: italic;
 }
+// Rejected Status Badge Styling
+.status-rejected {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  
+  i {
+    font-size: 14px;
+    color: #ef4444;
+  }
+
+  &.clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+      background: #fecaca;
+    }
+  }
+}
+
+// Rejection Reason Modal Styling
+.rejection-reason-box {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+
+  label {
+    display: block;
+    font-weight: 600;
+    color: #991b1b;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+
+  .rejection-reason-text {
+    color: #7f1d1d;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    border-left: 4px solid #ef4444;
+  }
+}
+
+.modal-body .rejection-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6b7280;
+  font-size: 13px;
+  margin: 0;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+
+  i {
+    color: #3b82f6;
+    font-size: 14px;
+  }
+}
+
+// Modal actions button styling for vocabulary
+.modal-small .modal-actions {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid #e2e8f0;
+  justify-content: flex-end;
+
+  .btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: white;
+    color: #64748b;
+    border: 2px solid #e2e8f0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: #475569;
+    }
+  }
+
+  .btn-primary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+    }
+
+    i {
+      font-size: 14px;
+    }
+  }
+}
+
+// Pagination Container Styling
+.pagination-container {
+  margin-top: 32px;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+
+  .pagination-info {
+    text-align: center;
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+
+  .pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+
+    .btn-page {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border: 1px solid #e2e8f0;
+      background: white;
+      border-radius: 8px;
+      color: #475569;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover:not(:disabled) {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    .page-numbers {
+      display: flex;
+      gap: 4px;
+
+      .btn-page-number {
+        width: 36px;
+        height: 36px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        border-radius: 8px;
+        color: #475569;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: #f8fafc;
+          border-color: #cbd5e1;
+        }
+
+        &.active {
+          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+          border-color: #3b82f6;
+          color: white;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+}

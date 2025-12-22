@@ -58,6 +58,10 @@ export class ArticlesComponent implements OnInit, OnDestroy {
   rejectingArticle: Article | null = null;
   rejectionReason: string = '';
 
+  // Rejection View Modal (for viewing rejection reasons)
+  showRejectionViewModal = false;
+  selectedRejectedArticle: Article | null = null;
+
   // Approval modal
   showApproveModal = false;
   approvingArticle: Article | null = null;
@@ -71,7 +75,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
     private router: Router,
     private toastr: ToastrService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadArticles();
@@ -116,10 +120,10 @@ export class ArticlesComponent implements OnInit, OnDestroy {
         // Filter out draft articles (manager không xem draft)
         const allArticles = response.map((article: any) => this.articleService.convertToArticle(article));
         this.articles = allArticles.filter((article: Article) => article.status !== 'draft' || article.rejectionReason);
-        
+
         // Store all articles for stats (not filtered)
         this.allArticlesForStats = allArticles.filter((article: Article) => article.status !== 'draft' || article.rejectionReason);
-        
+
         this.updateStats();
         this.isLoading = false;
       },
@@ -222,20 +226,23 @@ export class ArticlesComponent implements OnInit, OnDestroy {
 
   // Get status class for styling (similar to staff)
   getStatusClass(status: string): string {
-    switch (status) {
-      case 'pending': return 'status-pending';
-      case 'published': return 'status-published';
-      case 'draft': return 'status-draft';
-      default: return 'status-draft';
-    }
+    const statusLower = status?.toLowerCase() || '';
+    if (statusLower === 'pending') return 'status-pending';
+    if (statusLower === 'published') return 'status-published';
+    if (statusLower === 'rejected') return 'status-rejected';
+    return 'status-draft';
   }
 
   // Get status text
   getStatusText(status: string, rejectionReason?: string): string {
-    if (status === 'draft' && rejectionReason) {
+    const statusLower = status?.toLowerCase() || '';
+    
+    // Check for rejected status (either status is 'rejected' or draft with rejectionReason)
+    if (statusLower === 'rejected' || (statusLower === 'draft' && rejectionReason)) {
       return 'Đã từ chối';
     }
-    switch (status) {
+    
+    switch (statusLower) {
       case 'pending': return 'Chờ duyệt';
       case 'published': return 'Đã duyệt';
       case 'draft': return 'Bản nháp';
@@ -320,7 +327,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
     }
 
     const reason = this.rejectionReason.trim();
-    
+
     if (!reason) {
       this.toastr.warning('Vui lòng nhập lý do từ chối');
       return;
@@ -447,7 +454,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
   // Improved error handling
   private handleError(error: any, action: string): void {
     let errorMessage = `Không thể ${action}.`;
-    
+
     if (error.status === 0) {
       errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
     } else if (error.status === 401) {
@@ -461,7 +468,7 @@ export class ArticlesComponent implements OnInit, OnDestroy {
     } else if (error?.message) {
       errorMessage = error.message;
     }
-    
+
     this.toastr.error(errorMessage);
   }
 
@@ -475,11 +482,29 @@ export class ArticlesComponent implements OnInit, OnDestroy {
     const maxVisiblePages = 5;
     const startPage = Math.max(1, this.page - Math.floor(maxVisiblePages / 2));
     const endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
-    
+
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
     return pages;
+  }
+
+  // ===== REJECTION VIEW MODAL METHODS =====
+  openRejectionViewModal(article: Article): void {
+    this.selectedRejectedArticle = article;
+    this.showRejectionViewModal = true;
+  }
+
+  closeRejectionViewModal(): void {
+    this.showRejectionViewModal = false;
+    this.selectedRejectedArticle = null;
+  }
+
+  viewRejectedArticle(): void {
+    if (this.selectedRejectedArticle) {
+      this.viewArticle(this.selectedRejectedArticle);
+      this.closeRejectionViewModal();
+    }
   }
 
   // Helper for template
