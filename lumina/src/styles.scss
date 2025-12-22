@@ -1,11 +1,11 @@
-/* You can add global styles to this file, and also import other style files */
+@use 'ngx-toastr/toastr' as *;
+
 @import "quill/dist/quill.snow.css";
 @import "@fortawesome/fontawesome-free/css/all.min.css";
-@import 'ngx-toastr/toastr';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 
 body {
     box-sizing: border-box;

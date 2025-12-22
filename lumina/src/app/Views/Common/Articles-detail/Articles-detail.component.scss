@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // TOEIC Color Palette
 $toeic-primary: #f59e0b;
 $toeic-secondary: #d97706;
@@ -479,10 +481,10 @@ $toeic-gray-border: #e2e8f0;
       background: $toeic-gray-light;
       color: $toeic-gray;
 
-      &:hover:not(:disabled) {
-        background: darken($toeic-gray-light, 5%);
-        transform: translateX(-4px);
-      }
+&:hover:not(:disabled) {
+  background: color.adjust($toeic-gray-light, $lightness: -5%);
+  transform: translateX(-4px);
+}
     }
 
     &.next-btn {

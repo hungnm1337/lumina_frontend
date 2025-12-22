@@ -26,5 +26,8 @@
     "@types/summernote": "^0.8.10",
     "jquery": "^3.7.1",
     "summernote": "^0.9.1"
+  },
+  "devDependencies": {
+    "baseline-browser-mapping": "^2.9.11"
   }
 }
