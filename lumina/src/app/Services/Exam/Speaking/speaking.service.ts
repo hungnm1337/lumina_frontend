@@ -34,9 +34,7 @@ export class SpeakingService {
 
     if (attemptId && attemptId > 0) {
       formData.append('attemptId', attemptId.toString());
-      console.log(
-        `[SpeakingService] Submitting answer with attemptId: ${attemptId}`
-      );
+      
     }
 
     return this.http.post<SpeakingScoringResult>(
