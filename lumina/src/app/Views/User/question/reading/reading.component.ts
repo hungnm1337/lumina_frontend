@@ -433,9 +433,9 @@ export class ReadingComponent implements OnChanges, OnInit, OnDestroy {
         );
 
         // Hiển thị thông báo TOEIC
-        if (response.toeicMessage) {
-          this.showTOEICNotification(response);
-        }
+        // if (response.toeicMessage) {
+        //   this.showTOEICNotification(response);
+        // }
 
         // Thông báo nếu làm lần đầu
         if (response.isFirstAttempt) {
@@ -471,11 +471,9 @@ ${response.toeicMessage}
 Thông tin chi tiết:
 • Điểm lần này: ${response.seasonScore}
 • Tổng điểm tích lũy: ${response.totalAccumulatedScore}
-• TOEIC ước tính: ${response.estimatedTOEIC}
-• Trình độ: ${response.toeicLevel}
 ${response.isFirstAttempt
-        ? '\n Lần đầu làm đề này!'
-        : '\nLàm lại đề - TOEIC giữ nguyên'
+        ? '\n✨ Lần đầu làm đề này!'
+        : ''
       }
     `.trim();
 
@@ -498,8 +496,8 @@ ${response.isFirstAttempt
     this.showPopup = true;
     this.popupTitle = 'Chúc mừng!';
     this.popupMessage = `${icon} CHÚC MỪNG!\n\nBạn đã lên cấp độ: ${levelText}\n${previousLevel
-        ? `Từ: ${this.leaderboardService.getTOEICLevelText(previousLevel)}`
-        : ''
+      ? `Từ: ${this.leaderboardService.getTOEICLevelText(previousLevel)}`
+      : ''
       }\n\nHãy tiếp tục phát huy!`;
     this.popupOkHandler = () => {
       this.showPopup = false;
