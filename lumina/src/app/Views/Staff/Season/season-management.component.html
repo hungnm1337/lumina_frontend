@@ -54,14 +54,8 @@
   <!-- Search & Filters -->
   <div class="search-bar">
     <div class="search-input-wrapper">
-      <input
-        type="text"
-        [(ngModel)]="keyword"
-        (keyup.enter)="onSearch()"
-        placeholder="Tìm kiếm theo tên hoặc số mùa..."
-        class="search-input"
-        [class.error-input]="validationErrors.keyword"
-      />
+      <input type="text" [(ngModel)]="keyword" (keyup.enter)="onSearch()" placeholder="Tìm kiếm theo tên hoặc số mùa..."
+        class="search-input" [class.error-input]="validationErrors.keyword" />
       <button class="btn btn-search" (click)="onSearch()">Tìm</button>
     </div>
     <span *ngIf="validationErrors.keyword" class="error-message">
@@ -72,28 +66,16 @@
 
   <!-- Tabs -->
   <div class="tabs">
-    <button
-      class="tab"
-      [class.active]="activeTab === 'all'"
-      (click)="activeTab = 'all'">
+    <button class="tab" [class.active]="activeTab === 'all'" (click)="activeTab = 'all'">
       Tất cả ({{ seasons.length }})
     </button>
-    <button
-      class="tab"
-      [class.active]="activeTab === 'active'"
-      (click)="activeTab = 'active'">
+    <button class="tab" [class.active]="activeTab === 'active'" (click)="activeTab = 'active'">
       Đang diễn ra
     </button>
-    <button
-      class="tab"
-      [class.active]="activeTab === 'upcoming'"
-      (click)="activeTab = 'upcoming'">
+    <button class="tab" [class.active]="activeTab === 'upcoming'" (click)="activeTab = 'upcoming'">
       Sắp diễn ra
     </button>
-    <button
-      class="tab"
-      [class.active]="activeTab === 'ended'"
-      (click)="activeTab = 'ended'">
+    <button class="tab" [class.active]="activeTab === 'ended'" (click)="activeTab = 'ended'">
       Đã kết thúc
     </button>
   </div>
@@ -123,7 +105,8 @@
           <td>{{ season.leaderboardId }}</td>
           <td>
             <strong>{{ season.seasonName || 'Season ' + season.seasonNumber }}</strong>
-            <span class="badge badge-current" *ngIf="currentSeason && season.leaderboardId === currentSeason.leaderboardId">
+            <span class="badge badge-current"
+              *ngIf="currentSeason && season.leaderboardId === currentSeason.leaderboardId">
               Hiện tại
             </span>
           </td>
@@ -146,14 +129,11 @@
           <td>
             <div class="action-buttons">
               <!-- Chỉ hiển thị nút xem cho mùa đã kết thúc -->
-              <button 
-                *ngIf="season.status === 'Ended'" 
-                class="btn-action btn-info" 
-                (click)="openEditModal(season)" 
+              <button *ngIf="season.status === 'Ended'" class="btn-action btn-info" (click)="openEditModal(season)"
                 title="Xem chi tiết">
                 Xem
               </button>
-              
+
               <!-- Hiển thị các nút hành động cho mùa chưa kết thúc -->
               <ng-container *ngIf="season.status !== 'Ended'">
                 <button class="btn-action" (click)="openEditModal(season)" title="Chỉnh sửa">
@@ -178,19 +158,13 @@
 
   <!-- Pagination -->
   <div class="pagination" *ngIf="totalPages > 1">
-    <button
-      class="btn btn-secondary"
-      (click)="goToPage(currentPage - 1)"
-      [disabled]="currentPage === 1">
+    <button class="btn btn-secondary" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
       Trước
     </button>
     <span class="page-info">
       Trang {{ currentPage }} / {{ totalPages }} ({{ totalItems }} mục)
     </span>
-    <button
-      class="btn btn-secondary"
-      (click)="goToPage(currentPage + 1)"
-      [disabled]="currentPage === totalPages">
+    <button class="btn btn-secondary" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
       Sau
     </button>
   </div>
@@ -206,12 +180,8 @@
     <div class="modal-body">
       <div class="form-group">
         <label>Tên Mùa Giải</label>
-        <input
-          type="text"
-          [(ngModel)]="createForm.seasonName"
-          placeholder="VD: Spring Challenge 2025"
-          class="form-control"
-          [class.error-input]="validationErrors.seasonName" />
+        <input type="text" [(ngModel)]="createForm.seasonName" placeholder="VD: Spring Challenge 2025"
+          class="form-control" [class.error-input]="validationErrors.seasonName" />
         <span *ngIf="validationErrors.seasonName" class="error-message">
           <i class="fas fa-exclamation-circle"></i>
           {{ validationErrors.seasonName }}
@@ -219,12 +189,7 @@
       </div>
       <div class="form-group" *ngIf="false">
         <label>Số Mùa <span class="required">*</span></label>
-        <input
-          type="number"
-          [(ngModel)]="createForm.seasonNumber"
-          min="1"
-          required
-          class="form-control"
+        <input type="number" [(ngModel)]="createForm.seasonNumber" min="1" required class="form-control"
           [class.error-input]="validationErrors.seasonNumber" />
         <span *ngIf="validationErrors.seasonNumber" class="error-message">
           <i class="fas fa-exclamation-circle"></i>
@@ -233,12 +198,8 @@
       </div>
       <div class="form-group">
         <label>Ngày Bắt Đầu <span class="required">*</span></label>
-        <input
-          type="datetime-local"
-          [(ngModel)]="createForm.startDate"
-          required
-          class="form-control"
-          [class.error-input]="validationErrors.startDate" />
+        <input type="datetime-local" [(ngModel)]="createForm.startDate" (ngModelChange)="onStartDateChange()" required
+          class="form-control" [class.error-input]="validationErrors.startDate" />
         <small class="help-text">Định dạng: YYYY-MM-DD HH:mm (VD: 2024-01-01 00:00)</small>
         <span *ngIf="validationErrors.startDate" class="error-message">
           <i class="fas fa-exclamation-circle"></i>
@@ -247,11 +208,7 @@
       </div>
       <div class="form-group">
         <label>Ngày Kết Thúc <span class="required">*</span></label>
-        <input
-          type="datetime-local"
-          [(ngModel)]="createForm.endDate"
-          required
-          class="form-control"
+        <input type="datetime-local" [(ngModel)]="createForm.endDate" required class="form-control"
           [class.error-input]="validationErrors.endDate" />
         <small class="help-text">Phải sau ngày bắt đầu</small>
         <span *ngIf="validationErrors.endDate" class="error-message">
@@ -259,13 +216,29 @@
           {{ validationErrors.endDate }}
         </span>
       </div>
+
+      <!-- Warning when start date is in the past -->
+      <div class="alert alert-warning" *ngIf="startDateInPast && !createForm.isActive">
+        <div style="display: flex; align-items: center; gap: 16px; width: 100%;">
+          <div style="flex: 1;">
+            <div style="margin-bottom: 4px;">
+              <strong style="font-size: 14px;">Ngày bắt đầu đã qua</strong>
+            </div>
+            <p style="margin: 0; font-size: 13px; opacity: 0.9;">
+              Bạn có muốn kích hoạt mùa giải ngay không?
+            </p>
+          </div>
+          <button class="btn-warning" (click)="activateImmediately()" type="button">
+            Kích hoạt ngay
+          </button>
+        </div>
+      </div>
+
       <div class="alert alert-error" *ngIf="error">{{ error }}</div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="closeAllModals()" [disabled]="loading">Hủy</button>
-      <button
-        class="btn btn-primary"
-        (click)="onCreate()"
+      <button class="btn btn-primary" (click)="onCreate()"
         [disabled]="loading || !createForm.startDate || !createForm.endDate">
         <span *ngIf="loading">Đang tạo...</span>
         <span *ngIf="!loading">Tạo Mùa Giải</span>
@@ -284,11 +257,7 @@
     <div class="modal-body">
       <div class="form-group">
         <label>Tên Mùa Giải</label>
-        <input
-          type="text"
-          [(ngModel)]="editForm.seasonName"
-          [disabled]="isViewOnly"
-          class="form-control"
+        <input type="text" [(ngModel)]="editForm.seasonName" [disabled]="isViewOnly" class="form-control"
           [class.error-input]="validationErrors.seasonName" />
         <span *ngIf="validationErrors.seasonName" class="error-message">
           <i class="fas fa-exclamation-circle"></i>
@@ -297,14 +266,8 @@
       </div>
       <div class="form-group" *ngIf="false">
         <label>Số Mùa <span class="required">*</span></label>
-        <input
-          type="number"
-          [(ngModel)]="editForm.seasonNumber"
-          min="1"
-          required
-          [disabled]="isViewOnly"
-          class="form-control"
-          [class.error-input]="validationErrors.seasonNumber" />
+        <input type="number" [(ngModel)]="editForm.seasonNumber" min="1" required [disabled]="isViewOnly"
+          class="form-control" [class.error-input]="validationErrors.seasonNumber" />
         <span *ngIf="validationErrors.seasonNumber" class="error-message">
           <i class="fas fa-exclamation-circle"></i>
           {{ validationErrors.seasonNumber }}
@@ -312,13 +275,8 @@
       </div>
       <div class="form-group">
         <label>Ngày Bắt Đầu <span class="required">*</span></label>
-        <input
-          type="datetime-local"
-          [(ngModel)]="editForm.startDate"
-          required
-          [disabled]="isViewOnly"
-          class="form-control"
-          [class.error-input]="validationErrors.startDate" />
+        <input type="datetime-local" [(ngModel)]="editForm.startDate" required [disabled]="isViewOnly"
+          class="form-control" [class.error-input]="validationErrors.startDate" />
         <span *ngIf="validationErrors.startDate" class="error-message">
           <i class="fas fa-exclamation-circle"></i>
           {{ validationErrors.startDate }}
@@ -326,13 +284,8 @@
       </div>
       <div class="form-group">
         <label>Ngày Kết Thúc <span class="required">*</span></label>
-        <input
-          type="datetime-local"
-          [(ngModel)]="editForm.endDate"
-          required
-          [disabled]="isViewOnly"
-          class="form-control"
-          [class.error-input]="validationErrors.endDate" />
+        <input type="datetime-local" [(ngModel)]="editForm.endDate" required [disabled]="isViewOnly"
+          class="form-control" [class.error-input]="validationErrors.endDate" />
         <span *ngIf="validationErrors.endDate" class="error-message">
           <i class="fas fa-exclamation-circle"></i>
           {{ validationErrors.endDate }}
@@ -341,11 +294,9 @@
       <div class="alert alert-error" *ngIf="error">{{ error }}</div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeAllModals()" [disabled]="loading">{{ isViewOnly ? 'Đóng' : 'Hủy' }}</button>
-      <button
-        *ngIf="!isViewOnly"
-        class="btn btn-primary"
-        (click)="onUpdate()"
+      <button class="btn btn-secondary" (click)="closeAllModals()" [disabled]="loading">{{ isViewOnly ? 'Đóng' : 'Hủy'
+        }}</button>
+      <button *ngIf="!isViewOnly" class="btn btn-primary" (click)="onUpdate()"
         [disabled]="loading || !editForm.startDate || !editForm.endDate">
         <span *ngIf="loading">Đang cập nhật...</span>
         <span *ngIf="!loading">Cập Nhật</span>

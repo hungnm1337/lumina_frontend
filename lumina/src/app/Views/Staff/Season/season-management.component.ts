@@ -51,6 +51,7 @@ export class SeasonManagementComponent implements OnInit {
   loading = false;
   error = '';
   success = '';
+  startDateInPast = false;
 
   // Validation errors
   validationErrors: {
@@ -118,7 +119,7 @@ export class SeasonManagementComponent implements OnInit {
       this.validationErrors.keyword = 'Từ khóa tìm kiếm phải có ít nhất 2 ký tự';
       return;
     }
-    
+
     this.validationErrors.keyword = undefined;
     this.currentPage = 1;
     this.loadSeasons();
@@ -134,6 +135,7 @@ export class SeasonManagementComponent implements OnInit {
       endDate: null,
       isActive: false
     };
+    this.startDateInPast = false;
     this.showCreateModal = true;
     this.error = '';
     this.success = '';
@@ -208,7 +210,9 @@ export class SeasonManagementComponent implements OnInit {
     // Check if start date is in the past
     const now = new Date();
     if (startDate < now && !this.createForm.isActive) {
-      this.error = 'Ngày bắt đầu đã qua. Bạn có muốn kích hoạt mùa giải ngay không?';
+      // Show warning but don't block - user can click "Activate Now" button
+      this.startDateInPast = true;
+      this.error = 'Vui lòng kích hoạt mùa giải ngay hoặc chọn ngày bắt đầu trong tương lai';
       return;
     }
 
@@ -481,7 +485,7 @@ export class SeasonManagementComponent implements OnInit {
 
   confirmReset(): void {
     if (!this.selectedSeason) return;
-    
+
     this.loading = true;
     this.showResetModal = false;
 
@@ -583,6 +587,24 @@ export class SeasonManagementComponent implements OnInit {
     this.showDeleteModal = false;
     this.showResetModal = false;
     this.isViewOnly = false;
+    this.error = '';
+  }
+
+  // Check if start date is in the past
+  onStartDateChange(): void {
+    if (this.createForm.startDate) {
+      const startDate = new Date(this.createForm.startDate);
+      const now = new Date();
+      this.startDateInPast = startDate < now;
+    } else {
+      this.startDateInPast = false;
+    }
+  }
+
+  // Activate season immediately
+  activateImmediately(): void {
+    this.createForm.isActive = true;
+    this.startDateInPast = false;
     this.error = '';
   }
 }

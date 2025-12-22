@@ -19,7 +19,8 @@
           <div class="flex flex-wrap gap-3 mt-2 text-sm">
             <span class="flex items-center gap-1">
               <i class="fas fa-calendar"></i>
-              {{ leaderboardService.formatDate(currentSeason.startDate) }} - {{ leaderboardService.formatDate(currentSeason.endDate) }}
+              {{ leaderboardService.formatDate(currentSeason.startDate) }} - {{
+              leaderboardService.formatDate(currentSeason.endDate) }}
             </span>
             <span class="flex items-center gap-1">
               <i class="fas fa-users"></i>
@@ -42,26 +43,28 @@
 
       <!-- Rank 2 -->
       <div class="order-2 md:order-1" *ngIf="top3.length >= 2">
-        <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-4 border-gray-300 mt-8">
+        <div
+          class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-4 border-gray-300 mt-8">
           <div class="text-center">
             <div class="relative inline-block mb-4">
-              <img [src]="getAvatarUrl(top3[1])"
-                   alt="avatar"
-                   class="w-24 h-24 rounded-full object-cover border-4 border-gray-300 shadow-lg">
-              <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-gray-300 to-gray-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
+              <img [src]="getAvatarUrl(top3[1])" alt="avatar"
+                class="w-24 h-24 rounded-full object-cover border-4 border-gray-300 shadow-lg">
+              <div
+                class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-gray-300 to-gray-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
                 2
               </div>
             </div>
             <h4 class="text-xl font-bold text-gray-900 mb-2">{{ top3[1].fullName }}</h4>
-            <div class="mb-2" *ngIf="top3[1].estimatedTOEICScore">
+            <div class="mb-2" *ngIf="false">
               <div class="text-sm text-gray-600">TOEIC Ước Tính</div>
               <div class="text-lg font-bold text-gray-900">{{ top3[1].estimatedTOEICScore }}</div>
               <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold mt-1"
-                    [ngClass]="leaderboardService.getTOEICLevelColor(top3[1].toeicLevel)">
+                [ngClass]="leaderboardService.getTOEICLevelColor(top3[1].toeicLevel)">
                 {{ leaderboardService.getTOEICLevelText(top3[1].toeicLevel) }}
               </span>
             </div>
-            <div class="inline-flex items-center justify-center px-4 py-2 rounded-full bg-blue-100 text-blue-700 font-bold text-lg">
+            <div
+              class="inline-flex items-center justify-center px-4 py-2 rounded-full bg-blue-100 text-blue-700 font-bold text-lg">
               {{ top3[1].score }} điểm
             </div>
           </div>
@@ -70,33 +73,35 @@
 
       <!-- Rank 1 (Winner) -->
       <div class="order-1 md:order-2" *ngIf="top3.length >= 1">
-        <div class="bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl p-6 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-2 relative overflow-hidden">
+        <div
+          class="bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl p-6 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-2 relative overflow-hidden">
           <!-- Crown decoration -->
           <div class="absolute top-0 right-0 text-yellow-200 text-6xl opacity-20">
             <i class="fas fa-crown"></i>
           </div>
           <div class="text-center relative z-10">
             <div class="relative inline-block mb-4">
-              <img [src]="getAvatarUrl(top3[0])"
-                   alt="avatar"
-                   class="w-28 h-28 rounded-full object-cover border-4 border-white shadow-2xl">
+              <img [src]="getAvatarUrl(top3[0])" alt="avatar"
+                class="w-28 h-28 rounded-full object-cover border-4 border-white shadow-2xl">
               <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <i class="fas fa-crown text-yellow-200 text-3xl"></i>
               </div>
-              <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-white text-yellow-600 w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
+              <div
+                class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-white text-yellow-600 w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
                 1
               </div>
             </div>
             <h4 class="text-2xl font-bold text-white mb-2">{{ top3[0].fullName }}</h4>
-            <div class="mb-3" *ngIf="top3[0].estimatedTOEICScore">
+            <div class="mb-3" *ngIf="false">
               <div class="text-sm text-yellow-100">TOEIC Ước Tính</div>
               <div class="text-xl font-bold text-white">{{ top3[0].estimatedTOEICScore }}</div>
               <span class="inline-flex items-center px-3 py-1 rounded-full bg-white text-xs font-semibold mt-1"
-                    [ngClass]="leaderboardService.getTOEICLevelColor(top3[0].toeicLevel)">
+                [ngClass]="leaderboardService.getTOEICLevelColor(top3[0].toeicLevel)">
                 {{ leaderboardService.getTOEICLevelText(top3[0].toeicLevel) }}
               </span>
             </div>
-            <div class="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-yellow-700 font-bold text-xl shadow-lg">
+            <div
+              class="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-yellow-700 font-bold text-xl shadow-lg">
               {{ top3[0].score }} điểm
             </div>
           </div>
@@ -105,26 +110,28 @@
 
       <!-- Rank 3 -->
       <div class="order-3" *ngIf="top3.length >= 3">
-        <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-4 border-orange-400 mt-8">
+        <div
+          class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-4 border-orange-400 mt-8">
           <div class="text-center">
             <div class="relative inline-block mb-4">
-              <img [src]="getAvatarUrl(top3[2])"
-                   alt="avatar"
-                   class="w-24 h-24 rounded-full object-cover border-4 border-orange-400 shadow-lg">
-              <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-orange-400 to-orange-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
+              <img [src]="getAvatarUrl(top3[2])" alt="avatar"
+                class="w-24 h-24 rounded-full object-cover border-4 border-orange-400 shadow-lg">
+              <div
+                class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-orange-400 to-orange-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
                 3
               </div>
             </div>
             <h4 class="text-xl font-bold text-gray-900 mb-2">{{ top3[2].fullName }}</h4>
-            <div class="mb-2" *ngIf="top3[2].estimatedTOEICScore">
+            <div class="mb-2" *ngIf="false">
               <div class="text-sm text-gray-600">TOEIC Ước Tính</div>
               <div class="text-lg font-bold text-gray-900">{{ top3[2].estimatedTOEICScore }}</div>
               <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold mt-1"
-                    [ngClass]="leaderboardService.getTOEICLevelColor(top3[2].toeicLevel)">
+                [ngClass]="leaderboardService.getTOEICLevelColor(top3[2].toeicLevel)">
                 {{ leaderboardService.getTOEICLevelText(top3[2].toeicLevel) }}
               </span>
             </div>
-            <div class="inline-flex items-center justify-center px-4 py-2 rounded-full bg-blue-100 text-blue-700 font-bold text-lg">
+            <div
+              class="inline-flex items-center justify-center px-4 py-2 rounded-full bg-blue-100 text-blue-700 font-bold text-lg">
               {{ top3[2].score }} điểm
             </div>
           </div>
@@ -135,7 +142,8 @@
 
     <!-- View All Button -->
     <div class="text-center" *ngIf="!loading && top3.length > 0">
-      <button (click)="viewAll()" class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
+      <button (click)="viewAll()"
+        class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
         <span>Xem tất cả bảng xếp hạng</span>
         <i class="fas fa-arrow-right"></i>
       </button>
