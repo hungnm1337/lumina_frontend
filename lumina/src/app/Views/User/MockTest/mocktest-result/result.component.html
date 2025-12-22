@@ -19,18 +19,13 @@
     <!-- Score Overview -->
     <div class="score-overview">
       <div class="score-card main-score">
-        <div class="score-label">Tổng điểm</div>
+        <div class="score-label">Tổng điểm Multiple choice</div>
         <div class="score-value">{{ correctAnswers }}</div>
-        <div class="score-subtitle">/ {{ totalQuestions }} câu</div>
+        <div class="score-subtitle"></div>
       </div>
 
       <div class="score-card">
-        <div class="score-label">Đúng</div>
-        <div class="score-value success">{{ correctAnswers }}</div>
-      </div>
-
-      <div class="score-card">
-        <div class="score-label">Tỉ lệ</div>
+        <div class="score-label">Tỉ lệ đúng Multiple choice</div>
         <div class="score-value">{{ percentCorrect }}%</div>
       </div>
 
@@ -48,7 +43,7 @@
           <div class="skill-icon listening">
             <i class="fas fa-headphones"></i>
           </div>
-          <h3>Listening</h3>
+          <h3>Điểm Listening</h3>
           <div class="skill-score">
             {{ getSkillScore('listening') }} / {{ getSkillTotal('listening') }}
           </div>
@@ -63,7 +58,7 @@
           <div class="skill-icon reading">
             <i class="fas fa-book-open"></i>
           </div>
-          <h3>Reading</h3>
+          <h3>Điểm Reading</h3>
           <div class="skill-score">
             {{ getSkillScore('reading') }} / {{ getSkillTotal('reading') }}
           </div>
@@ -78,7 +73,7 @@
           <div class="skill-icon speaking">
             <i class="fas fa-microphone"></i>
           </div>
-          <h3>Speaking</h3>
+          <h3>Số câu Speaking hoàn thành</h3>
           <div class="skill-score">
             {{ getSkillScore('speaking') }} / {{ getSkillTotal('speaking') }}
           </div>
@@ -93,7 +88,7 @@
           <div class="skill-icon writing">
             <i class="fas fa-pen"></i>
           </div>
-          <h3>Writing</h3>
+          <h3>Số câu Writing hoàn thành</h3>
           <div class="skill-score">
             {{ getSkillScore('writing') }} / {{ getSkillTotal('writing') }}
           </div>
