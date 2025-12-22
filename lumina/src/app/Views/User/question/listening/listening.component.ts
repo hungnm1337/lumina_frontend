@@ -132,7 +132,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     private quotaService: QuotaService,
     private leaderboardService: LeaderboardService,
     private sidebarService: SidebarService
-  ) {}
+  ) { }
 
   onReportPopupClose(): void {
     this.showReportPopup = false;
@@ -273,7 +273,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
 
   private incrementQuotaOnStart(): void {
     this.quotaService.incrementQuota('listening').subscribe({
-      next: () => {},
+      next: () => { },
       error: (err) => {
         if (err.status === 400 || err.status === 403) {
           this.quotaMessage =
@@ -356,8 +356,8 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     } else {
       const confirmFinish = confirm(
         'Đây là câu cuối cùng. Bạn có muốn nộp bài ngay không?\n\n' +
-          'Chọn "OK" để nộp bài\n' +
-          'Chọn "Cancel" để xem lại các câu trước'
+        'Chọn "OK" để nộp bài\n' +
+        'Chọn "Cancel" để xem lại các câu trước'
       );
       if (confirmFinish) {
         this.finishQuiz();
@@ -423,7 +423,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
 
     audio
       .play()
-      .then(() => {})
+      .then(() => { })
       .catch((error) => {
         this.audioPlayCounts.set(currentQuestionId, currentCount);
         this.isAudioPlaying = false;
@@ -501,7 +501,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
           localStorage.removeItem(key);
         }
       });
-    } catch (error) {}
+    } catch (error) { }
   }
 
   finishExamManual(): void {
@@ -510,9 +510,8 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     const unansweredCount = totalQuestions - answeredCount;
 
     this.submitPopupTitle = 'Xác nhận nộp bài';
-    let message = `Bạn có chắc chắn muốn nộp bài thi ${
-      this.partInfo?.partCode || 'Listening'
-    } không?\nSố câu đã trả lời: ${answeredCount}/${totalQuestions}`;
+    let message = `Bạn có chắc chắn muốn nộp bài thi ${this.partInfo?.partCode || 'Listening'
+      } không?\nSố câu đã trả lời: ${answeredCount}/${totalQuestions}`;
 
     if (unansweredCount > 0) {
       message += `\nSố câu chưa trả lời: ${unansweredCount}\nCác câu chưa trả lời sẽ không được tính điểm!`;
@@ -576,11 +575,11 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
 
     this.leaderboardService.calculateScore(request).subscribe({
       next: (response) => {
-        if (response.toeicMessage) {
-          this.showTOEICNotification(response);
-        }
+        // if (response.toeicMessage) {
+        //   this.showTOEICNotification(response);
+        // }
       },
-      error: (error) => {},
+      error: (error) => { },
     });
   }
 
@@ -597,13 +596,10 @@ ${response.toeicMessage}
 📊 Thông tin chi tiết:
 • Điểm lần này: ${response.seasonScore}
 • Tổng điểm tích lũy: ${response.totalAccumulatedScore}
-• TOEIC ước tính: ${response.estimatedTOEIC}
-• Trình độ: ${response.toeicLevel}
-${
-  response.isFirstAttempt
-    ? '\n🎯 Lần đầu làm đề này!'
-    : '\n🔄 Làm lại đề - TOEIC giữ nguyên'
-}
+${response.isFirstAttempt
+        ? '\n🎯 Lần đầu làm đề này!'
+        : ''
+      }
     `.trim();
 
     this.toeicPopupMessage = message;
@@ -622,10 +618,9 @@ ${
     const icon = this.leaderboardService.getTOEICLevelIcon(newLevel);
 
     alert(
-      `${icon} CHÚC MẬNG!\n\nBạn đã lên cấp độ: ${levelText}\n${
-        previousLevel
-          ? `Từ: ${this.leaderboardService.getTOEICLevelText(previousLevel)}`
-          : ''
+      `${icon} CHÚC MẬNG!\n\nBạn đã lên cấp độ: ${levelText}\n${previousLevel
+        ? `Từ: ${this.leaderboardService.getTOEICLevelText(previousLevel)}`
+        : ''
       }\n\nHãy tiếp tục phát huy!`
     );
   }
@@ -644,7 +639,7 @@ ${
         this.examAttemptDetails = details;
         this.showExamAttemptDetailsFlag = true;
       },
-      error: (error) => {},
+      error: (error) => { },
     });
   }
 
@@ -696,8 +691,8 @@ ${
       };
 
       this.examAttemptService.saveProgress(model).subscribe({
-        next: () => {},
-        error: (error) => {},
+        next: () => { },
+        error: (error) => { },
       });
     }
   }
@@ -705,8 +700,8 @@ ${
   confirmExit(): void {
     const confirmResult = confirm(
       'Bạn có muốn lưu tiến trình và thoát không?\n\n' +
-        '- Chọn "OK" để lưu và thoát\n' +
-        '- Chọn "Cancel" để tiếp tục làm bài'
+      '- Chọn "OK" để lưu và thoát\n' +
+      '- Chọn "Cancel" để tiếp tục làm bài'
     );
 
     if (confirmResult) {
