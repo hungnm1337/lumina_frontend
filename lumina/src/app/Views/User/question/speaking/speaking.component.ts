@@ -602,94 +602,12 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       };
     }
 
-    return this.getTimingFromPartCode(currentQuestion);
+    // Use the service to get timing based on global question number
+    const globalQuestionNumber = this.getQuestionNumber(currentQuestion.questionId);
+    return this.speakingStateService.getQuestionTiming(globalQuestionNumber);
   }
 
-  private getTimingFromPartCode(question: any): SpeakingQuestionTiming {
-    const partCode = question.partCode?.toUpperCase() || '';
-    const questionNumber = question.questionNumber || 1;
 
-    // Map partCode to timing configuration
-    if (partCode.includes('SPEAKING_PART_1') || partCode.includes('PART_1')) {
-      // Part 1: Questions 1-2
-      return {
-        questionNumber: questionNumber,
-        partNumber: 1,
-        preparationTime: 45,
-        recordingTime: 45,
-      };
-    } else if (partCode.includes('SPEAKING_PART_2') || partCode.includes('PART_2')) {
-      // Part 2: Questions 3-4
-      return {
-        questionNumber: questionNumber,
-        partNumber: 2,
-        preparationTime: 45,
-        recordingTime: 30,
-      };
-    } else if (partCode.includes('SPEAKING_PART_3') || partCode.includes('PART_3')) {
-      // Part 3: Questions 5-7
-      if (questionNumber === 1 || questionNumber === 2) {
-        return {
-          questionNumber: questionNumber,
-          partNumber: 3,
-          preparationTime: 3,
-          recordingTime: 15,
-        };
-      } else {
-        // Question 3 of Part 3
-        return {
-          questionNumber: questionNumber,
-          partNumber: 3,
-          preparationTime: 3,
-          recordingTime: 30,
-        };
-      }
-    } else if (partCode.includes('SPEAKING_PART_4') || partCode.includes('PART_4')) {
-      // Part 4: Questions 8-10
-      if (questionNumber === 1) {
-        // Question 1 of Part 4 (question 8 globally) has info reading phase
-        return {
-          questionNumber: questionNumber,
-          partNumber: 4,
-          preparationTime: 3,
-          recordingTime: 15,
-          showInfoPhase: true,
-          infoReadTime: 45,
-        };
-      } else if (questionNumber === 2) {
-        return {
-          questionNumber: questionNumber,
-          partNumber: 4,
-          preparationTime: 3,
-          recordingTime: 15,
-        };
-      } else {
-        // Question 3 of Part 4
-        return {
-          questionNumber: questionNumber,
-          partNumber: 4,
-          preparationTime: 3,
-          recordingTime: 30,
-        };
-      }
-    } else if (partCode.includes('SPEAKING_PART_5') || partCode.includes('PART_5')) {
-      // Part 5: Question 11
-      return {
-        questionNumber: questionNumber,
-        partNumber: 5,
-        preparationTime: 30,
-        recordingTime: 60,
-      };
-    }
-
-    // Default fallback
-    return {
-      questionNumber: questionNumber,
-      partNumber: 0,
-      preparationTime: 45,
-      recordingTime: 45,
-    };
-  }
 
   private getQuestionNumber(questionId: number): number {
     const index = this.questions.findIndex((q) => q.questionId === questionId);

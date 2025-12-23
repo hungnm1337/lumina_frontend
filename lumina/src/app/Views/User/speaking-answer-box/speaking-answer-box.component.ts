@@ -37,8 +37,7 @@ type RecordingState =
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SpeakingAnswerBoxComponent
-  implements OnInit, OnChanges, OnDestroy
-{
+  implements OnInit, OnChanges, OnDestroy {
   @Input() questionId: number = 0;
   @Input() disabled: boolean = false;
   @Input() resetAt: number = 0;
@@ -169,16 +168,19 @@ export class SpeakingAnswerBoxComponent
     });
 
     const mimeType = this.getSupportedMimeType();
+    console.log(`[RecordingBox] 🎤 Initializing MediaRecorder - MimeType: ${mimeType}, QuestionId: ${this.questionId}`);
     this.mediaRecorder = new MediaRecorder(stream, { mimeType });
     this.audioChunks = [];
 
     this.mediaRecorder.ondataavailable = (event) => {
       if (event.data.size > 0) {
         this.audioChunks.push(event.data);
+        console.log(`[RecordingBox] 📊 Audio chunk received: ${(event.data.size / 1024).toFixed(2)}KB (Total chunks: ${this.audioChunks.length})`);
       }
     };
 
     this.mediaRecorder.onerror = (event: any) => {
+      console.error('[RecordingBox] ❌ MediaRecorder error:', event);
       this.state = 'error';
       this.errorMessage = 'Lỗi khi ghi âm';
       this.clearTimer();
@@ -187,6 +189,7 @@ export class SpeakingAnswerBoxComponent
 
     this.mediaRecorder.onstop = async () => {
       this.audioBlob = new Blob(this.audioChunks, { type: mimeType });
+      console.log(`[RecordingBox] 🔴 Recording stopped - Blob created: ${(this.audioBlob.size / 1024).toFixed(2)}KB from ${this.audioChunks.length} chunks`);
 
       stream.getTracks().forEach((track) => track.stop());
 
@@ -196,6 +199,7 @@ export class SpeakingAnswerBoxComponent
       }
 
       if (this.audioBlob && this.audioBlob.size > 0) {
+        console.log(`[RecordingBox] ✅ Valid audio blob - saving to state service`);
         const currentState = this.speakingStateService.getQuestionState(
           this.questionId
         );
@@ -209,6 +213,7 @@ export class SpeakingAnswerBoxComponent
           currentState &&
           protectedStates.includes(currentState.state as any)
         ) {
+          console.log(`[RecordingBox] ⚠️ Skipping save - question in protected state: ${currentState.state}`);
         } else {
           this.speakingStateService.saveRecording(
             this.questionId,
@@ -218,6 +223,7 @@ export class SpeakingAnswerBoxComponent
         }
         this.cdr.markForCheck();
       } else {
+        console.warn(`[RecordingBox] ⚠️ Empty audio blob - size: ${this.audioBlob?.size || 0} bytes`);
       }
 
       this.recordingStatusChange.emit(false);
@@ -229,6 +235,7 @@ export class SpeakingAnswerBoxComponent
     };
 
     this.mediaRecorder.start();
+    console.log(`[RecordingBox] ▶️ Recording started - QuestionId: ${this.questionId}`);
     this.state = 'recording';
     this.recordingElapsed = 0;
 
@@ -277,9 +284,9 @@ export class SpeakingAnswerBoxComponent
 
       if (this.audioBlob && this.audioBlob.size > 0) {
         if (this.isLastQuestion) {
-          this.submitRecording().catch((error) => {});
+          this.submitRecording().catch((error) => { });
         } else {
-          this.submitRecording().catch((error) => {});
+          this.submitRecording().catch((error) => { });
 
           this.autoAdvanceNext.emit();
         }
@@ -301,7 +308,7 @@ export class SpeakingAnswerBoxComponent
       changes['questionId'] &&
       !changes['questionId'].isFirstChange() &&
       changes['questionId'].currentValue !==
-        changes['questionId'].previousValue;
+      changes['questionId'].previousValue;
 
     const hasResetChange =
       changes['resetAt'] &&
@@ -619,18 +626,24 @@ export class SpeakingAnswerBoxComponent
   }
 
   async submitRecording(): Promise<void> {
+    console.log(`[RecordingBox] 📤 submitRecording called - State: ${this.state}, QuestionId: ${this.questionId}, AttemptId: ${this.attemptId}`);
+
     if (this.state === 'processing' || this.state === 'submitted') {
+      console.warn(`[RecordingBox] ⚠️ Skipping submission - already in ${this.state} state`);
       return;
     }
 
     const submittedQuestionId = this.questionId;
 
     if (!this.audioBlob || this.audioBlob.size === 0) {
+      console.warn(`[RecordingBox] ⚠️ No audio blob - checking state service`);
       const savedState =
         this.speakingStateService.getQuestionState(submittedQuestionId);
       if (savedState?.audioBlob && savedState.audioBlob.size > 0) {
+        console.log(`[RecordingBox] ✅ Found saved audio blob: ${(savedState.audioBlob.size / 1024).toFixed(2)}KB`);
         this.audioBlob = savedState.audioBlob;
       } else {
+        console.error('[RecordingBox] ❌ No audio blob available for submission');
         this.toastService.error(
           'Không có bản ghi âm để nộp. Vui lòng ghi âm lại.'
         );
@@ -641,11 +654,15 @@ export class SpeakingAnswerBoxComponent
       }
     }
 
+    console.log(`[RecordingBox] 📊 Audio to submit - Size: ${(this.audioBlob.size / 1024).toFixed(2)}KB, Type: ${this.audioBlob.type}`);
+
     if (this.disabled) {
+      console.warn('[RecordingBox] ⚠️ Component is disabled - cannot submit');
       return;
     }
 
     if (!this.attemptId || this.attemptId <= 0) {
+      console.error(`[RecordingBox] ❌ Invalid attemptId: ${this.attemptId}`);
       this.toastService.error(
         'Lỗi: Không tìm thấy ID bài thi. Vui lòng refresh trang và thử lại.'
       );
@@ -654,6 +671,7 @@ export class SpeakingAnswerBoxComponent
     }
 
     if (!navigator.onLine) {
+      console.error('[RecordingBox] ❌ No network connection');
       this.toastService.error(
         'Không có kết nối mạng. Vui lòng kiểm tra và thử lại.'
       );
@@ -664,11 +682,13 @@ export class SpeakingAnswerBoxComponent
     const isSubmitting = sessionStorage.getItem(submissionKey);
 
     if (isSubmitting) {
+      console.warn(`[RecordingBox] ⚠️ Already submitting - key: ${submissionKey}`);
       this.toastService.warning('Bài này đang được nộp. Vui lòng đợi...');
       return;
     }
 
     sessionStorage.setItem(submissionKey, 'true');
+    console.log(`[RecordingBox] 🚀 Starting submission process...`);
 
     this.state = 'processing';
     this.isActivelyProcessing = true;
@@ -684,6 +704,7 @@ export class SpeakingAnswerBoxComponent
       );
 
       if (result) {
+        console.log(`[RecordingBox] ✅ Submission successful - Score: ${result.overallScore}`);
         this.result = result;
         this.state = 'submitted';
         this.isActivelyProcessing = false;
@@ -694,6 +715,7 @@ export class SpeakingAnswerBoxComponent
         this.cdr.markForCheck();
       }
     } catch (error: any) {
+      console.error('[RecordingBox] ❌ Submission error:', error);
       this.isActivelyProcessing = false;
 
       this.errorMessage =
@@ -770,7 +792,7 @@ export class SpeakingAnswerBoxComponent
           if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
             this.mediaRecorder.stop();
             this.clearTimer();
-            
+
             // Dừng timer service để ẩn UI đếm ngược ngay lập tức
             this.timerService.reset();
 

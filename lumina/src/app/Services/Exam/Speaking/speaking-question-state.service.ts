@@ -43,7 +43,7 @@ export class SpeakingQuestionStateService {
     Promise<SpeakingScoringResult>
   >();
 
-  constructor(private speakingApi: SpeakingService) {}
+  constructor(private speakingApi: SpeakingService) { }
 
   getStates(): Observable<Map<number, QuestionRecordingState>> {
     return this.statesSubject.asObservable();
@@ -85,6 +85,7 @@ export class SpeakingQuestionStateService {
     audioBlob: Blob,
     recordingTime: number
   ): void {
+    console.log(`[SpeakingState] 🎤 Recording saved - QuestionId: ${questionId}, Size: ${(audioBlob.size / 1024).toFixed(2)}KB, Duration: ${recordingTime}s, Type: ${audioBlob.type}`);
     this.updateQuestionState(questionId, {
       audioBlob,
       recordingTime,
@@ -138,69 +139,69 @@ export class SpeakingQuestionStateService {
       1: {
         questionNumber: 1,
         partNumber: 1,
-        preparationTime: 45,
+        preparationTime: 10,
         recordingTime: 45,
       },
       2: {
         questionNumber: 2,
         partNumber: 1,
-        preparationTime: 45,
+        preparationTime: 10,
         recordingTime: 45,
       },
       3: {
         questionNumber: 3,
         partNumber: 2,
-        preparationTime: 45,
+        preparationTime: 10,
         recordingTime: 30,
       },
       4: {
         questionNumber: 4,
         partNumber: 2,
-        preparationTime: 45,
+        preparationTime: 10,
         recordingTime: 30,
       },
       5: {
         questionNumber: 5,
         partNumber: 3,
-        preparationTime: 3,
+        preparationTime: 5,
         recordingTime: 15,
       },
       6: {
         questionNumber: 6,
         partNumber: 3,
-        preparationTime: 3,
+        preparationTime: 5,
         recordingTime: 15,
       },
       7: {
         questionNumber: 7,
         partNumber: 3,
-        preparationTime: 3,
+        preparationTime: 5,
         recordingTime: 30,
       },
       8: {
         questionNumber: 8,
         partNumber: 4,
-        preparationTime: 3,
+        preparationTime: 5,
         recordingTime: 15,
         showInfoPhase: true,
-        infoReadTime: 45,
+        infoReadTime: 10,
       },
       9: {
         questionNumber: 9,
         partNumber: 4,
-        preparationTime: 3,
+        preparationTime: 5,
         recordingTime: 15,
       },
       10: {
         questionNumber: 10,
         partNumber: 4,
-        preparationTime: 3,
+        preparationTime: 5,
         recordingTime: 30,
       },
       11: {
         questionNumber: 11,
         partNumber: 5,
-        preparationTime: 30,
+        preparationTime: 10,
         recordingTime: 60,
       },
     };
@@ -223,16 +224,25 @@ export class SpeakingQuestionStateService {
     audioBlob: Blob,
     attemptId?: number
   ): Promise<SpeakingScoringResult> {
+    console.log(`[SpeakingState] 📤 Submitting answer - QuestionId: ${questionId}, AttemptId: ${attemptId}, Audio: ${(audioBlob.size / 1024).toFixed(2)}KB`);
+
     if (!audioBlob) {
+      console.error('[SpeakingState] ❌ No audio blob provided');
       throw new Error('No audio recording available');
     }
 
     if (audioBlob.size === 0) {
+      console.error('[SpeakingState] ❌ Audio blob is empty (0 bytes)');
       throw new Error('Audio recording is empty');
+    }
+
+    if (audioBlob.size < 1024) {
+      console.warn(`[SpeakingState] ⚠️ Audio blob very small: ${audioBlob.size} bytes - may be invalid`);
     }
 
     const existingSubmission = this.pendingSubmissions.get(questionId);
     if (existingSubmission) {
+      console.log(`[SpeakingState] ⏳ Using existing submission for QuestionId: ${questionId}`);
       return existingSubmission;
     }
 
@@ -248,6 +258,7 @@ export class SpeakingQuestionStateService {
 
     try {
       const result = await submissionPromise;
+      console.log(`[SpeakingState] ✅ Submission successful - QuestionId: ${questionId}, Score: ${result.overallScore}`);
       return result;
     } finally {
       this.pendingSubmissions.delete(questionId);
@@ -259,6 +270,9 @@ export class SpeakingQuestionStateService {
     audioBlob: Blob,
     attemptId?: number
   ): Promise<SpeakingScoringResult> {
+    const startTime = Date.now();
+    console.log(`[SpeakingState] ⏱️ Starting submission execution at ${new Date().toLocaleTimeString()}`);
+
     try {
       const submissionPromise = this.speakingApi
         .submitSpeakingAnswer(audioBlob, questionId, attemptId)
@@ -266,20 +280,46 @@ export class SpeakingQuestionStateService {
 
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(
-          () => reject(new Error('Submission timeout after 60s')),
-          60000
+          () => {
+            console.error(`[SpeakingState] ⏰ Timeout after 130s - QuestionId: ${questionId}`);
+            reject(new Error('Submission timeout after 130s - Backend may still be processing. Please check results in a moment.'));
+          },
+          130000  // Increased from 60s to 130s to accommodate backend processing
         )
       );
 
-      const result = await Promise.race([submissionPromise, timeoutPromise]);
+      // Log every 10 seconds to track progress
+      const progressInterval = setInterval(() => {
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        console.log(`[SpeakingState] ⏳ Still processing... ${elapsed}s elapsed`);
+      }, 10000);
 
-      if (result) {
-        this.markAsScored(questionId, result);
-        return result;
+      try {
+        const result = await Promise.race([submissionPromise, timeoutPromise]);
+        clearInterval(progressInterval);
+
+        const totalTime = ((Date.now() - startTime) / 1000).toFixed(2);
+        console.log(`[SpeakingState] ⏱️ Submission completed in ${totalTime}s`);
+
+        if (result) {
+          console.log(`[SpeakingState] 📊 Result received - Transcript: "${result.transcript?.substring(0, 50)}...", Score: ${result.overallScore}`);
+          this.markAsScored(questionId, result);
+          return result;
+        }
+
+        throw new Error('No result received from speaking scoring API');
+      } catch (error) {
+        clearInterval(progressInterval);
+        throw error;
+      }
+    } catch (error: any) {
+      const totalTime = ((Date.now() - startTime) / 1000).toFixed(2);
+      console.error(`[SpeakingState] ❌ Submission failed after ${totalTime}s - Error: ${error.message}`);
+
+      if (error.status) {
+        console.error(`[SpeakingState] 📡 HTTP Status: ${error.status}, Message: ${error.error?.message || error.statusText}`);
       }
 
-      throw new Error('No result received from speaking scoring API');
-    } catch (error: any) {
       this.updateQuestionState(questionId, {
         state: 'has_recording',
         errorMessage: error.message || 'Submission failed',
