@@ -21,11 +21,11 @@ export class SignalRService {
   public connectionEstablished$ = this.connectionEstablished.asObservable();
   public notificationReceived$ = this.notificationReceived.asObservable();
 
-  constructor() {}
+  constructor() { }
 
   public startConnection(): void {
     const token = localStorage.getItem('lumina_token');
-    
+
     if (!token) {
       // console.warn('No token found, cannot connect to SignalR');
       return;
@@ -37,8 +37,8 @@ export class SignalRService {
         skipNegotiation: false,
         transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.ServerSentEvents | signalR.HttpTransportType.LongPolling
       })
-      .withAutomaticReconnect([0, 1000, 2000, 5000, 10000]) // Faster retry
-      .configureLogging(signalR.LogLevel.Error)
+      .withAutomaticReconnect([0, 1000, 2000, 5000, 10000])
+      .configureLogging(signalR.LogLevel.None) // Suppress all logs
       .build();
 
     this.hubConnection.serverTimeoutInMilliseconds = 30000; // 30 seconds
@@ -54,35 +54,33 @@ export class SignalRService {
         this.registerListeners();
       })
       .catch(err => {
-        // console.error('Error connecting to SignalR:', err);
+        // Silently fail - suppress error logs
         this.connectionEstablished.next(false);
-        
+
         // Retry after 5 seconds
         setTimeout(() => {
-          // console.log('Retrying SignalR connection...');
           this.startConnection();
         }, 5000);
       });
 
     // Handle reconnection
     this.hubConnection.onreconnecting((error) => {
-      // console.warn('SignalR reconnecting...', error);
+      // Silently handle reconnection
       this.connectionEstablished.next(false);
     });
 
     this.hubConnection.onreconnected((connectionId) => {
-      // console.log('SignalR reconnected:', connectionId);
+      // Silently handle reconnection
       this.connectionEstablished.next(true);
-      this.registerListeners(); // Re-register listeners after reconnection
+      this.registerListeners();
     });
 
     this.hubConnection.onclose((error) => {
-      // console.error('SignalR connection closed:', error);
+      // Silently handle close
       this.connectionEstablished.next(false);
-      
+
       // Auto-reconnect
       setTimeout(() => {
-        // console.log('Attempting to reconnect...');
         this.startConnection();
       }, 5000);
     });
@@ -104,7 +102,7 @@ export class SignalRService {
           // console.log('SignalR connection stopped');
           this.connectionEstablished.next(false);
         })
-        .catch(err => {});
+        .catch(err => { });
     }
   }
 
