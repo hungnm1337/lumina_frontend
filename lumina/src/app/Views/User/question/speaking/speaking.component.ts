@@ -38,6 +38,7 @@ import { ExamCoordinationService } from '../../../../Services/exam-coordination.
 import { ToastService } from '../../../../Services/Toast/toast.service';
 import { SidebarService } from '../../../../Services/sidebar.service';
 import { MicrophonePermissionModalComponent } from '../../microphone-permission-modal/microphone-permission-modal.component';
+import { TeacherContactModalComponent } from '../../teacher-contact-modal/teacher-contact-modal.component';
 
 interface QuestionResult {
   questionNumber: number;
@@ -58,6 +59,7 @@ interface QuestionResult {
     QuotaLimitModalComponent,
     ReportPopupComponent,
     MicrophonePermissionModalComponent,
+    TeacherContactModalComponent,
   ],
   templateUrl: './speaking.component.html',
   styleUrl: './speaking.component.scss',
@@ -102,6 +104,9 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   // Microphone permission tracking
   showMicPermissionModal = false;
   hasMicrophonePermission = false;
+
+  // Teacher contact modal visibility
+  showTeacherModal: boolean = false;
 
   constructor(
     private router: Router,
@@ -1133,5 +1138,15 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         sessionStorage.removeItem(submissionKey);
       });
     }
+  }
+
+  // Open teacher contact modal
+  openTeacherModal(): void {
+    this.showTeacherModal = true;
+  }
+
+  // Close teacher contact modal
+  closeTeacherModal(): void {
+    this.showTeacherModal = false;
   }
 }
