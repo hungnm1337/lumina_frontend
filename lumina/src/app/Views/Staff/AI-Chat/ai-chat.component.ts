@@ -192,10 +192,6 @@ export class AiChatComponent implements OnInit, OnDestroy {
       '💡 **Tư vấn & Hỗ trợ**\n' +
       '   • "Cách học TOEIC hiệu quả?"\n' +
       '   • "Luyện tập kỹ năng Listening, Reading, Speaking, Writing"\n' +
-      '   • "Phân tích điểm mạnh, điểm yếu trong quá trình học"\n\n' +
-      '⚠️ **Lưu ý:**\n' +
-      '   • AI có thể tạo tối đa 30 câu hỏi mỗi lần\n' +
-      '   • Số lượng câu hỏi tối thiểu là 10 câu\n\n' +
       '🎯 **Tips**: Mô tả càng chi tiết, kết quả càng tốt!\n\n' +
       'Bạn muốn tôi giúp gì nào? 😊'
     );
@@ -272,11 +268,11 @@ export class AiChatComponent implements OnInit, OnDestroy {
           this.showPreview = true;
           
           this.addAssistantMessage(
-            `✅ **Đã tạo xong!**\n\n` +
-            `📋 ${response.examInfo.examTitle}\n` +
-            `🎯 ${response.examInfo.skill} - ${response.examInfo.partLabel}\n` +
-            `📊 ${response.examInfo.totalQuestions} câu hỏi trong ${response.examInfo.promptCount} prompt\n\n` +
-            `👉 Xem chi tiết bên phải →`,
+            `**Đã tạo xong!**\n\n` +
+            `${response.examInfo.examTitle}\n` +
+            `${response.examInfo.skill} - ${response.examInfo.partLabel}\n` +
+            `${response.examInfo.totalQuestions} câu hỏi trong ${response.examInfo.promptCount} prompt\n\n` +
+            `Xem chi tiết bên phải →`,
             previewId
           );
           
