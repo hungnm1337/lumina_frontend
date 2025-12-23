@@ -24,31 +24,34 @@
 
       <!-- Main Content Area (9/12 = 75%) -->
       <div class="col-span-9 bg-white rounded-lg shadow-md p-4">
-        <!-- Compact Header: Part Info + Timer + Exit -->
-        <div class="mb-3 p-3 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg text-white">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div>
-                <h2 class="text-lg font-semibold">{{ currentPart.title }}</h2>
-                <p class="text-xs opacity-90">
-                  Part {{ currentPartIndex + 1 }}/{{
-                  exampartDetailsAndQustions.length
-                  }}
-                  • Câu {{ currentQuestionIndex + 1 }}/{{
-                  currentPart.questions.length
-                  }}
-                </p>
-              </div>
-              <div *ngIf="currentPartTime > 0" class="bg-white/20 px-3 py-1 rounded-md">
-                <app-time [time]="currentPartTime" [resetAt]="timerResetTrigger" (timeout)="onPartTimeout()"
-                  (timeUpdate)="onPartTimerTick($event)">
+        <!-- Compact Header: 3-column layout (2-4-2) -->
+        <div class="mb-3 p-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg text-white shadow-lg">
+          <div class="grid grid-cols-8 gap-4 items-center">
+            <!-- Left: Part Info (2/8) -->
+            <div class="col-span-2 flex flex-col">
+              <h2 class="text-lg font-bold mb-1">{{ currentPart.title }}</h2>
+              <p class="text-sm opacity-90">
+                Part {{ currentPartIndex + 1 }}/{{ exampartDetailsAndQustions.length }}
+                • Câu {{ currentQuestionIndex + 1 }}/{{ currentPart.questions.length }}
+              </p>
+            </div>
+
+            <!-- Center: Timer (4/8) -->
+            <div *ngIf="currentPartTime > 0" class="col-span-4 flex justify-center">
+              <div class="w-full bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg">
+                <app-time [time]="currentPartTime" [resetAt]="timerResetTrigger" 
+                  (timeout)="onPartTimeout()" (timeUpdate)="onPartTimerTick($event)">
                 </app-time>
               </div>
             </div>
-            <button (click)="confirmExit()"
-              class="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-md text-sm font-medium transition-colors">
-              <i class="fas fa-sign-out-alt mr-1.5"></i>Thoát
-            </button>
+
+            <!-- Right: Exit Button (2/8) -->
+            <div class="col-span-2 flex justify-end">
+              <button (click)="confirmExit()"
+                class="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg text-sm font-semibold transition-all hover:scale-105">
+                <i class="fas fa-sign-out-alt mr-2"></i>Thoát
+              </button>
+            </div>
           </div>
         </div>
 
@@ -155,31 +158,34 @@
 
       <!-- Main Content Area (9/12 = 75%) -->
       <div class="col-span-9 bg-white rounded-lg shadow-md p-4">
-        <!-- Compact Header: Part Info + Timer + Exit -->
-        <div class="mb-3 p-3 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-lg text-white">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div>
-                <h2 class="text-lg font-semibold">{{ currentPart.title }}</h2>
-                <p class="text-xs opacity-90">
-                  Part {{ currentPartIndex + 1 }}/{{
-                  exampartDetailsAndQustions.length
-                  }}
-                  • Câu {{ currentQuestionIndex + 1 }}/{{
-                  currentPart.questions.length
-                  }}
-                </p>
-              </div>
-              <div *ngIf="currentPartTime > 0" class="bg-white/20 px-3 py-1 rounded-md">
-                <app-time [time]="currentPartTime" [resetAt]="timerResetTrigger" (timeout)="onPartTimeout()"
-                  (timeUpdate)="onPartTimerTick($event)">
+        <!-- Compact Header: 3-column layout (2-4-2) -->
+        <div class="mb-3 p-4 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-lg text-white shadow-lg">
+          <div class="grid grid-cols-8 gap-4 items-center">
+            <!-- Left: Part Info (2/8) -->
+            <div class="col-span-2 flex flex-col">
+              <h2 class="text-lg font-bold mb-1">{{ currentPart.title }}</h2>
+              <p class="text-sm opacity-90">
+                Part {{ currentPartIndex + 1 }}/{{ exampartDetailsAndQustions.length }}
+                • Câu {{ currentQuestionIndex + 1 }}/{{ currentPart.questions.length }}
+              </p>
+            </div>
+
+            <!-- Center: Timer (4/8) -->
+            <div *ngIf="currentPartTime > 0" class="col-span-4 flex justify-center">
+              <div class="w-full bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg">
+                <app-time [time]="currentPartTime" [resetAt]="timerResetTrigger" 
+                  (timeout)="onPartTimeout()" (timeUpdate)="onPartTimerTick($event)">
                 </app-time>
               </div>
             </div>
-            <button (click)="confirmExit()"
-              class="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-md text-sm font-medium transition-colors">
-              <i class="fas fa-sign-out-alt mr-1.5"></i>Thoát
-            </button>
+
+            <!-- Right: Exit Button (2/8) -->
+            <div class="col-span-2 flex justify-end">
+              <button (click)="confirmExit()"
+                class="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg text-sm font-semibold transition-all hover:scale-105">
+                <i class="fas fa-sign-out-alt mr-2"></i>Thoát
+              </button>
+            </div>
           </div>
         </div>
 
