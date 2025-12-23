@@ -123,52 +123,104 @@
       </div>
     </div>
 
-    <!-- Main Content: Prompt (6/9 = 50%) và Options (3/9 = 25%) -->
-    <div class="grid grid-cols-9 gap-4 mb-2">
-      <!-- Left Column: Prompt Title + Image/Content (6/9 = 50%) -->
-      <div class="col-span-6 flex flex-col">
-        <div class="w-full">
-          <app-prompt
-            [prompt]="questions[currentIndex].prompt"
-            [resetAt]="currentIndex"
-            [questionType]="questions[currentIndex].questionType ?? ''"
-          ></app-prompt>
+    <!-- Main Content: Conditional rendering based on isPart4 -->
+    @if (!isPart4) {
+      <!-- Parts 1-3: Single question display (ORIGINAL LAYOUT) -->
+      <div class="grid grid-cols-9 gap-4 mb-2">
+        <!-- Left Column: Prompt Title + Image/Content (6/9 = 50%) -->
+        <div class="col-span-6 flex flex-col">
+          <div class="w-full">
+            <app-prompt
+              [prompt]="questions[currentIndex].prompt"
+              [resetAt]="currentIndex"
+              [questionType]="questions[currentIndex].questionType ?? ''"
+            ></app-prompt>
+          </div>
+        </div>
+
+        <!-- Right Column: Options (3/9 = 25%) -->
+        <div class="col-span-3 flex items-start">
+          <div class="w-full">
+            <app-options
+              [options]="questions[currentIndex].options || []"
+              [resetAt]="currentIndex"
+              [preSelectedOptionId]="
+                getSelectedOptionId(questions[currentIndex].questionId)
+              "
+              (answered)="markAnswered($event)"
+            ></app-options>
+          </div>
         </div>
       </div>
 
-      <!-- Right Column: Options (3/9 = 25%) -->
-      <div class="col-span-3 flex items-start">
-        <div class="w-full">
-          <app-options
-            [options]="questions[currentIndex].options || []"
-            [resetAt]="currentIndex"
-            [preSelectedOptionId]="
-              getSelectedOptionId(questions[currentIndex].questionId)
-            "
-            (answered)="markAnswered($event)"
-          ></app-options>
-        </div>
+      <!-- Navigation for Parts 1-3 -->
+      <div class="mt-4 flex items-center justify-between">
+        <button
+          (click)="previousQuestion()"
+          [disabled]="currentIndex === 0"
+          class="px-3 py-1.5 rounded-md bg-gray-500 text-white hover:bg-gray-600 disabled:opacity-50 text-sm font-medium shadow-sm"
+        >
+          <i class="fas fa-arrow-left mr-1.5"></i>Câu trước
+        </button>
+
+        <button
+          (click)="nextQuestion()"
+          [disabled]="currentIndex === questions.length - 1"
+          class="px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 text-sm font-medium shadow-sm"
+        >
+          Câu sau<i class="fas fa-arrow-right ml-1.5"></i>
+        </button>
       </div>
-    </div>
+    } @else {
+      <!-- Part 4: Group of 3 questions display (NEW LAYOUT) -->
+      <div class="mb-4">
+        <!-- Display all 3 questions in the current group -->
+        @for (question of getCurrentPromptQuestions(); track question.questionId; let qIdx = $index) {
+          <div class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <!-- Question Header -->
+            <div class="mb-3 flex items-center gap-2">
+              <span class="inline-flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full text-sm font-bold">
+                {{ question.questionNumber }}
+              </span>
+              <h3 class="text-base font-semibold text-gray-800">
+                {{ question.stemText }}
+              </h3>
+            </div>
 
-    <!-- Navigation -->
-    <div class="mt-4 flex items-center justify-between">
-      <button
-        (click)="previousQuestion()"
-        [disabled]="currentIndex === 0"
-        class="px-3 py-1.5 rounded-md bg-gray-500 text-white hover:bg-gray-600 disabled:opacity-50 text-sm font-medium shadow-sm"
-      >
-        <i class="fas fa-arrow-left mr-1.5"></i>Câu trước
-      </button>
+            <!-- Question Options -->
+            <app-options
+              [options]="question.options || []"
+              [resetAt]="currentPromptIndex"
+              [preSelectedOptionId]="getSelectedOptionId(question.questionId)"
+              (answered)="markAnsweredPart4(question.questionId, $event)"
+            ></app-options>
+          </div>
+        }
+      </div>
 
-      <button
-        (click)="nextQuestion()"
-        [disabled]="currentIndex === questions.length - 1"
-        class="px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 text-sm font-medium shadow-sm"
-      >
-        Câu sau<i class="fas fa-arrow-right ml-1.5"></i>
-      </button>
-    </div>
+      <!-- Navigation for Part 4 (Prompt-based) -->
+      <div class="mt-4 flex items-center justify-between">
+        <button
+          (click)="previousPrompt()"
+          [disabled]="currentPromptIndex === 0"
+          class="px-3 py-1.5 rounded-md bg-gray-500 text-white hover:bg-gray-600 disabled:opacity-50 text-sm font-medium shadow-sm"
+        >
+          <i class="fas fa-arrow-left mr-1.5"></i>Nhóm câu trước
+        </button>
+
+        <div class="text-sm text-gray-600 font-medium">
+          Nhóm {{ currentPromptIndex + 1 }}/{{ questionGroups.length }}
+        </div>
+
+        <button
+          (click)="nextPrompt()"
+          [disabled]="currentPromptIndex === questionGroups.length - 1"
+          class="px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 text-sm font-medium shadow-sm"
+        >
+          Nhóm câu sau<i class="fas fa-arrow-right ml-1.5"></i>
+        </button>
+      </div>
+    }
   </div>
 </div>
 } @else {

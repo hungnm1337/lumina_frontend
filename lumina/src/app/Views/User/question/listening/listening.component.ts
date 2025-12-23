@@ -77,6 +77,11 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   attemptId: number | null = null;
   isSubmitting = false;
 
+  // Part 4 specific properties
+  isPart4 = false;
+  currentPromptIndex = 0;
+  questionGroups: QuestionDTO[][] = [];
+
   examStartTime: Date | null = null;
 
   answeredQuestions: Map<
@@ -97,6 +102,11 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   audioProgress = 0;
 
   get audioPlayCount(): number {
+    if (this.isPart4) {
+      // For Part 4, use the first question in the current group
+      const firstQuestionId = this.getCurrentPromptQuestions()[0]?.questionId;
+      return this.audioPlayCounts.get(firstQuestionId) || 0;
+    }
     const currentQuestionId = this.questions[this.currentIndex]?.questionId;
     return this.audioPlayCounts.get(currentQuestionId) || 0;
   }
@@ -120,7 +130,14 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   ];
 
   getQuestionStatus = (questionId: number, index: number): string => {
-    if (index === this.currentIndex) return 'current';
+    if (this.isPart4) {
+      // For Part 4, highlight all 3 questions in current group
+      const currentGroup = this.getCurrentPromptQuestions();
+      const isInCurrentGroup = currentGroup.some(q => q.questionId === questionId);
+      if (isInCurrentGroup) return 'current';
+    } else {
+      if (index === this.currentIndex) return 'current';
+    }
     if (this.isQuestionAnswered(questionId)) return 'answered';
     return 'unanswered';
   };
@@ -146,6 +163,9 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     this.sidebarService.hideSidebar(); // Ẩn sidebar khi bắt đầu làm bài
     this.initializePartTimer(); // Initialize countdown timer
 
+    // Detect Part 4 and group questions
+    this.detectAndGroupPart4();
+
     setTimeout(() => {
       if (this.questions?.length > 0) {
         this.autoPlayAudio();
@@ -157,6 +177,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     if (changes['questions'] && this.questions?.length > 0) {
       this.resetQuiz();
       this.initializePartTimer(); // Re-initialize timer when questions change
+      this.detectAndGroupPart4(); // Re-detect Part 4 when questions change
     }
 
     if (changes['currentIndex'] && !changes['currentIndex'].firstChange) {
@@ -338,6 +359,56 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Part 4 specific answer handler - handles explicit questionId
+   */
+  markAnsweredPart4(questionId: number, selectedOptionId: number): void {
+    if (this.isSubmitting || !this.attemptId) return;
+
+    const targetQuestion = this.questions.find(q => q.questionId === questionId);
+    if (!targetQuestion) return;
+
+    const previousAnswer = this.answeredQuestions.get(questionId);
+    const isUpdatingAnswer = previousAnswer !== undefined;
+
+    this.isSubmitting = true;
+
+    const model = {
+      examAttemptId: this.attemptId,
+      questionId: questionId,
+      selectedOptionId: selectedOptionId,
+    };
+
+    this.examAttemptService.submitListeningAnswer(model).subscribe({
+      next: (response) => {
+        if (isUpdatingAnswer) {
+          if (previousAnswer.isCorrect) {
+            this.correctCount--;
+          }
+          this.totalScore -= previousAnswer.score;
+        }
+
+        this.answeredQuestions.set(questionId, {
+          selectedOptionId: selectedOptionId,
+          isCorrect: response.isCorrect,
+          score: response.score,
+        });
+
+        if (response.isCorrect) {
+          this.correctCount++;
+        }
+        this.totalScore += response.score;
+
+        this.isSubmitting = false;
+
+        this.listeningAnswered.emit(response.isCorrect);
+      },
+      error: (error) => {
+        this.isSubmitting = false;
+      },
+    });
+  }
+
   previousQuestion(): void {
     if (this.currentIndex > 0) {
       this.currentIndex--;
@@ -367,10 +438,23 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
 
   navigateToQuestion(index: number): void {
     if (index >= 0 && index < this.questions.length) {
-      this.currentIndex = index;
-      this.updateExplainState();
-      this.resetAudioState();
-      this.autoPlayAudio();
+      if (this.isPart4) {
+        // For Part 4, find which prompt group contains this question
+        const targetQuestion = this.questions[index];
+        const promptIndex = this.questionGroups.findIndex(group =>
+          group.some(q => q.questionId === targetQuestion.questionId)
+        );
+        if (promptIndex !== -1) {
+          this.currentPromptIndex = promptIndex;
+          this.resetAudioState();
+          this.autoPlayAudio();
+        }
+      } else {
+        this.currentIndex = index;
+        this.updateExplainState();
+        this.resetAudioState();
+        this.autoPlayAudio();
+      }
     }
   }
 
@@ -379,7 +463,98 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     this.showExplain = this.answeredQuestions.has(currentQuestionId);
   }
 
+  // ============= PART 4 SPECIFIC METHODS =============
+
+  /**
+   * Detect if this is Part 4 and group questions by promptId
+   */
+  private detectAndGroupPart4(): void {
+    const partCode = this.partInfo?.partCode?.toUpperCase();
+    this.isPart4 = partCode === 'LISTENING_PART_4' || partCode === 'PART_4';
+
+    if (this.isPart4) {
+      this.groupQuestionsByPrompt();
+      console.log('📊 Part 4 detected. Question groups:', this.questionGroups);
+    }
+  }
+
+  /**
+   * Group questions by promptId (3 questions per group for Part 4)
+   */
+  private groupQuestionsByPrompt(): void {
+    const groupMap = new Map<number, QuestionDTO[]>();
+
+    this.questions.forEach(question => {
+      const promptId = question.promptId || 0;
+      if (!groupMap.has(promptId)) {
+        groupMap.set(promptId, []);
+      }
+      groupMap.get(promptId)!.push(question);
+    });
+
+    this.questionGroups = Array.from(groupMap.values());
+  }
+
+  /**
+   * Get the 3 questions in the current prompt group
+   */
+  getCurrentPromptQuestions(): QuestionDTO[] {
+    if (!this.isPart4 || this.questionGroups.length === 0) {
+      return [this.questions[this.currentIndex]];
+    }
+    return this.questionGroups[this.currentPromptIndex] || [];
+  }
+
+  /**
+   * Navigate to next prompt group (Part 4)
+   */
+  nextPrompt(): void {
+    if (this.currentPromptIndex < this.questionGroups.length - 1) {
+      this.currentPromptIndex++;
+      this.resetAudioState();
+      this.autoPlayAudio();
+    } else {
+      const confirmFinish = confirm(
+        'Đây là nhóm câu cuối cùng. Bạn có muốn nộp bài ngay không?\n\n' +
+        'Chọn "OK" để nộp bài\n' +
+        'Chọn "Cancel" để xem lại các câu trước'
+      );
+      if (confirmFinish) {
+        this.finishQuiz();
+      }
+    }
+  }
+
+  /**
+   * Navigate to previous prompt group (Part 4)
+   */
+  previousPrompt(): void {
+    if (this.currentPromptIndex > 0) {
+      this.currentPromptIndex--;
+      this.resetAudioState();
+      this.autoPlayAudio();
+    }
+  }
+
+  /**
+   * Navigate to a specific prompt group (Part 4)
+   */
+  navigateToPrompt(promptIndex: number): void {
+    if (promptIndex >= 0 && promptIndex < this.questionGroups.length) {
+      this.currentPromptIndex = promptIndex;
+      this.resetAudioState();
+      this.autoPlayAudio();
+    }
+  }
+
+  // ============= END PART 4 METHODS =============
+
   getCurrentAudioUrl(): string {
+    if (this.isPart4) {
+      // For Part 4, use audio from first question in the prompt group
+      const firstQuestion = this.getCurrentPromptQuestions()[0];
+      return firstQuestion?.prompt?.referenceAudioUrl || '';
+    }
     return this.questions[this.currentIndex]?.prompt?.referenceAudioUrl || '';
   }
 
@@ -387,8 +562,17 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     if (!this.audioPlayer) return;
 
     const audio = this.audioPlayer.nativeElement;
-    const currentQuestionId = this.questions[this.currentIndex]?.questionId;
-    const currentCount = this.audioPlayCounts.get(currentQuestionId) || 0;
+
+    // Get the appropriate question ID for tracking play count
+    let trackingQuestionId: number;
+    if (this.isPart4) {
+      // For Part 4, track using first question in the group
+      trackingQuestionId = this.getCurrentPromptQuestions()[0]?.questionId;
+    } else {
+      trackingQuestionId = this.questions[this.currentIndex]?.questionId;
+    }
+
+    const currentCount = this.audioPlayCounts.get(trackingQuestionId) || 0;
 
     if (!audio.paused && this.isAudioPlaying) {
       audio.pause();
@@ -418,14 +602,14 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
     }
 
     audio.currentTime = 0;
-    this.audioPlayCounts.set(currentQuestionId, currentCount + 1);
+    this.audioPlayCounts.set(trackingQuestionId, currentCount + 1);
     this.isAudioPlaying = true;
 
     audio
       .play()
       .then(() => { })
       .catch((error) => {
-        this.audioPlayCounts.set(currentQuestionId, currentCount);
+        this.audioPlayCounts.set(trackingQuestionId, currentCount);
         this.isAudioPlaying = false;
         alert('Không thể phát audio. Vui lòng thử lại.');
       });
@@ -480,13 +664,26 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   private autoPlayAudio(): void {
-    const currentQuestionId = this.questions[this.currentIndex]?.questionId;
-    const currentCount = this.audioPlayCounts.get(currentQuestionId) || 0;
+    if (this.isPart4) {
+      // For Part 4, use the first question in the current prompt group
+      const firstQuestion = this.getCurrentPromptQuestions()[0];
+      if (!firstQuestion) return;
 
-    if (currentCount === 0) {
-      setTimeout(() => {
-        this.playAudio();
-      }, 300);
+      const currentCount = this.audioPlayCounts.get(firstQuestion.questionId) || 0;
+      if (currentCount === 0) {
+        setTimeout(() => {
+          this.playAudio();
+        }, 300);
+      }
+    } else {
+      const currentQuestionId = this.questions[this.currentIndex]?.questionId;
+      const currentCount = this.audioPlayCounts.get(currentQuestionId) || 0;
+
+      if (currentCount === 0) {
+        setTimeout(() => {
+          this.playAudio();
+        }, 300);
+      }
     }
   }
 
