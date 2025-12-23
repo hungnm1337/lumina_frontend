@@ -37,6 +37,7 @@ import {
   QuestionNavigatorComponent,
   NavigatorLegendItem,
 } from '../../question-navigator/question-navigator.component';
+import { TeacherContactModalComponent } from '../../teacher-contact-modal/teacher-contact-modal.component';
 
 @Component({
   selector: 'app-writing',
@@ -50,6 +51,7 @@ import {
     ReportPopupComponent,
     PopupComponent,
     QuestionNavigatorComponent,
+    TeacherContactModalComponent,
   ],
   templateUrl: './writing.component.html',
   styleUrl: './writing.component.scss',
@@ -68,6 +70,7 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
     if (this.popupCancelHandler) this.popupCancelHandler();
   }
   showReportPopup: boolean = false;
+  showTeacherModal: boolean = false;
 
   get examId(): number | null {
     return this.attemptId;
@@ -935,5 +938,15 @@ export class WritingComponent implements OnChanges, OnDestroy, OnInit {
   isCurrentCaptionLoading(): boolean {
     const q = this.getCurrentQuestion();
     return q ? !!this.captionLoading[q.questionId] : false;
+  }
+
+  // Open teacher contact modal
+  openTeacherModal(): void {
+    this.showTeacherModal = true;
+  }
+
+  // Close teacher contact modal
+  closeTeacherModal(): void {
+    this.showTeacherModal = false;
   }
 }

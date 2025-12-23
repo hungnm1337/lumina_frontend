@@ -84,7 +84,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private toastService: ToastService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.registerForm = this.fb.group(
@@ -322,8 +322,71 @@ export class RegisterComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.isLoading = false;
+
+        // === DEBUG LOGGING START ===
+        console.log('❌ Verify OTP Error - Full error object:', err);
+        console.log('❌ Error status:', err.status);
+        console.log('❌ Error statusText:', err.statusText);
+        console.log('❌ Error error:', err.error);
+        console.log('❌ Error error?.error:', err.error?.error);
+        console.log('❌ Error message:', err.message);
+        console.log('❌ Error type:', typeof err.error);
+        if (err.error) {
+          console.log('❌ Error error keys:', Object.keys(err.error));
+          console.log('❌ Error error JSON:', JSON.stringify(err.error, null, 2));
+        }
+        // === DEBUG LOGGING END ===
+
+        // Check if this is a network error (status 0) or timeout (status 504)
+        // In these cases, the backend might have processed successfully
+        if (err.status === 0 || err.status === 504 || !err.error) {
+          console.log('🔄 Network error detected, redirecting to login...');
+          this.toastService.warning(
+            'Có lỗi kết nối. Tài khoản có thể đã được tạo thành công. Vui lòng thử đăng nhập.'
+          );
+          // Navigate to login after a short delay
+          setTimeout(() => {
+            this.router.navigate(['/login']);
+          }, 2000);
+          return;
+        }
+
+        // Check for 500 error with registration success message
+        if (err.status === 500 && err.error) {
+          const errorMessage = typeof err.error === 'string'
+            ? err.error
+            : err.error.error || JSON.stringify(err.error);
+
+          if (errorMessage.includes('Đăng ký thành công') ||
+            errorMessage.includes('Registration succeeded')) {
+            console.log('🔄 Registration succeeded but token failed, redirecting to login...');
+            this.toastService.info(
+              'Đăng ký thành công! Vui lòng đăng nhập với tài khoản của bạn.'
+            );
+            setTimeout(() => {
+              this.router.navigate(['/login']);
+            }, 1500);
+            return;
+          }
+        }
+
+        // Check for specific conflict error (account already exists)
+        if (err.status === 409) {
+          console.log('🔄 Conflict (409) detected, account already exists...');
+          this.toastService.info(
+            'Tài khoản đã được tạo. Vui lòng đăng nhập.'
+          );
+          setTimeout(() => {
+            this.router.navigate(['/login']);
+          }, 1500);
+          return;
+        }
+
+        // Actual backend validation error
+        console.log('❌ Showing error toast for status:', err.status);
         const errorMessage =
           err.error?.error || 'Mã OTP không hợp lệ. Vui lòng thử lại.';
+        console.log('❌ Error message to show:', errorMessage);
         this.toastService.error(errorMessage);
 
         // Clear OTP inputs
