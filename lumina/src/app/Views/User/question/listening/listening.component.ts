@@ -259,13 +259,14 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
 
   private createNewAttempt(): void {
     if (!this.partInfo || !this.partInfo.examId || !this.partInfo.partId) {
-      alert('Lỗi: Không thể khởi tạo bài thi. Vui lòng quay lại và thử lại.');
+      console.error('[Listening] Cannot create attempt: Missing partInfo');
+      this.router.navigate(['/homepage/user-dashboard/exams']);
       return;
     }
 
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser?.id) {
-      alert('Vui lòng đăng nhập để làm bài thi.');
+      console.error('[Listening] User not authenticated');
       this.router.navigate(['/auth/login']);
       return;
     }
@@ -287,7 +288,8 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
         localStorage.setItem('currentExamAttempt', JSON.stringify(response));
       },
       error: (error) => {
-        alert('Lỗi khi khởi tạo bài thi. Vui lòng thử lại.');
+        console.error('[Listening] Failed to create attempt:', error);
+        this.router.navigate(['/homepage/user-dashboard/exams']);
       },
     });
   }
@@ -591,13 +593,13 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
           this.isAudioPlaying = true;
         })
         .catch((error) => {
-          alert('Không thể tiếp tục phát audio. Vui lòng thử lại.');
+          // Audio play error - silently handle
         });
       return;
     }
 
     if (currentCount >= this.maxPlays) {
-      alert(`Bạn chỉ được nghe tối đa ${this.maxPlays} lần!`);
+      // Silently prevent playing - max plays reached
       return;
     }
 
@@ -611,7 +613,7 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
       .catch((error) => {
         this.audioPlayCounts.set(trackingQuestionId, currentCount);
         this.isAudioPlaying = false;
-        alert('Không thể phát audio. Vui lòng thử lại.');
+        // Audio play error - silently handle
       });
   }
 

@@ -13,6 +13,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReportPopupComponent } from '../../Report/report-popup/report-popup.component';
+import { PopupComponent } from '../../../Common/popup/popup.component';
 import { Router, NavigationStart } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -60,6 +61,7 @@ interface QuestionResult {
     ReportPopupComponent,
     MicrophonePermissionModalComponent,
     TeacherContactModalComponent,
+    PopupComponent,
   ],
   templateUrl: './speaking.component.html',
   styleUrl: './speaking.component.scss',
@@ -107,6 +109,11 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   // Teacher contact modal visibility
   showTeacherModal: boolean = false;
+
+  // Submit confirmation popup
+  showSubmitConfirmPopup = false;
+  submitConfirmMessage = '';
+  submitConfirmTitle = 'Xác nhận nộp bài sớm';
 
   constructor(
     private router: Router,
@@ -344,15 +351,14 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   private createNewAttempt(): void {
     if (!this.partInfo || !this.partInfo.examId || !this.partInfo.partId) {
-      console.error('[Speaking]  Cannot create attempt: Missing partInfo');
-      alert('Lỗi: Không thể khởi tạo bài thi. Vui lòng quay lại và thử lại.');
+      console.error('[Speaking] Cannot create attempt: Missing partInfo');
+      this.router.navigate(['/homepage/user-dashboard/exams']);
       return;
     }
 
     const userStr = localStorage.getItem('lumina_user');
     if (!userStr) {
-      console.error('[Speaking]  No user found in localStorage');
-      alert('Vui lòng đăng nhập lại.');
+      console.error('[Speaking] No user found in localStorage');
       this.router.navigate(['/auth/login']);
       return;
     }
@@ -376,8 +382,8 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         this.attemptId = response.attemptID;
       },
       error: (error) => {
-        console.error('[Speaking]  Failed to create attempt:', error);
-        alert('Lỗi khi khởi tạo bài thi. Vui lòng thử lại.');
+        console.error('[Speaking] Failed to create attempt:', error);
+        this.router.navigate(['/homepage/user-dashboard/exams']);
       },
     });
   }
@@ -548,10 +554,12 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   getScoredCount(): number {
-    // Only count results for current questions
-    const count = this.questions.filter((q) =>
-      this.speakingResults.has(q.questionId)
-    ).length;
+    // Count questions that have been scored (including 0 score)
+    // Use state service to check if question is in 'scored' state
+    const count = this.questions.filter((q) => {
+      const state = this.speakingStateService.getQuestionState(q.questionId);
+      return state?.state === 'scored';
+    }).length;
 
     return count;
   }
@@ -835,23 +843,8 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
     const allScored = questionStates.every((qs) => qs.state === 'scored');
 
-    if (!allScored) {
-      const incompleteQuestions = this.questions.filter((q) => {
-        const state = this.speakingStateService.getQuestionState(q.questionId);
-        return (
-          state?.state !== 'scored' &&
-          state?.state !== 'scoring' &&
-          state?.state !== 'submitted'
-        );
-      });
-
-      if (incompleteQuestions.length > 0) {
-        alert(
-          `Bạn còn ${incompleteQuestions.length} câu chưa hoàn thành. Vui lòng hoàn thành tất cả câu hỏi trước khi nộp bài.`
-        );
-        return;
-      }
-    }
+    // Allow early submission - no longer block if not all questions are scored
+    // User will be warned via popup before calling this method
 
     if (this.attemptId === null || this.attemptId <= 0) {
       this.loadAttemptId();
@@ -1056,6 +1049,47 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         sessionStorage.removeItem(submissionKey);
       });
     }
+  }
+
+  /**
+   * Handle early submit button click - show confirmation popup
+   */
+  onEarlySubmitClick(): void {
+    const scoredCount = this.getScoredCount();
+    const totalQuestions = this.questions.length;
+
+    if (scoredCount === 0) {
+      this.submitConfirmMessage =
+        `Bạn chưa hoàn thành câu nào.\n\n` +
+        `Bạn có chắc chắn muốn nộp bài không?\n\n` +
+        `Lưu ý: Bài thi sẽ được nộp với 0 điểm.`;
+    } else if (scoredCount < totalQuestions) {
+      this.submitConfirmMessage =
+        `Đã chấm được ${scoredCount}/${totalQuestions} câu.\n\n` +
+        `Bạn có chắc chắn muốn nộp bài sớm không?\n\n` +
+        `Lưu ý: Các câu chưa chấm sẽ không được tính điểm.`;
+    } else {
+      this.submitConfirmMessage =
+        `Đã chấm được ${scoredCount}/${totalQuestions} câu.\n\n` +
+        `Bạn có muốn nộp bài ngay không?`;
+    }
+
+    this.showSubmitConfirmPopup = true;
+  }
+
+  /**
+   * Handle submit confirmation - proceed with finishing exam
+   */
+  onSubmitConfirmed(): void {
+    this.showSubmitConfirmPopup = false;
+    this.finishSpeakingExam();
+  }
+
+  /**
+   * Handle submit cancellation - close popup and continue
+   */
+  onSubmitCancelled(): void {
+    this.showSubmitConfirmPopup = false;
   }
 
   // Open teacher contact modal
