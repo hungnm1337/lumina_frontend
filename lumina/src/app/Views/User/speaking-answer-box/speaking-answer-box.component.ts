@@ -91,7 +91,8 @@ export class SpeakingAnswerBoxComponent
   ) {
     this.state = 'idle';
 
-    this.setupVisibilityHandler();
+    // Disabled tab switch detection - allow recording in background
+    // this.setupVisibilityHandler();
   }
 
   ngOnInit(): void {
@@ -756,37 +757,11 @@ export class SpeakingAnswerBoxComponent
     }
   }
 
+  // Disabled: Tab switch detection is no longer enforced
+  // Recording can continue in background when user switches tabs
   private setupVisibilityHandler(): void {
-    this.visibilityChangeHandler = async () => {
-      if (document.hidden) {
-        if (this.state === 'recording') {
-          console.warn(
-            '[ANTI-CHEAT] User switched tab while recording - cancelling'
-          );
-
-          // Dừng ghi âm ngay lập tức
-          if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
-            this.mediaRecorder.stop();
-            this.clearTimer();
-
-            // Dừng timer service để ẩn UI đếm ngược ngay lập tức
-            this.timerService.reset();
-
-            // Set error state với flag đặc biệt
-            this.state = 'error';
-            this.cancelledByTabSwitch = true;
-
-            // Clear audio data
-            this.audioBlob = null;
-            this.audioChunks = [];
-
-            this.cdr.markForCheck();
-          }
-        }
-      }
-    };
-
-    document.addEventListener('visibilitychange', this.visibilityChangeHandler);
+    // No longer monitoring tab visibility changes
+    // Users can switch tabs while recording without cancellation
   }
 
   private getSupportedMimeType(): string {

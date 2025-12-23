@@ -1061,17 +1061,17 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     if (scoredCount === 0) {
       this.submitConfirmMessage =
         `Bạn chưa hoàn thành câu nào.\n\n` +
-        `Bạn có chắc chắn muốn nộp bài không?\n\n` +
-        `Lưu ý: Bài thi sẽ được nộp với 0 điểm.`;
+        `Bạn có chắc chắn muốn ${this.isInMockTest ? 'chuyển sang phần tiếp theo' : 'nộp bài'} không?\n\n` +
+        `Lưu ý: ${this.isInMockTest ? 'Phần này' : 'Bài thi'} sẽ được ${this.isInMockTest ? 'tính' : 'nộp'} với 0 điểm.`;
     } else if (scoredCount < totalQuestions) {
       this.submitConfirmMessage =
         `Đã chấm được ${scoredCount}/${totalQuestions} câu.\n\n` +
-        `Bạn có chắc chắn muốn nộp bài sớm không?\n\n` +
+        `Bạn có chắc chắn muốn ${this.isInMockTest ? 'chuyển sang phần tiếp theo' : 'nộp bài sớm'} không?\n\n` +
         `Lưu ý: Các câu chưa chấm sẽ không được tính điểm.`;
     } else {
       this.submitConfirmMessage =
         `Đã chấm được ${scoredCount}/${totalQuestions} câu.\n\n` +
-        `Bạn có muốn nộp bài ngay không?`;
+        `Bạn có muốn ${this.isInMockTest ? 'chuyển sang phần tiếp theo' : 'nộp bài ngay'} không?`;
     }
 
     this.showSubmitConfirmPopup = true;
