@@ -118,15 +118,21 @@ export const routes: Routes = [
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { 
     path: 'articles', 
-    component: BlogArticlesComponent
+    component: BlogArticlesComponent,
+    canActivate: [RoleGuard],
+    data: { roles: [4] }
   },
   { 
     path: 'articles/:id', 
-    component: BlogDetailComponent
+    component: BlogDetailComponent,
+    canActivate: [RoleGuard],
+    data: { roles: [4] }
   },
   { 
     path: 'vocabulary', 
-    component: UserVocabularyComponent
+    component: UserVocabularyComponent,
+    canActivate: [RoleGuard],
+    data: { roles: [4] }
   },
 
   {
@@ -134,7 +140,9 @@ export const routes: Routes = [
     loadComponent: () =>
       import(
         './Views/User/vocabulary-list-detail/vocabulary-list-detail.component'
-      ).then((m) => m.VocabularyListDetailComponent)
+      ).then((m) => m.VocabularyListDetailComponent),
+    canActivate: [RoleGuard],
+    data: { roles: [4] }
   },
 
   // Quiz routes
@@ -143,57 +151,75 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./Views/User/quiz-config/quiz-config.component').then(
         (m) => m.QuizConfigComponent
-      )
+      ),
+    canActivate: [RoleGuard],
+    data: { roles: [4] }
   },
   {
     path: 'quiz/config-detail',
     loadComponent: () =>
       import(
         './Views/User/quiz-config-detail/quiz-config-detail.component'
-      ).then((m) => m.QuizConfigDetailComponent)
+      ).then((m) => m.QuizConfigDetailComponent),
+    canActivate: [RoleGuard],
+    data: { roles: [4] }
   },
   {
     path: 'quiz/do',
     loadComponent: () =>
       import('./Views/User/quiz-do/quiz-do.component').then(
         (m) => m.QuizDoComponent
-      )
+      ),
+    canActivate: [RoleGuard],
+    data: { roles: [4] }
   },
   {
     path: 'quiz/results',
     loadComponent: () =>
       import('./Views/User/quiz-results/quiz-results.component').then(
         (m) => m.QuizResultsComponent
-      )
+      ),
+    canActivate: [RoleGuard],
+    data: { roles: [4] }
   },
 
   { 
     path: 'flashcards', 
-    component: DeckListComponent
+    component: DeckListComponent,
+    canActivate: [RoleGuard],
+    data: { roles: [4] }
   },
   { 
     path: 'flashcards/:id', 
-    component: DeckDetailComponent
+    component: DeckDetailComponent,
+    canActivate: [RoleGuard],
+    data: { roles: [4] }
   },
 
   // Spaced Repetition Dashboard
   {
     path: 'spaced-repetition/dashboard',
-    component: SpacedRepetitionDashboardComponent
+    component: SpacedRepetitionDashboardComponent,
+    canActivate: [RoleGuard],
+    data: { roles: [4] }
   },
   {
     path: 'spaced-repetition/vocabulary-list',
     loadComponent: () =>
       import('./pages/vocabulary-list-table/vocabulary-list-table.component').then(
         (m) => m.VocabularyListTableComponent
-      )
+      ),
+    canActivate: [RoleGuard],
+    data: { roles: [4] }
   },
   {
     path: 'spaced-repetition/review-quiz',
     loadComponent: () =>
       import('./pages/review-quiz/review-quiz.component').then(
         (m) => m.ReviewQuizComponent
-      )
+      ),
+    canActivate: [RoleGuard],
+    data: { roles: [4] }
   },
 
   // Payment Success/Cancel Pages
@@ -202,22 +228,30 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./Views/User/payment-success/payment-success.component').then(
         (m) => m.PaymentSuccessComponent
-      )
+      ),
+    canActivate: [RoleGuard],
+    data: { roles: [4] }
   },
   {
     path: 'payment/cancel',
     loadComponent: () =>
       import('./Views/User/payment-cancel/payment-cancel.component').then(
         (m) => m.PaymentCancelComponent
-      )
+      ),
+    canActivate: [RoleGuard],
+    data: { roles: [4] }
   },
   { 
     path: 'rankings', 
-    component: RankingsComponent
+    component: RankingsComponent,
+    canActivate: [RoleGuard],
+    data: { roles: [4] }
   },
   { 
     path: 'streak', 
-    component: StreakComponent
+    component: StreakComponent,
+    canActivate: [RoleGuard],
+    data: { roles: [4] }
   },
   { path: '', redirectTo: '/homepage', pathMatch: 'full' },
   { path: '**', component: ErrorComponent },
