@@ -16,6 +16,22 @@
 <!-- Speaking Layout - Centered 70% width -->
 <div class="flex justify-center w-full">
   <div class="w-[70%] bg-white rounded-lg shadow-md p-6">
+    <!-- Progress Indicator -->
+    <div class="mb-4 flex items-center justify-between border-b border-gray-200 pb-3">
+      <div class="text-sm font-semibold text-gray-700">
+        <i class="fas fa-clipboard-list mr-2 text-blue-600"></i>
+        Câu {{ currentIndex + 1 }} / {{ questions.length }}
+      </div>
+      <button
+        (click)="onEarlySubmitClick()"
+        [disabled]="isAutoAdvancing"
+        class="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-md text-sm transition-all"
+        title="Nộp bài"
+      >
+        <i ></i>Nộp bài
+      </button>
+    </div>
+
     <div class="space-y-4 mb-4">
       <h3 class="text-lg font-semibold text-gray-800">
         {{ questions[currentIndex].stemText }}
@@ -72,6 +88,16 @@
     }
   </div>
 </div>
+}
+
+<!-- Submit Confirmation Popup -->
+@if (showSubmitConfirmPopup) {
+<app-popup
+  [title]="submitConfirmTitle"
+  [message]="submitConfirmMessage"
+  (okClicked)="onSubmitConfirmed()"
+  (cancelClicked)="onSubmitCancelled()"
+></app-popup>
 } @if (finished && !isInMockTest) {
 <!-- Summary Screen - Centered 70% width - Chỉ hiển thị khi KHÔNG phải MockTest -->
 <div class="flex justify-center w-full">
