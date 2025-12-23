@@ -32,19 +32,18 @@ export class TimeComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // Only reset timer if 'time' changes AND it's the first change (previousValue is undefined)
-    if (changes['time']) {
-      const isFirstChange = changes['time'].firstChange;
-      if (isFirstChange && this.time > 0) {
-        this.startCountdown();
-      }
-      return;
-    }
-    // Keep resetAt for backward compatibility with other components
-    if (changes['resetAt']) {
+    // If resetAt changes, always reset the timer (for backward compatibility)
+    if (changes['resetAt'] && !changes['resetAt'].firstChange) {
       this.startCountdown();
       return;
     }
+
+    // If time changes and is positive, start countdown
+    if (changes['time'] && this.time > 0) {
+      this.startCountdown();
+      return;
+    }
+
     if (changes['savedTime'] && this.savedTime > 0) {
       this.remainingSeconds = this.savedTime;
       if (!this.paused) {
@@ -52,6 +51,7 @@ export class TimeComponent implements OnInit, OnChanges, OnDestroy {
       }
       return;
     }
+
     if (changes['paused']) {
       if (this.paused) {
         this.clearTimer();
