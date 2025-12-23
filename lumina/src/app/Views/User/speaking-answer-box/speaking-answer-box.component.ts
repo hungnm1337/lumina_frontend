@@ -37,8 +37,7 @@ type RecordingState =
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SpeakingAnswerBoxComponent
-  implements OnInit, OnChanges, OnDestroy
-{
+  implements OnInit, OnChanges, OnDestroy {
   @Input() questionId: number = 0;
   @Input() disabled: boolean = false;
   @Input() resetAt: number = 0;
@@ -217,7 +216,6 @@ export class SpeakingAnswerBoxComponent
           );
         }
         this.cdr.markForCheck();
-      } else {
       }
 
       this.recordingStatusChange.emit(false);
@@ -277,9 +275,9 @@ export class SpeakingAnswerBoxComponent
 
       if (this.audioBlob && this.audioBlob.size > 0) {
         if (this.isLastQuestion) {
-          this.submitRecording().catch((error) => {});
+          this.submitRecording().catch((error) => { });
         } else {
-          this.submitRecording().catch((error) => {});
+          this.submitRecording().catch((error) => { });
 
           this.autoAdvanceNext.emit();
         }
@@ -301,7 +299,7 @@ export class SpeakingAnswerBoxComponent
       changes['questionId'] &&
       !changes['questionId'].isFirstChange() &&
       changes['questionId'].currentValue !==
-        changes['questionId'].previousValue;
+      changes['questionId'].previousValue;
 
     const hasResetChange =
       changes['resetAt'] &&
@@ -770,7 +768,7 @@ export class SpeakingAnswerBoxComponent
           if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
             this.mediaRecorder.stop();
             this.clearTimer();
-            
+
             // Dừng timer service để ẩn UI đếm ngược ngay lập tức
             this.timerService.reset();
 
