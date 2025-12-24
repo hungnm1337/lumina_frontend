@@ -5,12 +5,18 @@
       <div *ngFor="let message of messages" class="message-wrapper">
         <app-message-item [message]="message"></app-message-item>
         
-        <!-- Nút xem preview nếu message có previewId -->
-        <div class="preview-action" *ngIf="message.previewId && message.role === 'assistant'">
+        <!-- Nút xem preview nếu message có previewId và chưa lưu -->
+        <div class="preview-action" *ngIf="message.previewId && message.role === 'assistant' && !isPreviewSaved(message.previewId)">
           <button class="view-preview-btn" (click)="onPreviewClick(message.previewId)">
             <i class="fas fa-eye"></i>
             Xem lại đề thi này
           </button>
+        </div>
+        
+        <!-- Thông báo đã lưu -->
+        <div class="preview-saved-badge" *ngIf="message.previewId && message.role === 'assistant' && isPreviewSaved(message.previewId)">
+          <i class="fas fa-check-circle"></i>
+          Đề thi đã được lưu
         </div>
       </div>
     </ng-container>

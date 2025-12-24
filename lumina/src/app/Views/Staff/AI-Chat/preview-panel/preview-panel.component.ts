@@ -14,7 +14,9 @@ import { UploadService } from '../../../../Services/Upload/upload.service';
 })
 export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
   @Input() previewData: any = null;
+  @Input() currentPreviewId: string | null = null;
   @Output() savingStateChange = new EventEmitter<boolean>();
+  @Output() examSaved = new EventEmitter<string>();
   
   examParts: any[] = [];
   examSetKeys: string[] = [];
@@ -201,6 +203,11 @@ export class PreviewPanelComponent implements OnInit, OnDestroy, OnChanges {
           this.isSaving = false;
           this.savingStateChange.emit(false);
           this.showToastMessage('Lưu đề thi thành công!');
+          
+          // Emit previewId để parent component track đã lưu
+          if (this.currentPreviewId) {
+            this.examSaved.emit(this.currentPreviewId);
+          }
 
           // Reset selectors sau khi save thành công
           setTimeout(() => {

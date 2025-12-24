@@ -55,6 +55,25 @@
   }
 }
 
+.preview-saved-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  margin: 0 12px;
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+
+  i {
+    font-size: 14px;
+    color: #16a34a;
+  }
+}
+
 .empty-placeholder {
   display: flex;
   flex-direction: column;
