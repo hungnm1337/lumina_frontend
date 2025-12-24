@@ -172,6 +172,11 @@
             </div>
 
             <!-- Score -->
+             
+            @if (attempt.examPartName=== null||attempt.examPartName=== "") {
+               
+                } @else {
+                
             @if (attempt.score !== null) {
             <div class="text-right bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 min-w-[100px]">
               <div class="text-xs text-gray-500 mb-1 font-semibold uppercase tracking-wide">Điểm</div>
@@ -184,7 +189,7 @@
               </div>
             </div>
             }
-
+          }
             <!-- View Detail Arrow -->
             <div class="text-blue-600 text-2xl group-hover:translate-x-2 transition-transform duration-300">
               →

@@ -13,6 +13,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReportPopupComponent } from '../../Report/report-popup/report-popup.component';
+import { PopupComponent } from '../../../Common/popup/popup.component';
 import { Router, NavigationStart } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -38,6 +39,7 @@ import { ExamCoordinationService } from '../../../../Services/exam-coordination.
 import { ToastService } from '../../../../Services/Toast/toast.service';
 import { SidebarService } from '../../../../Services/sidebar.service';
 import { MicrophonePermissionModalComponent } from '../../microphone-permission-modal/microphone-permission-modal.component';
+import { TeacherContactModalComponent } from '../../teacher-contact-modal/teacher-contact-modal.component';
 
 interface QuestionResult {
   questionNumber: number;
@@ -58,6 +60,8 @@ interface QuestionResult {
     QuotaLimitModalComponent,
     ReportPopupComponent,
     MicrophonePermissionModalComponent,
+    TeacherContactModalComponent,
+    PopupComponent,
   ],
   templateUrl: './speaking.component.html',
   styleUrl: './speaking.component.scss',
@@ -102,6 +106,14 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   // Microphone permission tracking
   showMicPermissionModal = false;
   hasMicrophonePermission = false;
+
+  // Teacher contact modal visibility
+  showTeacherModal: boolean = false;
+
+  // Submit confirmation popup
+  showSubmitConfirmPopup = false;
+  submitConfirmMessage = '';
+  submitConfirmTitle = 'Xác nhận nộp bài sớm';
 
   constructor(
     private router: Router,
@@ -339,15 +351,14 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   private createNewAttempt(): void {
     if (!this.partInfo || !this.partInfo.examId || !this.partInfo.partId) {
-      console.error('[Speaking]  Cannot create attempt: Missing partInfo');
-      alert('Lỗi: Không thể khởi tạo bài thi. Vui lòng quay lại và thử lại.');
+      console.error('[Speaking] Cannot create attempt: Missing partInfo');
+      this.router.navigate(['/homepage/user-dashboard/exams']);
       return;
     }
 
     const userStr = localStorage.getItem('lumina_user');
     if (!userStr) {
-      console.error('[Speaking]  No user found in localStorage');
-      alert('Vui lòng đăng nhập lại.');
+      console.error('[Speaking] No user found in localStorage');
       this.router.navigate(['/auth/login']);
       return;
     }
@@ -371,8 +382,8 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         this.attemptId = response.attemptID;
       },
       error: (error) => {
-        console.error('[Speaking]  Failed to create attempt:', error);
-        alert('Lỗi khi khởi tạo bài thi. Vui lòng thử lại.');
+        console.error('[Speaking] Failed to create attempt:', error);
+        this.router.navigate(['/homepage/user-dashboard/exams']);
       },
     });
   }
@@ -543,10 +554,12 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   getScoredCount(): number {
-    // Only count results for current questions
-    const count = this.questions.filter((q) =>
-      this.speakingResults.has(q.questionId)
-    ).length;
+    // Count questions that have been scored (including 0 score)
+    // Use state service to check if question is in 'scored' state
+    const count = this.questions.filter((q) => {
+      const state = this.speakingStateService.getQuestionState(q.questionId);
+      return state?.state === 'scored';
+    }).length;
 
     return count;
   }
@@ -597,94 +610,12 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       };
     }
 
-    return this.getTimingFromPartCode(currentQuestion);
+    // Use the service to get timing based on global question number
+    const globalQuestionNumber = this.getQuestionNumber(currentQuestion.questionId);
+    return this.speakingStateService.getQuestionTiming(globalQuestionNumber);
   }
 
-  private getTimingFromPartCode(question: any): SpeakingQuestionTiming {
-    const partCode = question.partCode?.toUpperCase() || '';
-    const questionNumber = question.questionNumber || 1;
 
-    // Map partCode to timing configuration
-    if (partCode.includes('SPEAKING_PART_1') || partCode.includes('PART_1')) {
-      // Part 1: Questions 1-2
-      return {
-        questionNumber: questionNumber,
-        partNumber: 1,
-        preparationTime: 45,
-        recordingTime: 45,
-      };
-    } else if (partCode.includes('SPEAKING_PART_2') || partCode.includes('PART_2')) {
-      // Part 2: Questions 3-4
-      return {
-        questionNumber: questionNumber,
-        partNumber: 2,
-        preparationTime: 45,
-        recordingTime: 30,
-      };
-    } else if (partCode.includes('SPEAKING_PART_3') || partCode.includes('PART_3')) {
-      // Part 3: Questions 5-7
-      if (questionNumber === 1 || questionNumber === 2) {
-        return {
-          questionNumber: questionNumber,
-          partNumber: 3,
-          preparationTime: 3,
-          recordingTime: 15,
-        };
-      } else {
-        // Question 3 of Part 3
-        return {
-          questionNumber: questionNumber,
-          partNumber: 3,
-          preparationTime: 3,
-          recordingTime: 30,
-        };
-      }
-    } else if (partCode.includes('SPEAKING_PART_4') || partCode.includes('PART_4')) {
-      // Part 4: Questions 8-10
-      if (questionNumber === 1) {
-        // Question 1 of Part 4 (question 8 globally) has info reading phase
-        return {
-          questionNumber: questionNumber,
-          partNumber: 4,
-          preparationTime: 3,
-          recordingTime: 15,
-          showInfoPhase: true,
-          infoReadTime: 45,
-        };
-      } else if (questionNumber === 2) {
-        return {
-          questionNumber: questionNumber,
-          partNumber: 4,
-          preparationTime: 3,
-          recordingTime: 15,
-        };
-      } else {
-        // Question 3 of Part 4
-        return {
-          questionNumber: questionNumber,
-          partNumber: 4,
-          preparationTime: 3,
-          recordingTime: 30,
-        };
-      }
-    } else if (partCode.includes('SPEAKING_PART_5') || partCode.includes('PART_5')) {
-      // Part 5: Question 11
-      return {
-        questionNumber: questionNumber,
-        partNumber: 5,
-        preparationTime: 30,
-        recordingTime: 60,
-      };
-    }
-
-    // Default fallback
-    return {
-      questionNumber: questionNumber,
-      partNumber: 0,
-      preparationTime: 45,
-      recordingTime: 45,
-    };
-  }
 
   private getQuestionNumber(questionId: number): number {
     const index = this.questions.findIndex((q) => q.questionId === questionId);
@@ -912,23 +843,8 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
     const allScored = questionStates.every((qs) => qs.state === 'scored');
 
-    if (!allScored) {
-      const incompleteQuestions = this.questions.filter((q) => {
-        const state = this.speakingStateService.getQuestionState(q.questionId);
-        return (
-          state?.state !== 'scored' &&
-          state?.state !== 'scoring' &&
-          state?.state !== 'submitted'
-        );
-      });
-
-      if (incompleteQuestions.length > 0) {
-        alert(
-          `Bạn còn ${incompleteQuestions.length} câu chưa hoàn thành. Vui lòng hoàn thành tất cả câu hỏi trước khi nộp bài.`
-        );
-        return;
-      }
-    }
+    // Allow early submission - no longer block if not all questions are scored
+    // User will be warned via popup before calling this method
 
     if (this.attemptId === null || this.attemptId <= 0) {
       this.loadAttemptId();
@@ -1133,5 +1049,56 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         sessionStorage.removeItem(submissionKey);
       });
     }
+  }
+
+  /**
+   * Handle early submit button click - show confirmation popup
+   */
+  onEarlySubmitClick(): void {
+    const scoredCount = this.getScoredCount();
+    const totalQuestions = this.questions.length;
+
+    if (scoredCount === 0) {
+      this.submitConfirmMessage =
+        `Bạn chưa hoàn thành câu nào.\n\n` +
+        `Bạn có chắc chắn muốn ${this.isInMockTest ? 'chuyển sang phần tiếp theo' : 'nộp bài'} không?\n\n` +
+        `Lưu ý: ${this.isInMockTest ? 'Phần này' : 'Bài thi'} sẽ được ${this.isInMockTest ? 'tính' : 'nộp'} với 0 điểm.`;
+    } else if (scoredCount < totalQuestions) {
+      this.submitConfirmMessage =
+        `Đã chấm được ${scoredCount}/${totalQuestions} câu.\n\n` +
+        `Bạn có chắc chắn muốn ${this.isInMockTest ? 'chuyển sang phần tiếp theo' : 'nộp bài sớm'} không?\n\n` +
+        `Lưu ý: Các câu chưa chấm sẽ không được tính điểm.`;
+    } else {
+      this.submitConfirmMessage =
+        `Đã chấm được ${scoredCount}/${totalQuestions} câu.\n\n` +
+        `Bạn có muốn ${this.isInMockTest ? 'chuyển sang phần tiếp theo' : 'nộp bài ngay'} không?`;
+    }
+
+    this.showSubmitConfirmPopup = true;
+  }
+
+  /**
+   * Handle submit confirmation - proceed with finishing exam
+   */
+  onSubmitConfirmed(): void {
+    this.showSubmitConfirmPopup = false;
+    this.finishSpeakingExam();
+  }
+
+  /**
+   * Handle submit cancellation - close popup and continue
+   */
+  onSubmitCancelled(): void {
+    this.showSubmitConfirmPopup = false;
+  }
+
+  // Open teacher contact modal
+  openTeacherModal(): void {
+    this.showTeacherModal = true;
+  }
+
+  // Close teacher contact modal
+  closeTeacherModal(): void {
+    this.showTeacherModal = false;
   }
 }

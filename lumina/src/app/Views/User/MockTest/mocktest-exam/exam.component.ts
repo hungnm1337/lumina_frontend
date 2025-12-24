@@ -60,7 +60,7 @@ export class ExamComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private toastService: ToastService,
     private examAttemptService: ExamAttemptService
-  ) { }
+  ) {}
 
   exampartDetailsAndQustions: ExamPartDTO[] = [];
   currentPartIndex: number = 0;
@@ -96,6 +96,11 @@ export class ExamComponent implements OnInit, OnDestroy {
     { color: 'bg-blue-600', label: 'Đang làm' },
   ];
 
+  // Part 4 specific properties
+  isPart4 = false;
+  currentPromptIndex = 0;
+  questionGroups: QuestionDTO[][] = [];
+
   getQuestionStatus = (questionId: number, index: number): string => {
     if (index === this.currentQuestionIndex) return 'current';
     if (this.isQuestionAnswered(questionId)) return 'answered';
@@ -103,6 +108,11 @@ export class ExamComponent implements OnInit, OnDestroy {
   };
 
   get audioPlayCount(): number {
+    if (this.isPart4) {
+      // For Part 4, use the first question in the current group
+      const firstQuestionId = this.getCurrentPromptQuestions()[0]?.questionId;
+      return this.audioPlayCounts.get(firstQuestionId) || 0;
+    }
     const currentQuestionId = this.currentQuestion?.questionId;
     if (!currentQuestionId) return 0;
     return this.audioPlayCounts.get(currentQuestionId) || 0;
@@ -200,8 +210,12 @@ export class ExamComponent implements OnInit, OnDestroy {
     this.saveProgressOnExit();
   }
 
-
   getCurrentAudioUrl(): string {
+    if (this.isPart4) {
+      // For Part 4, use audio from first question in the prompt group
+      const firstQuestion = this.getCurrentPromptQuestions()[0];
+      return firstQuestion?.prompt?.referenceAudioUrl || '';
+    }
     return this.currentQuestion?.prompt?.referenceAudioUrl || '';
   }
 
@@ -255,7 +269,10 @@ export class ExamComponent implements OnInit, OnDestroy {
   private autoPlayAudio(): void {
     if (!this.currentSkillType || this.currentSkillType !== 'listening') return;
 
-    const currentQuestionId = this.currentQuestion?.questionId;
+    // For Part 4, use first question in group as the key
+    const currentQuestionId = this.isPart4
+      ? this.getCurrentPromptQuestions()[0]?.questionId
+      : this.currentQuestion?.questionId;
     if (!currentQuestionId) return;
 
     const currentCount = this.audioPlayCounts.get(currentQuestionId) || 0;
@@ -271,7 +288,10 @@ export class ExamComponent implements OnInit, OnDestroy {
     if (!this.audioPlayer) return;
 
     const audio = this.audioPlayer.nativeElement;
-    const currentQuestionId = this.currentQuestion?.questionId;
+    // For Part 4, use first question in group as the key
+    const currentQuestionId = this.isPart4
+      ? this.getCurrentPromptQuestions()[0]?.questionId
+      : this.currentQuestion?.questionId;
     if (!currentQuestionId) return;
 
     const currentCount = this.audioPlayCounts.get(currentQuestionId) || 0;
@@ -292,9 +312,7 @@ export class ExamComponent implements OnInit, OnDestroy {
         .then(() => {
           this.isAudioPlaying = true;
         })
-        .catch((error) => {
-
-        });
+        .catch((error) => {});
       return;
     }
 
@@ -311,14 +329,12 @@ export class ExamComponent implements OnInit, OnDestroy {
 
     audio
       .play()
-      .then(() => { })
+      .then(() => {})
       .catch((error) => {
         this.audioPlayCounts.set(currentQuestionId, currentCount);
         this.isAudioPlaying = false;
-
       });
   }
-
 
   getSelectedOptionId(questionId: number): number | null {
     return this.selectedAnswers[questionId] ?? null;
@@ -326,12 +342,25 @@ export class ExamComponent implements OnInit, OnDestroy {
 
   navigateToQuestion(index: number): void {
     if (index >= 0 && index < (this.currentPart?.questions.length || 0)) {
-      this.currentQuestionIndex = index;
-      this.showPartCompletionMessage = false;
+      if (this.isPart4) {
+        // For Part 4, find which prompt group contains this question
+        const targetQuestion = this.currentPart?.questions[index];
+        const promptIndex = this.questionGroups.findIndex((group) =>
+          group.some((q) => q.questionId === targetQuestion?.questionId)
+        );
+        if (promptIndex !== -1) {
+          this.currentPromptIndex = promptIndex;
+          this.resetAudioState();
+          this.autoPlayAudio();
+        }
+      } else {
+        this.currentQuestionIndex = index;
+        this.showPartCompletionMessage = false;
 
-      this.resetAudioState();
-      if (this.currentSkillType === 'listening') {
-        this.autoPlayAudio();
+        this.resetAudioState();
+        if (this.currentSkillType === 'listening') {
+          this.autoPlayAudio();
+        }
       }
     }
   }
@@ -397,6 +426,7 @@ export class ExamComponent implements OnInit, OnDestroy {
 
         this.currentPartIndex = 0;
         this.currentQuestionIndex = 0;
+        this.detectAndGroupPart4();
         this.initializePartTimer();
 
         if (this.currentSkillType === 'listening') {
@@ -464,8 +494,7 @@ export class ExamComponent implements OnInit, OnDestroy {
           this.totalScore += response.score;
         }
       },
-      error: (error) => {
-      },
+      error: (error) => {},
     });
   }
 
@@ -548,7 +577,6 @@ export class ExamComponent implements OnInit, OnDestroy {
       ' Hết thời gian! Tự động chuyển sang part tiếp theo'
     );
 
-
     setTimeout(() => {
       if (this.isLastQuestionInExam()) {
         this.finishExam();
@@ -591,8 +619,7 @@ export class ExamComponent implements OnInit, OnDestroy {
     }
   }
 
-  onSpeakingAnswered(isCorrect: boolean): void {
-  }
+  onSpeakingAnswered(isCorrect: boolean): void {}
 
   onSpeakingPartCompleted(): void {
     if (this.currentPart) {
@@ -655,8 +682,10 @@ export class ExamComponent implements OnInit, OnDestroy {
     if (this.currentPartIndex < this.exampartDetailsAndQustions.length - 1) {
       this.currentPartIndex++;
       this.currentQuestionIndex = 0;
+      this.currentPromptIndex = 0; // Reset Part 4 prompt index
       this.showPartCompletionMessage = false;
       this.showSpeakingNextPartButton = false;
+      this.detectAndGroupPart4(); // Detect if new part is Part 4
       this.toastService.success(`Bắt đầu ${this.currentPart?.title}`);
       this.updatePartCodeStorage();
       this.initializePartTimer();
@@ -667,8 +696,133 @@ export class ExamComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ============= PART 4 SPECIFIC METHODS =============
+
+  /**
+   * Detect if this is Part 4 and group questions by promptId
+   */
+  private detectAndGroupPart4(): void {
+    const partCode = this.currentPart?.partCode?.toUpperCase();
+    this.isPart4 = partCode === 'LISTENING_PART_4' || partCode === 'PART_4';
+
+    if (this.isPart4) {
+      this.groupQuestionsByPrompt();
+      this.currentPromptIndex = 0;
+      console.log(
+        '📊 Mock Test Part 4 detected. Question groups:',
+        this.questionGroups
+      );
+    } else {
+      this.questionGroups = [];
+    }
+  }
+
+  /**
+   * Group questions by promptId (3 questions per group for Part 4)
+   */
+  private groupQuestionsByPrompt(): void {
+    if (!this.currentPart) return;
+
+    const groupMap = new Map<number, QuestionDTO[]>();
+
+    this.currentPart.questions.forEach((question) => {
+      const promptId = question.promptId || 0;
+      if (!groupMap.has(promptId)) {
+        groupMap.set(promptId, []);
+      }
+      groupMap.get(promptId)!.push(question);
+    });
+
+    this.questionGroups = Array.from(groupMap.values());
+  }
+
+  /**
+   * Get the 3 questions in the current prompt group
+   */
+  getCurrentPromptQuestions(): QuestionDTO[] {
+    if (!this.isPart4 || this.questionGroups.length === 0) {
+      return this.currentQuestion ? [this.currentQuestion] : [];
+    }
+    return this.questionGroups[this.currentPromptIndex] || [];
+  }
+
+  /**
+   * Navigate to next prompt group (Part 4)
+   */
+  nextPrompt(): void {
+    // Validate all questions in current group are answered
+    const currentGroupQuestions = this.getCurrentPromptQuestions();
+    const unansweredInGroup = currentGroupQuestions.filter(
+      (q) => !this.selectedAnswers[q.questionId]
+    );
+
+    if (unansweredInGroup.length > 0) {
+      this.toastService.warning(
+        `Vui lòng trả lời ${unansweredInGroup.length} câu còn lại trong nhóm này`
+      );
+      return;
+    }
+
+    if (this.currentPromptIndex < this.questionGroups.length - 1) {
+      this.currentPromptIndex++;
+      this.resetAudioState();
+      this.autoPlayAudio();
+    } else {
+      // Last prompt group - check if we should move to next part or finish
+      if (this.isLastPartInExam()) {
+        this.finishExam();
+      } else {
+        this.showPartCompletionMessage = true;
+      }
+    }
+  }
+
+  /**
+   * Navigate to previous prompt group (Part 4)
+   */
+  previousPrompt(): void {
+    if (this.currentPromptIndex > 0) {
+      this.currentPromptIndex--;
+      this.resetAudioState();
+      this.autoPlayAudio();
+    } else {
+      this.toastService.warning('Không thể quay lại part trước');
+    }
+  }
+
+  /**
+   * Check if current part is the last part in exam
+   */
+  isLastPartInExam(): boolean {
+    return this.currentPartIndex === this.exampartDetailsAndQustions.length - 1;
+  }
+
+  /**
+   * Check if current prompt group is the last one in Part 4
+   */
+  isLastPromptInPart(): boolean {
+    if (!this.isPart4) return this.isLastQuestionInPart();
+    return this.currentPromptIndex === this.questionGroups.length - 1;
+  }
+
+  /**
+   * Handle answer selection for Part 4 questions
+   */
+  onOptionAnsweredPart4(questionId: number, optionId: number): void {
+    this.selectedAnswers[questionId] = optionId;
+
+    if (this.attemptId) {
+      this.submitAnswerToBackend(questionId, optionId);
+    }
+  }
+
+  // ============= END PART 4 METHODS =============
+
   isLastQuestionInPart(): boolean {
     if (!this.currentPart) return false;
+    if (this.isPart4) {
+      return this.currentPromptIndex === this.questionGroups.length - 1;
+    }
     return this.currentQuestionIndex === this.currentPart.questions.length - 1;
   }
 
@@ -717,7 +871,6 @@ export class ExamComponent implements OnInit, OnDestroy {
     this.isSubmitting = true;
     this.examFinished = true; // Prevent saveProgress from running during ngOnDestroy
 
-
     const storedAttempt = localStorage.getItem('currentExamAttempt');
     if (!storedAttempt) {
       this.toastService.error('Không tìm thấy phiên thi');
@@ -745,9 +898,7 @@ export class ExamComponent implements OnInit, OnDestroy {
 
               localStorage.removeItem('currentExamAttempt');
 
-              this.toastService.success(
-                `Hoàn thành bài thi!`
-              );
+              this.toastService.success(`Hoàn thành bài thi!`);
 
               setTimeout(() => {
                 this.router.navigate([
@@ -789,8 +940,8 @@ export class ExamComponent implements OnInit, OnDestroy {
     };
 
     this.examAttemptService.saveProgress(model).subscribe({
-      next: () => { },
-      error: (error) => { },
+      next: () => {},
+      error: (error) => {},
     });
   }
 
@@ -868,7 +1019,9 @@ export class ExamComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.isSubmitting = false;
-          this.toastService.error('Không thể kết thúc bài thi. Vui lòng thử lại.');
+          this.toastService.error(
+            'Không thể kết thúc bài thi. Vui lòng thử lại.'
+          );
         },
       });
     } catch (error) {

@@ -37,8 +37,7 @@ type RecordingState =
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SpeakingAnswerBoxComponent
-  implements OnInit, OnChanges, OnDestroy
-{
+  implements OnInit, OnChanges, OnDestroy {
   @Input() questionId: number = 0;
   @Input() disabled: boolean = false;
   @Input() resetAt: number = 0;
@@ -92,7 +91,8 @@ export class SpeakingAnswerBoxComponent
   ) {
     this.state = 'idle';
 
-    this.setupVisibilityHandler();
+    // Disabled tab switch detection - allow recording in background
+    // this.setupVisibilityHandler();
   }
 
   ngOnInit(): void {
@@ -217,7 +217,6 @@ export class SpeakingAnswerBoxComponent
           );
         }
         this.cdr.markForCheck();
-      } else {
       }
 
       this.recordingStatusChange.emit(false);
@@ -277,9 +276,9 @@ export class SpeakingAnswerBoxComponent
 
       if (this.audioBlob && this.audioBlob.size > 0) {
         if (this.isLastQuestion) {
-          this.submitRecording().catch((error) => {});
+          this.submitRecording().catch((error) => { });
         } else {
-          this.submitRecording().catch((error) => {});
+          this.submitRecording().catch((error) => { });
 
           this.autoAdvanceNext.emit();
         }
@@ -301,7 +300,7 @@ export class SpeakingAnswerBoxComponent
       changes['questionId'] &&
       !changes['questionId'].isFirstChange() &&
       changes['questionId'].currentValue !==
-        changes['questionId'].previousValue;
+      changes['questionId'].previousValue;
 
     const hasResetChange =
       changes['resetAt'] &&
@@ -758,37 +757,11 @@ export class SpeakingAnswerBoxComponent
     }
   }
 
+  // Disabled: Tab switch detection is no longer enforced
+  // Recording can continue in background when user switches tabs
   private setupVisibilityHandler(): void {
-    this.visibilityChangeHandler = async () => {
-      if (document.hidden) {
-        if (this.state === 'recording') {
-          console.warn(
-            '[ANTI-CHEAT] User switched tab while recording - cancelling'
-          );
-
-          // Dừng ghi âm ngay lập tức
-          if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
-            this.mediaRecorder.stop();
-            this.clearTimer();
-            
-            // Dừng timer service để ẩn UI đếm ngược ngay lập tức
-            this.timerService.reset();
-
-            // Set error state với flag đặc biệt
-            this.state = 'error';
-            this.cancelledByTabSwitch = true;
-
-            // Clear audio data
-            this.audioBlob = null;
-            this.audioChunks = [];
-
-            this.cdr.markForCheck();
-          }
-        }
-      }
-    };
-
-    document.addEventListener('visibilitychange', this.visibilityChangeHandler);
+    // No longer monitoring tab visibility changes
+    // Users can switch tabs while recording without cancellation
   }
 
   private getSupportedMimeType(): string {
