@@ -182,15 +182,12 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       const newAttemptId = changes['mockTestAttemptId'].currentValue;
       if (newAttemptId && newAttemptId > 0) {
         this.attemptId = newAttemptId;
-
       }
     }
 
     if (changes['questions']) {
       const previousQuestions = changes['questions'].previousValue;
       const currentQuestions = changes['questions'].currentValue;
-
-
 
       // FIX: Reset speaking results when questions change (different part)
       // Check if this is a different set of questions (different part)
@@ -205,7 +202,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         !Array.from(currentIds).some((id) => previousIds.has(id));
 
       if (isDifferentPart && this.isInMockTest) {
-
         this.speakingResults.clear();
         this.speakingQuestionResults = [];
         this.speakingStateService.resetAllStates();
@@ -252,7 +248,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
           `Bài thi này đang được mở ở tab khác (bắt đầu lúc ${new Date(
             conflicting!.startTime
           ).toLocaleString()}).\n\n` +
-          `Tiếp tục có thể gây xung đột dữ liệu. Bạn có chắc chắn muốn tiếp tục?`
+            `Tiếp tục có thể gây xung đột dữ liệu. Bạn có chắc chắn muốn tiếp tục?`
         );
 
         if (confirmTakeover) {
@@ -317,7 +313,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
       if (!stored) {
         if (this.isInMockTest) {
-
           return;
         }
 
@@ -418,7 +413,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       stream.getTracks().forEach((track) => track.stop());
 
       this.hasMicrophonePermission = true;
-
     } catch (error: any) {
       console.error(' Microphone permission denied:', error);
       this.hasMicrophonePermission = false;
@@ -476,8 +470,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }): void {
     const { questionId, result } = event;
 
-
-
     const q = this.questions.find((q) => q.questionId === questionId);
 
     if (!q) {
@@ -493,8 +485,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     if (result.overallScore !== null && result.overallScore !== undefined) {
       this.speakingResults.set(q.questionId, result);
 
-
-
       const questionIndex = this.questions.findIndex(
         (q) => q.questionId === questionId
       );
@@ -505,7 +495,8 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         questionNumber: questionIndex + 1,
         questionText: q.stemText,
         result: result,
-        sampleAnswer: q.sampleAnswer,
+        // Use sampleAnswer from API response (available after scoring), fallback to question if not available
+        sampleAnswer: result.sampleAnswer || q.sampleAnswer,
       };
       if (existingIndex >= 0) {
         this.speakingQuestionResults[existingIndex] = item;
@@ -540,15 +531,12 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   // Mock test helper methods
   areAllQuestionsScored(): boolean {
     if (!this.questions || this.questions.length === 0) {
-
       return false;
     }
 
     const allScored = this.questions.every((q) =>
       this.speakingResults.has(q.questionId)
     );
-
-
 
     return allScored;
   }
@@ -565,15 +553,11 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   onNextPartClicked(): void {
-
-
     if (this.isInMockTest) {
       if (this.areAllQuestionsScored()) {
-
         this.baseQuestionService.finishQuiz();
         this.speakingPartCompleted.emit();
       } else {
-
       }
     } else {
       // Ngoài MockTest, gọi finishSpeakingExam bình thường
@@ -611,11 +595,11 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     }
 
     // Use the service to get timing based on global question number
-    const globalQuestionNumber = this.getQuestionNumber(currentQuestion.questionId);
+    const globalQuestionNumber = this.getQuestionNumber(
+      currentQuestion.questionId
+    );
     return this.speakingStateService.getQuestionTiming(globalQuestionNumber);
   }
-
-
 
   private getQuestionNumber(questionId: number): number {
     const index = this.questions.findIndex((q) => q.questionId === questionId);
@@ -640,7 +624,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         this.resetCounter++;
       } else {
         if (this.isInMockTest && this.areAllQuestionsScored()) {
-
           this.finishSpeakingExam();
         } else if (!this.isInMockTest) {
           this.finishSpeakingExam();
@@ -686,8 +669,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   private updateSpeakingResults(states: Map<number, any>): void {
     const newResults: QuestionResult[] = [];
 
-
-
     states.forEach((state, questionId) => {
       if (state.result) {
         // Use questionId from the Map key, not from state.result
@@ -695,11 +676,10 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
           (q) => q.questionId === questionId
         );
 
-
-
         if (question) {
-          const sampleAnswerValue = question.sampleAnswer;
-
+          // Prioritize sampleAnswer from API result (available after scoring), fallback to question
+          const sampleAnswerValue =
+            state.result.sampleAnswer || question.sampleAnswer;
 
           const resultItem: QuestionResult = {
             questionNumber: this.questions.indexOf(question) + 1,
@@ -708,11 +688,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
             sampleAnswer: sampleAnswerValue,
           };
 
-
-
           newResults.push(resultItem);
-
-
         } else {
           console.error(
             `[updateSpeakingResults] Question not found for questionId ${questionId}`
@@ -720,8 +696,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         }
       }
     });
-
-
 
     const hasChanges =
       newResults.length !== this.speakingQuestionResults.length ||
@@ -734,17 +708,9 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         );
       });
 
-
-
-
     if (hasChanges) {
-
       this.speakingQuestionResults = [...newResults]; // Use spread to create new array
-
-
-
     } else {
-
     }
   }
 
@@ -802,28 +768,20 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   async finishSpeakingExam(): Promise<void> {
-
-
     if (this.isInMockTest) {
-
-
       // Chỉ finish quiz và emit event để ExamComponent xử lý chuyển part
       this.baseQuestionService.finishQuiz();
       this.speakingPartCompleted.emit();
-
 
       return;
     }
 
     // Phần code dưới đây chỉ chạy khi KHÔNG phải MockTest mode
     if (this.showSpeakingSummary) {
-
       return;
     }
 
     if (!this.hasSpeakingQuestions()) {
-
-
       return;
     }
 
@@ -865,8 +823,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         if (summary.totalScore !== undefined) {
           this.baseQuestionService.setTotalScore(summary.totalScore);
         }
-
-
 
         this.showSpeakingSummary = true;
         this.baseQuestionService.finishQuiz();
@@ -910,7 +866,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       };
 
       this.examAttemptService.endExam(endExamRequest).subscribe({
-        next: (response) => { },
+        next: (response) => {},
         error: (error) => {
           console.error('[Speaking]  Error ending speaking exam:', error);
           console.error('[Speaking]  Error details:', {
@@ -980,7 +936,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       };
 
       this.examAttemptService.saveProgress(model).subscribe({
-        next: () => { },
+        next: () => {},
         error: (error) =>
           console.error('Error saving speaking progress:', error),
       });
@@ -990,8 +946,8 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   confirmExit(): void {
     const confirmResult = confirm(
       'Bạn có muốn lưu tiến trình và thoát không?\n\n' +
-      '- Chọn "OK" để lưu và thoát\n' +
-      '- Chọn "Cancel" để tiếp tục làm bài'
+        '- Chọn "OK" để lưu và thoát\n' +
+        '- Chọn "Cancel" để tiếp tục làm bài'
     );
 
     if (confirmResult) {
@@ -1061,17 +1017,25 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     if (scoredCount === 0) {
       this.submitConfirmMessage =
         `Bạn chưa hoàn thành câu nào.\n\n` +
-        `Bạn có chắc chắn muốn ${this.isInMockTest ? 'chuyển sang phần tiếp theo' : 'nộp bài'} không?\n\n` +
-        `Lưu ý: ${this.isInMockTest ? 'Phần này' : 'Bài thi'} sẽ được ${this.isInMockTest ? 'tính' : 'nộp'} với 0 điểm.`;
+        `Bạn có chắc chắn muốn ${
+          this.isInMockTest ? 'chuyển sang phần tiếp theo' : 'nộp bài'
+        } không?\n\n` +
+        `Lưu ý: ${this.isInMockTest ? 'Phần này' : 'Bài thi'} sẽ được ${
+          this.isInMockTest ? 'tính' : 'nộp'
+        } với 0 điểm.`;
     } else if (scoredCount < totalQuestions) {
       this.submitConfirmMessage =
         `Đã chấm được ${scoredCount}/${totalQuestions} câu.\n\n` +
-        `Bạn có chắc chắn muốn ${this.isInMockTest ? 'chuyển sang phần tiếp theo' : 'nộp bài sớm'} không?\n\n` +
+        `Bạn có chắc chắn muốn ${
+          this.isInMockTest ? 'chuyển sang phần tiếp theo' : 'nộp bài sớm'
+        } không?\n\n` +
         `Lưu ý: Các câu chưa chấm sẽ không được tính điểm.`;
     } else {
       this.submitConfirmMessage =
         `Đã chấm được ${scoredCount}/${totalQuestions} câu.\n\n` +
-        `Bạn có muốn ${this.isInMockTest ? 'chuyển sang phần tiếp theo' : 'nộp bài ngay'} không?`;
+        `Bạn có muốn ${
+          this.isInMockTest ? 'chuyển sang phần tiếp theo' : 'nộp bài ngay'
+        } không?`;
     }
 
     this.showSubmitConfirmPopup = true;
