@@ -45,6 +45,7 @@ export class AiChatComponent implements OnInit, OnDestroy {
 
   previewDataList: PreviewDataItem[] = [];
   currentPreviewId: string | null = null;
+  savedPreviewIds: Set<string> = new Set();
 
   showIntroTooltip = false;
   private introInterval: any;
@@ -136,6 +137,7 @@ export class AiChatComponent implements OnInit, OnDestroy {
     try {
       const savedMessages = sessionStorage.getItem(this.STORAGE_KEY_MESSAGES);
       const savedPreview = sessionStorage.getItem(this.STORAGE_KEY_PREVIEW);
+      const savedPreviewIds = sessionStorage.getItem(`ai_chat_saved_previews_${this.currentUserId}`);
 
       if (savedMessages) {
         this.messages = JSON.parse(savedMessages);
@@ -147,6 +149,11 @@ export class AiChatComponent implements OnInit, OnDestroy {
         console.log(`Loaded preview data for user ${this.currentUserId}:`, this.previewDataList.length);
       }
 
+      if (savedPreviewIds) {
+        this.savedPreviewIds = new Set(JSON.parse(savedPreviewIds));
+        console.log(`Loaded saved preview IDs for user ${this.currentUserId}:`, this.savedPreviewIds.size);
+      }
+
       // Nếu chưa có message nào, thêm welcome message
       if (this.messages.length === 0) {
         this.addWelcomeMessage();
@@ -155,6 +162,7 @@ export class AiChatComponent implements OnInit, OnDestroy {
       console.error('Error loading from storage:', error);
       this.messages = [];
       this.previewDataList = [];
+      this.savedPreviewIds = new Set();
       this.addWelcomeMessage();
     }
   }
@@ -164,7 +172,8 @@ export class AiChatComponent implements OnInit, OnDestroy {
     try {
       sessionStorage.setItem(this.STORAGE_KEY_MESSAGES, JSON.stringify(this.messages));
       sessionStorage.setItem(this.STORAGE_KEY_PREVIEW, JSON.stringify(this.previewDataList));
-      console.log(`Saved to storage for user ${this.currentUserId} - Messages:`, this.messages.length, 'Previews:', this.previewDataList.length);
+      sessionStorage.setItem(`ai_chat_saved_previews_${this.currentUserId}`, JSON.stringify(Array.from(this.savedPreviewIds)));
+      console.log(`Saved to storage for user ${this.currentUserId} - Messages:`, this.messages.length, 'Previews:', this.previewDataList.length, 'Saved:', this.savedPreviewIds.size);
     } catch (error) {
       console.error('Error saving to storage:', error);
     }
@@ -322,6 +331,13 @@ export class AiChatComponent implements OnInit, OnDestroy {
   // Handle saving state from preview panel
   onSavingStateChange(isSaving: boolean): void {
     this.isSaving = isSaving;
+  }
+
+  // Handle exam saved event from preview panel
+  onExamSaved(previewId: string): void {
+    this.savedPreviewIds.add(previewId);
+    this.saveToStorage(); // Lưu lại danh sách đã save
+    console.log('Preview saved:', previewId, 'Total saved:', this.savedPreviewIds.size);
   }
 
   // ===== HELPER METHODS =====
