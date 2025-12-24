@@ -673,18 +673,20 @@ export class ListeningComponent implements OnChanges, OnInit, OnDestroy {
 
       const currentCount = this.audioPlayCounts.get(firstQuestion.questionId) || 0;
       if (currentCount === 0) {
+        // Delay 1 giây để người dùng có thể xem giao diện trước khi phát audio
         setTimeout(() => {
           this.playAudio();
-        }, 300);
+        }, 1000);
       }
     } else {
       const currentQuestionId = this.questions[this.currentIndex]?.questionId;
       const currentCount = this.audioPlayCounts.get(currentQuestionId) || 0;
 
       if (currentCount === 0) {
+        // Delay 1 giây để người dùng có thể xem giao diện trước khi phát audio
         setTimeout(() => {
           this.playAudio();
-        }, 300);
+        }, 1000);
       }
     }
   }

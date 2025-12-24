@@ -278,9 +278,10 @@ export class ExamComponent implements OnInit, OnDestroy {
     const currentCount = this.audioPlayCounts.get(currentQuestionId) || 0;
 
     if (currentCount === 0) {
+      // Delay 1 giây để người dùng có thể xem giao diện trước khi phát audio
       setTimeout(() => {
         this.playAudio();
-      }, 300);
+      }, 1000);
     }
   }
 
