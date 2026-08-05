@@ -1,0 +1,11 @@
+{
+  "buildCommand": "cd lumina && npm run build",
+  "outputDirectory": "lumina/dist/lumina/browser",
+  "installCommand": "cd lumina && npm install",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
