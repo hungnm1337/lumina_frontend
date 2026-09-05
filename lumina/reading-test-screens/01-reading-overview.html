@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html><head>
+  <meta charset="utf-8">
+  <meta name="kombai-design-canvas" content="true">
+  
+  
+  
+  <script src="https://unpkg.com/@tailwindcss/browser@4.3.3/dist/index.global.js" integrity="sha384-2ql948lIdLcGEE0/qxNiudyTjgauA3RDJERu5xW75kFCvSl5a9odyQYCb6tEjnmB" crossorigin="anonymous"></script>
+  
+  <style>html, body { margin: 0; padding: 0; } #root { display: contents; }</style>
+</head><body>
+  <div id="root"><style>
+    @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
+
+  .reading-screen {
+    min-height: 100vh;
+    background: #ffffff;
+    color: #111111;
+    font-family: Arial, Helvetica, sans-serif;
+    border-top: 3px solid #363636;
+  }
+
+  .reading-header {
+    height: 75px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px 0 17px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .brand-mark {
+    display: grid;
+    grid-template-columns: repeat(2, 16px);
+    gap: 1px;
+    width: 34px;
+    height: 34px;
+  }
+
+  .brand-dot {
+    display: block;
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    background: #25005f;
+  }
+
+  .header-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .profile-button {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 2px solid #111111;
+    border-radius: 999px;
+    color: #111111;
+    background: #ffffff;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .chevron-button {
+    width: 22px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    color: #111111;
+    background: transparent;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .profile-button:hover,
+  .chevron-button:hover {
+    color: #25005f;
+    background: #f5f1fa;
+  }
+
+  .profile-button:focus-visible,
+  .chevron-button:focus-visible,
+  .start-button:focus-visible {
+    outline: 3px solid #b9a6d6;
+    outline-offset: 3px;
+  }
+
+  .reading-content {
+    width: 75%;
+    margin: 0 auto;
+    padding: 133px 0 72px;
+  }
+
+  .reading-kicker {
+    margin: 0 0 19px;
+    font-size: 24px;
+    line-height: 1.2;
+    font-weight: 400;
+  }
+
+  .reading-title {
+    margin: 0 0 47px;
+    font-size: 40px;
+    line-height: 1.2;
+    font-weight: 400;
+  }
+
+  .reading-meta {
+    display: flex;
+    gap: 64px;
+    margin: 0 0 47px;
+  }
+
+  .reading-meta-item {
+    min-width: 198px;
+  }
+
+  .reading-meta-label {
+    display: block;
+    margin: 0 0 16px;
+    font-size: 20px;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  .reading-meta-value {
+    display: block;
+    font-size: 20px;
+    line-height: 1.2;
+    font-weight: 400;
+  }
+
+  .description-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 47px;
+    font-size: 20px;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  .description-label i {
+    color: #25005f;
+    font-size: 15px;
+  }
+
+  .start-button {
+    min-height: 60px;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 15px 25px;
+    border: 1px solid #25005f;
+    border-radius: 5px;
+    color: #ffffff;
+    background: #25005f;
+    font: inherit;
+    font-size: 20px;
+    line-height: 1.2;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .start-button:hover {
+    background: #351076;
+  }
+
+  .start-button i {
+    font-size: 16px;
+  }
+
+  @media (max-width: 700px) {
+    .reading-header {
+      padding-right: 16px;
+      padding-left: 16px;
+    }
+
+    .reading-content {
+      width: calc(100% - 40px);
+      padding-top: 68px;
+    }
+
+    .reading-kicker {
+      font-size: 22px;
+    }
+
+    .reading-title {
+      font-size: 30px;
+    }
+
+    .reading-meta {
+      gap: 28px;
+    }
+
+    .reading-meta-item {
+      min-width: 0;
+    }
+
+    .reading-meta-label,
+    .reading-meta-value,
+    .description-label,
+    .start-button {
+      font-size: 16px;
+    }
+
+    .start-button {
+      min-height: 52px;
+    }
+  }
+</style>
+<div class="reading-screen" data-kid="1" data-name="page layout container">
+    <header aria-label="Lumina account header" class="reading-header" data-kid="1-1" data-name="header navigation bar">
+        <div aria-label="Lumina" class="brand-mark" data-kid="1-1-1" data-name="brand logo mark">
+            <span class="brand-dot" data-kid="1-1-1-1" data-name="logo dot">
+            </span>
+            <span class="brand-dot" data-kid="1-1-1-2" data-name="logo dot">
+            </span>
+            <span class="brand-dot" data-kid="1-1-1-3" data-name="logo dot">
+            </span>
+            <span class="brand-dot" data-kid="1-1-1-4" data-name="logo dot">
+            </span>
+        </div>
+        <div class="header-controls" data-kid="1-1-2" data-name="header controls container">
+            <button aria-label="Open profile" class="profile-button" data-kid="1-1-2-1" data-name="user profile button" type="button">
+                <i aria-hidden="true" class="fa-solid fa-user" data-kid="1-1-2-1-1" data-name="user icon">
+                </i>
+            </button>
+            <button aria-expanded="false" aria-haspopup="menu" aria-label="Open account menu" class="chevron-button" data-kid="1-1-2-2" data-name="account menu toggle button" type="button">
+                <i aria-hidden="true" class="fa-solid fa-chevron-down" data-kid="1-1-2-2-1" data-name="chevron down icon">
+                </i>
+            </button>
+        </div>
+    </header>
+    <main aria-labelledby="reading-test-title" class="reading-content" data-kid="1-2" data-name="main content container">
+        <p class="reading-kicker" data-kid="1-2-1" data-name="assessment test type label">
+            Aptis General Practice Test
+        </p>
+        <h1 class="reading-title" data-kid="1-2-2" data-name="assessment title heading" id="reading-test-title">
+            Reading Practice Test Version 001
+        </h1>
+        <div aria-label="Test information" class="reading-meta" data-kid="1-2-3" data-name="test metadata container">
+            <div class="reading-meta-item" data-kid="1-2-3-1" data-name="question count metadata item">
+                <span class="reading-meta-label" data-kid="1-2-3-1-1" data-name="question count label">
+                    Number of Questions
+                </span>
+                <span class="reading-meta-value" data-kid="1-2-3-1-2" data-name="question count value">
+                    5
+                </span>
+            </div>
+            <div class="reading-meta-item" data-kid="1-2-3-2" data-name="time allowance metadata item">
+                <span class="reading-meta-label" data-kid="1-2-3-2-1" data-name="time allowance label">
+                    Time Allowed
+                </span>
+                <span class="reading-meta-value" data-kid="1-2-3-2-2" data-name="time allowance value">
+                    35 min
+                </span>
+            </div>
+        </div>
+        <p class="description-label" data-kid="1-2-4" data-name="description section label">
+            <span data-kid="1-2-4-1" data-name="description label text">
+                Assessment Description
+            </span>
+            <i aria-hidden="true" class="fa-solid fa-circle-info" data-kid="1-2-4-2" data-name="information icon" title="Assessment information">
+            </i>
+        </p>
+        <button aria-label="Start assessment" class="start-button" data-kid="1-2-5" data-name="start assessment button" type="button">
+            <span data-kid="1-2-5-1" data-name="button label text">
+                Start Assessment
+            </span>
+            <i aria-hidden="true" class="fa-solid fa-arrow-right" data-kid="1-2-5-2" data-name="arrow right icon">
+            </i>
+        </button>
+    </main>
+</div>
+</div>
+</body></html>

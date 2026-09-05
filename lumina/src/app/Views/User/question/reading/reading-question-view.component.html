@@ -1,0 +1,35 @@
+@if (viewModel.kind === 'fill-gaps') {
+<app-reading-gap-question
+  [viewModel]="viewModel"
+  [state]="state"
+  [disabled]="disabled"
+  (changed)="onCompositeChange($event)"
+></app-reading-gap-question>
+} @else if (viewModel.kind === 'ordering') {
+<app-reading-ordering-question
+  [viewModel]="viewModel"
+  [state]="state"
+  [disabled]="disabled"
+  (changed)="onCompositeChange($event)"
+></app-reading-ordering-question>
+} @else if (viewModel.kind === 'matching') {
+<app-reading-matching-question
+  [viewModel]="viewModel"
+  [state]="state"
+  [disabled]="disabled"
+  (changed)="onCompositeChange($event)"
+></app-reading-matching-question>
+} @else {
+<section class="reading-choice" aria-labelledby="reading-choice-title">
+  <h2 id="reading-choice-title" class="reading-choice__prompt">{{ viewModel.promptText }}</h2>
+  @if (viewModel.contentText && viewModel.contentText !== viewModel.promptText) {
+  <p class="reading-choice__passage">{{ viewModel.contentText }}</p>
+  }
+  <app-options
+    [options]="viewModel.options"
+    [resetAt]="resetAt"
+    [preSelectedOptionId]="state?.selectedOptionId ?? null"
+    (answered)="onChoice($event)"
+  ></app-options>
+</section>
+}

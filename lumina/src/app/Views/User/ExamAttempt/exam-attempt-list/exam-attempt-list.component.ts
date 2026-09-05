@@ -175,10 +175,10 @@ export class ExamAttemptListComponent implements OnInit {
   getStatusClass(status: string): string {
     switch (status?.toLowerCase()) {
       case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'not completed':
+        return 'status-completed';
+      case 'doing':
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'status-doing';
     }
   }
 

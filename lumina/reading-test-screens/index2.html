@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumina UI Design System</title>
+    
+    <!-- Import Fonts: Poppins (Headings) & Inter (Body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Import Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS for rapid styling matching the design plan -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // 2.1. Màu nền
+                        bgMain: '#F8FAFC',
+                        bgCard: '#FFFFFF',
+                        bgSub: '#F1F5F9',
+                        bgHover: '#E2E8F0',
+                        // 2.2. Màu chữ
+                        textMain: '#0F172A',
+                        textSub: '#64748B',
+                        textMuted: '#94A3B8',
+                        // 2.3. Màu nhấn chính
+                        primary: '#2563EB',
+                        primaryHover: '#1D4ED8',
+                        primarySoft: 'rgba(37, 99, 235, 0.08)',
+                        // 2.4. Màu phụ trợ
+                        accentOrange: '#F59E0B',
+                        accentOrangeHover: '#D97706',
+                        accentGreen: '#16A34A',
+                        accentRed: '#EF4444',
+                        accentPurple: '#9333EA',
+                        // 9. Màu background trạng thái
+                        bgSuccess: 'rgba(22, 163, 74, 0.1)',
+                        bgWarning: 'rgba(245, 158, 11, 0.1)',
+                        bgError: 'rgba(239, 68, 68, 0.1)',
+                        bgNeutral: 'rgba(148, 163, 184, 0.12)',
+                    },
+                    fontFamily: {
+                        poppins: ['Poppins', 'sans-serif'], // Tiêu đề
+                        inter: ['Inter', 'sans-serif'],     // Body
+                    },
+                    boxShadow: {
+                        'lumina': '0 8px 24px rgba(15, 23, 42, 0.05)',
+                        'lumina-hover': '0 12px 32px rgba(15, 23, 42, 0.08)',
+                    },
+                    borderRadius: {
+                        'lumina': '1.1rem', // 5.1 Box card chuẩn
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 10.1 & 10.2 Animations */
+        .lumina-card {
+            transition: all 0.25s ease;
+        }
+        .lumina-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+            border-color: #2563EB;
+        }
+        body {
+            background-color: #F8FAFC;
+            color: #0F172A;
+        }
+    </style>
+</head>
+<body class="font-inter antialiased min-h-screen pb-24">
+
+    <!-- Header UI Kit -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-[1280px] mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-poppins font-bold">L</div>
+                <span class="font-poppins font-bold text-xl tracking-tight text-textMain">Lumina.</span>
+            </div>
+            <nav class="hidden md:flex gap-8">
+                <a href="#" class="text-primary font-medium">Dashboard</a>
+                <a href="#" class="text-textSub hover:text-textMain transition-colors">Từ vựng</a>
+                <a href="#" class="text-textSub hover:text-textMain transition-colors">Bài thi</a>
+                <a href="#" class="text-textSub hover:text-textMain transition-colors">Sự kiện</a>
+            </nav>
+            <div class="flex items-center gap-4">
+                <button class="relative p-2 text-textSub hover:bg-bgHover rounded-full transition-colors">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-accentRed rounded-full border-2 border-white"></span>
+                </button>
+                <div class="w-9 h-9 rounded-full bg-primarySoft text-primary flex items-center justify-center font-semibold border border-primary/20">
+                    UN
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-[1280px] mx-auto px-4 md:px-8 mt-12 space-y-16">
+        
+        <!-- UI Kit Title -->
+        <div>
+            <h1 class="font-poppins text-4xl md:text-[3rem] font-bold text-textMain leading-[1.2]">Lumina UI System</h1>
+            <p class="text-textSub mt-2 text-base md:text-lg">Design System Guidelines & Components Showcase</p>
+        </div>
+
+        <!-- 1. Color Palette -->
+        <section class="space-y-6">
+            <h2 class="font-poppins text-2xl font-bold border-b border-gray-200 pb-2">1. Color Palette</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <!-- Primary -->
+                <div class="bg-white p-3 rounded-lumina border border-gray-200 shadow-sm">
+                    <div class="h-16 w-full bg-primary rounded-lg mb-3"></div>
+                    <p class="font-semibold text-sm">Primary Blue</p>
+                    <p class="text-xs text-textSub">#2563EB</p>
+                </div>
+                <div class="bg-white p-3 rounded-lumina border border-gray-200 shadow-sm">
+                    <div class="h-16 w-full bg-primaryHover rounded-lg mb-3"></div>
+                    <p class="font-semibold text-sm">Blue Hover</p>
+                    <p class="text-xs text-textSub">#1D4ED8</p>
+                </div>
+                <div class="bg-white p-3 rounded-lumina border border-gray-200 shadow-sm">
+                    <div class="h-16 w-full bg-primarySoft rounded-lg mb-3"></div>
+                    <p class="font-semibold text-sm">Blue Soft</p>
+                    <p class="text-xs text-textSub">rgba(37, 99, 235, 0.08)</p>
+                </div>
+                <!-- Accents -->
+                <div class="bg-white p-3 rounded-lumina border border-gray-200 shadow-sm">
+                    <div class="h-16 w-full bg-accentOrange rounded-lg mb-3"></div>
+                    <p class="font-semibold text-sm">Orange Highlight</p>
+                    <p class="text-xs text-textSub">#F59E0B</p>
+                </div>
+                <div class="bg-white p-3 rounded-lumina border border-gray-200 shadow-sm">
+                    <div class="h-16 w-full bg-accentGreen rounded-lg mb-3"></div>
+                    <p class="font-semibold text-sm">Green Success</p>
+                    <p class="text-xs text-textSub">#16A34A</p>
+                </div>
+                <div class="bg-white p-3 rounded-lumina border border-gray-200 shadow-sm">
+                    <div class="h-16 w-full bg-accentRed rounded-lg mb-3"></div>
+                    <p class="font-semibold text-sm">Red Danger</p>
+                    <p class="text-xs text-textSub">#EF4444</p>
+                </div>
+                <div class="bg-white p-3 rounded-lumina border border-gray-200 shadow-sm">
+                    <div class="h-16 w-full bg-accentPurple rounded-lg mb-3"></div>
+                    <p class="font-semibold text-sm">Purple Accent</p>
+                    <p class="text-xs text-textSub">#9333EA</p>
+                </div>
+                <!-- Text/Bg -->
+                <div class="bg-white p-3 rounded-lumina border border-gray-200 shadow-sm">
+                    <div class="h-16 w-full bg-textMain rounded-lg mb-3"></div>
+                    <p class="font-semibold text-sm">Text Main</p>
+                    <p class="text-xs text-textSub">#0F172A</p>
+                </div>
+                <div class="bg-white p-3 rounded-lumina border border-gray-200 shadow-sm">
+                    <div class="h-16 w-full bg-textSub rounded-lg mb-3 border border-gray-200"></div>
+                    <p class="font-semibold text-sm">Text Sub</p>
+                    <p class="text-xs text-textSub">#64748B</p>
+                </div>
+                <div class="bg-white p-3 rounded-lumina border border-gray-200 shadow-sm">
+                    <div class="h-16 w-full bg-bgMain rounded-lg mb-3 border border-gray-200"></div>
+                    <p class="font-semibold text-sm">Bg Main</p>
+                    <p class="text-xs text-textSub">#F8FAFC</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Typography -->
+        <section class="space-y-6">
+            <h2 class="font-poppins text-2xl font-bold border-b border-gray-200 pb-2">2. Typography</h2>
+            <div class="bg-white p-8 rounded-lumina border border-gray-200 shadow-lumina space-y-6">
+                <div>
+                    <span class="text-textMuted text-sm block mb-1">H1 / Poppins / 700-800 / 2.25rem - 3rem</span>
+                    <h1 class="font-poppins font-bold text-4xl md:text-5xl text-textMain leading-tight">Mục tiêu TOEIC 850+</h1>
+                </div>
+                <div>
+                    <span class="text-textMuted text-sm block mb-1">H2 / Poppins / 700-800 / 1.6rem - 2.2rem</span>
+                    <h2 class="font-poppins font-bold text-2xl md:text-[2rem] text-textMain leading-tight">Lộ trình học tập của bạn</h2>
+                </div>
+                <div>
+                    <span class="text-textMuted text-sm block mb-1">H3 / Poppins / 600-700 / 1.2rem - 1.5rem</span>
+                    <h3 class="font-poppins font-semibold text-xl text-textMain leading-snug">Từ vựng Unit 1: Office</h3>
+                </div>
+                <div>
+                    <span class="text-textMuted text-sm block mb-1">Body / Inter / 400-500 / 0.9rem - 1rem</span>
+                    <p class="font-inter text-base text-textSub leading-relaxed max-w-3xl">Xây dựng một hệ thống giao diện thống nhất, hiện đại, dễ đọc và phù hợp với ứng dụng học tập. Thiết kế này cần phản ánh phong cách của homepage và tạo cảm giác tin cậy, chuyên nghiệp với nhiều không gian trắng.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Buttons & Badges -->
+        <section class="space-y-6">
+            <h2 class="font-poppins text-2xl font-bold border-b border-gray-200 pb-2">3. Components (Buttons & Status)</h2>
+            <div class="bg-white p-8 rounded-lumina border border-gray-200 shadow-lumina grid grid-cols-1 md:grid-cols-2 gap-12">
+                
+                <!-- Buttons -->
+                <div class="space-y-6">
+                    <h3 class="font-poppins font-semibold text-lg">Button System</h3>
+                    <div class="flex flex-wrap gap-4">
+                        <button class="bg-primary hover:bg-primaryHover text-white font-inter font-semibold py-2.5 px-6 rounded-lg transition-colors duration-200 focus:ring-4 focus:ring-primarySoft">
+                            Primary Action
+                        </button>
+                        <button class="bg-bgSub hover:bg-bgHover text-textMain font-inter font-medium py-2.5 px-6 rounded-lg transition-colors duration-200">
+                            Secondary
+                        </button>
+                        <button class="bg-transparent border border-gray-300 hover:border-textSub text-textMain font-inter font-medium py-2.5 px-6 rounded-lg transition-colors duration-200">
+                            Ghost Button
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Badges -->
+                <div class="space-y-6">
+                    <h3 class="font-poppins font-semibold text-lg">Status & Badges</h3>
+                    <div class="flex flex-wrap gap-3">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-bgSuccess text-accentGreen font-inter text-[0.85rem] font-medium leading-tight">
+                            <i class="fa-solid fa-circle-check text-xs"></i> Thành công
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-bgWarning text-accentOrange font-inter text-[0.85rem] font-medium leading-tight">
+                            <i class="fa-solid fa-triangle-exclamation text-xs"></i> Cảnh báo
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-bgError text-accentRed font-inter text-[0.85rem] font-medium leading-tight">
+                            <i class="fa-solid fa-circle-xmark text-xs"></i> Báo lỗi
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-bgNeutral text-textSub font-inter text-[0.85rem] font-medium leading-tight">
+                            <i class="fa-solid fa-clock text-xs"></i> Đang chờ
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-primarySoft text-primary font-inter text-[0.85rem] font-medium leading-tight">
+                            <i class="fa-solid fa-star text-xs"></i> Nổi bật
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. UI Layouts (Stats & Filter) -->
+        <section class="space-y-6">
+            <div class="flex justify-between items-end border-b border-gray-200 pb-2">
+                <div>
+                    <span class="inline-block px-2.5 py-1 bg-primarySoft text-primary text-xs font-semibold rounded mb-2">Dashboard</span>
+                    <h2 class="font-poppins text-2xl font-bold">4. Homepage Stats & Filter</h2>
+                </div>
+                <button class="text-primary font-medium hover:text-primaryHover text-sm">Xem chi tiết <i class="fa-solid fa-arrow-right ml-1"></i></button>
+            </div>
+            
+            <!-- Statistic Cards (3 cards on desktop) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Stat 1 -->
+                <div class="bg-white p-6 rounded-lumina border border-gray-200 shadow-lumina lumina-card">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-textSub font-medium text-sm">Từ vựng đã học</span>
+                        <div class="w-8 h-8 rounded-full bg-primarySoft text-primary flex items-center justify-center">
+                            <i class="fa-solid fa-book-open text-sm"></i>
+                        </div>
+                    </div>
+                    <h3 class="font-poppins font-bold text-3xl text-textMain mb-1">1,284</h3>
+                    <p class="text-accentGreen text-sm font-medium"><i class="fa-solid fa-arrow-trend-up mr-1"></i>+24 tuần này</p>
+                </div>
+                
+                <!-- Stat 2 -->
+                <div class="bg-white p-6 rounded-lumina border border-gray-200 shadow-lumina lumina-card border-l-4 border-l-accentOrange">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-textSub font-medium text-sm">Chuỗi ngày học</span>
+                        <div class="w-8 h-8 rounded-full bg-bgWarning text-accentOrange flex items-center justify-center">
+                            <i class="fa-solid fa-fire text-sm"></i>
+                        </div>
+                    </div>
+                    <h3 class="font-poppins font-bold text-3xl text-textMain mb-1">12 <span class="text-lg text-textMuted font-medium">ngày</span></h3>
+                    <p class="text-textSub text-sm font-medium">Sắp đạt huy chương lửa</p>
+                </div>
+
+                <!-- Stat 3 -->
+                <div class="bg-white p-6 rounded-lumina border border-gray-200 shadow-lumina lumina-card">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-textSub font-medium text-sm">Điểm thi thử TTB</span>
+                        <div class="w-8 h-8 rounded-full bg-bgNeutral text-textSub flex items-center justify-center">
+                            <i class="fa-solid fa-medal text-sm"></i>
+                        </div>
+                    </div>
+                    <h3 class="font-poppins font-bold text-3xl text-accentPurple mb-1">750</h3>
+                    <p class="text-textSub text-sm font-medium">Mục tiêu: 850+</p>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="bg-white p-4 rounded-lumina border border-gray-200 shadow-sm flex flex-col md:flex-row gap-4 items-center mt-8">
+                <div class="relative w-full md:flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-textMuted"></i>
+                    <input type="text" placeholder="Tìm kiếm bài học, từ vựng..." class="w-full bg-bgSub border border-transparent focus:border-primary focus:bg-white focus:ring-4 focus:ring-primarySoft outline-none rounded-lg py-2.5 pl-10 pr-4 text-textMain transition-all">
+                </div>
+                <div class="flex gap-3 w-full md:w-auto">
+                    <select class="bg-bgSub border border-transparent focus:border-primary outline-none rounded-lg py-2.5 px-4 text-textMain font-medium cursor-pointer flex-1 md:w-40 appearance-none">
+                        <option>Mới nhất</option>
+                        <option>Điểm cao nhất</option>
+                        <option>Chưa hoàn thành</option>
+                    </select>
+                    <button class="bg-bgSub hover:bg-bgHover text-textMain px-4 py-2.5 rounded-lg transition-colors border border-transparent">
+                        <i class="fa-solid fa-filter"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. Vocabulary Page Style -->
+        <section class="space-y-6">
+            <div>
+                <h2 class="font-poppins text-2xl font-bold">5. Vocabulary List Style</h2>
+                <p class="text-textSub">Mỗi từ là 1 row, spacing rộng, không làm quá nhiều hiệu ứng.</p>
+            </div>
+            
+            <div class="space-y-4">
+                <!-- Vocab Item 1 -->
+                <div class="bg-white p-5 rounded-lumina border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row md:items-center justify-between gap-4 border-l-4 border-l-primary cursor-pointer">
+                    <div class="flex gap-5">
+                        <div class="hidden md:flex w-12 h-12 rounded-full bg-primarySoft text-primary items-center justify-center flex-shrink-0 mt-1">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-3 mb-1">
+                                <h3 class="font-poppins font-bold text-xl text-primary">Accommodate</h3>
+                                <span class="text-textSub font-inter text-sm italic">(verb)</span>
+                                <span class="bg-bgNeutral text-textSub text-xs px-2 py-0.5 rounded font-medium">B1</span>
+                            </div>
+                            <p class="text-textMain font-medium mb-1">Cung cấp chỗ ở, đáp ứng nhu cầu</p>
+                            <p class="text-textSub text-sm">The new hotel can accommodate up to 500 guests.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="w-10 h-10 rounded-full border border-gray-200 text-textSub hover:text-primary hover:border-primary transition-colors flex items-center justify-center">
+                            <i class="fa-regular fa-bookmark"></i>
+                        </button>
+                        <button class="bg-bgSub hover:bg-bgHover text-textMain px-4 py-2 rounded-lg font-medium text-sm transition-colors">
+                            Học ngay
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Vocab Item 2 -->
+                <div class="bg-white p-5 rounded-lumina border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer">
+                    <div class="flex gap-5">
+                        <div class="hidden md:flex w-12 h-12 rounded-full bg-bgSub text-textSub items-center justify-center flex-shrink-0 mt-1 hover:text-primary transition-colors">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-3 mb-1">
+                                <h3 class="font-poppins font-bold text-xl text-textMain">Implement</h3>
+                                <span class="text-textSub font-inter text-sm italic">(verb)</span>
+                                <span class="bg-bgSuccess text-accentGreen text-xs px-2 py-0.5 rounded font-medium"><i class="fa-solid fa-check mr-1"></i>Đã thuộc</span>
+                            </div>
+                            <p class="text-textMain font-medium mb-1">Thực hiện, thi hành</p>
+                            <p class="text-textSub text-sm">The company decided to implement a new marketing strategy.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="w-10 h-10 rounded-full border border-gray-200 text-primary bg-primarySoft transition-colors flex items-center justify-center">
+                            <i class="fa-solid fa-bookmark"></i>
+                        </button>
+                        <button class="bg-bgSub hover:bg-bgHover text-textMain px-4 py-2 rounded-lg font-medium text-sm transition-colors">
+                            Ôn tập
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumina UI Design System - Extended</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bgMain: '#F8FAFC', bgCard: '#FFFFFF', bgSub: '#F1F5F9', bgHover: '#E2E8F0',
+                        textMain: '#0F172A', textSub: '#64748B', textMuted: '#94A3B8',
+                        primary: '#2563EB', primaryHover: '#1D4ED8', primarySoft: 'rgba(37, 99, 235, 0.08)',
+                        accentOrange: '#F59E0B', accentGreen: '#16A34A', accentRed: '#EF4444', accentPurple: '#9333EA',
+                        bgSuccess: 'rgba(22, 163, 74, 0.1)', bgWarning: 'rgba(245, 158, 11, 0.1)', bgError: 'rgba(239, 68, 68, 0.1)', bgNeutral: 'rgba(148, 163, 184, 0.12)',
+                    },
+                    fontFamily: { poppins: ['Poppins', 'sans-serif'], inter: ['Inter', 'sans-serif'] },
+                    boxShadow: {
+                        'lumina': '0 8px 24px rgba(15, 23, 42, 0.05)',
+                        'lumina-hover': '0 12px 32px rgba(15, 23, 42, 0.08)',
+                    },
+                    borderRadius: { 'lumina': '1.1rem' }
+                }
+            }
+        }
+    </script>
+    <style>
+        .lumina-card { transition: all 0.25s ease; }
+        .lumina-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08); border-color: #2563EB; }
+        body { background-color: #F8FAFC; color: #0F172A; }
+        /* Tùy chỉnh Radio button cho trắc nghiệm */
+        .toeic-radio:checked + div { border-color: #2563EB; background-color: rgba(37, 99, 235, 0.04); }
+        .toeic-radio:checked + div .radio-indicator { background-color: #2563EB; border-color: #2563EB; }
+    </style>
+</head>
+<body class="font-inter antialiased min-h-screen pb-24">
+
+    <!-- Header UI Kit -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-[1280px] mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-poppins font-bold">L</div>
+                <span class="font-poppins font-bold text-xl tracking-tight text-textMain">Lumina.</span>
+            </div>
+            <nav class="hidden md:flex gap-8">
+                <a href="#" class="text-textSub hover:text-textMain transition-colors">Components</a>
+                <a href="#forms" class="text-textSub hover:text-textMain transition-colors">Forms</a>
+                <a href="#exam" class="text-textSub hover:text-textMain transition-colors">Exam UI</a>
+                <a href="#tables" class="text-textSub hover:text-textMain transition-colors">Tables</a>
+            </nav>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 cursor-pointer">
+                    <div class="w-9 h-9 rounded-full bg-primarySoft text-primary flex items-center justify-center font-semibold border border-primary/20">
+                        TC
+                    </div>
+                    <span class="font-medium text-sm hidden sm:block">Vũ Công Thắng</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-[1280px] mx-auto px-4 md:px-8 mt-12 space-y-16">
+        
+        <div>
+            <h1 class="font-poppins text-4xl md:text-[3rem] font-bold text-textMain leading-[1.2]">Lumina UI System v2</h1>
+            <p class="text-textSub mt-2 text-base md:text-lg">Bổ sung các Component đặc thù cho nền tảng thi TOEIC.</p>
+        </div>
+
+        <!-- Bỏ qua phần Color/Typography cũ để tập trung vào Component mới -->
+
+        <!-- 6. Form & Inputs -->
+        <section id="forms" class="space-y-6">
+            <h2 class="font-poppins text-2xl font-bold border-b border-gray-200 pb-2">6. Form & Inputs</h2>
+            <div class="bg-white p-8 rounded-lumina border border-gray-200 shadow-lumina grid grid-cols-1 md:grid-cols-2 gap-12">
+                
+                <!-- Text Inputs -->
+                <div class="space-y-6">
+                    <h3 class="font-poppins font-semibold text-lg">Input Fields</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-textMain mb-1">Email / Tài khoản</label>
+                            <input type="text" placeholder="Nhập email của bạn" class="w-full bg-bgMain border border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primarySoft transition-all">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-textMain mb-1">Mật khẩu</label>
+                            <div class="relative">
+                                <input type="password" value="12345678" class="w-full bg-bgMain border border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primarySoft transition-all">
+                                <i class="fa-regular fa-eye absolute right-4 top-1/2 -translate-y-1/2 text-textMuted cursor-pointer hover:text-textMain"></i>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-textMain mb-1">Trạng thái lỗi</label>
+                            <input type="text" value="sai-dinh-dang" class="w-full bg-bgMain border border-accentRed rounded-lg px-4 py-2.5 focus:outline-none focus:ring-4 focus:ring-bgError transition-all text-accentRed">
+                            <p class="text-xs text-accentRed mt-1"><i class="fa-solid fa-circle-exclamation mr-1"></i>Định dạng không hợp lệ.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Multiple Choice (TOEIC specifics) -->
+                <div class="space-y-6">
+                    <h3 class="font-poppins font-semibold text-lg">Trắc nghiệm (Radio Select)</h3>
+                    
+                    <div class="space-y-3">
+                        <label class="block text-sm font-medium text-textMain mb-2">Question 1: The manager requested that all staff _______ the meeting.</label>
+                        
+                        <label class="block relative cursor-pointer group">
+                            <input type="radio" name="q1" class="peer sr-only toeic-radio">
+                            <div class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 bg-white hover:bg-bgSub transition-colors">
+                                <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center radio-indicator transition-colors">
+                                    <div class="w-2 h-2 rounded-full bg-white"></div>
+                                </div>
+                                <span class="font-medium text-textMain">(A) attend</span>
+                            </div>
+                        </label>
+
+                        <label class="block relative cursor-pointer group">
+                            <input type="radio" name="q1" class="peer sr-only toeic-radio" checked>
+                            <div class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 bg-white hover:bg-bgSub transition-colors">
+                                <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center radio-indicator transition-colors">
+                                    <div class="w-2 h-2 rounded-full bg-white"></div>
+                                </div>
+                                <span class="font-medium text-textMain">(B) attends</span>
+                            </div>
+                        </label>
+
+                        <label class="block relative cursor-pointer group">
+                            <input type="radio" name="q1" class="peer sr-only toeic-radio">
+                            <div class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 bg-white hover:bg-bgSub transition-colors">
+                                <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center radio-indicator transition-colors">
+                                    <div class="w-2 h-2 rounded-full bg-white"></div>
+                                </div>
+                                <span class="font-medium text-textMain">(C) attending</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 7. Exam Interface Elements -->
+        <section id="exam" class="space-y-6">
+            <h2 class="font-poppins text-2xl font-bold border-b border-gray-200 pb-2">7. Exam Interface Elements</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <!-- Audio Player -->
+                <div class="md:col-span-2 bg-white p-6 rounded-lumina border border-gray-200 shadow-lumina space-y-4">
+                    <h3 class="font-poppins font-semibold text-lg">Audio Player (Listening Part)</h3>
+                    <div class="bg-bgMain p-4 rounded-xl flex items-center gap-4">
+                        <button class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center hover:bg-primaryHover transition-colors shrink-0">
+                            <i class="fa-solid fa-play ml-1"></i>
+                        </button>
+                        <div class="flex-1 space-y-2">
+                            <div class="flex justify-between text-xs font-medium text-textSub">
+                                <span>Part 1: Photographs</span>
+                                <span>00:15 / 02:45</span>
+                            </div>
+                            <!-- Progress Bar -->
+                            <div class="h-2 w-full bg-gray-200 rounded-full overflow-hidden cursor-pointer">
+                                <div class="h-full bg-primary rounded-full relative" style="width: 15%;">
+                                    <div class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-primary rounded-full shadow"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 text-textSub">
+                            <i class="fa-solid fa-volume-high text-sm"></i>
+                            <input type="range" class="w-16 accent-primary">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timer & Nav -->
+                <div class="bg-white p-6 rounded-lumina border border-gray-200 shadow-lumina space-y-6 text-center flex flex-col justify-center items-center">
+                    <h3 class="font-poppins font-semibold text-lg w-full text-left">Exam Timer</h3>
+                    <div class="inline-flex items-center gap-3 bg-bgError text-accentRed px-5 py-3 rounded-xl">
+                        <i class="fa-regular fa-clock text-xl"></i>
+                        <span class="font-poppins font-bold text-2xl tracking-wider">45:12</span>
+                    </div>
+                    <button class="w-full bg-bgMain hover:bg-bgHover border border-gray-200 text-textMain font-medium py-2 rounded-lg transition-colors">
+                        Nộp bài sớm
+                    </button>
+                </div>
+
+                <!-- Question Palette -->
+                <div class="md:col-span-3 bg-white p-6 rounded-lumina border border-gray-200 shadow-lumina space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-poppins font-semibold text-lg">Bảng câu hỏi (Question Palette)</h3>
+                        <div class="flex gap-4 text-xs font-medium">
+                            <span class="flex items-center gap-1 text-primary"><div class="w-3 h-3 bg-primary rounded-sm"></div> Đang làm</span>
+                            <span class="flex items-center gap-1 text-textSub"><div class="w-3 h-3 bg-bgSub border border-gray-200 rounded-sm"></div> Chưa làm</span>
+                            <span class="flex items-center gap-1 text-accentGreen"><div class="w-3 h-3 bg-accentGreen rounded-sm"></div> Đã làm</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-10 sm:grid-cols-15 md:grid-cols-20 gap-2">
+                        <!-- Đã làm -->
+                        <button class="w-8 h-8 rounded text-sm font-medium bg-accentGreen text-white">1</button>
+                        <button class="w-8 h-8 rounded text-sm font-medium bg-accentGreen text-white">2</button>
+                        <button class="w-8 h-8 rounded text-sm font-medium bg-accentGreen text-white">3</button>
+                        <!-- Đang làm -->
+                        <button class="w-8 h-8 rounded text-sm font-medium bg-primary text-white shadow-md ring-2 ring-primarySoft ring-offset-1">4</button>
+                        <!-- Chưa làm -->
+                        <button class="w-8 h-8 rounded text-sm font-medium bg-bgSub border border-gray-200 text-textMain hover:bg-gray-100">5</button>
+                        <button class="w-8 h-8 rounded text-sm font-medium bg-bgSub border border-gray-200 text-textMain hover:bg-gray-100">6</button>
+                        <button class="w-8 h-8 rounded text-sm font-medium bg-bgSub border border-gray-200 text-textMain hover:bg-gray-100">7</button>
+                        <button class="w-8 h-8 rounded text-sm font-medium bg-bgSub border border-gray-200 text-textMain hover:bg-gray-100">8</button>
+                        <button class="w-8 h-8 rounded text-sm font-medium bg-bgSub border border-gray-200 text-textMain hover:bg-gray-100">9</button>
+                        <button class="w-8 h-8 rounded text-sm font-medium bg-bgSub border border-gray-200 text-textMain hover:bg-gray-100">10</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. Data Tables -->
+        <section id="tables" class="space-y-6">
+            <h2 class="font-poppins text-2xl font-bold border-b border-gray-200 pb-2">8. Data Tables (Lịch sử làm bài)</h2>
+            <div class="bg-white rounded-lumina border border-gray-200 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-bgMain border-b border-gray-200 text-textSub text-sm uppercase tracking-wider">
+                                <th class="py-4 px-6 font-semibold">Tên đề thi</th>
+                                <th class="py-4 px-6 font-semibold">Ngày làm</th>
+                                <th class="py-4 px-6 font-semibold">Kết quả</th>
+                                <th class="py-4 px-6 font-semibold">Thời gian</th>
+                                <th class="py-4 px-6 font-semibold text-right">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-textMain text-sm divide-y divide-gray-100">
+                            <tr class="hover:bg-bgMain transition-colors">
+                                <td class="py-4 px-6 font-medium">ETS TOEIC 2024 - Test 1</td>
+                                <td class="py-4 px-6 text-textSub">16/08/2026</td>
+                                <td class="py-4 px-6">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-bold text-accentPurple">850</span>
+                                        <span class="text-xs text-textSub">(L: 450 | R: 400)</span>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-6 text-textSub">1h 45m</td>
+                                <td class="py-4 px-6 text-right">
+                                    <button class="text-primary hover:text-primaryHover font-medium text-sm">Xem chi tiết</button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-bgMain transition-colors">
+                                <td class="py-4 px-6 font-medium">Mini Test: Part 5 & 6</td>
+                                <td class="py-4 px-6 text-textSub">14/08/2026</td>
+                                <td class="py-4 px-6">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-bold text-textMain">35/46</span>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-6 text-textSub">25m 10s</td>
+                                <td class="py-4 px-6 text-right">
+                                    <button class="text-primary hover:text-primaryHover font-medium text-sm">Xem chi tiết</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+
+</html>

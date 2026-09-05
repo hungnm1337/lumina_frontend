@@ -1,12 +1,12 @@
+@if (showPopup) {
 <app-popup
-  *ngIf="showPopup"
   [title]="popupTitle"
   [message]="popupMessage"
   (okClicked)="onPopupOk()"
   (cancelClicked)="onPopupCancel()"
 ></app-popup>
+}
 
-<!-- Quota Limit Modal -->
 <app-quota-limit-modal
   [isVisible]="showQuotaModal"
   [skill]="'reading'"
@@ -14,166 +14,141 @@
   (close)="closeQuotaModal()"
 ></app-quota-limit-modal>
 
-<!-- Exam Attempt Details Modal -->
 @if (showExamAttemptDetailsFlag && examAttemptDetails) {
 <app-exam-attempt-detail
   [examAttemptDetails]="examAttemptDetails"
   (close)="closeExamAttemptDetails()"
 ></app-exam-attempt-detail>
-} @if (!finished) {
-<!-- Layout với Navigator bên trái (tỉ lệ 25:50:25) -->
-<div class="grid grid-cols-12 gap-4 min-h-[calc(100vh-200px)]">
-  <!-- Left Sidebar: Navigator + Submit Button (3/12 = 25%) -->
-  <div class="col-span-3">
-    <app-question-navigator
-      [questions]="questions"
-      [currentIndex]="currentIndex"
-      [getQuestionStatus]="getQuestionStatus"
-      [legendItems]="navigatorLegendItems"
-      [showSubmitButton]="true"
-      [submitButtonText]="'Nộp bài'"
-      (navigateToQuestion)="navigateToQuestion($event)"
-      (submitExam)="finishExamManual()"
-    ></app-question-navigator>
-  </div>
+}
 
-  <!-- Main Content Area (9/12 = 75%, chia thành 6:3 = 50:25) -->
-  <div class="col-span-9 bg-white rounded-lg shadow-md p-4">
-    <!-- Timer -->
-    <div
-      *ngIf="partTotalTime > 0"
-      class="mb-4 border border-gray-200 rounded-lg p-3 timer-light"
-    >
-      <app-time
-        [time]="partTotalTime"
-        [resetAt]="timerResetTrigger"
-        (timeout)="onPartTimeout()"
-        (timeUpdate)="onPartTimerTick($event)"
-      ></app-time>
-    </div>
-
-    <!-- Main Content: Prompt (6/9 = 50%) và Options (3/9 = 25%) -->
-    <div class="grid grid-cols-9 gap-4 mb-3">
-      <!-- Left Column: Prompt/Image + Question Stem (6/9 = 50%) -->
-      <div class="col-span-6 flex flex-col space-y-2">
-        <div class="w-full">
-          @if( questions[currentIndex].prompt != null ) {
-          <div class="w-full mb-2">
-            <app-prompt
-              [prompt]="questions[currentIndex].prompt"
-              [resetAt]="currentIndex"
-              [questionType]="questions[currentIndex].questionType ?? ''"
-            ></app-prompt>
-          </div>
-          }
-          <h3 class="font-medium text-base text-gray-800">
-            {{ questions[currentIndex].stemText }}
-          </h3>
+@if (!finished) {
+  @if (view === 'instructions') {
+  <main class="reading-screen reading-screen--instructions" aria-label="Reading instructions">
+    <app-reading-instructions></app-reading-instructions>
+    <app-reading-test-toolbar
+      [view]="'instructions'"
+      (questionList)="toggleQuestionNavigator()"
+      (information)="showExamAttemptDetails()"
+      (accessibility)="toggleAccessibilityPanel()"
+      (exit)="confirmExit()"
+      (next)="handleNext()"
+    ></app-reading-test-toolbar>
+  </main>
+  } @else {
+  <main class="reading-screen" aria-labelledby="reading-question-title">
+    <div class="reading-content">
+      <header class="reading-question-topline">
+        <div>
+          <p class="reading-section-label">Reading</p>
+          <h1 id="reading-question-title">Question {{ currentIndex + 1 }} of {{ questions.length }}</h1>
         </div>
+        <button
+          type="button"
+          class="reading-bookmark"
+          [class.is-bookmarked]="isCurrentQuestionBookmarked"
+          [attr.aria-pressed]="isCurrentQuestionBookmarked"
+          aria-label="Bookmark question"
+          title="Bookmark question"
+          (click)="toggleBookmark()"
+        >
+          <i class="fas fa-bookmark" aria-hidden="true"></i>
+          <span>Bookmark</span>
+        </button>
+      </header>
+
+      <div class="reading-timer" aria-label="Time remaining">
+        <app-time
+          [time]="partTotalTime"
+          [resetAt]="timerResetTrigger"
+          [label]="'Time remaining'"
+          (timeout)="onPartTimeout()"
+          (timeUpdate)="onPartTimerTick($event)"
+        ></app-time>
       </div>
 
-      <!-- Right Column: Options (3/9 = 25%) -->
-      <div class="col-span-3 flex items-start">
-        <div class="w-full">
-          <app-options
-            [options]="questions[currentIndex].options || []"
-            [resetAt]="currentIndex"
-            [preSelectedOptionId]="
-              getSelectedOptionId(questions[currentIndex].questionId)
-            "
-            (answered)="markAnswered($event)"
-          ></app-options>
+      @if (currentViewModel) {
+      <section class="reading-question-body" aria-label="Current reading question">
+        <app-reading-question-view
+          [viewModel]="currentViewModel"
+          [state]="currentQuestionState"
+          [disabled]="isSubmitting"
+          [resetAt]="currentIndex"
+          (changed)="onQuestionChanged($event)"
+        ></app-reading-question-view>
+      </section>
+      } @else {
+      <p class="reading-empty-state">No Reading questions are available.</p>
+      }
+
+      @if (showQuestionNavigator) {
+      <aside class="reading-question-menu" aria-label="Question list">
+        <div class="reading-question-menu__header">
+          <strong>Question list</strong>
+          <button type="button" aria-label="Close question list" (click)="closeQuestionNavigator()">
+            <i class="fas fa-xmark" aria-hidden="true"></i>
+          </button>
         </div>
-      </div>
-    </div>
+        <app-question-navigator
+          [questions]="questions"
+          [currentIndex]="currentIndex"
+          [getQuestionStatus]="getQuestionStatus"
+          [legendItems]="navigatorLegendItems"
+          [showSubmitButton]="true"
+          [submitButtonText]="'Nộp bài'"
+          (navigateToQuestion)="onNavigateFromToolbar($event)"
+          (submitExam)="finishExamManual()"
+        ></app-question-navigator>
+      </aside>
+      }
 
-    <!-- Navigation -->
-    <div class="mt-4 flex items-center justify-between">
-      <button
-        (click)="previousQuestion()"
-        [disabled]="currentIndex === 0"
-        class="px-3 py-1.5 rounded-md bg-gray-500 text-white hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-sm"
-      >
-        <i class="fas fa-arrow-left mr-1.5"></i>Câu trước
-      </button>
+      @if (showAccessibilityPanel) {
+      <aside class="reading-accessibility-panel" aria-label="Accessibility information">
+        <button type="button" aria-label="Close accessibility information" (click)="toggleAccessibilityPanel()">
+          <i class="fas fa-xmark" aria-hidden="true"></i>
+        </button>
+        <strong>Accessibility</strong>
+        <p>Use Tab to move between controls. Native selects support keyboard selection.</p>
+      </aside>
+      }
 
-      <button
-        (click)="nextQuestion()"
-        [disabled]="currentIndex === questions.length - 1"
-        class="px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-sm"
-      >
-        Câu sau<i class="fas fa-arrow-right ml-1.5"></i>
-      </button>
+      <app-reading-test-toolbar
+        [view]="'question'"
+        [canGoPrevious]="currentIndex > 0"
+        (questionList)="toggleQuestionNavigator()"
+        (information)="showExamAttemptDetails()"
+        (accessibility)="toggleAccessibilityPanel()"
+        (exit)="confirmExit()"
+        (previous)="previousQuestion()"
+        (next)="handleNext()"
+      ></app-reading-test-toolbar>
     </div>
-  </div>
-</div>
+  </main>
+  }
 } @else {
-<!-- Summary Screen -->
-<div class="w-full bg-white rounded-lg shadow-md p-6">
-  <div class="text-center py-8">
-    <div
-      class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full mb-4"
-    >
-      <i class="fas fa-trophy text-white text-4xl"></i>
-    </div>
-    <h2 class="text-3xl font-bold text-gray-800 mb-2">
-      Hoàn thành bài Reading!
-    </h2>
-    <p class="text-gray-600 mb-6">
-      {{ partInfo?.partCode || "Reading Practice" }}
-    </p>
+<section class="reading-summary" aria-labelledby="reading-summary-title">
+  <div class="reading-summary__icon" aria-hidden="true"><i class="fas fa-trophy"></i></div>
+  <h2 id="reading-summary-title">Hoàn thành bài Reading!</h2>
+  <p class="reading-summary__part">{{ partInfo?.partCode || 'Reading Practice' }}</p>
 
-    <!-- Score Statistics -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-6">
-        <div class="text-4xl font-bold text-purple-600 mb-2">
-          {{ totalScore }}
-        </div>
-        <div class="text-sm text-purple-700">Tổng điểm</div>
-      </div>
-      <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6">
-        <div class="text-4xl font-bold text-green-600 mb-2">
-          {{ correctCount }}/{{ questions.length }}
-        </div>
-        <div class="text-sm text-green-700">Câu đúng</div>
-      </div>
-      <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6">
-        <div class="text-4xl font-bold text-blue-600 mb-2">
-          {{ percentCorrect }}%
-        </div>
-        <div class="text-sm text-blue-700">Tỷ lệ chính xác</div>
-      </div>
-    </div>
-
-    <p class="text-lg text-gray-700 mb-6">{{ feedbackText }}</p>
-
-    <!-- Action Buttons -->
-    <div class="flex gap-4 justify-center">
-      <button
-        (click)="showExamAttemptDetails()"
-        class="px-6 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 font-semibold shadow-lg"
-      >
-        <i class="fas fa-history mr-2"></i>Xem lịch sử làm bài
-      </button>
-      <button
-        (click)="goToExams()"
-        class="px-6 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 font-semibold shadow-lg"
-      >
-        <i class="fas fa-list mr-2"></i>Chọn bài khác
-      </button>
-
-      <button
-        (click)="showReportPopup = true"
-        class="px-6 py-4 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 font-semibold shadow-lg"
-      >
-        <i class="fas fa-flag mr-2"></i>Báo cáo bài thi
-      </button>
-      <app-report-popup
-        *ngIf="showReportPopup"
-        [type]="'Exam - ' + examId"
-        (close)="onReportPopupClose()"
-      ></app-report-popup>
-    </div>
+  <div class="reading-summary__metrics">
+    <div><strong>{{ totalScore }}</strong><span>Tổng điểm</span></div>
+    <div><strong>{{ correctCount }}/{{ questions.length }}</strong><span>Câu đúng</span></div>
+    <div><strong>{{ percentCorrect }}%</strong><span>Tỷ lệ chính xác</span></div>
   </div>
-</div>
+
+  <p class="reading-summary__feedback">{{ feedbackText }}</p>
+
+  <div class="reading-summary__actions">
+    <button type="button" (click)="showExamAttemptDetails()"><i class="fas fa-history" aria-hidden="true"></i>Xem lịch sử làm bài</button>
+    <button type="button" (click)="goToExams()"><i class="fas fa-list" aria-hidden="true"></i>Chọn bài khác</button>
+    <button type="button" (click)="showReportPopup = true"><i class="fas fa-flag" aria-hidden="true"></i>Báo cáo bài thi</button>
+  </div>
+
+  @if (showReportPopup) {
+  <app-report-popup
+    [type]="'Exam - ' + examId"
+    (close)="onReportPopupClose()"
+  ></app-report-popup>
+  }
+</section>
 }

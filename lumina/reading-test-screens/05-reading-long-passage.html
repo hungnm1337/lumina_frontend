@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html><head>
+  <meta charset="utf-8">
+  <meta name="kombai-design-canvas" content="true">
+  
+  
+  
+  <script src="https://unpkg.com/@tailwindcss/browser@4.3.3/dist/index.global.js" integrity="sha384-2ql948lIdLcGEE0/qxNiudyTjgauA3RDJERu5xW75kFCvSl5a9odyQYCb6tEjnmB" crossorigin="anonymous"></script>
+  
+  <style>html, body { margin: 0; padding: 0; } #root { display: contents; }</style>
+</head><body>
+  <div id="root"><style>
+    @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  .screen {
+    min-height: 100vh;
+    padding-bottom: 145px;
+    background: #fff;
+    color: #151515;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  .content {
+    width: min(920px, calc(100% - 64px));
+    margin: 0 auto;
+    padding: 73px 0 48px;
+  }
+
+  .topline {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 32px;
+    margin-bottom: 64px;
+  }
+
+  .section-label {
+    margin: 0 0 8px;
+    font-size: 17px;
+    line-height: 1.2;
+  }
+
+  .question-title {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1.2;
+  }
+
+  .bookmark {
+    display: inline-flex;
+    min-height: 45px;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    padding: 0 18px;
+    border: 1px solid #a8a8a8;
+    border-radius: 5px;
+    background: #fff;
+    color: #151515;
+    font: inherit;
+    font-size: 17px;
+    cursor: pointer;
+  }
+
+  .timer {
+    position: fixed;
+    top: 5px;
+    right: 18px;
+    z-index: 8;
+    width: 126px;
+    text-align: right;
+  }
+
+  .timer strong {
+    display: block;
+    font-size: 27px;
+    line-height: 1.05;
+  }
+
+  .timer span {
+    display: block;
+    margin-top: 5px;
+    font-size: 15px;
+    line-height: 1.2;
+  }
+
+  .timer-bar {
+    height: 5px;
+    margin-top: 10px;
+    border-radius: 1px;
+    background: #25005f;
+  }
+
+  .passage {
+    font-size: 21px;
+    line-height: 1.4;
+  }
+
+  .prompt {
+    margin: 0 0 18px;
+    font-weight: 700;
+  }
+
+  .person-name {
+    margin: 0 0 18px;
+    font-weight: 700;
+  }
+
+  .paragraph {
+    margin: 0 0 18px;
+  }
+
+  .bookmark:focus-visible,
+  .icon-button:focus-visible,
+  .nav-button:focus-visible {
+    outline: 3px solid #b9a2d9;
+    outline-offset: 3px;
+  }
+
+  .toolbar {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 5;
+    display: flex;
+    min-height: 94px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 18px;
+    border: 1px solid #e4e1ed;
+    background: #fff;
+    box-shadow: 0 -7px 18px rgba(36, 0, 95, 0.14);
+  }
+
+  .toolbar-group,
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .icon-button,
+  .nav-button {
+    display: inline-flex;
+    min-height: 45px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #b9b9b9;
+    border-radius: 5px;
+    background: #fff;
+    color: #151515;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .icon-button {
+    width: 48px;
+    font-size: 17px;
+  }
+
+  .nav-button {
+    min-width: 50px;
+    gap: 11px;
+    padding: 0 17px;
+    font-size: 16px;
+  }
+
+  .nav-button--primary {
+    min-width: 121px;
+    border-color: #25005f;
+    background: #25005f;
+    color: #fff;
+    font-weight: 700;
+  }
+
+  @media (max-width: 700px) {
+    .content {
+      width: calc(100% - 36px);
+      padding-top: 42px;
+    }
+
+    .topline {
+      gap: 12px;
+      margin-bottom: 64px;
+    }
+
+    .timer {
+      top: 10px;
+      right: 12px;
+      width: 110px;
+    }
+
+    .timer strong {
+      font-size: 22px;
+    }
+
+    .timer span {
+      font-size: 13px;
+    }
+
+    .question-title {
+      font-size: 25px;
+    }
+
+    .passage {
+      font-size: 19px;
+    }
+
+    .toolbar {
+      min-height: 82px;
+      padding: 9px;
+    }
+
+    .icon-button {
+      width: 42px;
+      min-height: 42px;
+    }
+
+    .nav-button {
+      min-height: 42px;
+      padding: 0 12px;
+    }
+
+    .nav-button span {
+      display: none;
+    }
+
+    .nav-button--primary {
+      min-width: 94px;
+    }
+
+    .nav-button--primary span {
+      display: inline;
+    }
+  }
+</style>
+<div class="screen min-h-screen bg-white text-[#151515]" data-kid="1" data-name="reading test screen">
+    <main aria-labelledby="question-title" class="content" data-kid="1-1" data-name="reading question main content">
+        <div class="topline" data-kid="1-1-1" data-name="reading question header">
+            <div data-kid="1-1-1-1" data-name="question identifier">
+                <p class="section-label" data-kid="1-1-1-1-1" data-name="section label">
+                    Reading
+                </p>
+                <h1 class="question-title" data-kid="1-1-1-1-2" data-name="question heading" id="question-title">
+                    Question 4 of 5
+                </h1>
+            </div>
+            <button aria-label="Bookmark question" class="bookmark" data-kid="1-1-1-2" data-name="bookmark button" type="button">
+                <i aria-hidden="true" class="fa-solid fa-bookmark" data-kid="1-1-1-2-1" data-name="bookmark icon">
+                </i>
+                <span data-kid="1-1-1-2-2" data-name="bookmark label">
+                    Bookmark
+                </span>
+            </button>
+        </div>
+        <div aria-label="Time remaining" class="timer" data-kid="1-1-2" data-name="fixed timer">
+            <strong data-dynamic="true" data-kid="1-1-2-1" data-name="remaining time" data-reason="text replaced every second by countdown script">
+                00:33:35
+            </strong>
+            <span data-kid="1-1-2-2" data-name="time remaining label">
+                Time remaining
+            </span>
+            <div aria-hidden="true" class="timer-bar" data-dynamic="true" data-kid="1-1-2-3" data-name="remaining time bar" data-reason="width style replaced every second by countdown script">
+            </div>
+        </div>
+        <article class="passage" data-kid="1-1-3" data-name="long reading passage">
+            <p class="prompt" data-kid="1-1-3-1" data-name="reading instruction">
+                Four people respond in the comments section of an online magazine article about education and work. Read the texts and then answer the questions below.
+            </p>
+            <p class="person-name" data-kid="1-1-3-2" data-name="Petra name">
+                Petra
+            </p>
+            <p class="paragraph" data-kid="1-1-3-3" data-name="Petra response">
+                As you get older, responsibilities like a job and family dominate your life. It can be hard to balance things. Studying at university is demanding. So you should do it at an age when you are independent and carefree. It is also important to learn how the world of business works. Spending unpaid time in a company is a great way to get that experience. Any course that can give you an opportunity to do that is worth considering.
+            </p>
+            <p class="person-name" data-kid="1-1-3-4" data-name="Antonio name">
+                Antonio
+            </p>
+            <p class="paragraph" data-kid="1-1-3-5" data-name="Antonio response">
+                Life doesn’t really get serious until you hit your mid-twenties. Before that, try out different things and get some life experience. It’s only as you approach your thirties that you need to get serious about your career. That’s the time to start thinking about further education. Many colleges offer inexpensive courses for more mature students. Going back to student life for a year is a great idea, and you can then return to the world of work at management level.
+            </p>
+            <p class="person-name" data-kid="1-1-3-6" data-name="Eleanor name">
+                Eleanor
+            </p>
+            <p class="paragraph" data-kid="1-1-3-7" data-name="Eleanor response">
+                Nowadays, it is popular for school leavers to take a break before they think about an education or career. This can be a good way to find out what interests you and to gain experience. Colleges and universities offer options for people who want to do both.
+            </p>
+            <p class="person-name" data-kid="1-1-3-8" data-name="Jermaine name">
+                Jermaine
+            </p>
+            <p class="paragraph" data-kid="1-1-3-9" data-name="Jermaine response">
+                There are many ways to combine learning and work, and the right choice depends on the person.
+            </p>
+        </article>
+    </main>
+    <footer aria-label="Question navigation" class="toolbar" data-kid="1-2" data-name="fixed question navigation toolbar">
+        <div class="toolbar-group" data-kid="1-2-1" data-name="toolbar controls">
+            <button aria-label="Question list" class="icon-button" data-kid="1-2-1-1" data-name="question list button" type="button">
+                <i aria-hidden="true" class="fa-solid fa-list" data-kid="1-2-1-1-1" data-name="question list icon">
+                </i>
+            </button>
+            <button aria-label="Information" class="icon-button" data-kid="1-2-1-2" data-name="information button" type="button">
+                <i aria-hidden="true" class="fa-solid fa-circle-info" data-kid="1-2-1-2-1" data-name="information icon">
+                </i>
+            </button>
+            <button aria-label="Accessibility" class="icon-button" data-kid="1-2-1-3" data-name="accessibility button" type="button">
+                <i aria-hidden="true" class="fa-solid fa-person" data-kid="1-2-1-3-1" data-name="accessibility icon">
+                </i>
+            </button>
+        </div>
+        <div class="nav-actions" data-kid="1-2-2" data-name="question navigation actions">
+            <button aria-label="Exit test" class="icon-button" data-kid="1-2-2-1" data-name="exit test button" type="button">
+                <i aria-hidden="true" class="fa-solid fa-right-from-bracket" data-kid="1-2-2-1-1" data-name="exit test icon">
+                </i>
+            </button>
+            <button class="nav-button" data-kid="1-2-2-2" data-name="previous question button" type="button">
+                <i aria-hidden="true" class="fa-solid fa-arrow-left" data-kid="1-2-2-2-1" data-name="previous arrow icon">
+                </i>
+                <span data-kid="1-2-2-2-2" data-name="previous label">
+                    Previous
+                </span>
+            </button>
+            <button class="nav-button nav-button--primary" data-kid="1-2-2-3" data-name="next question button" type="button">
+                <span data-kid="1-2-2-3-1" data-name="next label">
+                    Next
+                </span>
+                <i aria-hidden="true" class="fa-solid fa-arrow-right" data-kid="1-2-2-3-2" data-name="next arrow icon">
+                </i>
+            </button>
+        </div>
+    </footer>
+</div>
+</div>
+</body></html>

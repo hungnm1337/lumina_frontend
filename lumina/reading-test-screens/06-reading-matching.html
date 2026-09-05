@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html><head>
+  <meta charset="utf-8">
+  <meta name="kombai-design-canvas" content="true">
+  
+  
+  
+  <script src="https://unpkg.com/@tailwindcss/browser@4.3.3/dist/index.global.js" integrity="sha384-2ql948lIdLcGEE0/qxNiudyTjgauA3RDJERu5xW75kFCvSl5a9odyQYCb6tEjnmB" crossorigin="anonymous"></script>
+  
+  <style>html, body { margin: 0; padding: 0; } #root { display: contents; }</style>
+</head><body>
+  <div id="root"><style>
+    @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
+
+  .reading-screen {
+    position: relative;
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding-bottom: 95px;
+    background: #fff;
+    color: #151515;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .reading-content {
+    width: min(720px, calc(100% - 64px));
+    margin: 0 auto;
+    padding: 67px 0 48px;
+    box-sizing: border-box;
+  }
+
+  .reading-passage h1 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.25;
+    font-weight: 700;
+  }
+
+  .reading-passage p {
+    margin: 20px 0 0;
+    font-size: 18px;
+    line-height: 1.28;
+    font-weight: 400;
+  }
+
+  .matching-list {
+    display: grid;
+    gap: 29px;
+    margin-top: 39px;
+  }
+
+  .matching-item {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.3;
+  }
+
+  .matching-item label {
+    min-width: 0;
+    color: #151515;
+  }
+
+  .matching-item strong {
+    margin-right: 5px;
+    font-weight: 700;
+  }
+
+  .matching-item select {
+    width: auto;
+    min-width: 120px;
+    height: 36px;
+    flex: 0 0 auto;
+    box-sizing: border-box;
+    padding: 2px 7px;
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #fff;
+    color: #151515;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    line-height: 1.2;
+  }
+
+  .matching-item select:focus-visible,
+  .toolbar button:focus-visible {
+    outline: 3px solid #b9a2d9;
+    outline-offset: 3px;
+  }
+
+  .timer {
+    position: fixed;
+    top: 5px;
+    right: 18px;
+    z-index: 8;
+    width: 126px;
+    box-sizing: border-box;
+    text-align: right;
+  }
+
+  .timer strong {
+    display: block;
+    font-size: 27px;
+    line-height: 1.05;
+    font-weight: 700;
+  }
+
+  .timer span {
+    display: block;
+    margin-top: 5px;
+    font-size: 15px;
+    line-height: 1.2;
+  }
+
+  .timer-bar {
+    height: 5px;
+    margin-top: 10px;
+    border-radius: 2px;
+    background: #25005f;
+  }
+
+  .toolbar {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 5;
+    display: flex;
+    min-height: 94px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 18px;
+    border: 1px solid #e4e1ed;
+    background: #fff;
+    box-shadow: 0 -7px 18px rgba(36, 0, 95, .14);
+  }
+
+  .toolbar-group,
+  .toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .toolbar button {
+    display: inline-flex;
+    min-height: 45px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #b9b9b9;
+    border-radius: 5px;
+    background: #fff;
+    color: #151515;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .toolbar-icon {
+    width: 48px;
+    padding: 0;
+    font-size: 17px !important;
+  }
+
+  .toolbar-nav {
+    min-width: 50px;
+    gap: 11px;
+    padding: 0 17px;
+  }
+
+  .toolbar-next {
+    min-width: 121px;
+    border-color: #25005f !important;
+    background: #25005f !important;
+    color: #fff !important;
+    font-weight: 700;
+  }
+
+  @media (max-width: 700px) {
+    .reading-content {
+      width: calc(100% - 36px);
+      padding-top: 38px;
+    }
+
+    .matching-list {
+      gap: 22px;
+    }
+
+    .matching-item {
+      align-items: flex-start;
+      flex-wrap: wrap;
+      font-size: 16px;
+    }
+
+    .matching-item select {
+      margin-left: 22px;
+    }
+
+    .timer {
+      right: 12px;
+      width: 112px;
+    }
+
+    .timer strong {
+      font-size: 22px;
+    }
+
+    .toolbar {
+      min-height: 82px;
+      padding: 9px;
+    }
+
+    .toolbar-group,
+    .toolbar-actions {
+      gap: 7px;
+    }
+
+    .toolbar-icon {
+      width: 42px;
+      min-height: 42px !important;
+    }
+
+    .toolbar-nav {
+      min-height: 42px !important;
+      padding: 0 12px;
+    }
+
+    .toolbar-nav span {
+      display: none;
+    }
+
+    .toolbar-next {
+      min-width: 94px;
+    }
+
+    .toolbar-next span {
+      display: inline;
+    }
+  }
+</style>
+<div class="reading-screen" data-kid="1" data-name="reading matching answer screen">
+    <main aria-label="Reading test matching questions" class="reading-content" data-kid="1-1" data-name="reading test matching questions container">
+        <section aria-labelledby="passage-heading" class="reading-passage" data-kid="1-1-1" data-name="reading passage section">
+            <h1 data-kid="1-1-1-1" data-name="passage title text" id="passage-heading">
+                Jermaine
+            </h1>
+            <p data-kid="1-1-1-2" data-name="passage paragraph text">
+                I think we should all keep learning, but you don’t need a piece of paper from an institution to prove it. There are many free courses available online. Of course, not all are good, but a little research will help you identify which one is best for you. A lot of young people get into debt because they have to pay for their studies. With the resources available online these days, you can take control. You won’t regret it.
+            </p>
+        </section>
+        <form aria-label="Match each opinion to a person" class="matching-list" data-kid="1-1-2" data-name="matching questions form">
+            <div class="matching-item" data-kid="1-1-2-1" data-name="matching question item container">
+                <label data-kid="1-1-2-1-1" data-name="matching question label" for="matching-q1">
+                    <strong data-kid="1-1-2-1-1-1" data-name="matching question number">
+                        1.
+                    </strong>
+                    Who thinks you should study when you are older?
+                </label>
+                <select aria-label="Question 1 answer" data-kid="1-1-2-1-2" data-name="question 1 select answer" id="matching-q1" name="matching-q1">
+                    <option data-kid="1-1-2-1-2-1" data-name="question 1 empty option" value="">
+                    </option>
+                    <option data-kid="1-1-2-1-2-2" data-name="question 1 petra option" value="Petra">
+                        Petra
+                    </option>
+                    <option data-kid="1-1-2-1-2-3" data-name="question 1 antonio option" value="Antonio">
+                        Antonio
+                    </option>
+                    <option data-kid="1-1-2-1-2-4" data-name="question 1 eleanor option" value="Eleanor">
+                        Eleanor
+                    </option>
+                    <option data-kid="1-1-2-1-2-5" data-name="question 1 jermaine option" value="Jermaine">
+                        Jermaine
+                    </option>
+                </select>
+            </div>
+            <div class="matching-item" data-kid="1-1-2-2" data-name="matching question item container">
+                <label data-kid="1-1-2-2-1" data-name="matching question label" for="matching-q2">
+                    <strong data-kid="1-1-2-2-1-1" data-name="matching question number">
+                        2.
+                    </strong>
+                    Who thinks formal qualifications are too expensive?
+                </label>
+                <select aria-label="Question 2 answer" data-kid="1-1-2-2-2" data-name="question 2 select answer" id="matching-q2" name="matching-q2">
+                    <option data-kid="1-1-2-2-2-1" data-name="question 2 empty option" value="">
+                    </option>
+                    <option data-kid="1-1-2-2-2-2" data-name="question 2 petra option" value="Petra">
+                        Petra
+                    </option>
+                    <option data-kid="1-1-2-2-2-3" data-name="question 2 antonio option" value="Antonio">
+                        Antonio
+                    </option>
+                    <option data-kid="1-1-2-2-2-4" data-name="question 2 eleanor option" value="Eleanor">
+                        Eleanor
+                    </option>
+                    <option data-kid="1-1-2-2-2-5" data-name="question 2 jermaine option" value="Jermaine">
+                        Jermaine
+                    </option>
+                </select>
+            </div>
+            <div class="matching-item" data-kid="1-1-2-3" data-name="matching question item container">
+                <label data-kid="1-1-2-3-1" data-name="matching question label" for="matching-q3">
+                    <strong data-kid="1-1-2-3-1-1" data-name="matching question number">
+                        3.
+                    </strong>
+                    Who thinks you should go to university when you are young?
+                </label>
+                <select aria-label="Question 3 answer" data-kid="1-1-2-3-2" data-name="question 3 select answer" id="matching-q3" name="matching-q3" value="Petra">
+                    <option data-kid="1-1-2-3-2-1" data-name="question 3 empty option" value="">
+                    </option>
+                    <option data-kid="1-1-2-3-2-2" data-name="question 3 petra option" selected="" value="Petra">
+                        Petra
+                    </option>
+                    <option data-kid="1-1-2-3-2-3" data-name="question 3 antonio option" value="Antonio">
+                        Antonio
+                    </option>
+                    <option data-kid="1-1-2-3-2-4" data-name="question 3 eleanor option" value="Eleanor">
+                        Eleanor
+                    </option>
+                    <option data-kid="1-1-2-3-2-5" data-name="question 3 jermaine option" value="Jermaine">
+                        Jermaine
+                    </option>
+                </select>
+            </div>
+            <div class="matching-item" data-kid="1-1-2-4" data-name="matching question item container">
+                <label data-kid="1-1-2-4-1" data-name="matching question label" for="matching-q4">
+                    <strong data-kid="1-1-2-4-1-1" data-name="matching question number">
+                        4.
+                    </strong>
+                    Who thinks you should study independently?
+                </label>
+                <select aria-label="Question 4 answer" data-kid="1-1-2-4-2" data-name="question 4 select answer" id="matching-q4" name="matching-q4">
+                    <option data-kid="1-1-2-4-2-1" data-name="question 4 empty option" value="">
+                    </option>
+                    <option data-kid="1-1-2-4-2-2" data-name="question 4 petra option" value="Petra">
+                        Petra
+                    </option>
+                    <option data-kid="1-1-2-4-2-3" data-name="question 4 antonio option" value="Antonio">
+                        Antonio
+                    </option>
+                    <option data-kid="1-1-2-4-2-4" data-name="question 4 eleanor option" value="Eleanor">
+                        Eleanor
+                    </option>
+                    <option data-kid="1-1-2-4-2-5" data-name="question 4 jermaine option" value="Jermaine">
+                        Jermaine
+                    </option>
+                </select>
+            </div>
+            <div class="matching-item" data-kid="1-1-2-5" data-name="matching question item container">
+                <label data-kid="1-1-2-5-1" data-name="matching question label" for="matching-q5">
+                    <strong data-kid="1-1-2-5-1-1" data-name="matching question number">
+                        5.
+                    </strong>
+                    Who thinks you should combine a job with studying?
+                </label>
+                <select aria-label="Question 5 answer" data-kid="1-1-2-5-2" data-name="question 5 select answer" id="matching-q5" name="matching-q5">
+                    <option data-kid="1-1-2-5-2-1" data-name="question 5 empty option" value="">
+                    </option>
+                    <option data-kid="1-1-2-5-2-2" data-name="question 5 petra option" value="Petra">
+                        Petra
+                    </option>
+                    <option data-kid="1-1-2-5-2-3" data-name="question 5 antonio option" selected="" value="Antonio">
+                        Antonio
+                    </option>
+                    <option data-kid="1-1-2-5-2-4" data-name="question 5 eleanor option" value="Eleanor">
+                        Eleanor
+                    </option>
+                    <option data-kid="1-1-2-5-2-5" data-name="question 5 jermaine option" value="Jermaine">
+                        Jermaine
+                    </option>
+                </select>
+            </div>
+            <div class="matching-item" data-kid="1-1-2-6" data-name="matching question item container">
+                <label data-kid="1-1-2-6-1" data-name="matching question label" for="matching-q6">
+                    <strong data-kid="1-1-2-6-1-1" data-name="matching question number">
+                        6.
+                    </strong>
+                    Who thinks you should choose a course that is practical?
+                </label>
+                <select aria-label="Question 6 answer" data-kid="1-1-2-6-2" data-name="question 6 select answer" id="matching-q6" name="matching-q6">
+                    <option data-kid="1-1-2-6-2-1" data-name="question 6 empty option" value="">
+                    </option>
+                    <option data-kid="1-1-2-6-2-2" data-name="question 6 petra option" value="Petra">
+                        Petra
+                    </option>
+                    <option data-kid="1-1-2-6-2-3" data-name="question 6 antonio option" value="Antonio">
+                        Antonio
+                    </option>
+                    <option data-kid="1-1-2-6-2-4" data-name="question 6 eleanor option" value="Eleanor">
+                        Eleanor
+                    </option>
+                    <option data-kid="1-1-2-6-2-5" data-name="question 6 jermaine option" value="Jermaine">
+                        Jermaine
+                    </option>
+                </select>
+            </div>
+            <div class="matching-item" data-kid="1-1-2-7" data-name="matching question item container">
+                <label data-kid="1-1-2-7-1" data-name="matching question label" for="matching-q7">
+                    <strong data-kid="1-1-2-7-1-1" data-name="matching question number">
+                        7.
+                    </strong>
+                    Who thinks you should get a job immediately after leaving school?
+                </label>
+                <select aria-label="Question 7 answer" data-kid="1-1-2-7-2" data-name="question 7 select answer" id="matching-q7" name="matching-q7">
+                    <option data-kid="1-1-2-7-2-1" data-name="question 7 empty option" value="">
+                    </option>
+                    <option data-kid="1-1-2-7-2-2" data-name="question 7 petra option" value="Petra">
+                        Petra
+                    </option>
+                    <option data-kid="1-1-2-7-2-3" data-name="question 7 antonio option" value="Antonio">
+                        Antonio
+                    </option>
+                    <option data-kid="1-1-2-7-2-4" data-name="question 7 eleanor option" value="Eleanor">
+                        Eleanor
+                    </option>
+                    <option data-kid="1-1-2-7-2-5" data-name="question 7 jermaine option" value="Jermaine">
+                        Jermaine
+                    </option>
+                </select>
+            </div>
+        </form>
+    </main>
+    <div aria-label="Time remaining" class="timer" data-kid="1-2" data-name="time remaining display container">
+        <strong data-dynamic="true" data-kid="1-2-1" data-name="time remaining countdown value" data-reason="text updated every second by timer script">
+            00:33:23
+        </strong>
+        <span data-kid="1-2-2" data-name="time remaining label">
+            Time remaining
+        </span>
+        <div aria-hidden="true" class="timer-bar" data-kid="1-2-3" data-name="timer progress bar">
+        </div>
+    </div>
+    <footer aria-label="Question navigation toolbar" class="toolbar" data-kid="1-3" data-name="question navigation toolbar">
+        <div class="toolbar-group" data-kid="1-3-1" data-name="toolbar navigation group">
+            <button aria-label="Question list" class="toolbar-icon" data-kid="1-3-1-1" data-name="question list button" type="button">
+                <i aria-hidden="true" class="fa-solid fa-list" data-kid="1-3-1-1-1" data-name="list icon">
+                </i>
+            </button>
+            <button aria-label="Information" class="toolbar-icon" data-kid="1-3-1-2" data-name="information button" type="button">
+                <i aria-hidden="true" class="fa-solid fa-circle-info" data-kid="1-3-1-2-1" data-name="info icon">
+                </i>
+            </button>
+            <button aria-label="Accessibility" class="toolbar-icon" data-kid="1-3-1-3" data-name="accessibility button" type="button">
+                <i aria-hidden="true" class="fa-solid fa-person" data-kid="1-3-1-3-1" data-name="accessibility person icon">
+                </i>
+            </button>
+        </div>
+        <div class="toolbar-actions" data-kid="1-3-2" data-name="toolbar actions group">
+            <button aria-label="Exit test" class="toolbar-icon" data-kid="1-3-2-1" data-name="exit test button" type="button">
+                <i aria-hidden="true" class="fa-solid fa-right-from-bracket" data-kid="1-3-2-1-1" data-name="exit icon">
+                </i>
+            </button>
+            <button aria-label="Previous question" class="toolbar-nav" data-kid="1-3-2-2" data-name="previous question button" type="button">
+                <i aria-hidden="true" class="fa-solid fa-arrow-left" data-kid="1-3-2-2-1" data-name="left arrow icon">
+                </i>
+                <span data-kid="1-3-2-2-2" data-name="previous button label">
+                    Previous
+                </span>
+            </button>
+            <button aria-label="Next question" class="toolbar-nav toolbar-next" data-kid="1-3-2-3" data-name="next question button" type="button">
+                <span data-kid="1-3-2-3-1" data-name="next button label">
+                    Next
+                </span>
+                <i aria-hidden="true" class="fa-solid fa-arrow-right" data-kid="1-3-2-3-2" data-name="right arrow icon">
+                </i>
+            </button>
+        </div>
+    </footer>
+</div>
+</div>
+</body></html>

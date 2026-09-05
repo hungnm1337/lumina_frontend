@@ -1,208 +1,208 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FooterComponent } from "../footer/footer.component";
-import { EventPreviewComponent } from '../../User/event-preview/event-preview.component';
-import { Router } from '@angular/router';
-import { UserSlideDashboardComponent } from '../../User/slide-dashboard/dashboardslide.component';
-import { PackagesService, Package } from '../../../Services/Packages/packages.service';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../Services/Auth/auth.service';
 import { ToastService } from '../../../Services/Toast/toast.service';
 
-interface PackageWithDetails extends Package {
-  level?: string;
-  targetScore?: string;
-  description?: string;
-  features?: string[];
-  originalPrice?: number;
-  color?: string;
+interface Feature {
+  icon: string;
+  title: string;
+  description: string;
 }
-import { LeaderboardPreviewComponent } from '../../User/leaderboard-preview/leaderboard-preview.component';
+
+interface EventItem {
+  tag: string;
+  tagType: 'sale' | 'event' | 'workshop';
+  title: string;
+  description: string;
+  date: string;
+  image: string;
+  gradient: string;
+}
+
+interface Testimonial {
+  quote: string;
+  name: string;
+  achievement: string;
+}
+
+interface SkillProgress {
+  name: string;
+  percentage: number;
+}
 
 @Component({
   selector: 'app-content-homepage',
   standalone: true,
-  imports: [CommonModule, FooterComponent, EventPreviewComponent, UserSlideDashboardComponent, LeaderboardPreviewComponent],
+  imports: [CommonModule, RouterModule],
   templateUrl: './content-homepage.component.html',
-  styleUrl: './content-homepage.component.scss'
+  styleUrl: './content-homepage.component.scss',
 })
 export class ContentHomepageComponent implements OnInit {
-  packages: PackageWithDetails[] = [];
-  isLoading = false;
 
-  // Package configuration based on index
-  private packageConfigs = [
-    {
-      level: 'Cơ bản',
-      targetScore: '300-500',
-      description: 'Dành cho người mới bắt đầu',
-      features: [
-        'Nền tảng ngữ pháp cơ bản',
-        '1000+ từ vựng thiết yếu',
-        'Luyện nghe cơ bản',
-        '5 bài thi thử'
-      ],
-      color: 'green',
-      originalPriceMultiplier: 2
-    },
-    {
-      level: 'Trung cấp',
-      targetScore: '500-750',
-      description: 'Nâng cao kỹ năng toàn diện',
-      features: [
-        'Ngữ pháp nâng cao',
-        '3000+ từ vựng chuyên ngành',
-        'Luyện nghe chuyên sâu',
-        '10 bài thi thử',
-        'Hỗ trợ 1-1 với giáo viên'
-      ],
-      color: 'blue',
-      originalPriceMultiplier: 2
-    },
-    {
-      level: 'Nâng cao',
-      targetScore: '750-990',
-      description: 'Chinh phục điểm cao',
-      features: [
-        'Chiến lược thi chuyên nghiệp',
-        '5000+ từ vựng academic',
-        'Luyện tập intensive',
-        '20 bài thi thử',
-        'Mentor cá nhân'
-      ],
-      color: 'purple',
-      originalPriceMultiplier: 2
-    }
+  /* ── Hero skills ── */
+  heroSkills = [
+    { key: 'listening', title: 'Listening', icon: 'fa-headphones', tone: 'blue' },
+    { key: 'reading', title: 'Reading', icon: 'fa-book-open', tone: 'orange' },
+    { key: 'writing', title: 'Writing', icon: 'fa-pen-fancy', tone: 'green' },
+    { key: 'speaking', title: 'Speaking', icon: 'fa-microphone', tone: 'purple' },
   ];
-  moveToMocktest() {
-    const user = this.authService.getCurrentUser();
-    if (!user) {
-      this.toastService.info('Vui lòng đăng nhập để tiếp tục');
-      this.router.navigate(['/login']);
-      return;
-    }
-    console.log('Navigating to Mock Test Exams');
-    this.router.navigate(['homepage/mocktest/exams']);
+
+  /* ── Features strip ── */
+  features: (Feature & { color: string })[] = [
+    {
+      icon: 'fa-bullseye',
+      color: '#e11d48',
+      title: 'Lộ trình cá nhân hóa',
+      description: 'AI phân tích & thiết kế lộ trình phù hợp với bạn',
+    },
+    {
+      icon: 'fa-file-lines',
+      color: '#eab308',
+      title: 'Kho đề chuẩn ETS',
+      description: 'Cập nhật liên tục các đề thi mới nhất',
+    },
+    {
+      icon: 'fa-lightbulb',
+      color: '#f59e0b',
+      title: 'Giải thích chi tiết',
+      description: 'Phân tích đáp án kỹ càng, dễ hiểu',
+    },
+    {
+      icon: 'fa-chart-line',
+      color: '#2563eb',
+      title: 'Theo dõi tiến độ',
+      description: 'Biểu đồ trực quan giúp bạn nhìn thấy sự tiến bộ',
+    },
+  ];
+
+  /* ── Welcome stats ── */
+  stats = [
+    { icon: 'fa-users', value: '15.000+', label: 'Học viên' },
+    { icon: 'fa-user-check', value: '98%', label: 'Hài lòng' },
+    { icon: 'fa-calendar-check', value: '2000+', label: 'Đề thi' },
+  ];
+
+  /* ── Circular progress ── */
+  overallProgress = 76;
+  readonly circleRadius = 54;
+  readonly circleCircumference = 2 * Math.PI * 54; // ≈ 339.292
+
+  skillProgress: SkillProgress[] = [
+    { name: 'Listening', percentage: 85 },
+    { name: 'Reading', percentage: 70 },
+    { name: 'Writing', percentage: 65 },
+    { name: 'Speaking', percentage: 80 },
+  ];
+
+  get progressOffset(): number {
+    return this.circleCircumference * (1 - this.overallProgress / 100);
   }
 
-  startLearning() {
+  /* ── Events ── */
+  events: EventItem[] = [
+    {
+      tag: 'ƯU ĐÃI',
+      tagType: 'sale',
+      title: 'Black Friday 2026\nGiảm giá sốc',
+      description:
+        'Giảm đến 60% cho tất cả các khóa học TOEIC. Chỉ diễn ra trong 3 ngày duy nhất!',
+      date: '03/08/2026 - 04/08/2026',
+      image: '',
+      gradient: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+    },
+    {
+      tag: 'SỰ KIỆN',
+      tagType: 'event',
+      title: 'Tuần lễ luyện thi\nmiễn phí',
+      description:
+        '7 ngày trải nghiệm miễn phí toàn bộ tính năng premium. Học thử không giới hạn!',
+      date: '05/08/2026 - 11/08/2026',
+      image: '',
+      gradient: 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)',
+    },
+    {
+      tag: 'WORKSHOP',
+      tagType: 'workshop',
+      title: 'Workshop: Chiến lược\nlàm bài TOEIC hiệu quả',
+      description:
+        'Buổi workshop trực tuyến với giảng viên chuyên gia. Chia sẻ bí quyết đạt điểm cao trong từng phần thi.',
+      date: '10/08/2026 - 20:00 - 21:30',
+      image: '',
+      gradient: 'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)',
+    },
+  ];
+
+  /* ── Testimonials ── */
+  testimonials: Testimonial[] = [
+    {
+      quote:
+        'Lumina không chỉ giúp mình nâng cao điểm số mà còn xây dựng sự tự tin trong giao tiếp tiếng Anh. Lộ trình học rất khoa học và phù hợp với người bận rộn như mình.',
+      name: 'Nguyễn Minh Anh',
+      achievement: 'TOEIC 955',
+    },
+  ];
+
+  currentTestimonialIndex = 0;
+
+  get currentTestimonial(): Testimonial {
+    return this.testimonials[this.currentTestimonialIndex];
+  }
+
+  /* ── Footer links ── */
+  footerProducts = ['Luyện tập', 'Đề thi', 'Từ vựng', 'Lộ trình học'];
+  footerSupport = ['Hướng dẫn sử dụng', 'FAQ', 'Liên hệ', 'Chính sách bảo mật'];
+  footerAbout = ['Giới thiệu', 'Tin tức', 'Tuyển dụng', 'Điều khoản sử dụng'];
+
+  constructor(
+    private readonly router: Router,
+    private readonly authService: AuthService,
+    private readonly toastService: ToastService
+  ) {}
+
+  ngOnInit(): void {}
+
+  /* ── Navigation ── */
+  startLearning(): void {
     const user = this.authService.getCurrentUser();
     if (!user) {
-      this.toastService.info('Vui lòng đăng nhập để tiếp tục');
       this.router.navigate(['/login']);
       return;
     }
-    // Navigate to learning dashboard or relevant page
     this.router.navigate(['/homepage/user-dashboard']);
   }
 
-  constructor(
-    private router: Router,
-    private packagesService: PackagesService,
-    private authService: AuthService,
-    private toastService: ToastService
-  ) { }
-
-  ngOnInit() {
-    this.loadPackages();
-  }
-
-  loadPackages() {
-    this.isLoading = true;
-    this.packagesService.getActivePackages().subscribe({
-      next: (data) => {
-        console.log('Packages loaded:', data);
-        if (data && Array.isArray(data) && data.length > 0) {
-          // Lấy 3 gói đầu tiên và map với config
-          this.packages = data.slice(0, 3).map((pkg, index) => {
-            const config = this.packageConfigs[index] || this.packageConfigs[0];
-            return {
-              ...pkg,
-              level: config.level,
-              targetScore: config.targetScore,
-              description: config.description,
-              features: config.features,
-              originalPrice: pkg.price ? Math.round(pkg.price * config.originalPriceMultiplier) : 0,
-              color: config.color
-            };
-          });
-          console.log('Packages displayed:', this.packages);
-        } else {
-          console.warn('No packages found or empty array');
-          this.packages = [];
-        }
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error loading packages:', err);
-        console.error('Error details:', err.error || err.message);
-        this.packages = [];
-        this.isLoading = false;
-      }
-    });
-  }
-
-  formatPrice(price: number | null | undefined): string {
-    if (price === null || price === undefined || price === 0) return '0';
-    // Format as "299K" instead of full currency
-    const priceInK = Math.round(price / 1000);
-    return `${priceInK}K`;
-  }
-
-  formatPriceFull(price: number | null | undefined): string {
-    if (price === null || price === undefined || price === 0) return '0 ₫';
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(price);
-  }
-
-  formatDuration(days: number | null | undefined): string {
-    if (days === null || days === undefined || days === 0) return '';
-    if (days >= 30) {
-      const months = Math.floor(days / 30);
-      return `${months} tháng`;
+  startTest(): void {
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      this.toastService.info('Vui lòng đăng nhập để bắt đầu kiểm tra');
+      this.router.navigate(['/login']);
+      return;
     }
-    return `${days} ngày`;
+    this.router.navigate(['homepage/mocktest/exams']);
   }
 
-  getPackageHeaderClass(color: string | undefined): string {
-    switch (color) {
-      case 'green':
-        return 'bg-green-500';
-      case 'blue':
-        return 'bg-blue-500';
-      case 'purple':
-        return 'bg-purple-500';
-      default:
-        return 'bg-blue-500';
-    }
+  viewAllEvents(): void {
+    this.router.navigate(['/homepage/events']);
   }
 
-  getPackageCheckColor(color: string | undefined): string {
-    switch (color) {
-      case 'green':
-        return 'text-green-500';
-      case 'blue':
-        return 'text-blue-500';
-      case 'purple':
-        return 'text-purple-500';
-      default:
-        return 'text-blue-500';
+  exploreLearningPath(): void {
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      this.router.navigate(['/login']);
+      return;
     }
+    this.router.navigate(['/homepage/user-dashboard']);
   }
 
-  getPackageTextColor(color: string | undefined): string {
-    switch (color) {
-      case 'green':
-        return 'text-green-500';
-      case 'blue':
-        return 'text-blue-500';
-      case 'purple':
-        return 'text-purple-500';
-      default:
-        return 'text-blue-500';
-    }
+  prevTestimonial(): void {
+    this.currentTestimonialIndex =
+      (this.currentTestimonialIndex - 1 + this.testimonials.length) %
+      this.testimonials.length;
+  }
+
+  nextTestimonial(): void {
+    this.currentTestimonialIndex =
+      (this.currentTestimonialIndex + 1) % this.testimonials.length;
   }
 }

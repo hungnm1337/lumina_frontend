@@ -51,16 +51,12 @@ export class PartQuestionComponent {
           this.partDetail = data;
           this.questions = this.partDetail.questions;
 
-          // tùy vào part code có chứa "writing , reading, listening"
-
-          if (this.partDetail.partCode.search('WRI')) {
-            this.isWritingExam = true;
-          } else if (this.partDetail.partCode.search('REA')) {
-            this.isReadingExam = true;
-          }
-          else if (this.partDetail.partCode.search('LIS')) {
-            this.isListeningExam = true;
-          }
+          // The part code is the source of truth for the full-screen exam renderer.
+          this.isWritingExam = false;
+          this.isReadingExam = false;
+          this.isListeningExam = false;
+          this.isSpeakingExam = false;
+          this.determineExamTypeFromPartCode();
 
           this.partInfo = {
             partId: this.partDetail.partId,

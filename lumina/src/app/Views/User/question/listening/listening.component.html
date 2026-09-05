@@ -1,4 +1,3 @@
-<!-- Submit Popup -->
 @if (showSubmitPopup) {
 <app-popup
   [title]="submitPopupTitle"
@@ -8,7 +7,6 @@
 ></app-popup>
 }
 
-<!-- TOEIC Notification Popup -->
 @if (showToeicPopup) {
 <app-popup
   [title]="toeicPopupTitle"
@@ -19,7 +17,6 @@
 ></app-popup>
 }
 
-<!-- Quota Limit Modal -->
 <app-quota-limit-modal
   [isVisible]="showQuotaModal"
   [skill]="'listening'"
@@ -27,215 +24,185 @@
   (close)="closeQuotaModal()"
 ></app-quota-limit-modal>
 
-<!-- Exam Attempt Details Modal -->
 @if (showExamAttemptDetailsFlag && examAttemptDetails) {
 <app-exam-attempt-detail
   [examAttemptDetails]="examAttemptDetails"
   (close)="closeExamAttemptDetails()"
 ></app-exam-attempt-detail>
-} @if (!finished) {
-<!-- Layout với Navigator bên trái (tễ lệ 25:50:25) -->
-<div class="grid grid-cols-12 gap-4 min-h-[calc(100vh-200px)]">
-  <!-- Left Sidebar: Navigator + Submit Button (3/12 = 25%) -->
-  <div class="col-span-3">
-    <app-question-navigator
-      [questions]="questions"
-      [currentIndex]="currentIndex"
-      [getQuestionStatus]="getQuestionStatus"
-      [legendItems]="navigatorLegendItems"
-      [showSubmitButton]="true"
-      [submitButtonText]="'Nộp bài'"
-      (navigateToQuestion)="navigateToQuestion($event)"
-      (submitExam)="finishExamManual()"
-    ></app-question-navigator>
-  </div>
+}
 
-  <!-- Main Content Area (9/12 = 75%, chia thành 6:3 = 50:25) -->
-  <div class="col-span-9 bg-white rounded-lg shadow-md p-4">
-    <!-- Timer -->
-    <div
-      *ngIf="partTotalTime > 0"
-      class="mb-4 border border-gray-200 rounded-lg p-3 timer-light"
-    >
+@if (!finished) {
+<main class="listening-screen" aria-labelledby="listening-question-title">
+  <div class="listening-content">
+    <div class="listening-question-topline">
+      <div>
+        <p class="listening-section-label">Listening</p>
+        <h1 id="listening-question-title">Question {{ currentIndex + 1 }} of {{ questions.length }}</h1>
+      </div>
+      <button type="button" class="listening-bookmark" aria-label="Bookmark question" title="Bookmark question">
+        <i class="fas fa-bookmark" aria-hidden="true"></i>
+        <span>Bookmark</span>
+      </button>
+    </div>
+
+    <div class="listening-timer" aria-label="Time remaining">
       <app-time
         [time]="partTotalTime"
         [resetAt]="timerResetTrigger"
+        [label]="'Time remaining'"
         (timeout)="onPartTimeout()"
         (timeUpdate)="onPartTimerTick($event)"
       ></app-time>
     </div>
 
-    <!-- Audio Player - Auto-play only, no controls -->
-    <div
-      class="mb-2 p-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200"
-    >
+    @if (questions.length > 0) {
+    <section class="listening-question-body" aria-label="Current listening question">
+      <div class="listening-prompt">
+        <app-prompt
+          [prompt]="questions[currentIndex].prompt"
+          [resetAt]="currentIndex"
+          [questionType]="questions[currentIndex].questionType ?? 'Listening'"
+        ></app-prompt>
+      </div>
+
       <audio
         #audioPlayer
+        class="listening-audio"
         [src]="getCurrentAudioUrl()"
+        aria-hidden="true"
         (play)="onAudioPlay()"
         (ended)="onAudioEnded()"
         (timeupdate)="onTimeUpdate()"
         (loadedmetadata)="onLoadedMetadata()"
       ></audio>
 
-      <div class="flex items-center gap-2">
-        <!-- Audio status indicator -->
-        <div
-          class="px-3 py-1.5 rounded-md bg-white border border-gray-300 text-xs font-medium"
-        >
-          <i
-            [class]="
-              isAudioPlaying
-                ? 'fas fa-volume-up text-green-600 mr-1.5'
-                : 'fas fa-volume-mute text-gray-400 mr-1.5'
-            "
-          ></i>
-          {{
-            isAudioPlaying
-              ? "Đang phát..."
-              : audioPlayCount >= maxPlays
-              ? "Đã phát"
-              : "Chưa phát"
-          }}
-          ({{ audioPlayCount }}/{{ maxPlays }})
-        </div>
-
-        <!-- Audio Progress Bar -->
-        <div class="flex-1">
-          <div
-            class="flex items-center justify-between text-[10px] text-gray-600 mb-0.5"
-          >
-            <span>{{ formatAudioTime(audioCurrentTime) }}</span>
-            <span>{{ formatAudioTime(audioDuration) }}</span>
-          </div>
-          <div class="w-full bg-gray-300 rounded-full h-1.5 overflow-hidden">
-            <div
-              class="h-full rounded-full transition-all duration-200"
-              [ngClass]="{
-                'bg-gray-400': audioPlayCount === 0,
-                'bg-red-500': audioPlayCount > 0 && !isAudioPlaying,
-                'bg-green-500': isAudioPlaying
-              }"
-              [style.width.%]="audioProgress"
-            ></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Main Content: Prompt (6/9 = 50%) và Options (3/9 = 25%) -->
-    <div class="grid grid-cols-9 gap-4 mb-2">
-      <!-- Left Column: Prompt Title + Image/Content (6/9 = 50%) -->
-      <div class="col-span-6 flex flex-col">
-        <div class="w-full">
-          <app-prompt
-            [prompt]="questions[currentIndex].prompt"
-            [resetAt]="currentIndex"
-            [questionType]="questions[currentIndex].questionType ?? ''"
-          ></app-prompt>
-        </div>
-      </div>
-
-      <!-- Right Column: Options (3/9 = 25%) -->
-      <div class="col-span-3 flex items-start">
-        <div class="w-full">
-          <app-options
-            [options]="questions[currentIndex].options || []"
-            [resetAt]="currentIndex"
-            [preSelectedOptionId]="
-              getSelectedOptionId(questions[currentIndex].questionId)
-            "
-            (answered)="markAnswered($event)"
-          ></app-options>
-        </div>
-      </div>
-    </div>
-
-    <!-- Navigation -->
-    <div class="mt-4 flex items-center justify-between">
       <button
-        (click)="previousQuestion()"
-        [disabled]="currentIndex === 0"
-        class="px-3 py-1.5 rounded-md bg-gray-500 text-white hover:bg-gray-600 disabled:opacity-50 text-sm font-medium shadow-sm"
+        type="button"
+        class="listening-audio-control"
+        [attr.aria-label]="isAudioPlaying ? 'Stop recording' : 'Play recording'"
+        [title]="audioPlayCount >= maxPlays ? 'Maximum plays reached' : 'Play or stop recording'"
+        (click)="playAudio()"
       >
-        <i class="fas fa-arrow-left mr-1.5"></i>Câu trước
+        <i [class]="isAudioPlaying ? 'fas fa-circle-stop' : 'far fa-circle-play'" aria-hidden="true"></i>
+        <span>Play/Stop</span>
       </button>
 
-      <button
-        (click)="nextQuestion()"
-        [disabled]="currentIndex === questions.length - 1"
-        class="px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 text-sm font-medium shadow-sm"
-      >
-        Câu sau<i class="fas fa-arrow-right ml-1.5"></i>
-      </button>
-    </div>
+      <div class="listening-options" aria-label="Answer options">
+        <app-options
+          [options]="questions[currentIndex].options || []"
+          [showAnswerLetters]="true"
+          [resetAt]="currentIndex"
+          [preSelectedOptionId]="getSelectedOptionId(questions[currentIndex].questionId)"
+          (answered)="markAnswered($event)"
+        ></app-options>
+      </div>
+    </section>
+    }
+
+    <footer class="listening-toolbar" aria-label="Question navigation">
+      <div class="listening-toolbar__group">
+        <details class="listening-question-menu">
+          <summary class="listening-toolbar-icon" aria-label="Question list" title="Question list">
+            <i class="fas fa-list" aria-hidden="true"></i>
+          </summary>
+          <div class="listening-question-menu__panel">
+            <app-question-navigator
+              [questions]="questions"
+              [currentIndex]="currentIndex"
+              [getQuestionStatus]="getQuestionStatus"
+              [legendItems]="navigatorLegendItems"
+              [showSubmitButton]="true"
+              [submitButtonText]="'Nộp bài'"
+              (navigateToQuestion)="navigateToQuestion($event)"
+              (submitExam)="finishExamManual()"
+            ></app-question-navigator>
+          </div>
+        </details>
+        <button type="button" class="listening-toolbar-icon" aria-label="Information" title="Information" [disabled]="!attemptId" (click)="showExamAttemptDetails()">
+          <i class="fas fa-circle-info" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="listening-toolbar-icon" aria-label="Accessibility" title="Accessibility tools">
+          <i class="fas fa-person" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="listening-toolbar__group">
+        <button type="button" class="listening-toolbar-icon" aria-label="Exit test" title="Exit test" (click)="confirmExit()">
+          <i class="fas fa-right-from-bracket" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="listening-toolbar-button" [disabled]="currentIndex === 0" (click)="previousQuestion()">
+          <i class="fas fa-arrow-left" aria-hidden="true"></i>
+          <span>Previous</span>
+        </button>
+        <button type="button" class="listening-toolbar-button listening-toolbar-button--primary" (click)="nextQuestion()">
+          <span>Next</span>
+          <i class="fas fa-arrow-right" aria-hidden="true"></i>
+        </button>
+      </div>
+    </footer>
   </div>
-</div>
+</main>
 } @else {
-<!-- Summary Screen -->
-<div class="w-full bg-white rounded-lg shadow-md p-6">
-  <div class="text-center py-8">
-    <div
-      class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full mb-4"
-    >
-      <i class="fas fa-trophy text-white text-4xl"></i>
+<section class="listening-summary" aria-labelledby="listening-summary-title">
+  <div class="listening-summary__icon" aria-hidden="true">
+    <i class="fas fa-trophy"></i>
+  </div>
+  <h2 id="listening-summary-title">Hoàn thành bài Listening!</h2>
+  <p class="listening-summary__part">{{ partInfo?.partCode || 'Listening Practice' }}</p>
+
+  <div class="listening-summary__metrics">
+    <div><strong>{{ totalScore }}</strong><span>Tổng điểm</span></div>
+    <div><strong>{{ correctCount }}/{{ questions.length }}</strong><span>Câu đúng</span></div>
+    <div><strong>{{ percentCorrect }}%</strong><span>Tỷ lệ chính xác</span></div>
+  </div>
+
+  <p class="listening-summary__feedback">{{ feedbackText }}</p>
+
+  <div class="listening-summary__actions">
+    <button type="button" (click)="showExamAttemptDetails()"><i class="fas fa-history" aria-hidden="true"></i>Xem lịch sử làm bài</button>
+    <button type="button" (click)="goToExams()"><i class="fas fa-list" aria-hidden="true"></i>Chọn bài khác</button>
+    <button type="button" (click)="showReportPopup = true"><i class="fas fa-flag" aria-hidden="true"></i>Báo cáo bài thi</button>
+  </div>
+
+  @if (showReportPopup) {
+  <app-report-popup
+    [type]="'Exam - ' + examId"
+    (close)="onReportPopupClose()"
+  ></app-report-popup>
+  }
+</section>
+}
+
+<!-- Custom British Council Style Exit Confirmation Modal -->
+@if (showExitModal) {
+<div class="bc-modal-overlay" (click)="cancelExitModal()">
+  <div class="bc-modal" (click)="$event.stopPropagation()">
+    <div class="bc-modal__header">
+      <div class="bc-modal__title-group">
+        <i class="fas fa-triangle-exclamation bc-modal__warning-icon"></i>
+        <h3>Xác nhận thoát bài làm</h3>
+      </div>
+      <button class="bc-modal__close" (click)="cancelExitModal()" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
-    <h2 class="text-3xl font-bold text-gray-800 mb-2">
-      Hoàn thành bài Listening!
-    </h2>
-    <p class="text-gray-600 mb-6">
-      {{ partInfo?.partCode || "Listening Practice" }}
-    </p>
-
-    <!-- Score Statistics -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-6">
-        <div class="text-4xl font-bold text-purple-600 mb-2">
-          {{ totalScore }}
-        </div>
-        <div class="text-sm text-purple-700">Tổng điểm</div>
-      </div>
-      <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6">
-        <div class="text-4xl font-bold text-green-600 mb-2">
-          {{ correctCount }}/{{ questions.length }}
-        </div>
-        <div class="text-sm text-green-700">Câu đúng</div>
-      </div>
-      <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6">
-        <div class="text-4xl font-bold text-blue-600 mb-2">
-          {{ percentCorrect }}%
-        </div>
-        <div class="text-sm text-blue-700">Tỷ lệ chính xác</div>
+    
+    <div class="bc-modal__body">
+      <p class="bc-modal__text">Bạn có muốn lưu tiến trình hiện tại và thoát khỏi bài thi không?</p>
+      <div class="bc-modal__info-box">
+        <ul>
+          <li><i class="fas fa-check-circle"></i> Tiến trình câu trả lời của bạn sẽ được lưu tự động.</li>
+          <li><i class="fas fa-history"></i> Bạn có thể tiếp tục bài làm bất kỳ lúc nào từ bảng điều khiển.</li>
+        </ul>
       </div>
     </div>
-
-    <p class="text-lg text-gray-700 mb-6">{{ feedbackText }}</p>
-
-    <!-- Action Buttons -->
-    <div class="flex gap-4 justify-center">
-      <button
-        (click)="showExamAttemptDetails()"
-        class="px-6 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 font-semibold shadow-lg"
-      >
-        <i class="fas fa-history mr-2"></i>Xem lịch sử làm bài
+    
+    <div class="bc-modal__footer">
+      <button type="button" class="bc-btn bc-btn--secondary" (click)="cancelExitModal()">
+        Tiếp tục làm bài
       </button>
-      <button
-        (click)="goToExams()"
-        class="px-6 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 font-semibold shadow-lg"
-      >
-        <i class="fas fa-list mr-2"></i>Chọn bài khác
+      <button type="button" class="bc-btn bc-btn--primary" (click)="confirmExitModal()">
+        Lưu & Thoát
       </button>
-      <button
-        (click)="showReportPopup = true"
-        class="px-6 py-4 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 font-semibold shadow-lg"
-      >
-        <i class="fas fa-flag mr-2"></i>Báo cáo bài thi
-      </button>
-      <app-report-popup
-        *ngIf="showReportPopup"
-        [type]="'Exam - ' + examId"
-        (close)="onReportPopupClose()"
-      ></app-report-popup>
     </div>
   </div>
 </div>

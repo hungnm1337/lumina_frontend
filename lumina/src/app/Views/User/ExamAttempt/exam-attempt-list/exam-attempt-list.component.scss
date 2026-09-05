@@ -1,0 +1,595 @@
+// Design System Variables
+$color-primary: #2563eb;
+$color-primary-hover: #1d4ed8;
+$color-success: #16a34a;
+$color-warning: #f59e0b;
+$color-danger: #ef4444;
+
+$color-bg-primary: #f8fafc;
+$color-bg-secondary: #f1f5f9;
+$color-bg-white: #ffffff;
+
+$color-text-primary: #0f172a;
+$color-text-secondary: #64748b;
+$color-text-muted: #94a3b8;
+
+$color-border: #e2e8f0;
+$color-border-light: #cbd5e1;
+
+$font-family-heading: "Poppins", sans-serif;
+$font-family-body: "Inter", sans-serif;
+
+$border-radius: 1.1rem;
+$border-radius-btn: 0.75rem;
+
+$shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.05);
+$shadow-md: 0 8px 24px rgba(15, 23, 42, 0.05);
+$shadow-lg: 0 14px 28px rgba(30, 64, 175, 0.12);
+
+$transition-default: all 0.2s ease;
+
+// Utility Classes
+.group-hover\:translate-x-1:hover {
+  transform: translateX(0.25rem);
+}
+
+// Component Styles
+
+// Page Container
+div.min-h-screen {
+  background-color: $color-bg-primary;
+}
+
+// Section Styling
+section {
+  &.space-y-6 {
+    .inline-flex {
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 1rem;
+
+      i {
+        color: $color-primary;
+        font-size: 1rem;
+      }
+
+      span {
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #2563a8;
+        background-color: rgba(37, 99, 235, 0.08);
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+      }
+    }
+
+    h1 {
+      font-family: $font-family-heading;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 700;
+      color: $color-text-primary;
+      margin-bottom: 0.75rem;
+      line-height: 1.2;
+      letter-spacing: -0.035em;
+    }
+
+    > p {
+      font-size: 1.125rem;
+      color: $color-text-secondary;
+      line-height: 1.6;
+      max-width: 48rem;
+    }
+  }
+
+  // Statistics Grid
+  &.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.25rem;
+
+    > div {
+      background-color: $color-bg-white;
+      border-radius: $border-radius;
+      border: 1px solid $color-border;
+      padding: 1.5rem;
+      box-shadow: $shadow-md;
+      transition: $transition-default;
+
+      &:hover {
+        box-shadow: $shadow-lg;
+        border-color: $color-primary;
+      }
+
+      .text-xs {
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: $color-text-secondary;
+        margin-bottom: 0.75rem;
+      }
+
+      .text-4xl {
+        font-family: $font-family-heading;
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: $color-text-primary;
+      }
+    }
+  }
+
+  // Filter Panel
+  &.bg-white {
+    background-color: $color-bg-white;
+    border-radius: $border-radius;
+    border: 1px solid $color-border;
+    padding: 1.5rem;
+    box-shadow: $shadow-md;
+
+    .space-y-4 {
+      > div {
+        &:first-child {
+          // Search Container
+          label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: $color-text-secondary;
+            margin-bottom: 0.625rem;
+            display: block;
+            margin-left: 0.25rem;
+          }
+
+          .relative {
+            position: relative;
+
+            i {
+              position: absolute;
+              left: 1rem;
+              top: 50%;
+              transform: translateY(-50%);
+              color: $color-border-light;
+            }
+
+            input {
+              width: 100%;
+              padding-left: 2.75rem;
+              padding-right: 1rem;
+              padding-top: 0.75rem;
+              padding-bottom: 0.75rem;
+              border: 1px solid $color-border;
+              border-radius: 0.5rem;
+              transition: $transition-default;
+              color: $color-text-primary;
+
+              &::placeholder {
+                color: $color-text-muted;
+              }
+
+              &:focus {
+                outline: none;
+                ring: 2px solid $color-primary;
+                border-color: $color-primary;
+              }
+            }
+          }
+        }
+      }
+
+      // Filters Row
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+
+        > div {
+          label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: $color-text-secondary;
+            margin-bottom: 0.625rem;
+            display: block;
+            margin-left: 0.25rem;
+          }
+
+          select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid $color-border;
+            border-radius: 0.5rem;
+            transition: $transition-default;
+            background-color: $color-bg-white;
+            color: $color-text-primary;
+            font-weight: 500;
+
+            &:focus {
+              outline: none;
+              ring: 2px solid $color-primary;
+              border-color: $color-primary;
+            }
+          }
+
+          // Reset Button
+          button {
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            background-color: $color-bg-secondary;
+            border: 1px solid $color-border;
+            border-radius: 0.5rem;
+            color: $color-text-primary;
+            font-weight: 600;
+            transition: $transition-default;
+            cursor: pointer;
+
+            &:hover {
+              background-color: $color-border;
+            }
+
+            i {
+              margin-right: 0.5rem;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Loading State
+.inline-block.animate-spin {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+
+  &:after {
+    content: "";
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Empty State
+i.fa-inbox {
+  display: block;
+  font-size: 3.5rem;
+  color: $color-border-light;
+  margin-bottom: 1rem;
+}
+
+// Exam Attempts List
+.space-y-4 {
+  > div {
+    background-color: $color-bg-white;
+    border-radius: $border-radius;
+    border: 1px solid $color-border;
+    padding: 1.5rem;
+    box-shadow: $shadow-md;
+    cursor: pointer;
+    transition: $transition-default;
+
+    &:hover {
+      box-shadow: $shadow-lg;
+      border-color: $color-primary;
+      transform: translateY(-0.25rem);
+    }
+
+    // Flex Layout
+    > .flex {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+
+      @media (min-width: 768px) {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      // Left Section
+      > .flex-1 {
+        flex: 1;
+        min-width: 0;
+
+        // Attempt ID & Title
+        .flex {
+          display: flex;
+          align-items: flex-start;
+          gap: 1rem;
+          margin-bottom: 1rem;
+
+          // ID Badge
+          > .flex-shrink-0 {
+            flex-shrink: 0;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.5rem;
+            background-color: $color-primary;
+            color: white;
+            font-family: $font-family-heading;
+            font-weight: 700;
+            font-size: 1.125rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+          }
+
+          // Title Section
+          > div {
+            flex: 1;
+            min-width: 0;
+
+            h3 {
+              font-family: $font-family-heading;
+              font-size: 1.25rem;
+              font-weight: 700;
+              color: $color-text-primary;
+              margin-bottom: 0.25rem;
+            }
+
+            p {
+              font-size: 0.875rem;
+              color: $color-text-secondary;
+            }
+          }
+        }
+
+        // Metadata
+        .flex {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 0.75rem;
+          font-size: 0.875rem;
+          color: $color-text-secondary;
+
+          > .inline-flex {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            i {
+              color: $color-border-light;
+            }
+
+            span {
+              font-weight: 500;
+            }
+          }
+        }
+      }
+
+      // Right Section
+      > .flex:last-of-type {
+        display: flex;
+        flex-direction: column;
+
+        @media (min-width: 768px) {
+          flex-direction: row;
+          align-items: center;
+          gap: 1rem;
+          margin-left: auto;
+        }
+
+        // Status Badge
+        > div:first-child {
+          padding: 0.5rem 1rem;
+          border-radius: 0.5rem;
+          font-size: 0.875rem;
+          font-weight: 700;
+          transition: $transition-default;
+
+          // Status classes will be applied via ngClass
+        }
+
+        // Score Card
+        > div:nth-child(2) {
+          background-color: $color-bg-primary;
+          border-radius: 0.5rem;
+          padding: 0.75rem 1.5rem;
+          text-align: right;
+          min-width: 5.625rem;
+          border: 1px solid $color-border;
+
+          > div:first-child {
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: $color-text-muted;
+            margin-bottom: 0.25rem;
+          }
+
+          > div:last-child {
+            font-family: $font-family-heading;
+            font-size: 1.5rem;
+            font-weight: 700;
+          }
+        }
+
+        // View Arrow
+        > div:last-child {
+          color: $color-primary;
+          font-size: 1.25rem;
+          transition: transform 0.2s ease;
+        }
+
+        &:hover > div:last-child {
+          transform: translateX(0.25rem);
+        }
+      }
+    }
+  }
+}
+
+// Status Badge Colors
+.status-completed {
+  background-color: rgba(22, 163, 74, 0.1);
+  color: $color-success;
+}
+
+.status-doing {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: $color-warning;
+}
+
+// Pagination Section
+section.bg-white:last-of-type {
+  background-color: $color-bg-white;
+  border-radius: $border-radius;
+  border: 1px solid $color-border;
+  padding: 1.5rem;
+  box-shadow: $shadow-md;
+
+  > .flex {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    @media (min-width: 640px) {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    // Page Info
+    > div:first-child {
+      font-size: 0.875rem;
+      color: $color-text-secondary;
+
+      span.font-700 {
+        font-weight: 700;
+        color: $color-text-primary;
+      }
+    }
+
+    // Page Controls
+    > div:last-child {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      button {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: $transition-default;
+        border: none;
+        cursor: pointer;
+        font-size: 0.875rem;
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        // Previous/Next buttons
+        &:first-child,
+        &:last-child {
+          &:not(:disabled) {
+            background-color: $color-primary;
+            color: white;
+
+            &:hover {
+              background-color: $color-primary-hover;
+            }
+          }
+
+          &:disabled {
+            background-color: $color-bg-secondary;
+            color: $color-border-light;
+          }
+
+          i {
+            margin: 0 0.25rem;
+          }
+        }
+
+        // Page number buttons
+        &:not(:first-child):not(:last-child) {
+          padding: 0.5rem 0.75rem;
+
+          &.current,
+          &.active {
+            background-color: $color-primary;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+          }
+
+          &:not(.current):not(.active) {
+            background-color: $color-bg-secondary;
+            color: $color-text-primary;
+
+            &:hover {
+              background-color: $color-border;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive Adjustments
+@media (max-width: 768px) {
+  section {
+    &.grid {
+      grid-template-columns: 1fr;
+    }
+
+    &.bg-white {
+      .space-y-4 {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  section {
+    padding: 1rem;
+
+    h1 {
+      font-size: 1.75rem;
+    }
+
+    &.grid {
+      gap: 1rem;
+    }
+  }
+
+  .space-y-4 > div {
+    padding: 1rem;
+
+    .flex {
+      gap: 1rem;
+
+      > .flex-1 {
+        .flex:first-child {
+          > .flex-shrink-0 {
+            width: 2.5rem;
+            height: 2.5rem;
+            font-size: 1rem;
+          }
+
+          h3 {
+            font-size: 1.125rem;
+          }
+        }
+      }
+    }
+  }
+}
