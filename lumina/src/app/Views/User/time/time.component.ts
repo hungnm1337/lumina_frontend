@@ -11,6 +11,7 @@ export class TimeComponent implements OnInit, OnChanges, OnDestroy {
   @Input() resetAt: number = 0; // change this to force a reset
   @Input() paused: boolean = false; // pause/resume without resetting
   @Input() savedTime: number = 0; // saved remaining time from localStorage
+  @Input() label: string = 'Thời gian còn lại:';
   @Output() timeout = new EventEmitter<void>();
   @Output() timeUpdate = new EventEmitter<number>(); // emit remaining time updates
 

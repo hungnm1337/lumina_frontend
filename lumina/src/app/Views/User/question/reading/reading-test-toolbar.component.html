@@ -1,0 +1,29 @@
+<footer class="reading-toolbar" aria-label="Reading test navigation">
+  <div class="reading-toolbar__group">
+    <button type="button" class="reading-toolbar__icon" aria-label="Question list" title="Question list" (click)="questionList.emit()">
+      <i class="fas fa-list" aria-hidden="true"></i>
+    </button>
+    <button type="button" class="reading-toolbar__icon" aria-label="Information" title="Information" (click)="information.emit()">
+      <i class="fas fa-circle-info" aria-hidden="true"></i>
+    </button>
+    <button type="button" class="reading-toolbar__icon" aria-label="Accessibility" title="Accessibility tools" (click)="accessibility.emit()">
+      <i class="fas fa-person" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <div class="reading-toolbar__group reading-toolbar__actions">
+    <button type="button" class="reading-toolbar__icon" aria-label="Exit test" title="Exit test" (click)="exit.emit()">
+      <i class="fas fa-right-from-bracket" aria-hidden="true"></i>
+    </button>
+    @if (view === 'question') {
+    <button type="button" class="reading-toolbar__button" [disabled]="!canGoPrevious" (click)="previous.emit()">
+      <i class="fas fa-arrow-left" aria-hidden="true"></i>
+      <span>Previous</span>
+    </button>
+    }
+    <button type="button" class="reading-toolbar__button reading-toolbar__button--primary" (click)="next.emit()">
+      <span>Next</span>
+      <i class="fas fa-arrow-right" aria-hidden="true"></i>
+    </button>
+  </div>
+</footer>

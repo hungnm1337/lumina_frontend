@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html><head>
+  <meta charset="utf-8">
+  <meta name="kombai-design-canvas" content="true">
+  
+  
+  
+  <script src="https://unpkg.com/@tailwindcss/browser@4.3.3/dist/index.global.js" integrity="sha384-2ql948lIdLcGEE0/qxNiudyTjgauA3RDJERu5xW75kFCvSl5a9odyQYCb6tEjnmB" crossorigin="anonymous"></script>
+  
+  <style>html, body { margin: 0; padding: 0; } #root { display: contents; }</style>
+</head><body>
+  <div id="root"><style>
+    @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
+
+  .reading-screen {
+    min-height: 100vh;
+    padding-bottom: 160px;
+    overflow-x: clip;
+    background: #ffffff;
+    color: #151515;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .reading-content {
+    width: min(720px, calc(100% - 64px));
+    margin: 0 auto;
+    padding: 55px 0 48px;
+  }
+
+  .reading-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 32px;
+    margin-bottom: 76px;
+  }
+
+  .reading-label {
+    margin: 0 0 8px;
+    font-size: 17px;
+    line-height: 20px;
+  }
+
+  .reading-title {
+    margin: 0;
+    font-size: 27px;
+    font-weight: 400;
+    line-height: 32px;
+  }
+
+  .bookmark-button {
+    display: inline-flex;
+    min-height: 45px;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 12px;
+    padding: 0 18px;
+    border: 1px solid #a8a8a8;
+    border-radius: 5px;
+    background: #ffffff;
+    color: #151515;
+    font: inherit;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .bookmark-button:hover,
+  .toolbar-button:hover {
+    background: #f6f6f7;
+  }
+
+  .bookmark-button.is-active {
+    border-color: #25005f;
+    color: #25005f;
+  }
+
+  .timer-box {
+    position: fixed;
+    top: 5px;
+    right: 18px;
+    z-index: 8;
+    width: 126px;
+    text-align: right;
+  }
+
+  .timer-value {
+    display: block;
+    font-size: 27px;
+    font-weight: 700;
+    line-height: 1.05;
+  }
+
+  .timer-label {
+    display: block;
+    margin-top: 5px;
+    font-size: 15px;
+    line-height: 18px;
+  }
+
+  .timer-progress {
+    height: 5px;
+    margin-top: 10px;
+    border-radius: 1px;
+    background: #25005f;
+  }
+
+  .reading-instruction {
+    max-width: 720px;
+    margin: 0 0 34px;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+
+  .email-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    font-size: 17px;
+    line-height: 1.55;
+  }
+
+  .email-copy p {
+    margin: 0;
+  }
+
+  .answer-select {
+    width: auto;
+    min-width: 120px;
+    height: 34px;
+    margin: 0 3px;
+    padding: 1px 18px 1px 6px;
+    border: 1px solid #c9cdd2;
+    border-radius: 0;
+    background: #ffffff;
+    color: #151515;
+    font: inherit;
+    font-size: 16px;
+    line-height: 1;
+    vertical-align: middle;
+    cursor: pointer;
+  }
+
+  .answer-select.has-answer {
+    background: #ffffff;
+  }
+
+  .reading-toolbar {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 5;
+    display: flex;
+    min-height: 94px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 12px 18px;
+    border: 1px solid #e4e1ed;
+    background: #ffffff;
+    box-shadow: 0 -7px 18px rgba(36, 0, 95, 0.14);
+  }
+
+  .toolbar-group,
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .toolbar-button {
+    display: inline-flex;
+    min-height: 45px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #b9b9b9;
+    border-radius: 5px;
+    background: #ffffff;
+    color: #151515;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .toolbar-icon-button {
+    width: 48px;
+  }
+
+  .toolbar-nav-button {
+    min-width: 50px;
+    gap: 11px;
+    padding: 0 17px;
+    font-size: 16px;
+  }
+
+  .toolbar-next-button {
+    min-width: 121px;
+    border-color: #25005f;
+    background: #25005f;
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  .toolbar-next-button:hover {
+    border-color: #25005f;
+    background: #25005f;
+  }
+
+  .reading-screen button:focus-visible,
+  .reading-screen select:focus-visible {
+    outline: 3px solid #b9a2d9;
+    outline-offset: 3px;
+  }
+
+  .reading-screen .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 700px) {
+    .reading-content {
+      width: min(100% - 36px, 720px);
+      padding-top: 38px;
+    }
+
+    .reading-header {
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 52px;
+    }
+
+    .reading-title {
+      font-size: 24px;
+    }
+
+    .timer-box {
+      position: static;
+      width: auto;
+      margin: 0 0 28px;
+      text-align: left;
+    }
+
+    .timer-value {
+      font-size: 22px;
+    }
+
+    .reading-instruction {
+      font-size: 17px;
+    }
+
+    .email-copy {
+      gap: 24px;
+      font-size: 16px;
+    }
+
+    .reading-toolbar {
+      min-height: 82px;
+      padding: 9px;
+    }
+
+    .toolbar-group,
+    .nav-actions {
+      gap: 6px;
+    }
+
+    .toolbar-icon-button {
+      width: 42px;
+      min-height: 42px;
+    }
+
+    .toolbar-nav-button {
+      min-height: 42px;
+      padding: 0 12px;
+    }
+
+    .toolbar-nav-button span {
+      display: none;
+    }
+
+    .toolbar-next-button {
+      min-width: 94px;
+    }
+
+    .toolbar-next-button span {
+      display: inline;
+    }
+  }
+</style>
+<div class="reading-screen" data-kid="1" data-name="reading fill-in-the-gaps test screen" data-reading-test="true">
+    <main aria-labelledby="question-title" class="reading-content" data-kid="1-1" data-name="main reading content area">
+        <header class="reading-header" data-kid="1-1-1" data-name="reading question header">
+            <div data-kid="1-1-1-1" data-name="header text container">
+                <p class="reading-label" data-kid="1-1-1-1-1" data-name="reading label text">
+                    Reading
+                </p>
+                <h1 class="reading-title" data-kid="1-1-1-1-2" data-name="reading question headline" id="question-title">
+                    Question 1 of 5
+                </h1>
+            </div>
+            <button aria-label="Bookmark question" aria-pressed="false" class="bookmark-button" data-bookmark="true" data-kid="1-1-1-2" data-name="bookmark question button" type="button">
+                <i aria-hidden="true" class="fa-solid fa-bookmark" data-kid="1-1-1-2-1" data-name="bookmark icon">
+                </i>
+                <span data-kid="1-1-1-2-2" data-name="bookmark button text">
+                    Bookmark
+                </span>
+            </button>
+        </header>
+        <div aria-label="Time remaining" class="timer-box" data-dynamic="true" data-kid="1-1-2" data-name="time remaining timer box" data-reason="time text replaced every second by countdown script">
+            <strong class="timer-value" data-dynamic="true" data-kid="1-1-2-1" data-name="time remaining value" data-reason="text updated every second">
+                00:34:47
+            </strong>
+            <span class="timer-label" data-kid="1-1-2-2" data-name="time remaining label">
+                Time remaining
+            </span>
+            <div aria-label="Time remaining" aria-valuemax="100" aria-valuemin="0" aria-valuenow="76" class="timer-progress" data-kid="1-1-2-3" data-name="time progress bar" role="progressbar">
+            </div>
+        </div>
+        <p class="reading-instruction" data-kid="1-1-3" data-name="reading instructions">
+            Read the email from Janice to her friend. Choose one word from the list for each gap. The first one is done for you.
+        </p>
+        <section aria-label="Email from Janice to Sally" class="email-copy" data-kid="1-1-4" data-name="email copy container">
+            <p data-kid="1-1-4-1" data-name="salutation text">
+                Dear Sally,
+            </p>
+            <p data-kid="1-1-4-2" data-name="email sentence with gap">
+                Tim and I are on holiday in Greece. We have a nice
+                <select aria-label="Gap 1, view" class="answer-select answer-select--view" data-answer="view" data-kid="1-1-4-2-1" data-name="gap 1 answer selector">
+                    <option data-kid="1-1-4-2-1-1" data-name="gap 1 option view" selected="" value="view">
+                        view
+                    </option>
+                    <option data-kid="1-1-4-2-1-2" data-name="gap 1 option sunny" value="sunny">
+                        sunny
+                    </option>
+                    <option data-kid="1-1-4-2-1-3" data-name="gap 1 option trip" value="trip">
+                        trip
+                    </option>
+                    <option data-kid="1-1-4-2-1-4" data-name="gap 1 option museum" value="museum">
+                        museum
+                    </option>
+                    <option data-kid="1-1-4-2-1-5" data-name="gap 1 option drive" value="drive">
+                        drive
+                    </option>
+                    <option data-kid="1-1-4-2-1-6" data-name="gap 1 option shops" value="shops">
+                        shops
+                    </option>
+                </select>
+                of the sea from our hotel.
+            </p>
+            <p data-kid="1-1-4-3" data-name="email sentence with gap">
+                The weather is
+                <select aria-label="Gap 2, choose a word" class="answer-select answer-select--sunny" data-answer="sunny" data-kid="1-1-4-3-1" data-name="gap 2 answer selector">
+                    <option data-kid="1-1-4-3-1-1" data-name="gap 2 empty option" selected="" value="">
+                    </option>
+                    <option data-kid="1-1-4-3-1-2" data-name="gap 2 option view" value="view">
+                        view
+                    </option>
+                    <option data-kid="1-1-4-3-1-3" data-name="gap 2 option sunny" value="sunny">
+                        sunny
+                    </option>
+                    <option data-kid="1-1-4-3-1-4" data-name="gap 2 option trip" value="trip">
+                        trip
+                    </option>
+                    <option data-kid="1-1-4-3-1-5" data-name="gap 2 option museum" value="museum">
+                        museum
+                    </option>
+                    <option data-kid="1-1-4-3-1-6" data-name="gap 2 option drive" value="drive">
+                        drive
+                    </option>
+                    <option data-kid="1-1-4-3-1-7" data-name="gap 2 option shops" value="shops">
+                        shops
+                    </option>
+                </select>
+                and it's really hot.
+            </p>
+            <p data-kid="1-1-4-4" data-name="email sentence with gap">
+                Yesterday we went on a
+                <select aria-label="Gap 3, choose a word" class="answer-select answer-select--trip" data-answer="trip" data-kid="1-1-4-4-1" data-name="gap 3 answer selector">
+                    <option data-kid="1-1-4-4-1-1" data-name="gap 3 empty option" selected="" value="">
+                    </option>
+                    <option data-kid="1-1-4-4-1-2" data-name="gap 3 option view" value="view">
+                        view
+                    </option>
+                    <option data-kid="1-1-4-4-1-3" data-name="gap 3 option sunny" value="sunny">
+                        sunny
+                    </option>
+                    <option data-kid="1-1-4-4-1-4" data-name="gap 3 option trip" value="trip">
+                        trip
+                    </option>
+                    <option data-kid="1-1-4-4-1-5" data-name="gap 3 option museum" value="museum">
+                        museum
+                    </option>
+                    <option data-kid="1-1-4-4-1-6" data-name="gap 3 option drive" value="drive">
+                        drive
+                    </option>
+                    <option data-kid="1-1-4-4-1-7" data-name="gap 3 option shops" value="shops">
+                        shops
+                    </option>
+                </select>
+                on the lake and caught some fish.
+            </p>
+            <p data-kid="1-1-4-5" data-name="email sentence with gap">
+                We had lunch and then we visited an old
+                <select aria-label="Gap 4, choose a word" class="answer-select answer-select--museum" data-answer="museum" data-kid="1-1-4-5-1" data-name="gap 4 answer selector">
+                    <option data-kid="1-1-4-5-1-1" data-name="gap 4 empty option" selected="" value="">
+                    </option>
+                    <option data-kid="1-1-4-5-1-2" data-name="gap 4 option view" value="view">
+                        view
+                    </option>
+                    <option data-kid="1-1-4-5-1-3" data-name="gap 4 option sunny" value="sunny">
+                        sunny
+                    </option>
+                    <option data-kid="1-1-4-5-1-4" data-name="gap 4 option trip" value="trip">
+                        trip
+                    </option>
+                    <option data-kid="1-1-4-5-1-5" data-name="gap 4 option museum" value="museum">
+                        museum
+                    </option>
+                    <option data-kid="1-1-4-5-1-6" data-name="gap 4 option drive" value="drive">
+                        drive
+                    </option>
+                    <option data-kid="1-1-4-5-1-7" data-name="gap 4 option shops" value="shops">
+                        shops
+                    </option>
+                </select>
+                .
+            </p>
+            <p data-kid="1-1-4-6" data-name="email sentence with gap">
+                Tomorrow we are going to take a car and
+                <select aria-label="Gap 5, choose a word" class="answer-select answer-select--drive" data-answer="drive" data-kid="1-1-4-6-1" data-name="gap 5 answer selector">
+                    <option data-kid="1-1-4-6-1-1" data-name="gap 5 empty option" selected="" value="">
+                    </option>
+                    <option data-kid="1-1-4-6-1-2" data-name="gap 5 option view" value="view">
+                        view
+                    </option>
+                    <option data-kid="1-1-4-6-1-3" data-name="gap 5 option sunny" value="sunny">
+                        sunny
+                    </option>
+                    <option data-kid="1-1-4-6-1-4" data-name="gap 5 option trip" value="trip">
+                        trip
+                    </option>
+                    <option data-kid="1-1-4-6-1-5" data-name="gap 5 option museum" value="museum">
+                        museum
+                    </option>
+                    <option data-kid="1-1-4-6-1-6" data-name="gap 5 option drive" value="drive">
+                        drive
+                    </option>
+                    <option data-kid="1-1-4-6-1-7" data-name="gap 5 option shops" value="shops">
+                        shops
+                    </option>
+                </select>
+                around.
+            </p>
+            <p data-kid="1-1-4-7" data-name="email sentence with gap">
+                We are going to visit some
+                <select aria-label="Gap 6, choose a word" class="answer-select answer-select--shops" data-answer="shops" data-kid="1-1-4-7-1" data-name="gap 6 answer selector">
+                    <option data-kid="1-1-4-7-1-1" data-name="gap 6 empty option" selected="" value="">
+                    </option>
+                    <option data-kid="1-1-4-7-1-2" data-name="gap 6 option view" value="view">
+                        view
+                    </option>
+                    <option data-kid="1-1-4-7-1-3" data-name="gap 6 option sunny" value="sunny">
+                        sunny
+                    </option>
+                    <option data-kid="1-1-4-7-1-4" data-name="gap 6 option trip" value="trip">
+                        trip
+                    </option>
+                    <option data-kid="1-1-4-7-1-5" data-name="gap 6 option museum" value="museum">
+                        museum
+                    </option>
+                    <option data-kid="1-1-4-7-1-6" data-name="gap 6 option drive" value="drive">
+                        drive
+                    </option>
+                    <option data-kid="1-1-4-7-1-7" data-name="gap 6 option shops" value="shops">
+                        shops
+                    </option>
+                </select>
+                and buy clothes.
+            </p>
+            <p data-kid="1-1-4-8" data-name="closing salutation text">
+                Love,
+            </p>
+            <p data-kid="1-1-4-9" data-name="author name text">
+                Janice
+            </p>
+        </section>
+    </main>
+    <footer aria-label="Question navigation" class="reading-toolbar" data-kid="1-2" data-name="reading toolbar">
+        <div aria-label="Test tools" class="toolbar-group" data-kid="1-2-1" data-name="test tools group">
+            <button aria-label="Question list" class="toolbar-button toolbar-icon-button" data-kid="1-2-1-1" data-name="question list button" data-tool="Question list" type="button">
+                <i aria-hidden="true" class="fa-solid fa-list" data-kid="1-2-1-1-1" data-name="list icon">
+                </i>
+            </button>
+            <button aria-label="Information" class="toolbar-button toolbar-icon-button" data-kid="1-2-1-2" data-name="information button" data-tool="Information" type="button">
+                <i aria-hidden="true" class="fa-solid fa-circle-info" data-kid="1-2-1-2-1" data-name="info icon">
+                </i>
+            </button>
+            <button aria-label="Accessibility" class="toolbar-button toolbar-icon-button" data-kid="1-2-1-3" data-name="accessibility button" data-tool="Accessibility" type="button">
+                <i aria-hidden="true" class="fa-solid fa-person" data-kid="1-2-1-3-1" data-name="person icon">
+                </i>
+            </button>
+        </div>
+        <div aria-label="Question controls" class="nav-actions" data-kid="1-2-2" data-name="question controls group">
+            <button aria-label="Exit test" class="toolbar-button toolbar-icon-button" data-kid="1-2-2-1" data-name="exit test button" data-tool="Exit test" type="button">
+                <i aria-hidden="true" class="fa-solid fa-right-from-bracket" data-kid="1-2-2-1-1" data-name="exit icon">
+                </i>
+            </button>
+            <button class="toolbar-button toolbar-nav-button" data-kid="1-2-2-2" data-name="previous question button" data-tool="Previous question" type="button">
+                <i aria-hidden="true" class="fa-solid fa-arrow-left" data-kid="1-2-2-2-1" data-name="left arrow icon">
+                </i>
+                <span data-kid="1-2-2-2-2" data-name="previous button text">
+                    Previous
+                </span>
+            </button>
+            <button class="toolbar-button toolbar-nav-button toolbar-next-button" data-kid="1-2-2-3" data-name="next question button" data-tool="Next question" type="button">
+                <span data-kid="1-2-2-3-1" data-name="next button text">
+                    Next
+                </span>
+                <i aria-hidden="true" class="fa-solid fa-arrow-right" data-kid="1-2-2-3-2" data-name="right arrow icon">
+                </i>
+            </button>
+        </div>
+    </footer>
+    <p aria-live="polite" class="sr-only" data-dynamic="true" data-kid="1-3" data-name="screen reader status announcement" data-reason="text updated by script on interaction" data-status="">
+        Reading question 1 of 5.
+    </p>
+</div>
+<script>
+    (() => {
+    const screen = document.querySelector('[data-reading-test]');
+    if (!screen) return;
+
+    const status = screen.querySelector('[data-status]');
+    const bookmark = screen.querySelector('[data-bookmark]');
+
+    bookmark.addEventListener('click', () => {
+      const active = bookmark.getAttribute('aria-pressed') !== 'true';
+      bookmark.setAttribute('aria-pressed', String(active));
+      bookmark.classList.toggle('is-active', active);
+      status.textContent = active ? 'Question bookmarked.' : 'Bookmark removed.';
+    });
+
+    screen.querySelectorAll('.answer-select').forEach((select) => {
+      select.addEventListener('change', () => {
+        select.classList.toggle('has-answer', select.value !== '');
+        status.textContent = select.value ? `Answer selected: ${select.value}.` : 'Answer cleared.';
+      });
+    });
+
+    screen.querySelectorAll('[data-tool]').forEach((button) => {
+      button.addEventListener('click', () => {
+        status.textContent = `${button.dataset.tool} selected.`;
+      });
+    });
+  })();
+</script>
+</div>
+</body></html>

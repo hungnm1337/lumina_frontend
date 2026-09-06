@@ -12,8 +12,8 @@
   </div>
   }
 
-  <!-- Image ở dưới prompt text -->
-  @if(prompt?.referenceImageUrl) {
+  <!-- Image ở dưới prompt text (không hiển thị nếu là phần thi Listening) -->
+  @if(prompt?.referenceImageUrl && questionType !== 'Listening' && !questionType.toLowerCase().includes('listening')) {
   <div class="flex justify-center pt-1.5 border-t border-gray-200">
     <img
       src="{{ prompt?.referenceImageUrl }}"

@@ -1,0 +1,111 @@
+:host {
+  display: block;
+}
+
+.reading-toolbar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  display: flex;
+  min-height: var(--reading-toolbar-height, 94px);
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 18px;
+  border: 1px solid var(--reading-toolbar-border, #e4e1ed);
+  background: var(--reading-surface, #ffffff);
+  box-shadow: var(--reading-toolbar-shadow, 0 -7px 18px rgba(36, 0, 95, .14));
+  font-family: var(--reading-font, Arial, Helvetica, sans-serif);
+}
+
+.reading-toolbar__group {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.reading-toolbar__icon,
+.reading-toolbar__button {
+  display: inline-flex;
+  min-height: 45px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #b9b9b9;
+  border-radius: 5px;
+  color: var(--reading-text, #151515);
+  background: #ffffff;
+  font: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.reading-toolbar__icon {
+  width: 48px;
+  font-size: 17px;
+}
+
+.reading-toolbar__button {
+  min-width: 50px;
+  gap: 11px;
+  padding: 0 17px;
+}
+
+.reading-toolbar__button--primary {
+  min-width: 121px;
+  border-color: var(--reading-primary, #25005f);
+  color: #ffffff;
+  background: var(--reading-primary, #25005f);
+  font-weight: 700;
+}
+
+.reading-toolbar__icon:hover,
+.reading-toolbar__button:hover:not(:disabled) {
+  background: #f2f2f2;
+}
+
+.reading-toolbar__button--primary:hover {
+  background: var(--reading-primary-hover, #351076);
+}
+
+.reading-toolbar__icon:disabled,
+.reading-toolbar__button:disabled {
+  color: #bcbcbc;
+  background: #f7f7f7;
+  cursor: not-allowed;
+}
+
+.reading-toolbar button:focus-visible {
+  outline: 3px solid var(--reading-focus, #b9a2d9);
+  outline-offset: 3px;
+}
+
+@media (max-width: 700px) {
+  .reading-toolbar {
+    min-height: 82px;
+    padding: 9px;
+  }
+
+  .reading-toolbar__group {
+    gap: 6px;
+  }
+
+  .reading-toolbar__icon {
+    width: 42px;
+    min-height: 42px;
+  }
+
+  .reading-toolbar__button {
+    min-height: 42px;
+    padding: 0 12px;
+  }
+
+  .reading-toolbar__button:not(.reading-toolbar__button--primary) span {
+    display: none;
+  }
+
+  .reading-toolbar__button--primary {
+    min-width: 94px;
+  }
+}

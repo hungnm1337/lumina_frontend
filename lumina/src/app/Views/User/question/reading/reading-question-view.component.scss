@@ -1,0 +1,39 @@
+:host {
+  display: block;
+  color: var(--reading-text, #151515);
+  font-family: var(--reading-font, Arial, Helvetica, sans-serif);
+}
+
+.reading-choice__prompt {
+  max-width: 900px;
+  margin: 0 0 25px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.reading-choice__passage {
+  margin: 0 0 28px;
+  white-space: pre-line;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.reading-choice ::ng-deep app-options > div {
+  display: grid !important;
+  gap: 4px !important;
+}
+
+.reading-choice ::ng-deep app-options button {
+  min-height: 58px !important;
+  border-radius: 0 !important;
+  color: var(--reading-text, #151515) !important;
+  background: var(--reading-option-surface, #f1f3f6) !important;
+  font-family: var(--reading-font, Arial, Helvetica, sans-serif) !important;
+  font-size: 17px !important;
+}
+
+.reading-choice ::ng-deep app-options button[aria-pressed='true'] {
+  border-left: 5px solid var(--reading-primary, #25005f) !important;
+  background: var(--reading-selected, #b5b5b5) !important;
+}

@@ -18,6 +18,7 @@ import { OptionDTO } from '../../../Interfaces/exam.interfaces';
 export class OptionsComponent implements OnChanges {
   @Input() options: OptionDTO[] = [];
   @Input() disabled: boolean = false;
+  @Input() showAnswerLetters: boolean = false;
   @Input() resetAt: number = 0;
   @Input() preSelectedOptionId: number | null = null;
 

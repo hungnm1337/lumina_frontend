@@ -1,5 +1,5 @@
-@use 'ngx-toastr/toastr' as *;
-
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&display=swap');
+/* You can add global styles to this file, and also import other style files */
 @import "quill/dist/quill.snow.css";
 @import "@fortawesome/fontawesome-free/css/all.min.css";
 
@@ -9,6 +9,7 @@
 
 body {
     box-sizing: border-box;
+    font-family: 'Be Vietnam Pro', sans-serif;
 }
 .sidebar-transition {
     transition: all 0.3s ease;

@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html><head>
+  <meta charset="utf-8">
+  <meta name="kombai-design-canvas" content="true">
+  
+  
+  
+  <script src="https://unpkg.com/@tailwindcss/browser@4.3.3/dist/index.global.js" integrity="sha384-2ql948lIdLcGEE0/qxNiudyTjgauA3RDJERu5xW75kFCvSl5a9odyQYCb6tEjnmB" crossorigin="anonymous"></script>
+  
+  <style>html, body { margin: 0; padding: 0; } #root { display: contents; }</style>
+</head><body>
+  <div id="root"><style>
+    @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
+
+  .screen {
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding-bottom: 95px;
+    overflow-x: clip;
+    background: #fff;
+    color: #151515;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .content {
+    position: relative;
+    width: min(720px, calc(100% - 64px));
+    margin: 0 auto;
+    padding: 75px 0 48px;
+  }
+
+  .topline {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 32px;
+    margin-bottom: 111px;
+  }
+
+  .section-label {
+    margin: 0 0 8px;
+    font-size: 17px;
+    line-height: 1.2;
+  }
+
+  .question-title {
+    margin: 0;
+    font-size: 27px;
+    line-height: 1.2;
+    font-weight: 400;
+  }
+
+  .timer {
+    position: fixed;
+    top: 5px;
+    right: 18px;
+    z-index: 8;
+    width: 126px;
+    text-align: right;
+  }
+
+  .timer strong {
+    display: block;
+    font-size: 27px;
+    line-height: 1.05;
+  }
+
+  .timer span {
+    display: block;
+    margin-top: 5px;
+    font-size: 15px;
+    line-height: 1.2;
+  }
+
+  .timer-bar {
+    height: 5px;
+    margin-top: 10px;
+    border-radius: 1px;
+    background: #25005f;
+  }
+
+  .bookmark {
+    display: inline-flex;
+    min-height: 45px;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    padding: 0 18px;
+    border: 1px solid #a8a8a8;
+    border-radius: 5px;
+    color: #151515;
+    background: #fff;
+    font: inherit;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .bookmark.is-bookmarked {
+    border-color: #25005f;
+    color: #25005f;
+  }
+
+  .prompt {
+    margin: 0 0 18px;
+    font-size: 18px;
+    line-height: 1.45;
+    font-weight: 700;
+  }
+
+  .work-area {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 270px;
+    align-items: stretch;
+    border: 1px solid #b7b7b7;
+    background: #fff;
+  }
+
+  .report-pane {
+    min-width: 0;
+    padding: 37px 24px 45px;
+    background: #fff;
+  }
+
+  .report-title {
+    margin: 0 0 46px;
+    font-size: 21px;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  .fixed-sentence {
+    margin: 0 0 24px;
+    padding: 16px 17px;
+    border: 1px solid #999;
+    background: #fff;
+    font-size: 20px;
+    line-height: 1.5;
+    font-weight: 400;
+  }
+
+  .drop-slots {
+    display: grid;
+    gap: 16px;
+  }
+
+  .drop-slot {
+    display: flex;
+    min-height: 51px;
+    align-items: stretch;
+    justify-content: stretch;
+    padding: 0;
+    border: 2px dashed #aeb1b4;
+    border-radius: 0;
+    background: #f7f8fa;
+  }
+
+  .drop-slot.is-over {
+    border-color: #25005f;
+    background: #f0ecf7;
+  }
+
+  .drop-slot.is-filled {
+    border-style: solid;
+    border-color: #999;
+    background: #fff;
+  }
+
+  .pool {
+    display: grid;
+    align-content: start;
+    gap: 13px;
+    min-width: 0;
+    padding: 27px 26px;
+    border-left: 1px solid #b7b7b7;
+    background: #eef0f3;
+  }
+
+  .pool.is-over {
+    background: #e8e5ee;
+  }
+
+  .sentence-card {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 17px;
+    border: 1px solid #999;
+    border-radius: 0;
+    color: #151515;
+    background: #fff;
+    font-size: 20px;
+    line-height: 1.5;
+    text-align: left;
+    cursor: grab;
+    user-select: none;
+  }
+
+  .sentence-card:focus-visible,
+  .drop-slot:focus-visible,
+  .bookmark:focus-visible,
+  .icon-button:focus-visible,
+  .nav-button:focus-visible {
+    outline: 3px solid #b9a2d9;
+    outline-offset: 3px;
+  }
+
+  .sentence-card:hover {
+    border-color: #6f6f6f;
+  }
+
+  .sentence-card.is-dragging {
+    opacity: .46;
+    border-color: #25005f;
+    box-shadow: 0 8px 22px rgba(37, 0, 95, .18);
+    cursor: grabbing;
+  }
+
+  .sentence-grip {
+    display: block;
+    flex: 0 0 auto;
+    margin-top: 5px;
+    color: #151515;
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .sentence-copy {
+    display: block;
+    flex: 1;
+  }
+
+  .drop-slot .sentence-card {
+    width: 100%;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .drop-slot .sentence-card:hover {
+    border-color: transparent;
+  }
+
+  .live-region {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .toolbar {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 5;
+    display: flex;
+    min-height: 94px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 12px 18px;
+    border: 1px solid #e4e1ed;
+    background: #fff;
+    box-shadow: 0 -7px 18px rgba(36, 0, 95, .14);
+  }
+
+  .toolbar-group,
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .icon-button,
+  .nav-button {
+    display: inline-flex;
+    min-height: 45px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #b9b9b9;
+    border-radius: 5px;
+    background: #fff;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .icon-button {
+    width: 48px;
+    color: #111;
+    font-size: 17px;
+  }
+
+  .nav-button {
+    min-width: 50px;
+    gap: 11px;
+    padding: 0 17px;
+    color: #151515;
+    font-size: 16px;
+  }
+
+  .nav-button--primary {
+    min-width: 121px;
+    border-color: #25005f;
+    color: #fff;
+    background: #25005f;
+    font-weight: 700;
+  }
+
+  @media (max-width: 920px) {
+    .content {
+      width: min(100% - 36px, 900px);
+      padding-top: 48px;
+    }
+
+    .topline {
+      margin-bottom: 72px;
+    }
+
+    .work-area {
+      grid-template-columns: 1fr;
+    }
+
+    .pool {
+      border-top: 1px solid #b7b7b7;
+      border-left: 0;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .topline {
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .timer {
+      position: static;
+      width: auto;
+      text-align: left;
+    }
+
+    .timer strong {
+      font-size: 22px;
+    }
+
+    .prompt {
+      font-size: 17px;
+    }
+
+    .report-pane {
+      padding: 28px 18px 36px;
+    }
+
+    .fixed-sentence,
+    .sentence-card {
+      font-size: 17px;
+    }
+
+    .pool {
+      padding: 20px 18px;
+    }
+
+    .toolbar {
+      min-height: 82px;
+      padding: 9px;
+    }
+
+    .icon-button {
+      width: 42px;
+      min-height: 42px;
+    }
+
+    .nav-button {
+      min-height: 42px;
+      padding: 0 12px;
+    }
+
+    .nav-button span {
+      display: none;
+    }
+
+    .nav-button--primary {
+      min-width: 94px;
+    }
+
+    .nav-button--primary span {
+      display: inline;
+    }
+  }
+</style>
+<div class="screen" data-kid="1" data-name="Reading test question screen">
+    <main aria-labelledby="question-title" class="content" data-kid="1-1" data-name="main content area">
+        <div class="topline" data-kid="1-1-1" data-name="top header section">
+            <div data-kid="1-1-1-1" data-name="page breadcrumb container">
+                <p class="section-label" data-kid="1-1-1-1-1" data-name="section label text">
+                    Reading
+                </p>
+                <h1 class="question-title" data-kid="1-1-1-1-2" data-name="question title text" id="question-title">
+                    Question 2 of 5
+                </h1>
+            </div>
+            <button aria-label="Bookmark question" aria-pressed="false" class="bookmark" data-dynamic="true" data-kid="1-1-1-2" data-name="bookmark toggle button" data-reason="aria-label, aria-pressed, and classes updated by script on click" id="bookmark-button" type="button">
+                <i aria-hidden="true" class="fa-solid fa-bookmark" data-kid="1-1-1-2-1" data-name="bookmark icon">
+                </i>
+                <span data-kid="1-1-1-2-2" data-name="bookmark button text">
+                    Bookmark
+                </span>
+            </button>
+        </div>
+        <div aria-label="Time remaining" class="timer" data-kid="1-1-2" data-name="timer container" role="timer">
+            <strong data-kid="1-1-2-1" data-name="time remaining countdown text">
+                00:34:11
+            </strong>
+            <span data-kid="1-1-2-2" data-name="timer label text">
+                Time remaining
+            </span>
+            <div aria-hidden="true" class="timer-bar" data-kid="1-1-2-3" data-name="visual timer bar">
+            </div>
+        </div>
+        <p class="prompt" data-kid="1-1-3" data-name="instruction prompt text">
+            The sentences below are from a report. Put the sentences in the right order. The first sentence is done for you.
+        </p>
+        <section aria-label="Sentence ordering work area" class="work-area" data-kid="1-1-4" data-name="sentence ordering work area">
+            <div class="report-pane" data-kid="1-1-4-1" data-name="report text pane">
+                <h2 class="report-title" data-kid="1-1-4-1-1" data-name="report title heading">
+                    Signs on the coast road
+                </h2>
+                <p aria-label="First sentence, fixed in place" class="fixed-sentence" data-kid="1-1-4-1-2" data-name="fixed sentence text">
+                    This report gives information about the traffic problems on the coast road.
+                </p>
+                <div aria-label="Report sentence drop slots" class="drop-slots" data-kid="1-1-4-1-3" data-name="drop slots container" id="drop-slots">
+                    <div aria-label="Empty sentence drop slot 1" class="drop-slot" data-dynamic="true" data-kid="1-1-4-1-3-1" data-name="sentence drop slot 1" data-reason="aria-label and class list updated by script when filled" data-slot="1" role="listitem" tabindex="0">
+                    </div>
+                    <div aria-label="Empty sentence drop slot 2" class="drop-slot" data-dynamic="true" data-kid="1-1-4-1-3-2" data-name="sentence drop slot 2" data-reason="aria-label and class list updated by script when filled" data-slot="2" role="listitem" tabindex="0">
+                    </div>
+                    <div aria-label="Empty sentence drop slot 3" class="drop-slot" data-dynamic="true" data-kid="1-1-4-1-3-3" data-name="sentence drop slot 3" data-reason="aria-label and class list updated by script when filled" data-slot="3" role="listitem" tabindex="0">
+                    </div>
+                </div>
+            </div>
+            <aside aria-label="Available sentences" class="pool" data-dynamic="true" data-kid="1-1-4-2" data-name="available sentences pool container" data-reason="class list updated by script on drag over" id="sentence-pool" role="list">
+                <div class="sentence-card" data-kid="1-1-4-2-1" data-name="sentence card 1" draggable="true" id="sentence-reason" role="listitem" tabindex="0">
+                    <i aria-hidden="true" class="fa-solid fa-grip-vertical sentence-grip" data-kid="1-1-4-2-1-1" data-name="grip icon">
+                    </i>
+                    <span class="sentence-copy" data-kid="1-1-4-2-1-2" data-name="sentence copy text">
+                        For this reason it is easy for them to take a wrong turn and get lost.
+                    </span>
+                </div>
+                <div class="sentence-card" data-kid="1-1-4-2-2" data-name="sentence card 2" draggable="true" id="sentence-help" role="listitem" tabindex="0">
+                    <i aria-hidden="true" class="fa-solid fa-grip-vertical sentence-grip" data-kid="1-1-4-2-2-1" data-name="grip icon">
+                    </i>
+                    <span class="sentence-copy" data-kid="1-1-4-2-2-2" data-name="sentence copy text">
+                        These will help visitors to find their way to our beautiful town.
+                    </span>
+                </div>
+                <div class="sentence-card" data-kid="1-1-4-2-3" data-name="sentence card 3" draggable="true" id="sentence-busy" role="listitem" tabindex="0">
+                    <i aria-hidden="true" class="fa-solid fa-grip-vertical sentence-grip" data-kid="1-1-4-2-3-1" data-name="grip icon">
+                    </i>
+                    <span class="sentence-copy" data-kid="1-1-4-2-3-2" data-name="sentence copy text">
+                        This road is busy during the summer when tourists visit the coast.
+                    </span>
+                </div>
+            </aside>
+        </section>
+        <div aria-atomic="true" aria-live="polite" class="live-region" data-dynamic="true" data-kid="1-1-5" data-name="screen reader drag status live region" data-reason="text content replaced by script on drag events" id="drag-status">
+        </div>
+    </main>
+    <footer aria-label="Question navigation" class="toolbar" data-kid="1-2" data-name="bottom navigation bar">
+        <div class="toolbar-group" data-kid="1-2-1" data-name="toolbar navigation group">
+            <button aria-label="Question list" class="icon-button" data-kid="1-2-1-1" data-name="question list button" type="button">
+                <i aria-hidden="true" class="fa-solid fa-list" data-kid="1-2-1-1-1" data-name="list icon">
+                </i>
+            </button>
+            <button aria-label="Information" class="icon-button" data-kid="1-2-1-2" data-name="information button" type="button">
+                <i aria-hidden="true" class="fa-solid fa-circle-info" data-kid="1-2-1-2-1" data-name="info icon">
+                </i>
+            </button>
+            <button aria-label="Accessibility" class="icon-button" data-kid="1-2-1-3" data-name="accessibility button" type="button">
+                <i aria-hidden="true" class="fa-solid fa-person" data-kid="1-2-1-3-1" data-name="person icon">
+                </i>
+            </button>
+        </div>
+        <div class="nav-actions" data-kid="1-2-2" data-name="navigation actions group">
+            <button aria-label="Exit test" class="icon-button" data-kid="1-2-2-1" data-name="exit test button" type="button">
+                <i aria-hidden="true" class="fa-solid fa-right-from-bracket" data-kid="1-2-2-1-1" data-name="exit icon">
+                </i>
+            </button>
+            <button class="nav-button" data-kid="1-2-2-2" data-name="previous navigation button" type="button">
+                <i aria-hidden="true" class="fa-solid fa-arrow-left" data-kid="1-2-2-2-1" data-name="left arrow icon">
+                </i>
+                <span data-kid="1-2-2-2-2" data-name="previous button text">
+                    Previous
+                </span>
+            </button>
+            <button class="nav-button nav-button--primary" data-kid="1-2-2-3" data-name="next navigation button" type="button">
+                <span data-kid="1-2-2-3-1" data-name="next button text">
+                    Next
+                </span>
+                <i aria-hidden="true" class="fa-solid fa-arrow-right" data-kid="1-2-2-3-2" data-name="right arrow icon">
+                </i>
+            </button>
+        </div>
+    </footer>
+</div>
+<script>
+    (() => {
+    const pool = document.getElementById('sentence-pool');
+    const slots = Array.from(document.querySelectorAll('.drop-slot'));
+    const cards = Array.from(document.querySelectorAll('.sentence-card'));
+    const status = document.getElementById('drag-status');
+    const bookmark = document.getElementById('bookmark-button');
+    let draggedCard = null;
+
+    const announce = (message) => {
+      status.textContent = '';
+      window.setTimeout(() => {
+        status.textContent = message;
+      }, 20);
+    };
+
+    const updateSlots = () => {
+      slots.forEach((slot, index) => {
+        const card = slot.querySelector('.sentence-card');
+        const filled = Boolean(card);
+        slot.classList.toggle('is-filled', filled);
+        slot.setAttribute('aria-label', filled ? `Sentence drop slot ${index + 1}: ${card.querySelector('.sentence-copy').textContent}` : `Empty sentence drop slot ${index + 1}`);
+      });
+    };
+
+    const clearOverStates = () => {
+      slots.forEach((slot) => slot.classList.remove('is-over'));
+      pool.classList.remove('is-over');
+    };
+
+    cards.forEach((card) => {
+      card.addEventListener('dragstart', (event) => {
+        draggedCard = card;
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', card.id);
+        window.requestAnimationFrame(() => card.classList.add('is-dragging'));
+        announce(`Picked up: ${card.querySelector('.sentence-copy').textContent}`);
+      });
+
+      card.addEventListener('dragend', () => {
+        card.classList.remove('is-dragging');
+        clearOverStates();
+        draggedCard = null;
+      });
+    });
+
+    slots.forEach((slot) => {
+      slot.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        slot.classList.add('is-over');
+      });
+
+      slot.addEventListener('dragleave', (event) => {
+        if (!slot.contains(event.relatedTarget)) slot.classList.remove('is-over');
+      });
+
+      slot.addEventListener('drop', (event) => {
+        event.preventDefault();
+        const cardId = event.dataTransfer.getData('text/plain');
+        const card = document.getElementById(cardId) || draggedCard;
+        if (!card) return;
+        const existing = slot.querySelector('.sentence-card');
+        const source = card.parentElement;
+        if (existing && existing !== card) {
+          if (source && source.classList.contains('drop-slot')) source.appendChild(existing);
+          else pool.appendChild(existing);
+        }
+        slot.appendChild(card);
+        updateSlots();
+        clearOverStates();
+        announce(`Placed: ${card.querySelector('.sentence-copy').textContent}`);
+      });
+    });
+
+    pool.addEventListener('dragover', (event) => {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+      pool.classList.add('is-over');
+    });
+
+    pool.addEventListener('dragleave', (event) => {
+      if (!pool.contains(event.relatedTarget)) pool.classList.remove('is-over');
+    });
+
+    pool.addEventListener('drop', (event) => {
+      event.preventDefault();
+      const cardId = event.dataTransfer.getData('text/plain');
+      const card = document.getElementById(cardId) || draggedCard;
+      if (!card) return;
+      pool.appendChild(card);
+      updateSlots();
+      clearOverStates();
+      announce(`Returned to sentence pool: ${card.querySelector('.sentence-copy').textContent}`);
+    });
+
+    bookmark.addEventListener('click', () => {
+      const selected = bookmark.getAttribute('aria-pressed') === 'true';
+      bookmark.setAttribute('aria-pressed', String(!selected));
+      bookmark.classList.toggle('is-bookmarked', !selected);
+      announce(!selected ? 'Question bookmarked.' : 'Bookmark removed.');
+    });
+
+    updateSlots();
+  })();
+</script>
+</div>
+</body></html>

@@ -1,291 +1,339 @@
-<div class="max-w-6xl mx-auto p-8 min-h-screen bg-gradient-to-br from-slate-50 to-blue-100">
-  <!-- Loading State -->
-  <div *ngIf="isLoading" class="flex flex-col items-center justify-center py-16">
-    <div class="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
-    <p class="text-gray-600 text-lg">Đang tải danh sách bài thi...</p>
-  </div>
+<div class="exams-page">
+  <main class="exams-container" aria-labelledby="exams-title">
 
-  <!-- Search and Filter Section -->
-  <div *ngIf="!isLoading" class="mb-8">
-    <div class="bg-white rounded-2xl shadow-lg p-6">
-      <div class="flex flex-col md:flex-row gap-4">
-        <!-- Search Box -->
-        <div class="flex-1">
-          <div class="relative">
-            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-            <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()"
-              placeholder="Tìm kiếm bài thi theo tên hoặc mô tả..."
-              class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" />
-            <button *ngIf="searchTerm" (click)="clearSearch()"
-              class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-              <i class="fas fa-times"></i>
+    <!-- ── HERO HEADER ── -->
+    <section class="hero-section">
+      <div class="hero-left">
+        <h1 id="exams-title" class="hero-main-title">LUYỆN TẬP TOEIC</h1>
+        <p class="hero-subtitle">Chinh phục từng kỹ năng, từng mục tiêu</p>
+        <p class="hero-body">
+          Luyện tập Listening, Reading, Writing và Speaking với hệ thống bài tập chuẩn ETS, giúp bạn nâng cao
+          kỹ năng và đạt điểm TOEIC mong muốn.
+        </p>
+        <div class="hero-search-row">
+          <div class="hero-search-field">
+            <i class="fas fa-search hero-search-field__icon" aria-hidden="true"></i>
+            <input id="exam-search" type="search" [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()"
+              placeholder="Tìm kiếm bài luyện tập theo tên hoặc mô tả..." autocomplete="off" />
+            <button *ngIf="searchTerm" type="button" class="hero-search-field__clear" aria-label="Xóa tìm kiếm"
+              (click)="clearSearch()">
+              <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="hero-skill-select">
+            <select id="skill-filter" [(ngModel)]="selectedSkill" (ngModelChange)="applyFilters()">
+              <option value="">Tất cả kỹ năng</option>
+              <option value="LISTENING">Listening</option>
+              <option value="READING">Reading</option>
+              <option value="SPEAKING">Speaking</option>
+              <option value="WRITING">Writing</option>
+            </select>
+            <i class="fas fa-chevron-down hero-skill-select__caret" aria-hidden="true"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="progress-card">
+          <div class="progress-card__header">
+            <span class="progress-card__title">Tiến độ của bạn</span>
+            <i class="fas fa-chart-line progress-card__chart-icon" aria-hidden="true"></i>
+          </div>
+          <div class="progress-card__body">
+            <div class="progress-ring-wrap">
+              <svg class="progress-ring" viewBox="0 0 100 100" aria-hidden="true">
+                <circle class="progress-ring__bg" cx="50" cy="50" r="42" />
+                <circle class="progress-ring__fill" cx="50" cy="50" r="42" [style.stroke-dasharray]="264"
+                  [style.stroke-dashoffset]="264 - (264 * 0.68)" />
+              </svg>
+              <div class="progress-ring__label">
+                <span class="progress-ring__pct">68%</span>
+                <span class="progress-ring__sub">Hoàn thành<br>tuần này</span>
+              </div>
+            </div>
+            <div class="progress-skills">
+              <div class="progress-skill">
+                <span class="progress-skill__name">Listening</span>
+                <div class="progress-skill__bar">
+                  <div class="progress-skill__fill" style="width:85%;background:#3b82f6"></div>
+                </div>
+                <span class="progress-skill__pct">85%</span>
+              </div>
+              <div class="progress-skill">
+                <span class="progress-skill__name">Reading</span>
+                <div class="progress-skill__bar">
+                  <div class="progress-skill__fill" style="width:70%;background:#10b981"></div>
+                </div>
+                <span class="progress-skill__pct">70%</span>
+              </div>
+              <div class="progress-skill">
+                <span class="progress-skill__name">Writing</span>
+                <div class="progress-skill__bar">
+                  <div class="progress-skill__fill" style="width:60%;background:#f59e0b"></div>
+                </div>
+                <span class="progress-skill__pct">60%</span>
+              </div>
+              <div class="progress-skill">
+                <span class="progress-skill__name">Speaking</span>
+                <div class="progress-skill__bar">
+                  <div class="progress-skill__fill" style="width:50%;background:#a855f7"></div>
+                </div>
+                <span class="progress-skill__pct">50%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── LOADING ── -->
+    <section *ngIf="isLoading" class="exams-state exams-state--loading" aria-live="polite">
+      <span class="loading-spinner" aria-hidden="true"></span>
+      <p>Đang tải danh sách bài thi...</p>
+    </section>
+
+    <ng-container *ngIf="!isLoading">
+
+
+      <!-- ── CONTINUE BANNER ── -->
+      <div class="continue-banner">
+        <div class="continue-banner__content">
+          <p class="continue-banner__label">
+            Tiếp tục hành trình của bạn <span>🌙</span>
+          </p>
+          <h2 class="continue-banner__title">Listening TOEIC 07-2025</h2>
+          <div class="continue-banner__progress-wrap">
+            <div class="continue-banner__progress-track">
+              <div class="continue-banner__progress-fill" style="width: 60%"></div>
+            </div>
+            <span class="continue-banner__progress-pct">60%</span>
+          </div>
+          <div class="continue-banner__meta">
+            <span><i class="fas fa-clock" aria-hidden="true"></i> 45 phút</span>
+            <span class="continue-banner__dot"></span>
+            <span><i class="fas fa-calendar-days" aria-hidden="true"></i> Cập nhật 2 ngày trước</span>
+          </div>
+        </div>
+        <div class="continue-banner__actions">
+          <button type="button" class="continue-banner__btn">
+            Tiếp tục luyện tập <i class="fas fa-arrow-right" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="continue-banner__illustration" aria-hidden="true">
+          <img src="assets/girl-studying-clipart-2024-7.png" alt="" />
+        </div>
+      </div>
+
+
+
+      <!-- ── ACTIVE FILTERS ── -->
+      <div *ngIf="searchTerm || selectedSkill" class="active-filters" aria-label="Bộ lọc đang áp dụng">
+        <span class="active-filters__label">Bộ lọc:</span>
+        <span *ngIf="searchTerm" class="filter-chip filter-chip--blue">
+          <i class="fas fa-search" aria-hidden="true"></i>
+          <span class="filter-chip__value">{{ searchTerm }}</span>
+          <button type="button" aria-label="Xóa tìm kiếm" (click)="clearSearch()">
+            <i class="fas fa-times" aria-hidden="true"></i>
+          </button>
+        </span>
+        <span *ngIf="selectedSkill" class="filter-chip filter-chip--green">
+          <i class="fas fa-filter" aria-hidden="true"></i>
+          <span class="filter-chip__value">{{ selectedSkill }}</span>
+          <button type="button" aria-label="Xóa bộ lọc kỹ năng" (click)="clearSkillFilter()">
+            <i class="fas fa-times" aria-hidden="true"></i>
+          </button>
+        </span>
+        <button type="button" class="clear-filters" (click)="clearAllFilters()">Xóa tất cả</button>
+      </div>
+
+      <!-- ── KỸ NĂNG TOEIC ── -->
+      <section class="skills-section" aria-label="Kỹ năng TOEIC">
+        <h2 class="section-title">Kỹ năng TOEIC</h2>
+        <div class="skill-cards-grid">
+          <div *ngFor="let skillGroup of filteredSkillGroups" class="skill-overview-card"
+            [class]="'skill-overview-card--' + skillGroup.color">
+            <div class="skill-overview-card__icon-wrap">
+              <i [class]="skillGroup.icon" aria-hidden="true"></i>
+            </div>
+            <div class="skill-overview-card__content">
+              <h3>{{ skillGroup.skillName }}</h3>
+              <p>{{ getSkillDescription(skillGroup.skillName) }}</p>
+              <span class="skill-overview-card__count">
+                {{ skillGroup.exams.length }} bài luyện tập
+              </span>
+            </div>
+            <button type="button" class="skill-overview-card__action"
+              (click)="scrollToSkillGroup(skillGroup.skillCode)">
+              Khám phá bài tập <i class="fas fa-arrow-right" aria-hidden="true"></i>
             </button>
           </div>
         </div>
+      </section>
 
-        <!-- Skill Filter -->
-        <div class="md:w-64">
-          <select [(ngModel)]="selectedSkill" (ngModelChange)="applyFilters()"
-            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white">
-            <option value="">Tất cả kỹ năng</option>
-            <option value="LISTENING">Listening</option>
-            <option value="READING">Reading</option>
-            <option value="SPEAKING">Speaking</option>
-            <option value="WRITING">Writing</option>
-          </select>
-        </div>
-
-        <!-- Sort By -->
-        <div class="md:w-64">
-          <select [(ngModel)]="sortBy" (ngModelChange)="applyFilters()"
-            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white">
-            <option value="name">Sắp xếp theo tên</option>
-            <option value="date">Sắp xếp theo ngày</option>
-            <option value="creator">Sắp xếp theo người tạo</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Active Filters Display -->
-      <div *ngIf="searchTerm || selectedSkill !== ''" class="mt-4 flex items-center gap-2 flex-wrap">
-        <span class="text-sm text-gray-600">Bộ lọc đang áp dụng:</span>
-        <span *ngIf="searchTerm"
-          class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-          <i class="fas fa-search text-xs"></i>
-          {{ searchTerm }}
-          <button (click)="clearSearch()" class="ml-1 hover:text-blue-900">
-            <i class="fas fa-times text-xs"></i>
-          </button>
-        </span>
-        <span *ngIf="selectedSkill"
-          class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
-          <i class="fas fa-filter text-xs"></i>
-          {{ selectedSkill }}
-          <button (click)="clearSkillFilter()" class="ml-1 hover:text-green-900">
-            <i class="fas fa-times text-xs"></i>
-          </button>
-        </span>
-        <button (click)="clearAllFilters()" class="text-sm text-red-600 hover:text-red-700 font-medium">
-          Xóa tất cả
-        </button>
-      </div>
-
-      <!-- Results Count -->
-      <div class="mt-4 text-sm text-gray-600">
-        Tìm thấy {{ getTotalExamsCount() }} bài thi
-      </div>
-    </div>
-  </div>
-
-  <!-- Skills Grid -->
-  <div *ngIf="!isLoading" class="space-y-8">
-    <div *ngFor="let skillGroup of filteredSkillGroups"
-      class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-      <!-- Skill Header -->
-      <div class="flex items-center p-4 text-white" [class]="'bg-gradient-to-r ' + getSkillGradient(skillGroup.color)">
-        <div class="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center mr-3">
-          <i [class]="skillGroup.icon" class="text-lg"></i>
-        </div>
-        <div class="flex-1">
-          <div class="flex items-center gap-2">
-            <h2 class="text-lg font-bold">{{ skillGroup.skillName }}</h2>
-
-            <span *ngIf="
-                (skillGroup.skillName === 'Listening' ||
-                  skillGroup.skillName === 'Reading') &&
-                quotaInfo
-              " class="text-sm px-2 py-0.5 rounded-md bg-white bg-opacity-20 backdrop-blur-sm">
-              {{ getRemainingText(skillGroup.skillName) }}
-            </span>
+      <!-- ── KHÁM PHÁ BÀI LUYỆN TẬP ── -->
+      <section class="explore-section" aria-label="Khám phá bài luyện tập">
+        <div class="explore-section__header">
+          <h2 class="section-title">Khám phá bài luyện tập <span class="section-title__arrow">↗</span></h2>
+          <div class="explore-controls">
+            <div class="explore-skill-tabs">
+              <button type="button" class="explore-skill-tab" [class.explore-skill-tab--active]="selectedSkill === ''"
+                (click)="clearSkillFilter()">Tất cả</button>
+              <button type="button" class="explore-skill-tab"
+                [class.explore-skill-tab--active]="selectedSkill === 'LISTENING'"
+                (click)="filterBySkill('LISTENING')">Listening</button>
+              <button type="button" class="explore-skill-tab"
+                [class.explore-skill-tab--active]="selectedSkill === 'READING'"
+                (click)="filterBySkill('READING')">Reading</button>
+              <button type="button" class="explore-skill-tab"
+                [class.explore-skill-tab--active]="selectedSkill === 'WRITING'"
+                (click)="filterBySkill('WRITING')">Writing</button>
+              <button type="button" class="explore-skill-tab"
+                [class.explore-skill-tab--active]="selectedSkill === 'SPEAKING'"
+                (click)="filterBySkill('SPEAKING')">Speaking</button>
+            </div>
+            <div class="explore-sort">
+              <select id="sort-filter" [(ngModel)]="sortBy" (ngModelChange)="applyFilters()">
+                <option value="name">Mới nhất</option>
+                <option value="date">Theo ngày</option>
+                <option value="creator">Theo người tạo</option>
+              </select>
+              <i class="fas fa-chevron-down explore-sort__caret" aria-hidden="true"></i>
+            </div>
           </div>
-          <p class="text-xs opacity-90">
-            {{ skillGroup.exams.length }} bài thi
-          </p>
         </div>
-      </div>
 
-      <!-- Content Grid -->
-      <div class="p-4">
         <!-- Empty State -->
-        <div *ngIf="skillGroup.exams.length === 0" class="text-center py-8">
-          <i [class]="skillGroup.icon" class="text-4xl text-gray-300 mb-2"></i>
-          <p class="text-sm text-gray-500">
-            Không có bài thi nào cho kỹ năng
-            {{ skillGroup.skillName }}
-          </p>
-        </div>
+        <section *ngIf="getTotalExamsCount() === 0" class="exams-state exams-state--empty" aria-live="polite">
+          <span class="exams-state__icon" aria-hidden="true"><i class="fas fa-magnifying-glass"></i></span>
+          <h2>Không tìm thấy bài thi</h2>
+          <p>Thử xóa bộ lọc để xem lại tất cả bài thi hiện có.</p>
+          <button type="button" class="empty-state__action" (click)="clearAllFilters()">
+            <i class="fas fa-rotate-left" aria-hidden="true"></i>
+            Xóa bộ lọc
+          </button>
+        </section>
 
-        <!-- Exams Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div *ngFor="let exam of getPaginatedExams(skillGroup)" (click)="startExam(exam)"
-            class="relative bg-white border rounded-xl p-4 transition-all duration-200 cursor-pointer group" [ngClass]="{
-              'border-gray-200 hover:border-blue-400 hover:shadow-lg hover:-translate-y-1':
-                !exam.completionStatus?.isCompleted,
-              'border-green-300 bg-green-50 hover:border-green-500 hover:shadow-green-200 opacity-90':
-                exam.completionStatus?.isCompleted
-            }">
-            <!-- ✅ Completed Badge -->
-            <div *ngIf="exam.completionStatus?.isCompleted"
-              class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10 animate-slideInRight">
-              <i class="fas fa-check-circle"></i>
-              <span class="font-medium">Đã hoàn thành</span>
-            </div>
+        <!-- Exam Grid by Skill Groups -->
+        <div *ngIf="getTotalExamsCount() > 0">
+          <div *ngFor="let skillGroup of filteredSkillGroups" [id]="'skill-group-' + skillGroup.skillCode"
+            class="explore-group">
+            <div class="explore-group__grid">
+              <article *ngFor="let exam of getPaginatedExams(skillGroup)" class="exam-card"
+                [class.exam-card--completed]="exam.completionStatus?.isCompleted">
+                <div class="exam-card__skill-badge" [class]="'exam-card__skill-badge--' + skillGroup.color">
+                  <i [class]="skillGroup.icon" aria-hidden="true"></i>
+                  {{ skillGroup.skillName }}
+                </div>
 
-            <!-- ✅ Progress Indicator (for in-progress exams) -->
-            <div *ngIf="
-                exam.completionStatus &&
-                !exam.completionStatus.isCompleted &&
-                exam.completionStatus.completedPartsCount > 0
-              " class="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium z-10">
-              {{ exam.completionStatus.completedPartsCount }}/{{
-              exam.completionStatus.totalPartsCount
-              }}
-            </div>
-
-            <!-- Header -->
-            <div class="flex items-start gap-3 mb-3">
-              <div class="w-10 h-10 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
-                [ngClass]="{
-                  'bg-gray-100 group-hover:bg-blue-50':
-                    !exam.completionStatus?.isCompleted,
-                  'bg-green-200 group-hover:bg-green-300':
-                    exam.completionStatus?.isCompleted
-                }">
-                <i [class]="skillGroup.icon" [ngClass]="{
-                    'text-gray-400 group-hover:text-blue-500':
-                      !exam.completionStatus?.isCompleted,
-                    'text-green-600': exam.completionStatus?.isCompleted
-                  }" class="transition-colors"></i>
-              </div>
-              <div class="flex-1 min-w-0">
-                <h3 class="text-base font-bold line-clamp-2 leading-snug mb-1" [ngClass]="{
-                    'text-gray-900': !exam.completionStatus?.isCompleted,
-                    'text-green-800': exam.completionStatus?.isCompleted
-                  }">
-                  {{ exam.name }}
-                </h3>
-                <p class="text-xs text-gray-600 line-clamp-2">
-                  {{ exam.description }}
+                <h3 class="exam-card__title">{{ exam.name }}</h3>
+                <p class="exam-card__desc">{{ exam.description || 'Luyện tập kỹ năng với các bài thi TOEIC mới nhất.' }}
                 </p>
-              </div>
+
+                <div class="exam-card__meta">
+                  <span>
+                    <i class="fas fa-user" aria-hidden="true"></i>
+                    {{ exam.createdByName || 'Lumina TOEIC' }}
+                  </span>
+                  <span>
+                    <i class="fas fa-calendar-days" aria-hidden="true"></i>
+                    {{ formatDate(exam.createdAt) }}
+                  </span>
+                </div>
+
+                <div class="exam-card__footer-row">
+                  <div class="exam-card__tags">
+                    <span class="exam-tag">
+                      <i class="fas fa-clock" aria-hidden="true"></i>
+                      {{ getExamDuration(skillGroup.skillName) }}
+                    </span>
+                    <span class="exam-tag exam-tag--level">Cơ bản</span>
+                  </div>
+                  <button type="button" class="exam-card__action"
+                    [class.exam-card__action--completed]="exam.completionStatus?.isCompleted"
+                    [attr.aria-label]="(exam.completionStatus?.isCompleted ? 'Làm lại bài thi ' : 'Bắt đầu bài thi ') + exam.name"
+                    (click)="startExam(exam)">
+                    {{ exam.completionStatus?.isCompleted ? 'Làm lại' : 'Bắt đầu' }}
+                    <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                  </button>
+                </div>
+
+                <!-- Progress bar if in progress -->
+                <div
+                  *ngIf="exam.completionStatus && exam.completionStatus.totalPartsCount > 0 && (exam.completionStatus.completedPartsCount > 0 || exam.completionStatus.isCompleted)"
+                  class="exam-card__progress">
+                  <div class="exam-card__progress-track">
+                    <div class="exam-card__progress-fill"
+                      [class.exam-card__progress-fill--completed]="exam.completionStatus.isCompleted"
+                      [style.width.%]="exam.completionStatus.completionPercentage || 0"></div>
+                  </div>
+                  <span class="exam-card__progress-label">{{ exam.completionStatus.completionPercentage || 0 }}%</span>
+                </div>
+
+                <!-- Badges -->
+                <span *ngIf="exam.completionStatus?.isCompleted" class="exam-card__status exam-card__status--done">
+                  <i class="fas fa-circle-check" aria-hidden="true"></i> Đã hoàn thành
+                </span>
+                <span
+                  *ngIf="exam.completionStatus && !exam.completionStatus.isCompleted && exam.completionStatus.completedPartsCount > 0"
+                  class="exam-card__status exam-card__status--progress">
+                  {{ exam.completionStatus.completedPartsCount }}/{{ exam.completionStatus.totalPartsCount }}
+                </span>
+              </article>
             </div>
 
-            <!-- ✅ Progress Bar -->
-            <div *ngIf="
-                exam.completionStatus &&
-                exam.completionStatus.totalPartsCount > 0
-              " class="mb-3">
-              <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                <div class="h-2 transition-all duration-500 ease-out rounded-full" [ngClass]="{
-                    'bg-gradient-to-r from-blue-400 to-blue-600':
-                      !exam.completionStatus.isCompleted,
-                    'bg-gradient-to-r from-green-400 to-green-600':
-                      exam.completionStatus.isCompleted
-                  }" [style.width.%]="
-                    (exam.completionStatus.completedPartsCount /
-                      exam.completionStatus.totalPartsCount) *
-                    100
-                  "></div>
+            <!-- Pagination -->
+            <nav *ngIf="hasPagination(skillGroup)" class="pagination"
+              [attr.aria-label]="'Phân trang ' + skillGroup.skillName">
+              <div class="pagination__summary">
+                Trang {{ getCurrentPage(skillGroup.skillCode) }} / {{ getTotalPages(skillGroup) }}
+                <span>({{ skillGroup.exams.length }} bài thi)</span>
               </div>
-              <div class="flex justify-between items-center mt-1">
-                <span class="text-xs text-gray-500">
-                  {{ exam.completionStatus.completedPartsCount }}/{{
-                  exam.completionStatus.totalPartsCount
-                  }}
-                  phần
-                </span>
-                <span class="text-xs font-medium" [ngClass]="{
-                    'text-blue-600': !exam.completionStatus.isCompleted,
-                    'text-green-600': exam.completionStatus.isCompleted
-                  }">
-                  {{ exam.completionStatus.completionPercentage }}%
-                </span>
+              <div class="pagination__controls">
+                <button type="button" class="pagination__button pagination__button--arrow"
+                  [disabled]="getCurrentPage(skillGroup.skillCode) === 1"
+                  (click)="changePage(skillGroup.skillCode, getCurrentPage(skillGroup.skillCode) - 1)">
+                  <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                  <span>Trước</span>
+                </button>
+                <div class="pagination__numbers">
+                  <button *ngFor="let pageNum of getPageNumbers(skillGroup)" type="button"
+                    class="pagination__button pagination__button--number"
+                    [class.is-active]="getCurrentPage(skillGroup.skillCode) === pageNum"
+                    [attr.aria-current]="getCurrentPage(skillGroup.skillCode) === pageNum ? 'page' : null"
+                    (click)="changePage(skillGroup.skillCode, pageNum)">{{ pageNum }}</button>
+                </div>
+                <button type="button" class="pagination__button pagination__button--arrow"
+                  [disabled]="getCurrentPage(skillGroup.skillCode) === getTotalPages(skillGroup)"
+                  (click)="changePage(skillGroup.skillCode, getCurrentPage(skillGroup.skillCode) + 1)">
+                  <span>Sau</span>
+                  <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                </button>
               </div>
-            </div>
+            </nav>
+          </div>
 
-            <!-- Footer -->
-            <div class="flex items-center justify-between text-xs text-gray-500 pt-3 border-t border-gray-100">
-              <div class="flex flex-col gap-1.5">
-                <span class="flex items-center gap-1">
-                  <i class="fas fa-user"></i>
-                  <span class="truncate max-w-32">{{
-                    exam.createdByName
-                    }}</span>
-                </span>
-                <span class="flex items-center gap-1">
-                  <i class="fas fa-calendar-alt"></i>
-                  {{ formatDate(exam.createdAt) }}
-                </span>
-              </div>
-              <button class="flex items-center gap-1 px-2 py-1 rounded-lg text-white transition-all" [ngClass]="
-                  exam.completionStatus?.isCompleted
-                    ? 'bg-green-500 hover:bg-green-600'
-                    : getButtonColor(skillGroup.color)
-                ">
-                <i [ngClass]="
-                    exam.completionStatus?.isCompleted
-                      ? 'fas fa-redo'
-                      : 'fas fa-play'
-                  " class="text-xs"></i>
-                <span class="text-xs font-medium">
-                  {{
-                  exam.completionStatus?.isCompleted ? "Làm lại" : "Bắt đầu"
-                  }}
-                </span>
-              </button>
-            </div>
+          <div class="explore-load-more">
+            <button type="button" class="load-more-btn">
+              Xem thêm bài luyện tập <i class="fas fa-chevron-down" aria-hidden="true"></i>
+            </button>
           </div>
         </div>
+      </section>
 
-        <!-- Pagination Controls -->
-        <div *ngIf="hasPagination(skillGroup)"
-          class="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
-          <!-- Page Info -->
-          <div class="text-sm text-gray-600">
-            Trang {{ getCurrentPage(skillGroup.skillCode) }} / {{ getTotalPages(skillGroup) }}
-            <span class="text-gray-400 ml-2">({{ skillGroup.exams.length }} bài thi)</span>
-          </div>
-
-          <!-- Navigation Buttons -->
-          <div class="flex items-center gap-2">
-            <!-- Previous Button -->
-            <button (click)="changePage(skillGroup.skillCode, getCurrentPage(skillGroup.skillCode) - 1)"
-              [disabled]="getCurrentPage(skillGroup.skillCode) === 1"
-              class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1"
-              [ngClass]="{
-                'bg-gray-100 text-gray-400 cursor-not-allowed': getCurrentPage(skillGroup.skillCode) === 1,
-                'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400': getCurrentPage(skillGroup.skillCode) !== 1
-              }">
-              <i class="fas fa-chevron-left text-xs"></i>
-              <span>Trước</span>
-            </button>
-
-            <!-- Page Numbers -->
-            <div class="flex items-center gap-1">
-              <button *ngFor="let pageNum of getPageNumbers(skillGroup)"
-                (click)="changePage(skillGroup.skillCode, pageNum)"
-                class="w-9 h-9 rounded-lg text-sm font-medium transition-all duration-200" [ngClass]="{
-                  'bg-blue-500 text-white shadow-md': getCurrentPage(skillGroup.skillCode) === pageNum,
-                  'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-blue-400': getCurrentPage(skillGroup.skillCode) !== pageNum
-                }">
-                {{ pageNum }}
-              </button>
-            </div>
-
-            <!-- Next Button -->
-            <button (click)="changePage(skillGroup.skillCode, getCurrentPage(skillGroup.skillCode) + 1)"
-              [disabled]="getCurrentPage(skillGroup.skillCode) === getTotalPages(skillGroup)"
-              class="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1"
-              [ngClass]="{
-                'bg-gray-100 text-gray-400 cursor-not-allowed': getCurrentPage(skillGroup.skillCode) === getTotalPages(skillGroup),
-                'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400': getCurrentPage(skillGroup.skillCode) !== getTotalPages(skillGroup)
-              }">
-              <span>Sau</span>
-              <i class="fas fa-chevron-right text-xs"></i>
-            </button>
-          </div>
+      <!-- ── MOTIVATIONAL BANNER ── -->
+      <div class="motivation-banner">
+        <div class="motivation-banner__quote-icon" aria-hidden="true">
+          <i class="fas fa-quote-left"></i>
+        </div>
+        <p class="motivation-banner__text">
+          Kiên trì luyện tập mỗi ngày là chìa khóa để đạt được<br>
+          điểm số TOEIC mà bạn mong muốn.
+        </p>
+        <div class="motivation-banner__illustration" aria-hidden="true">
+          <img src="assets/boy-studying.png" alt="" />
         </div>
       </div>
-    </div>
-  </div>
+
+    </ng-container>
+  </main>
 </div>

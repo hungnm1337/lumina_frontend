@@ -1,0 +1,26 @@
+<section class="reading-gap" aria-labelledby="reading-gap-title">
+  <h2 id="reading-gap-title" class="reading-question-instruction">{{ viewModel.promptText }}</h2>
+  <div class="reading-gap__body" aria-live="polite">
+    @for (segment of viewModel.gapSegments; track segment.key) {
+      @if (segment.isGap) {
+      <select
+        class="reading-inline-select"
+        [disabled]="disabled"
+        [ngModel]="getValue(segment.key)"
+        [attr.aria-label]="'Answer for gap ' + segment.key"
+        (ngModelChange)="selectGap(segment.key, $event)"
+      >
+        <option value="">Choose</option>
+        @for (option of viewModel.options; track option.optionId) {
+        <option [value]="option.optionId">{{ option.content }}</option>
+        }
+      </select>
+      } @else {
+      <span>{{ segment.text }}</span>
+      }
+    }
+  </div>
+  <p class="reading-interaction-status" aria-live="polite">
+    @if (state?.isComplete) { All gaps completed. } @else { Choose one word for each gap. }
+  </p>
+</section>
