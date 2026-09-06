@@ -1,8 +1,339 @@
-// Timer light theme - override white text to dark
-.timer-light {
-  ::ng-deep {
-    .text-white {
-      color: #374151 !important; // text-gray-700
-    }
+:host {
+  --reading-bg: #ffffff;
+  --reading-text: #151515;
+  --reading-muted: #777777;
+  --reading-border: #c9cdd2;
+  --reading-option-surface: #f1f3f6;
+  --reading-selected: #b5b5b5;
+  --reading-primary: #25005f;
+  --reading-primary-hover: #351076;
+  --reading-focus: #b9a2d9;
+  --reading-toolbar-border: #e4e1ed;
+  --reading-toolbar-shadow: 0 -7px 18px rgba(36, 0, 95, .14);
+  --reading-font: Arial, Helvetica, sans-serif;
+  --reading-toolbar-height: 94px;
+  display: block;
+  min-width: 0;
+  color: var(--reading-text);
+  background: var(--reading-bg);
+  font-family: var(--reading-font);
+}
+
+.reading-screen {
+  min-height: 100vh;
+  padding-bottom: var(--reading-toolbar-height);
+  background: var(--reading-bg);
+}
+
+.reading-content {
+  position: relative;
+  width: min(920px, calc(100% - 64px));
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 76px 0 52px;
+}
+
+.reading-screen--instructions .reading-content {
+  width: 100%;
+  padding: 0;
+}
+
+.reading-question-topline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 56px;
+}
+
+.reading-section-label {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
+.reading-question-topline h1 {
+  margin: 0;
+  font-size: 27px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.reading-bookmark {
+  display: inline-flex;
+  min-height: 45px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 18px;
+  border: 1px solid #a8a8a8;
+  border-radius: 5px;
+  color: var(--reading-text);
+  background: #ffffff;
+  font: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.reading-bookmark.is-bookmarked {
+  border-color: var(--reading-primary);
+  color: var(--reading-primary);
+  background: #f1edf8;
+}
+
+.reading-bookmark:hover {
+  background: #f2f2f2;
+}
+
+.reading-timer {
+  position: fixed;
+  top: 5px;
+  right: 18px;
+  z-index: 8;
+  width: 126px;
+  text-align: right;
+}
+
+.reading-timer ::ng-deep app-time > div {
+  display: block !important;
+}
+
+.reading-timer ::ng-deep app-time > div > div:first-child {
+  display: block !important;
+}
+
+.reading-timer ::ng-deep app-time .text-sm {
+  display: block !important;
+  margin-top: 5px !important;
+  color: var(--reading-text) !important;
+  font-family: var(--reading-font) !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  text-align: right !important;
+}
+
+.reading-timer ::ng-deep app-time .text-2xl {
+  display: block !important;
+  color: var(--reading-text) !important;
+  font-family: var(--reading-font) !important;
+  font-size: 27px !important;
+  font-weight: 700 !important;
+  line-height: 1.05 !important;
+  text-align: right !important;
+}
+
+.reading-timer ::ng-deep app-time > div > div:last-child {
+  height: 5px !important;
+  margin-top: 10px !important;
+  overflow: hidden !important;
+  border-radius: 1px !important;
+  background: #e8e4ef !important;
+}
+
+.reading-timer ::ng-deep app-time .bg-blue-500 {
+  height: 5px !important;
+  background: var(--reading-primary) !important;
+}
+
+.reading-question-body {
+  width: 100%;
+}
+
+.reading-empty-state {
+  color: var(--reading-muted);
+  font-size: 17px;
+}
+
+.reading-question-menu,
+.reading-accessibility-panel {
+  position: fixed;
+  right: 18px;
+  bottom: calc(var(--reading-toolbar-height) + 14px);
+  z-index: 30;
+  width: min(330px, calc(100vw - 36px));
+  max-height: calc(100vh - var(--reading-toolbar-height) - 30px);
+  overflow: auto;
+  padding: 14px;
+  border: 1px solid #d9d2e5;
+  border-radius: 5px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(36, 0, 95, .18);
+}
+
+.reading-question-menu__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.reading-question-menu__header button,
+.reading-accessibility-panel > button {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #b9b9b9;
+  border-radius: 4px;
+  color: var(--reading-text);
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.reading-question-menu ::ng-deep .sticky {
+  position: static !important;
+}
+
+.reading-question-menu ::ng-deep .bg-white.rounded-lg.shadow-md {
+  box-shadow: none !important;
+  border-color: #dedede !important;
+}
+
+.reading-question-menu ::ng-deep button {
+  min-height: 38px;
+}
+
+.reading-accessibility-panel {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  color: var(--reading-text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.reading-accessibility-panel > p {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.reading-summary {
+  width: min(760px, calc(100% - 64px));
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 72px 0;
+  text-align: center;
+}
+
+.reading-summary__icon {
+  display: inline-flex;
+  width: 72px;
+  height: 72px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #ffffff;
+  background: var(--reading-primary);
+  font-size: 32px;
+}
+
+.reading-summary h2 {
+  margin: 20px 0 8px;
+  font-size: 30px;
+  font-weight: 400;
+}
+
+.reading-summary__part,
+.reading-summary__feedback {
+  color: var(--reading-muted);
+}
+
+.reading-summary__metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 36px 0;
+}
+
+.reading-summary__metrics div {
+  padding: 24px 16px;
+  border: 1px solid #dedede;
+}
+
+.reading-summary__metrics strong,
+.reading-summary__metrics span {
+  display: block;
+}
+
+.reading-summary__metrics strong {
+  font-size: 30px;
+}
+
+.reading-summary__metrics span {
+  margin-top: 8px;
+  color: var(--reading-muted);
+  font-size: 14px;
+}
+
+.reading-summary__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.reading-summary__actions button {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: 1px solid var(--reading-primary);
+  border-radius: 4px;
+  color: #ffffff;
+  background: var(--reading-primary);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.reading-summary__actions button:hover {
+  background: var(--reading-primary-hover);
+}
+
+.reading-bookmark:focus-visible,
+.reading-question-menu button:focus-visible,
+.reading-accessibility-panel button:focus-visible,
+.reading-summary__actions button:focus-visible {
+  outline: 3px solid var(--reading-focus);
+  outline-offset: 3px;
+}
+
+@media (max-width: 800px) {
+  .reading-content,
+  .reading-summary {
+    width: min(100% - 36px, 920px);
+  }
+
+  .reading-content {
+    padding-top: 48px;
+  }
+
+  .reading-question-topline {
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 42px;
+  }
+
+  .reading-question-topline h1 {
+    font-size: 24px;
+  }
+
+  .reading-timer {
+    position: static;
+    width: 100%;
+    margin-bottom: 32px;
+    text-align: left;
+  }
+
+  .reading-timer ::ng-deep app-time .text-sm,
+  .reading-timer ::ng-deep app-time .text-2xl {
+    text-align: left !important;
+  }
+
+  .reading-summary__metrics {
+    grid-template-columns: 1fr;
   }
 }

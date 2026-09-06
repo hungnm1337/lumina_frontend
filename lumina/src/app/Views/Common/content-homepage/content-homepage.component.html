@@ -1,106 +1,332 @@
-<!-- Scroll Progress Indicator -->
-<div class="fixed top-0 left-0 right-0 h-1 bg-gray-200 z-50">
-  <div class="h-1 bg-blue-600 transition-all duration-200 ease-out" id="scrollProgress" style="width: 0%"></div>
-</div>
+<div class="landing-page">
 
-<!-- Hero Section -->
-<section
-  class="hero-gradient relative overflow-hidden bg-gradient-to-br from-blue-800 via-purple-900 to-indigo-900 text-white">
-  <div class="absolute inset-0">
-    <div class="floating-element absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full"></div>
-    <div class="floating-element absolute top-40 right-20 w-16 h-16 bg-white/10 rounded-full"
-      style="animation-delay: -2s"></div>
-    <div class="floating-element absolute bottom-20 left-1/4 w-12 h-12 bg-white/10 rounded-full"
-      style="animation-delay: -4s"></div>
-  </div>
+  <!-- ═══════════════════════════ HERO SECTION ═══════════════════════════ -->
+  <section class="hero" id="top">
+    <div class="hero-bg-shapes" aria-hidden="true">
+      <span class="hero-circle hero-circle--lg"></span>
+      <span class="hero-circle hero-circle--sm"></span>
+      <span class="hero-dot hero-dot--1"></span>
+      <span class="hero-dot hero-dot--2"></span>
+      <span class="hero-dot hero-dot--3"></span>
+    </div>
 
-  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 grid lg:grid-cols-2 gap-12 items-center">
-    <div>
-      <h1 class="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-        <span class="block text-yellow-300">TOEIC 990</span> cùng chúng tôi
-      </h1>
-      <p class="text-xl text-blue-100 mb-8 leading-relaxed max-w-lg">
-        Hệ thống ôn thi TOEIC thông minh với AI, câu hỏi chất lượng cao và
-        phương pháp học tập cá nhân hóa.
-      </p>
+    <div class="hero-container">
+      <!-- Left content -->
+      <div class="hero-content">
+        <h1 class="hero-title">
+          TOEIC <span class="gold">990</span><br />
+          cùng chúng tôi
+        </h1>
+        <p class="hero-subtitle">
+          Lumina đồng hành cùng bạn trên hành trình chinh phục TOEIC với lộ trình cá nhân hóa, nội dung chuẩn ETS và công nghệ AI thông minh.
+        </p>
+        <div class="hero-actions">
+          <button class="btn btn--primary" (click)="startLearning()">
+            Bắt đầu học ngay
+            <i class="fas fa-arrow-right"></i>
+          </button>
+          <button class="btn btn--outline" (click)="exploreLearningPath()">
+            Tìm hiểu thêm
+            <i class="far fa-play-circle ml-1"></i>
+          </button>
+        </div>
+      </div>
 
-      <div class="flex flex-col sm:flex-row gap-4 mb-8">
-        <button (click)="startLearning()"
-          class="group relative inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white rounded-xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300 hover:bg-white/20 hover:border-white/40 hover:shadow-2xl hover:-translate-y-1">
-          Bắt đầu học miễn phí
+      <!-- Right card: Placement test -->
+      <div class="hero-card">
+        <h2 class="hero-card__title">Kiểm tra trình độ miễn phí</h2>
+        <p class="hero-card__desc">
+          Tham gia bài kiểm tra 150 phút để biết trình độ hiện tại của bạn
+        </p>
+
+        <div class="hero-skills">
+          <div *ngFor="let skill of heroSkills" class="hero-skill hero-skill--{{ skill.tone }}">
+            <span class="hero-skill__icon">
+              <i class="fas {{ skill.icon }}"></i>
+            </span>
+            <span class="hero-skill__label">{{ skill.title }}</span>
+          </div>
+        </div>
+
+        <button class="btn btn--gold btn--full" (click)="startTest()">
+          <i class="fas fa-rocket"></i>
+          Bắt đầu kiểm tra
         </button>
       </div>
     </div>
 
-    <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 max-w-md mx-auto">
-      <h3 class="text-2xl font-bold text-white mb-2 text-center">
-        Kiểm tra trình độ miễn phí
-      </h3>
-      <p class="text-blue-100 text-center mb-6">
-        Tham gia bài kiểm tra 150 phút để biết trình độ hiện tại của bạn
+    <div class="hero-wave" aria-hidden="true">
+      <svg viewBox="0 0 1440 80" preserveAspectRatio="none">
+        <path d="M0,40 C360,80 720,0 1080,40 C1260,60 1380,55 1440,50 L1440,80 L0,80 Z" fill="#ffffff"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ FEATURES STRIP ═══════════════════════════ -->
+  <section class="features" aria-label="Tính năng nổi bật">
+    <div class="features-container">
+      <div *ngFor="let feature of features" class="feature-item">
+        <span class="feature-icon" [style.color]="feature.color">
+          <i class="fas {{ feature.icon }}"></i>
+        </span>
+        <div class="feature-text">
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ WELCOME SECTION ═══════════════════════════ -->
+  <section class="welcome" aria-labelledby="welcome-title">
+    <div class="welcome-container">
+      <!-- Left content -->
+      <div class="welcome-content">
+        <span class="welcome-tag">
+          NÂNG TẦNG KỸ NĂNG – VƯỢT MỌI GIỚI HẠN
+        </span>
+        <h2 class="welcome-title" id="welcome-title">
+          Chào mừng bạn đến với<br />
+          <span class="highlight-gold">Lumina</span> <span class="text-white">TOEIC</span>
+        </h2>
+        <p class="welcome-desc">
+          Nền tảng luyện thi TOEIC hàng đầu tại Việt Nam được tin dùng bởi hàng nghìn học viên mỗi ngày.
+        </p>
+
+        <!-- Stats Section (Horizontal Layout) -->
+        <div class="welcome-stats">
+          <div *ngFor="let stat of stats" class="stat-item">
+            <span class="stat-icon">
+              <i class="fas {{ stat.icon }}"></i>
+            </span>
+            <div class="stat-text">
+              <strong class="stat-value">{{ stat.value }}</strong>
+              <span class="stat-label">{{ stat.label }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Solid Gold Primary CTA Button -->
+        <button class="btn btn--gold btn--welcome-cta" (click)="exploreLearningPath()">
+          Khám phá lộ trình học
+          <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+
+      <!-- Right visual with Slanted Image & Decorations -->
+      <div class="welcome-visual">
+        <!-- Background Dot Grid Pattern & Curved Lines -->
+        <div class="welcome-decor-dots" aria-hidden="true"></div>
+
+        <div class="welcome-image-wrapper slanted-frame">
+          <img src="./assets/student-laptop.png" alt="Học viên đang học TOEIC với laptop" class="welcome-image" loading="lazy" />
+        </div>
+
+        <!-- Circular progress overlay (Wider horizontal widget) -->
+        <div class="progress-widget">
+          <div class="progress-widget__header">Tiến độ tuần này</div>
+          <div class="progress-widget__body">
+            <div class="progress-ring-wrapper">
+              <svg class="progress-ring" viewBox="0 0 120 120">
+                <circle class="progress-ring__bg" cx="60" cy="60" r="54" />
+                <circle
+                  class="progress-ring__fill"
+                  cx="60" cy="60" r="54"
+                  [attr.stroke-dasharray]="circleCircumference"
+                  [attr.stroke-dashoffset]="progressOffset"
+                />
+              </svg>
+              <div class="progress-ring__value">
+                <strong>{{ overallProgress }}%</strong>
+                <span>Hoàn thành</span>
+              </div>
+            </div>
+
+            <div class="progress-skills">
+              <div *ngFor="let skill of skillProgress" class="progress-skill-row">
+                <span class="progress-skill-dot progress-skill-dot--{{ skill.name | lowercase }}"></span>
+                <span class="progress-skill-name">{{ skill.name }}</span>
+                <span class="progress-skill-pct">{{ skill.percentage }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ EVENTS SECTION ═══════════════════════════ -->
+  <section class="events" aria-labelledby="events-title">
+    <div class="events-container">
+      <div class="events-header">
+        <h2 class="events-title" id="events-title">
+          Sự kiện & hoạt động
+          <svg class="events-doodle-svg" viewBox="0 0 100 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12 C 25 2, 45 18, 65 8 C 75 3, 85 15, 95 10" stroke="#f59e0b" stroke-width="3.5" stroke-linecap="round"/>
+          </svg>
+        </h2>
+        <a class="events-link" (click)="viewAllEvents()">
+          Xem tất cả sự kiện
+          <i class="fas fa-chevron-right"></i>
+        </a>
+      </div>
+
+      <div class="events-grid">
+        <!-- Card 1: Ưu đãi / Black Friday -->
+        <article class="event-card">
+          <div class="event-card__top">
+            <span class="event-tag">ƯU ĐÃI</span>
+            <h3 class="event-card__title">Black Friday 2026<br />Giảm giá sốc</h3>
+            <p class="event-card__desc">Giảm đến 60% cho tất cả các khóa học TOEIC. Chỉ diễn ra trong 3 ngày duy nhất!</p>
+            <div class="event-card__date">
+              <i class="far fa-calendar"></i>
+              02/08/2026 - 04/08/2026
+            </div>
+          </div>
+          <div class="event-card__bottom">
+            <a class="event-card__link">
+              Xem chi tiết <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </article>
+
+        <!-- Card 2: Sự kiện / Tuần lễ luyện thi -->
+        <article class="event-card">
+          <div class="event-card__top">
+            <span class="event-tag">SỰ KIỆN</span>
+            <h3 class="event-card__title">Tuần lễ luyện thi<br />miễn phí</h3>
+            <p class="event-card__desc">7 ngày trải nghiệm miễn phí toàn bộ tính năng premium. Học thử không giới hạn!</p>
+            <div class="event-card__date">
+              <i class="far fa-calendar"></i>
+              05/08/2026 - 11/08/2026
+            </div>
+          </div>
+          <div class="event-card__bottom">
+            <a class="event-card__link">
+              Xem chi tiết <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </article>
+
+        <!-- Card 3: Workshop / Chiến lược làm bài -->
+        <article class="event-card">
+          <div class="event-card__top">
+            <span class="event-tag">WORKSHOP</span>
+            <h3 class="event-card__title">Workshop: Chiến lược<br />làm bài TOEIC hiệu quả</h3>
+            <p class="event-card__desc">Buổi workshop trực tuyến với giảng viên chuyên gia. Chia sẻ bí quyết đạt điểm cao trong từng phần thi.</p>
+            <div class="event-card__date">
+              <i class="far fa-calendar"></i>
+              10/08/2026 - 20:00 - 21:30
+            </div>
+          </div>
+          <div class="event-card__bottom">
+            <a class="event-card__link">
+              Xem chi tiết <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ TESTIMONIAL SECTION ═══════════════════════════ -->
+  <section class="testimonial" aria-label="Đánh giá từ học viên">
+    <div class="testimonial-container">
+      <!-- Quote icon left -->
+      <div class="testimonial-quote-wrap">
+        <span class="testimonial-quote-icon">“</span>
+      </div>
+
+      <!-- Quote Text Center -->
+      <p class="testimonial-text">
+        {{ currentTestimonial.quote }}
       </p>
 
-      <div class="grid grid-cols-2 gap-3 mb-6">
-        <div class="bg-white/20 rounded-lg p-4">
-          <div class="flex flex-col items-center text-center">
-            <div class="text-white font-semibold">Listening</div>
+      <!-- Author Right -->
+      <div class="testimonial-author-wrap">
+        <div class="testimonial-avatar">
+          <i class="fas fa-user-circle"></i>
+        </div>
+        <div class="testimonial-info">
+          <strong class="testimonial-name">{{ currentTestimonial.name }}</strong>
+          <span class="testimonial-score">{{ currentTestimonial.achievement }}</span>
+        </div>
+        <div class="testimonial-controls">
+          <button class="t-btn" (click)="prevTestimonial()"><i class="fas fa-arrow-left"></i></button>
+          <button class="t-btn" (click)="nextTestimonial()"><i class="fas fa-arrow-right"></i></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ FOOTER ═══════════════════════════ -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-grid">
+        <!-- Brand column -->
+        <div class="footer-brand">
+          <div class="footer-logo">
+            <img src="./assets/logo.png" alt="Lumina" class="footer-logo-img" />
+          </div>
+          <p class="footer-tagline">
+            Lumina - Nền tảng luyện thi TOEIC hiệu quả và đáng tin cậy tại Việt Nam.
+          </p>
+          <div class="footer-socials">
+            <a href="#" class="social-link" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="social-link" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            <a href="#" class="social-link" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+            <a href="#" class="social-link" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
           </div>
         </div>
-        <div class="bg-white/20 rounded-lg p-4">
-          <div class="flex flex-col items-center text-center">
-            <div class="text-white font-semibold">Reading</div>
-          </div>
+
+        <!-- Products column -->
+        <div class="footer-col">
+          <h4 class="footer-col__title">Sản phẩm</h4>
+          <ul class="footer-col__list">
+            <li *ngFor="let item of footerProducts">
+              <a href="javascript:void(0)">{{ item }}</a>
+            </li>
+          </ul>
         </div>
-        <div class="bg-white/20 rounded-lg p-4">
-          <div class="flex flex-col items-center text-center">
-            <div class="text-white font-semibold">Writing</div>
-          </div>
+
+        <!-- Support column -->
+        <div class="footer-col">
+          <h4 class="footer-col__title">Hỗ trợ</h4>
+          <ul class="footer-col__list">
+            <li *ngFor="let item of footerSupport">
+              <a href="javascript:void(0)">{{ item }}</a>
+            </li>
+          </ul>
         </div>
-        <div class="bg-white/20 rounded-lg p-4">
-          <div class="flex flex-col items-center text-center">
-            <div class="text-white font-semibold">Speaking</div>
-          </div>
+
+        <!-- About column -->
+        <div class="footer-col">
+          <h4 class="footer-col__title">Về chúng tôi</h4>
+          <ul class="footer-col__list">
+            <li *ngFor="let item of footerAbout">
+              <a href="javascript:void(0)">{{ item }}</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Newsletter column -->
+        <div class="footer-newsletter">
+          <h4 class="footer-col__title">Nhận tài liệu miễn phí</h4>
+          <p class="footer-newsletter__desc">
+            Đăng ký để nhận tài liệu học TOEIC miễn phí và các ưu đãi mới nhất!
+          </p>
+          <form class="newsletter-form" (submit)="$event.preventDefault()">
+            <input type="email" placeholder="Nhập email của bạn" class="newsletter-input" />
+            <button type="submit" class="newsletter-btn" aria-label="Đăng ký">
+              <i class="fas fa-arrow-right"></i>
+            </button>
+          </form>
         </div>
       </div>
 
-      <button (click)="moveToMocktest()"
-        class="w-full btn-primary text-lg py-4 inline-flex items-center justify-center">
-        <i class="fas fa-rocket mr-2"></i> Bắt đầu kiểm tra
-      </button>
-    </div>
-  </div>
-</section>
-
-<!-- Features Section -->
-<section>
-  <app-user-slide-dashboard></app-user-slide-dashboard>
-
-  <app-leaderboard-preview></app-leaderboard-preview>
-
-  <app-event-preview></app-event-preview>
-</section>
-
-<app-footer></app-footer>
-<!-- Notification Toast -->
-<div id="notification"
-  class="fixed top-4 right-4 bg-white rounded-lg shadow-lg border border-gray-200 p-4 hidden z-50 max-w-sm">
-  <div class="flex items-start space-x-3">
-    <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-      <i class="fas fa-check text-green-600 text-sm"></i>
-    </div>
-    <div class="flex-1">
-      <div class="font-medium text-gray-900" id="notificationTitle">
-        Thành công!
-      </div>
-      <div class="text-gray-600 text-sm mt-1" id="notificationText">
-        Thông báo
+      <div class="footer-bottom">
+        <span>© 2024 Lumina TOEIC. Tất cả quyền được bảo lưu.</span>
       </div>
     </div>
-    <button class="text-gray-400 hover:text-gray-600">
-      <i class="fas fa-times text-sm"></i>
-    </button>
-  </div>
+  </footer>
 </div>
-
-<!-- Demo Buttons -->
-<div style="position: fixed; right: 16px; bottom: 16px; z-index: 1000" class="hidden md:flex gap-2"></div>

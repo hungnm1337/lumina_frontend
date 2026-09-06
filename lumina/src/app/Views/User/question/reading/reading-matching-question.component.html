@@ -1,0 +1,33 @@
+<section class="reading-matching" aria-labelledby="reading-matching-title">
+  <h2 id="reading-matching-title" class="reading-question-instruction">{{ viewModel.promptText }}</h2>
+
+  @if (passageText) {
+  <article class="reading-matching__passage" aria-label="Reading passage">
+    {{ passageText }}
+  </article>
+  }
+
+  <div class="reading-matching__questions">
+    @for (prompt of viewModel.matchingPrompts; track prompt.key; let index = $index) {
+    <label class="reading-matching__row" [for]="prompt.key">
+      <span><strong>{{ index + 1 }}.</strong> {{ prompt.text }}</span>
+      <select
+        class="reading-matching__select"
+        [id]="prompt.key"
+        [disabled]="disabled"
+        [ngModel]="getValue(prompt.key)"
+        [attr.aria-label]="prompt.text"
+        (ngModelChange)="selectMatch(prompt.key, $event)"
+      >
+        <option [ngValue]="null">Choose</option>
+        @for (option of viewModel.options; track option.optionId) {
+        <option [ngValue]="option.optionId">{{ option.content }}</option>
+        }
+      </select>
+    </label>
+    }
+  </div>
+  <p class="reading-interaction-status" aria-live="polite">
+    @if (state?.isComplete) { All answers completed. } @else { Select one answer for each question. }
+  </p>
+</section>

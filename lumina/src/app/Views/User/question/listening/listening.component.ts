@@ -896,16 +896,19 @@ ${response.isFirstAttempt
     }
   }
 
-  confirmExit(): void {
-    const confirmResult = confirm(
-      'Bạn có muốn lưu tiến trình và thoát không?\n\n' +
-      '- Chọn "OK" để lưu và thoát\n' +
-      '- Chọn "Cancel" để tiếp tục làm bài'
-    );
+  showExitModal: boolean = false;
 
-    if (confirmResult) {
-      this.saveProgressAndExit();
-    }
+  confirmExit(): void {
+    this.showExitModal = true;
+  }
+
+  cancelExitModal(): void {
+    this.showExitModal = false;
+  }
+
+  confirmExitModal(): void {
+    this.showExitModal = false;
+    this.saveProgressAndExit();
   }
 
   private saveProgressAndExit(): void {

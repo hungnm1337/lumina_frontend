@@ -1,0 +1,59 @@
+:host {
+  display: block;
+}
+
+.reading-instructions {
+  width: min(680px, calc(100% - 64px));
+  min-height: calc(100vh - 94px);
+  margin: 0 auto;
+  padding: 76px 0 72px;
+  color: var(--reading-text, #151515);
+  font-family: var(--reading-font, Arial, Helvetica, sans-serif);
+}
+
+.reading-instructions h1 {
+  margin: 0 0 32px;
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.reading-instructions__copy {
+  font-size: 21px;
+  line-height: 1.45;
+}
+
+.reading-instructions__copy h2 {
+  margin: 0 0 22px;
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.reading-instructions__copy p {
+  margin: 0 0 20px;
+}
+
+.reading-instructions__start-copy {
+  margin-top: 72px !important;
+}
+
+@media (max-width: 700px) {
+  .reading-instructions {
+    width: min(100% - 36px, 680px);
+    padding-top: 48px;
+  }
+
+  .reading-instructions h1,
+  .reading-instructions__copy,
+  .reading-instructions__copy h2 {
+    font-size: 20px;
+  }
+
+  .reading-instructions h1 {
+    font-size: 27px;
+  }
+
+  .reading-instructions__start-copy {
+    margin-top: 52px !important;
+  }
+}

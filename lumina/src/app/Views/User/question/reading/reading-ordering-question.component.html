@@ -1,0 +1,58 @@
+<section class="reading-ordering" aria-labelledby="reading-ordering-title">
+  <h2 id="reading-ordering-title" class="reading-question-instruction">{{ viewModel.promptText }}</h2>
+
+  <div class="reading-ordering__workspace">
+    <div class="reading-ordering__answer-panel">
+      <div class="reading-ordering__report">
+        <h3>{{ viewModel.question.prompt.title || 'Report' }}</h3>
+        <p>{{ viewModel.contentText }}</p>
+      </div>
+      <div class="reading-ordering__fixed" aria-label="First sentence, already placed">
+        <span class="reading-ordering__fixed-label">First sentence</span>
+        <span>{{ viewModel.fixedOption?.content || 'The first sentence is done for you.' }}</span>
+      </div>
+      <div
+        id="reading-answer-list"
+        class="reading-ordering__slots"
+        cdkDropList
+        [cdkDropListData]="orderedOptions"
+        [cdkDropListConnectedTo]="['reading-sentence-pool']"
+        [cdkDropListDisabled]="disabled"
+        (cdkDropListDropped)="onDrop($event)"
+        aria-label="Sentence order answer slots"
+      >
+        @for (option of orderedOptions; track option.optionId; let index = $index) {
+        <div class="reading-ordering__placed" cdkDrag [cdkDragDisabled]="disabled">
+          <span class="reading-ordering__grip" aria-hidden="true"><i class="fas fa-grip-vertical"></i></span>
+          <span>{{ option.content }}</span>
+        </div>
+        }
+        @if (orderedOptions.length === 0) {
+        <div class="reading-ordering__empty">Drop the next sentence here</div>
+        }
+      </div>
+    </div>
+
+    <div
+      id="reading-sentence-pool"
+      class="reading-ordering__pool"
+      cdkDropList
+      [cdkDropListData]="poolOptions"
+      [cdkDropListConnectedTo]="['reading-answer-list']"
+      [cdkDropListDisabled]="disabled"
+      (cdkDropListDropped)="onDrop($event)"
+      aria-label="Available sentences"
+    >
+      @for (option of poolOptions; track option.optionId) {
+      <div class="reading-ordering__card" cdkDrag [cdkDragDisabled]="disabled">
+        <span class="reading-ordering__grip" aria-hidden="true"><i class="fas fa-grip-vertical"></i></span>
+        <span>{{ option.content }}</span>
+      </div>
+      }
+    </div>
+  </div>
+
+  <p class="reading-interaction-status" aria-live="polite">
+    {{ liveMessage || 'Drag the sentences into the correct order.' }}
+  </p>
+</section>

@@ -1,11 +1,9 @@
-<div class="flex bg-gray-50 min-h-[calc(100vh-4rem)]">
-  <div class="w-1/5" *ngIf="sidebarVisible$ | async">
+<div class="user-dashboard-shell">
+  <aside *ngIf="(sidebarVisible$ | async) && !isExamMode" class="user-dashboard-sidebar-slot" aria-label="Điều hướng học tập">
     <app-menu></app-menu>
-  </div>
-  <div
-    [ngClass]="(sidebarVisible$ | async) ? 'w-4/5' : 'w-full'"
-    class="overflow-auto px-1 scrollbar-hide"
-  >
+  </aside>
+
+  <main class="user-dashboard-main scrollbar-hide" [class.user-dashboard-main--exam-mode]="isExamMode">
     <router-outlet></router-outlet>
-  </div>
+  </main>
 </div>

@@ -1,0 +1,38 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.user-dashboard-shell {
+  display: flex;
+  min-height: calc(100vh - 4rem);
+  background: #f8fafc;
+}
+
+.user-dashboard-sidebar-slot {
+  width: 16rem;
+  min-width: 16rem;
+  flex: 0 0 16rem;
+}
+
+.user-dashboard-main {
+  width: calc(100% - 16rem);
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: auto;
+}
+
+.user-dashboard-main--exam-mode {
+  width: 100%;
+  flex-basis: 100%;
+}
+
+@media (max-width: 767px) {
+  .user-dashboard-sidebar-slot {
+    display: none;
+  }
+
+  .user-dashboard-main {
+    width: 100%;
+  }
+}

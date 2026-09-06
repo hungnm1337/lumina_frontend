@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lumina Reading Test Screens</title>
+    <style>
+      :root {
+        --ink: #17131f;
+        --muted: #746f7d;
+        --purple: #25005f;
+        --purple-soft: #f2edf9;
+        --line: #e5e1eb;
+        --surface: #ffffff;
+        --canvas: #f7f5f9;
+        --shadow: 0 18px 48px rgba(37, 0, 95, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        color: var(--ink);
+        background: var(--canvas);
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      button,
+      a {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      button:focus-visible,
+      a:focus-visible,
+      select:focus-visible {
+        outline: 3px solid #b9a2d9;
+        outline-offset: 3px;
+      }
+
+      .app-shell {
+        display: grid;
+        min-height: 100vh;
+        grid-template-columns: 320px minmax(0, 1fr);
+      }
+
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        padding: 30px 22px 24px;
+        border-right: 1px solid var(--line);
+        background: var(--surface);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+        color: var(--purple);
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 30px;
+        height: 30px;
+        grid-template-columns: repeat(2, 13px);
+        gap: 2px;
+      }
+
+      .brand-mark span {
+        display: block;
+        width: 13px;
+        height: 13px;
+        border-radius: 999px;
+        background: var(--purple);
+      }
+
+      .eyebrow {
+        margin: 0 0 28px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.4;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .screen-list {
+        display: grid;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .screen-link {
+        display: grid;
+        width: 100%;
+        grid-template-columns: 32px minmax(0, 1fr);
+        gap: 12px;
+        align-items: center;
+        padding: 13px 12px;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        color: var(--ink);
+        background: transparent;
+        text-align: left;
+        transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+      }
+
+      .screen-link:hover {
+        border-color: #ded6e9;
+        background: #faf8fc;
+      }
+
+      .screen-link.is-active {
+        border-color: #d9cbe9;
+        color: var(--purple);
+        background: var(--purple-soft);
+      }
+
+      .screen-number {
+        display: inline-flex;
+        width: 30px;
+        height: 30px;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #d8d2df;
+        border-radius: 999px;
+        color: var(--muted);
+        background: #fff;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .screen-link.is-active .screen-number {
+        border-color: var(--purple);
+        color: #fff;
+        background: var(--purple);
+      }
+
+      .screen-copy {
+        display: grid;
+        min-width: 0;
+        gap: 3px;
+      }
+
+      .screen-title {
+        overflow: hidden;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.25;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .screen-description {
+        overflow: hidden;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.3;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .sidebar-footer {
+        margin-top: auto;
+        padding-top: 28px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .viewer {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        min-height: 100vh;
+        padding: 26px;
+      }
+
+      .viewer-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        margin: 0 auto 18px;
+        width: min(1440px, 100%);
+      }
+
+      .viewer-kicker {
+        margin: 0 0 6px;
+        color: var(--purple);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .viewer-title {
+        margin: 0;
+        font-size: clamp(22px, 2.2vw, 32px);
+        font-weight: 400;
+        line-height: 1.2;
+      }
+
+      .viewer-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+
+      .action-button,
+      .open-link {
+        display: inline-flex;
+        min-height: 40px;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 0 13px;
+        border: 1px solid #c9c1d5;
+        border-radius: 6px;
+        color: var(--ink);
+        background: #fff;
+        font-size: 13px;
+        text-decoration: none;
+        transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+      }
+
+      .action-button:hover,
+      .open-link:hover {
+        border-color: var(--purple);
+        color: var(--purple);
+        background: var(--purple-soft);
+      }
+
+      .action-button.primary {
+        border-color: var(--purple);
+        color: #fff;
+        background: var(--purple);
+      }
+
+      .action-button.primary:hover {
+        color: #fff;
+        background: #351076;
+      }
+
+      .frame-wrap {
+        display: flex;
+        min-height: 0;
+        flex: 1;
+        align-items: stretch;
+        justify-content: center;
+        margin: 0 auto;
+        width: min(1440px, 100%);
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #ebe8ef;
+        box-shadow: var(--shadow);
+      }
+
+      .screen-frame {
+        display: block;
+        width: 100%;
+        min-height: max(640px, calc(100vh - 178px));
+        border: 0;
+        border-radius: 4px;
+        background: #fff;
+        box-shadow: 0 3px 14px rgba(28, 20, 38, 0.12);
+      }
+
+      .viewer-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin: 16px auto 0;
+        width: min(1440px, 100%);
+      }
+
+      .screen-position {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .pager {
+        display: flex;
+        gap: 8px;
+      }
+
+      @media (max-width: 980px) {
+        .app-shell {
+          grid-template-columns: 250px minmax(0, 1fr);
+        }
+
+        .sidebar {
+          padding-inline: 14px;
+        }
+
+        .viewer {
+          padding: 18px;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .app-shell {
+          display: block;
+        }
+
+        .sidebar {
+          padding: 18px;
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .eyebrow {
+          margin-bottom: 16px;
+        }
+
+        .screen-list {
+          display: flex;
+          gap: 8px;
+          overflow-x: auto;
+          padding-bottom: 4px;
+        }
+
+        .screen-list li {
+          min-width: 190px;
+        }
+
+        .sidebar-footer {
+          display: none;
+        }
+
+        .viewer {
+          min-height: calc(100vh - 195px);
+          padding: 14px;
+        }
+
+        .viewer-header,
+        .viewer-footer {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .viewer-actions {
+          justify-content: flex-start;
+        }
+
+        .frame-wrap {
+          min-height: 600px;
+          padding: 8px;
+        }
+
+        .screen-frame {
+          min-height: 600px;
+        }
+
+        .viewer-footer {
+          gap: 10px;
+        }
+
+        .pager {
+          width: 100%;
+        }
+
+        .pager .action-button {
+          flex: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Reading test screens">
+        <div class="brand" aria-label="Lumina Reading test screens">
+          <span class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+          </span>
+          <span>Lumina Reading</span>
+        </div>
+        <p class="eyebrow">Aptis interface gallery</p>
+
+        <nav aria-label="Choose a Reading screen">
+          <ol class="screen-list" id="screen-list"></ol>
+        </nav>
+
+        <p class="sidebar-footer">
+          Six canvas exports presented as standalone HTML screens.<br />
+          Use the controls below the preview to move through the flow.
+        </p>
+      </aside>
+
+      <main class="viewer" aria-labelledby="viewer-title">
+        <header class="viewer-header">
+          <div>
+            <p class="viewer-kicker">Reading test flow</p>
+            <h1 class="viewer-title" id="viewer-title">Reading Test — Tổng quan</h1>
+          </div>
+          <div class="viewer-actions">
+            <a class="open-link" id="open-link" href="01-reading-overview.html" target="_blank" rel="noreferrer">
+              Open HTML
+              <span aria-hidden="true">↗</span>
+            </a>
+            <button class="action-button primary" type="button" id="fit-button">Fit preview</button>
+          </div>
+        </header>
+
+        <section class="frame-wrap" aria-label="Selected Reading screen preview">
+          <iframe class="screen-frame" id="screen-frame" title="Reading Test — Tổng quan" src="01-reading-overview.html"></iframe>
+        </section>
+
+        <footer class="viewer-footer">
+          <span class="screen-position" id="screen-position" aria-live="polite">Screen 1 of 6</span>
+          <div class="pager" aria-label="Screen navigation">
+            <button class="action-button" type="button" id="previous-button">← Previous</button>
+            <button class="action-button primary" type="button" id="next-button">Next →</button>
+          </div>
+        </footer>
+      </main>
+    </div>
+
+    <script>
+      (() => {
+        const screens = [
+          {
+            title: 'Reading Test — Tổng quan',
+            description: 'Overview and assessment details',
+            file: '01-reading-overview.html',
+          },
+          {
+            title: 'Reading Test — Hướng dẫn',
+            description: 'Instructions before the test begins',
+            file: '02-reading-instructions.html',
+          },
+          {
+            title: 'Reading Test — Điền từ',
+            description: 'Fill-in-the-gaps email task',
+            file: '03-reading-fill-gaps.html',
+          },
+          {
+            title: 'Reading Test — Sắp xếp câu',
+            description: 'Sentence ordering drag-and-drop task',
+            file: '04-reading-ordering.html',
+          },
+          {
+            title: 'Reading Test — Đọc bài dài',
+            description: 'Long reading passage',
+            file: '05-reading-long-passage.html',
+          },
+          {
+            title: 'Reading Test — Ghép người',
+            description: 'Match opinions to the right person',
+            file: '06-reading-matching.html',
+          },
+        ];
+
+        const list = document.getElementById('screen-list');
+        const frame = document.getElementById('screen-frame');
+        const title = document.getElementById('viewer-title');
+        const openLink = document.getElementById('open-link');
+        const position = document.getElementById('screen-position');
+        const previous = document.getElementById('previous-button');
+        const next = document.getElementById('next-button');
+        const fit = document.getElementById('fit-button');
+        let currentIndex = 0;
+
+        const renderList = () => {
+          list.innerHTML = screens
+            .map(
+              (screen, index) => `
+                <li>
+                  <button class="screen-link${index === currentIndex ? ' is-active' : ''}" type="button" data-index="${index}" aria-current="${index === currentIndex ? 'page' : 'false'}">
+                    <span class="screen-number">${String(index + 1).padStart(2, '0')}</span>
+                    <span class="screen-copy">
+                      <span class="screen-title">${screen.title}</span>
+                      <span class="screen-description">${screen.description}</span>
+                    </span>
+                  </button>
+                </li>
+              `,
+            )
+            .join('');
+
+          list.querySelectorAll('[data-index]').forEach((button) => {
+            button.addEventListener('click', () => selectScreen(Number(button.dataset.index)));
+          });
+        };
+
+        const selectScreen = (index) => {
+          currentIndex = Math.max(0, Math.min(index, screens.length - 1));
+          const screen = screens[currentIndex];
+          frame.src = screen.file;
+          frame.title = screen.title;
+          title.textContent = screen.title;
+          openLink.href = screen.file;
+          position.textContent = `Screen ${currentIndex + 1} of ${screens.length}`;
+          previous.disabled = currentIndex === 0;
+          next.disabled = currentIndex === screens.length - 1;
+          renderList();
+        };
+
+        previous.addEventListener('click', () => selectScreen(currentIndex - 1));
+        next.addEventListener('click', () => selectScreen(currentIndex + 1));
+        fit.addEventListener('click', () => {
+          frame.focus({ preventScroll: true });
+          frame.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+
+        document.addEventListener('keydown', (event) => {
+          if (event.target.matches('button, a, select, input, textarea')) return;
+          if (event.key === 'ArrowLeft') selectScreen(currentIndex - 1);
+          if (event.key === 'ArrowRight') selectScreen(currentIndex + 1);
+        });
+
+        selectScreen(0);
+      })();
+    </script>
+  </body>
+</html>

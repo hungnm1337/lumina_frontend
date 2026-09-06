@@ -16,6 +16,24 @@ export class MenuComponent {
   }
 
   constructor(private router: Router) { }
+
+  isActive(section: 'exams' | 'attempts' | 'notes' | 'reports'): boolean {
+    const url = this.router.url;
+
+    switch (section) {
+      case 'exams':
+        return url.includes('/homepage/user-dashboard/exams') || /\/homepage\/user-dashboard\/exam\/\d+/.test(url);
+      case 'attempts':
+        return url.includes('/homepage/user-dashboard/exam-attempts');
+      case 'notes':
+        return url.includes('/homepage/user-dashboard/notes');
+      case 'reports':
+        return url.includes('/homepage/user-dashboard/reports');
+      default:
+        return false;
+    }
+  }
+
   movetoExams() {
     this.router.navigate(['homepage/user-dashboard/exams']);
   }

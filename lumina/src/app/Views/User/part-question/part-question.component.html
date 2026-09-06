@@ -1,4 +1,6 @@
+@if (!isListeningExam && !isReadingExam) {
 <app-part-detail [partInfo]="partInfo"></app-part-detail>
+}
 
 @if (isSpeakingExam) {
 <app-speaking

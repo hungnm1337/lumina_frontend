@@ -15,6 +15,11 @@ moveToUserDashboard() {
 }
   constructor(private toastService: ToastService, private router: Router) {}
 
+  get isExamMode(): boolean {
+    const url = this.router.url;
+    return url.includes('/homepage/user-dashboard/exam/') || url.includes('/homepage/user-dashboard/part/');
+  }
+
   moveToTest() {
     this.toastService.success('Navigating to test...');
   }

@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ExamService } from '../../../Services/Exam/exam.service';
-import { ExamDTO } from '../../../Interfaces/exam.interfaces';
+import { ExamDTO, ExamPartDTO } from '../../../Interfaces/exam.interfaces';
 import { ExamAttemptRequestDTO } from '../../../Interfaces/ExamAttempt/ExamAttemptRequestDTO.interface';
 import { AuthService } from '../../../Services/Auth/auth.service';
 import { ExamAttemptService } from '../../../Services/ExamAttempt/exam-attempt.service';
@@ -126,6 +126,66 @@ export class ExamPartComponent {
         return 'from-orange-500 to-orange-700';
       default:
         return 'from-gray-500 to-gray-700';
+    }
+  }
+
+  getListeningPart(): ExamPartDTO | null {
+    const parts = this.examDetail?.examParts ?? [];
+    return parts.find((part) =>
+      `${part.partCode} ${part.title}`.toUpperCase().includes('LISTENING')
+    ) ?? null;
+  }
+
+  getReadingPart(): ExamPartDTO | null {
+    const parts = this.examDetail?.examParts ?? [];
+    return parts.find((part) =>
+      `${part.partCode} ${part.title}`.toUpperCase().includes('READING')
+    ) ?? null;
+  }
+
+  getActivePart(): ExamPartDTO | null {
+    const examLabel = `${this.examDetail?.examType ?? ''} ${this.examDetail?.name ?? ''}`.toUpperCase();
+    if (examLabel.includes('READING')) return this.getReadingPart() ?? this.examDetail?.examParts?.[0] ?? null;
+    if (examLabel.includes('LISTENING')) return this.getListeningPart() ?? this.examDetail?.examParts?.[0] ?? null;
+    return this.getReadingPart() ?? this.getListeningPart() ?? this.examDetail?.examParts?.[0] ?? null;
+  }
+
+  isReadingAssessment(): boolean {
+    const activePart = this.getActivePart();
+    return Boolean(activePart && `${activePart.partCode} ${activePart.title}`.toUpperCase().includes('READING'));
+  }
+
+  getExamTitle(): string {
+    const fallback = this.isReadingAssessment()
+      ? 'Reading Practice Test Version 001'
+      : 'Listening Practice Test Version 001';
+    return this.examDetail?.name?.trim() || fallback;
+  }
+
+  getQuestionCount(): number {
+    return this.getActivePart()?.questions?.length ?? 0;
+  }
+
+  getTimeAllowed(): string {
+    const duration = this.getActivePart()?.duration;
+    return typeof duration === 'number' && Number.isFinite(duration) && duration > 0
+      ? `${duration} min`
+      : '—';
+  }
+
+  getAssessmentDescription(): string {
+    const skill = this.isReadingAssessment() ? 'reading' : 'listening';
+    return (
+      this.examDetail?.description?.trim() ||
+      this.getActivePart()?.title?.trim() ||
+      `This ${skill} practice test checks your comprehension skills.`
+    );
+  }
+
+  startAssessment(): void {
+    const activePart = this.getActivePart();
+    if (activePart) {
+      this.startPart(activePart.partId);
     }
   }
 
