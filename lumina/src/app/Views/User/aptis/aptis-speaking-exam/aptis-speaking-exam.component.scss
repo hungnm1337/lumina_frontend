@@ -1,0 +1,28 @@
+:host {
+  display: block;
+}
+
+.transition-container {
+  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, transform;
+
+  &.fade-out {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.99);
+  }
+}
+
+.animate-fade-in {
+  animation: smoothSlideEnter 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes smoothSlideEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

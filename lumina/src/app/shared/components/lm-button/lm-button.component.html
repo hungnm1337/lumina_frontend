@@ -1,0 +1,29 @@
+<button
+  [type]="type"
+  [disabled]="disabled || loading"
+  [class]="buttonClasses"
+  (click)="handleClick($event)"
+>
+  <!-- Loading Spinner -->
+  <span *ngIf="loading" class="lm-spinner" aria-hidden="true">
+    <svg class="animate-spin h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+    </svg>
+  </span>
+
+  <!-- Left Icon -->
+  <span *ngIf="icon && iconPosition === 'left' && !loading" class="lm-btn__icon lm-btn__icon--left">
+    <i [class]="icon"></i>
+  </span>
+
+  <!-- Button Label / Projected Content -->
+  <span class="lm-btn__content">
+    <ng-content></ng-content>
+  </span>
+
+  <!-- Right Icon -->
+  <span *ngIf="icon && iconPosition === 'right' && !loading" class="lm-btn__icon lm-btn__icon--right">
+    <i [class]="icon"></i>
+  </span>
+</button>

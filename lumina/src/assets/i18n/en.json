@@ -1,0 +1,138 @@
+{
+  "common": {
+    "login": "Sign In",
+    "register": "Sign Up",
+    "search": "Search...",
+    "viewDetails": "View Details",
+    "viewAll": "View All",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "errorOccurred": "An error occurred, please try again.",
+    "noData": "No data available."
+  },
+  "nav": {
+    "home": "Home",
+    "practice": "Practice",
+    "vocabulary": "Vocabulary",
+    "articles": "Articles",
+    "leaderboard": "Leaderboard",
+    "about": "About Us"
+  },
+  "landing": {
+    "hero": {
+      "headlinePrefix": "TOEIC",
+      "headlineHighlight": "990",
+      "headlineSuffix": "with Us",
+      "subheading": "Lumina accompanies you on the journey to conquer TOEIC with personalized learning paths, ETS standard content, and smart AI technology.",
+      "startNow": "Start Learning Now",
+      "learnMore": "Learn More"
+    },
+    "testCard": {
+      "title": "Free Placement Test",
+      "description": "Take a 150-minute test to know your current proficiency level",
+      "skills": {
+        "listening": "Listening",
+        "reading": "Reading",
+        "writing": "Writing",
+        "speaking": "Speaking"
+      },
+      "startTest": "Start Test"
+    },
+    "features": {
+      "personalized": {
+        "title": "Personalized Path",
+        "desc": "AI analyzes & designs a roadmap tailored to you"
+      },
+      "ets": {
+        "title": "ETS Standard Question Bank",
+        "desc": "Continuously updated with the latest exam questions"
+      },
+      "detailedExplanation": {
+        "title": "Detailed Explanations",
+        "desc": "Thorough, easy-to-understand answer analysis"
+      },
+      "progressTracking": {
+        "title": "Progress Tracking",
+        "desc": "Visual charts help you see your steady improvement"
+      }
+    },
+    "valueBanner": {
+      "badge": "ELEVATE YOUR SKILLS – BEYOND ALL LIMITS",
+      "title": "Welcome to",
+      "brand": "Lumina TOEIC",
+      "desc": "Vietnam's leading TOEIC prep platform trusted by thousands of learners every day.",
+      "stats": {
+        "students": "15,000+",
+        "studentsLabel": "Learners",
+        "satisfaction": "98%",
+        "satisfactionLabel": "Satisfaction",
+        "tests": "2,000+",
+        "testsLabel": "Mock Tests"
+      },
+      "exploreRoadmap": "Explore Learning Roadmap",
+      "weeklyProgress": {
+        "title": "This Week's Progress",
+        "completion": "76%",
+        "completionLabel": "Completed",
+        "listening": "Listening 85%",
+        "reading": "Reading 70%",
+        "writing": "Writing 65%",
+        "speaking": "Speaking 80%"
+      }
+    },
+    "events": {
+      "title": "Events & Activities",
+      "viewAll": "View All Events",
+      "card1": {
+        "tag": "OFFER",
+        "title": "Black Friday 2026 Super Sale",
+        "desc": "Up to 60% off all TOEIC courses. Valid for 3 days only!",
+        "date": "02/08/2026 - 04/08/2026"
+      },
+      "card2": {
+        "tag": "EVENT",
+        "title": "Free Practice Week",
+        "desc": "7 days of free experience with all premium features. Unlimited trial!",
+        "date": "05/08/2026 - 11/08/2026"
+      },
+      "card3": {
+        "tag": "WORKSHOP",
+        "title": "Workshop: Effective TOEIC Test Strategy",
+        "desc": "Live online workshop with master instructors. Revealing scoring secrets.",
+        "date": "10/08/2026 · 20:00 - 21:30"
+      }
+    },
+    "testimonial": {
+      "quote": "Lumina not only helped me boost my test score but also built my confidence in English communication. The roadmap is scientific and fits busy people like me.",
+      "author": "Nguyen Minh Anh",
+      "score": "TOEIC 955"
+    },
+    "footer": {
+      "about": "Lumina - The effective and trustworthy TOEIC preparation platform in Vietnam.",
+      "products": "Products",
+      "practice": "Practice",
+      "mockTests": "Mock Tests",
+      "vocab": "Vocabulary",
+      "roadmap": "Learning Path",
+      "support": "Support",
+      "userGuide": "User Guide",
+      "faq": "FAQ",
+      "contact": "Contact",
+      "privacy": "Privacy Policy",
+      "aboutUs": "About Us",
+      "intro": "Introduction",
+      "news": "News",
+      "careers": "Careers",
+      "terms": "Terms of Service",
+      "newsletterTitle": "Get Free Resources",
+      "newsletterDesc": "Sign up to receive free TOEIC study materials and latest promotions!",
+      "emailPlaceholder": "Enter your email address",
+      "copyright": "© 2024 Lumina TOEIC. All rights reserved."
+    }
+  }
+}
