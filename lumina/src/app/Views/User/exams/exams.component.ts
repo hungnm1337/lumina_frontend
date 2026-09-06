@@ -415,4 +415,44 @@ export class ExamsComponent {
       0
     );
   }
+
+  getSkillDescription(skillName: string): string {
+    const map: Record<string, string> = {
+      Listening: 'Luyện nghe và cải thiện khả năng nhận diện thông tin.',
+      Reading: 'Nâng cao kỹ năng đọc hiểu và phân tích văn bản.',
+      Writing: 'Rèn luyện kỹ năng viết câu, viết đoạn và viết luận.',
+      Speaking: 'Luyện nói trôi chảy và tự tin trong mọi tình huống.',
+    };
+    return map[skillName] ?? 'Bài thi luyện tập TOEIC theo kỹ năng.';
+  }
+
+  getExamDuration(skillName: string): string {
+    const map: Record<string, string> = {
+      Listening: '45 phút',
+      Reading: '60 phút',
+      Writing: '50 phút',
+      Speaking: '30 phút',
+    };
+    return map[skillName] ?? '45 phút';
+  }
+
+  scrollToSkillGroup(skillCode: string): void {
+    const el = document.getElementById('skill-group-' + skillCode);
+    if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    // Also filter by that skill
+    const map: Record<string, string> = {
+      LISTENING: 'LISTENING',
+      READING: 'READING',
+      SPEAKING: 'SPEAKING',
+      WRITTING: 'WRITING',
+      WRITING: 'WRITING',
+    };
+    this.selectedSkill = map[skillCode] ?? '';
+    this.applyFilters();
+  }
+
+  filterBySkill(skill: string): void {
+    this.selectedSkill = skill;
+    this.applyFilters();
+  }
 }
