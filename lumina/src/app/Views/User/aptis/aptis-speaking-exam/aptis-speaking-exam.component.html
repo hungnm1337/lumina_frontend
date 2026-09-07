@@ -1,7 +1,8 @@
-<div class="min-h-screen bg-white text-slate-900 font-sans flex flex-col justify-between select-none">
+<div class="min-h-screen bg-white text-slate-900 font-sans flex flex-col justify-between select-none" [class.contrast-high]="contrastMode === 'high'">
+  
   <!-- Top Navigation Bar (TestReach Style) -->
-  <header class="h-14 border-b border-slate-200 bg-white px-6 flex items-center justify-between sticky top-0 z-40">
-    <!-- Left: TestReach Logo & Back Button -->
+  <header class="h-14 border-b border-slate-200 bg-white px-6 sm:px-10 flex items-center justify-between sticky top-0 z-40">
+    <!-- Left: TestReach 4-dots Petal Logo & Back Button -->
     <div class="flex items-center gap-4">
       <button
         type="button"
@@ -13,23 +14,29 @@
       </button>
       <span class="text-slate-200">|</span>
       <div class="flex items-center gap-2.5 cursor-pointer" (click)="backToPrepare()">
-        <div class="w-7 h-7 flex items-center justify-center">
-          <!-- 4-dot petal SVG logo matching TestReach -->
-          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="6" cy="6" r="4.5" fill="#2b1756"/>
-            <circle cx="18" cy="6" r="4.5" fill="#2b1756"/>
-            <circle cx="6" cy="18" r="4.5" fill="#2b1756"/>
-            <circle cx="18" cy="18" r="4.5" fill="#2b1756"/>
+        <div class="w-6 h-6 flex items-center justify-center">
+          <!-- 4-dot petal SVG logo matching TestReach (Image 2/3) -->
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="6" cy="6" r="4.5" fill="#2B1756"/>
+            <circle cx="18" cy="6" r="4.5" fill="#2B1756"/>
+            <circle cx="6" cy="18" r="4.5" fill="#2B1756"/>
+            <circle cx="18" cy="18" r="4.5" fill="#2B1756"/>
           </svg>
         </div>
-        <span class="text-xs text-slate-400 font-medium hover:text-slate-600 transition-colors">
+        <span class="text-xs text-slate-400 font-medium hover:text-slate-600 transition-colors hidden sm:inline">
           Aptis by British Council
         </span>
       </div>
     </div>
 
-    <!-- Right: User Avatar -->
-    <div class="flex items-center gap-2 text-slate-700">
+    <!-- Center: Microphone Active Banner (Matching Image 4) -->
+    <div *ngIf="currentStep === 'exam' && isMicActive" class="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs text-slate-700 font-medium shadow-sm animate-fade-in">
+      <span class="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
+      <span class="text-[11px] sm:text-xs">Micrô đang được sử dụng</span>
+    </div>
+
+    <!-- Right: User Avatar Dropdown (Image 2/3) -->
+    <div class="flex items-center gap-2 text-slate-700 cursor-pointer">
       <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-600 text-sm">
         <i class="fa-regular fa-user"></i>
       </div>
@@ -39,66 +46,69 @@
 
   <!-- Loading Bar Indicator when transitioning -->
   <div *ngIf="isTransitioning" class="fixed top-14 left-0 right-0 h-1 bg-purple-100 overflow-hidden z-50">
-    <div class="h-full bg-[#2b1756] animate-pulse w-full"></div>
+    <div class="h-full bg-[#2B1756] animate-pulse w-full"></div>
   </div>
 
-  <!-- Main Screen Body with Smooth Animated Transition Container -->
-  <main class="flex-1 max-w-4xl w-full mx-auto px-6 pt-12 sm:pt-16 pb-28">
-    <!-- STEP 1: PREVIEW SCREEN (Matching media_1788626034000.png) -->
+  <!-- Main Screen Body -->
+  <main class="flex-1 w-full mx-auto px-6 sm:px-12 lg:px-16 pt-8 sm:pt-12 pb-28">
+
+    <!-- ======================================================== -->
+    <!-- STEP 1: PREVIEW SCREEN (Matching Image 2)                -->
+    <!-- ======================================================== -->
     <div
       *ngIf="currentStep === 'preview'"
-      class="transition-container"
+      class="max-w-4xl mx-auto transition-container space-y-6 pt-4 sm:pt-8"
       [class.fade-out]="isTransitioning"
     >
-      <div class="space-y-6">
-        <div>
-          <span class="text-sm sm:text-base font-medium text-slate-500">
-            Aptis General Practice Test
+      <div>
+        <span class="text-sm sm:text-base font-normal text-slate-600">
+          Aptis General Practice Test
+        </span>
+        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mt-1 tracking-tight">
+          Speaking Practice Test Version 001
+        </h1>
+      </div>
+
+      <div class="pt-2">
+        <div class="text-xs sm:text-sm font-semibold text-slate-900">
+          Number of Questions
+        </div>
+        <div class="text-sm font-medium text-slate-700 mt-1">
+          4
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <div class="text-xs sm:text-sm font-semibold text-slate-900">
+          Assessment Description
+        </div>
+      </div>
+
+      <!-- Start Assessment Button (Image 2) -->
+      <div class="pt-6">
+        <button
+          (click)="startAssessment()"
+          [disabled]="isTransitioning"
+          class="inline-flex items-center justify-center bg-[#2B1756] hover:bg-[#3E1F7A] active:scale-[0.98] text-white font-semibold text-sm px-7 py-2.5 rounded-md shadow-sm transition-all duration-200 cursor-pointer"
+        >
+          <span *ngIf="!isTransitioning">Start Assessment</span>
+          <span *ngIf="isTransitioning" class="flex items-center gap-2">
+            <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            Starting...
           </span>
-          <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 mt-1.5 tracking-tight">
-            Speaking Practice Test Version 001
-          </h1>
-        </div>
-
-        <div>
-          <div class="text-xs font-bold text-slate-800 uppercase tracking-wider">
-            Number of Questions
-          </div>
-          <div class="text-sm font-semibold text-slate-700 mt-1">
-            4
-          </div>
-        </div>
-
-        <div>
-          <div class="text-xs font-bold text-slate-800 uppercase tracking-wider">
-            Assessment Description
-          </div>
-        </div>
-
-        <!-- Start Assessment Button with Smooth Transition Trigger -->
-        <div class="pt-4">
-          <button
-            (click)="startAssessment()"
-            [disabled]="isTransitioning"
-            class="inline-flex items-center justify-center bg-[#2b1756] hover:bg-[#3e1f7a] active:scale-[0.98] text-white font-semibold text-sm px-6 py-2.5 rounded-md shadow-sm transition-all duration-200 cursor-pointer"
-          >
-            <span *ngIf="!isTransitioning">Start Assessment</span>
-            <span *ngIf="isTransitioning" class="flex items-center gap-2">
-              <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-              </svg>
-              Starting...
-            </span>
-          </button>
-        </div>
+        </button>
       </div>
     </div>
 
-    <!-- STEP 2: INSTRUCTIONS SCREEN (Matching media_1788626053785.png) -->
+    <!-- ======================================================== -->
+    <!-- STEP 2: INSTRUCTIONS SCREEN (Matching Image 3)           -->
+    <!-- ======================================================== -->
     <div
       *ngIf="currentStep === 'instructions'"
-      class="transition-container animate-fade-in"
+      class="max-w-4xl mx-auto transition-container animate-fade-in space-y-6 pt-4 sm:pt-8"
     >
       <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mb-6">
         Aptis General Speaking Test Instructions
@@ -121,109 +131,215 @@
         <p>
           The test will take about 12 minutes.
         </p>
-        <p class="pt-4">
+        <p class="pt-4 text-slate-900 font-medium">
           When you click on the 'Next' button, the test will begin.
         </p>
       </div>
     </div>
 
-    <!-- STEP 3: SOUND & MICROPHONE CHECK -->
+    <!-- ======================================================== -->
+    <!-- STEP 3: EXAM QUESTION SCREEN (Matching Image 4)          -->
+    <!-- ======================================================== -->
     <div
-      *ngIf="currentStep === 'mic_check'"
-      class="transition-container animate-fade-in space-y-6"
+      *ngIf="currentStep === 'exam'"
+      class="max-w-6xl mx-auto transition-container animate-fade-in"
     >
-      <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mb-4">
-        Microphone & Audio Check
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start pt-2">
+        
+        <!-- Left Column: Question Prompt (Image 4) -->
+        <div class="lg:col-span-8 space-y-6">
+          <div>
+            <div class="text-sm font-medium text-slate-500 mb-1">
+              Speaking
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mb-8">
+              Part {{ currentPart.partIndex }} of {{ currentPart.partTotal }}
+            </h1>
+          </div>
+
+          <!-- Question Prompt Text (Image 4: "Please tell me about your family.") -->
+          <div class="text-lg sm:text-xl font-normal text-slate-800 leading-relaxed">
+            {{ currentQuestion.prompt }}
+          </div>
+
+          <!-- Image support for Part 2 & Part 3 (if applicable) -->
+          <div *ngIf="currentQuestion.imageUrl" class="mt-6 rounded-2xl overflow-hidden border border-slate-200 shadow-sm max-w-lg">
+            <img [src]="currentQuestion.imageUrl" alt="Question Image" class="w-full h-auto object-cover max-h-72">
+          </div>
+
+          <!-- Second Image support for Part 3 Compare (if applicable) -->
+          <div *ngIf="currentQuestion.secondImageUrl" class="mt-4 rounded-2xl overflow-hidden border border-slate-200 shadow-sm max-w-lg">
+            <img [src]="currentQuestion.secondImageUrl" alt="Second Question Image" class="w-full h-auto object-cover max-h-72">
+          </div>
+        </div>
+
+        <!-- Right Column: Instructions... Card with Audio Disc (Image 4) -->
+        <div class="lg:col-span-4">
+          <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-lg flex flex-col items-center justify-center min-h-[480px] relative overflow-hidden">
+            
+            <!-- Card Header: "Instructions..." -->
+            <h3 class="text-lg sm:text-xl font-bold text-slate-800 text-center mb-8">
+              Instructions...
+            </h3>
+
+            <!-- Circular Audio / Speaker Disc (Image 4) -->
+            <div class="relative flex items-center justify-center mb-8">
+              <!-- Radiant ripple animation while playing or recording -->
+              <div 
+                *ngIf="currentPhase === 'prompt' || currentPhase === 'recording'"
+                class="absolute inset-0 rounded-full bg-purple-200/60 animate-ping pointer-events-none"
+              ></div>
+
+              <!-- Main lavender circle disc -->
+              <div class="w-40 h-40 sm:w-44 sm:h-44 rounded-full bg-purple-50/90 border border-purple-100 flex items-center justify-center shadow-inner relative z-10">
+                <!-- Megaphone / Speaker Icon (Deep Purple matching Image 4) -->
+                <div class="text-5xl text-[#2B1756]">
+                  <i *ngIf="currentPhase === 'prompt'" class="fa-solid fa-volume-high animate-pulse"></i>
+                  <i *ngIf="currentPhase === 'preparation'" class="fa-solid fa-clock text-amber-600"></i>
+                  <i *ngIf="currentPhase === 'recording'" class="fa-solid fa-microphone text-rose-600 animate-bounce"></i>
+                  <i *ngIf="currentPhase === 'completed'" class="fa-solid fa-check text-emerald-600"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dynamic State Message & Timers below disc -->
+            <div class="w-full text-center space-y-2">
+              <!-- Phase 1: Listening Prompt -->
+              <div *ngIf="currentPhase === 'prompt'" class="space-y-1">
+                <span class="text-xs font-semibold text-purple-900 bg-purple-100/80 px-3 py-1 rounded-full inline-block">
+                  Listening to instructions...
+                </span>
+                <p class="text-[11px] text-slate-400">Audio will play automatically</p>
+              </div>
+
+              <!-- Phase 2: Preparation Countdown -->
+              <div *ngIf="currentPhase === 'preparation'" class="space-y-1">
+                <span class="text-xs font-semibold text-amber-900 bg-amber-100 px-3 py-1 rounded-full inline-block">
+                  Preparation time: {{ countdownTimer }}s
+                </span>
+                <div class="w-48 mx-auto bg-slate-100 h-1.5 rounded-full overflow-hidden mt-2">
+                  <div 
+                    class="bg-amber-500 h-full transition-all duration-1000"
+                    [style.width.%]="(countdownTimer / currentQuestion.prepTime) * 100"
+                  ></div>
+                </div>
+              </div>
+
+              <!-- Phase 3: Recording Active Countdown -->
+              <div *ngIf="currentPhase === 'recording'" class="space-y-1">
+                <span class="text-xs font-bold text-rose-800 bg-rose-100 px-3.5 py-1 rounded-full inline-flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-rose-600 animate-ping"></span>
+                  Recording: {{ countdownTimer }}s
+                </span>
+                <p class="text-[11px] text-slate-500">Speak clearly into your microphone</p>
+                <div class="w-48 mx-auto bg-slate-100 h-1.5 rounded-full overflow-hidden mt-2">
+                  <div 
+                    class="bg-rose-500 h-full transition-all duration-1000"
+                    [style.width.%]="(countdownTimer / currentQuestion.recordTime) * 100"
+                  ></div>
+                </div>
+              </div>
+
+              <!-- Phase 4: Completed -->
+              <div *ngIf="currentPhase === 'completed'" class="space-y-2">
+                <span class="text-xs font-semibold text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full inline-block">
+                  ✓ Recording saved
+                </span>
+                <p class="text-[11px] text-slate-500">Click 'Next' to continue</p>
+                
+                <!-- Audio Playback Preview -->
+                <div *ngIf="recordedAudioUrl" class="pt-1">
+                  <audio [src]="recordedAudioUrl" controls class="w-full h-8 scale-90"></audio>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- STEP 4: SUMMARY SCREEN                                   -->
+    <!-- ======================================================== -->
+    <div
+      *ngIf="currentStep === 'summary'"
+      class="max-w-2xl mx-auto transition-container animate-fade-in text-center pt-8 space-y-6"
+    >
+      <div class="w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-4xl mx-auto shadow-sm">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+
+      <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+        Speaking Practice Test Completed!
       </h1>
 
-      <div class="p-6 bg-slate-50 border border-slate-200 rounded-xl space-y-4 max-w-lg">
-        <p class="text-sm text-slate-700">
-          Please test your audio equipment before starting Part 1 of the Speaking test.
-        </p>
-
-        <div class="flex items-center gap-3">
-          <span class="w-3 h-3 rounded-full bg-emerald-500 animate-ping"></span>
-          <span class="text-xs font-bold text-emerald-700">Microphone connected & ready</span>
-        </div>
-
-        <div class="pt-2">
-          <div class="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
-            <div class="h-full bg-emerald-500 w-3/4 animate-pulse"></div>
-          </div>
-          <span class="text-[11px] text-slate-400 mt-1 block">Audio input level: Good</span>
-        </div>
-      </div>
-
-      <p class="text-sm text-slate-600">
-        Click 'Next' to proceed to Part 1: Sentence Comprehension.
+      <p class="text-slate-600 text-sm sm:text-base leading-relaxed max-w-lg mx-auto">
+        Bạn đã hoàn thành tất cả các phần thi của bài Speaking Practice Test Version 001. Hệ thống đã ghi nhận toàn bộ file ghi âm câu trả lời của bạn.
       </p>
-    </div>
 
-    <!-- STEP 4: PART 1 QUESTION -->
-    <div
-      *ngIf="currentStep === 'part1'"
-      class="transition-container animate-fade-in space-y-6"
-    >
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-        <span class="text-xs font-bold uppercase tracking-wider text-purple-900">
-          Part 1: Personal Information
-        </span>
-        <span class="text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-md">
-          Time remaining: 00:30
-        </span>
-      </div>
-
-      <h2 class="text-lg font-bold text-slate-900">
-        Question 1 of 3: Please tell me about yourself and your family.
-      </h2>
-
-      <div class="p-8 border border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-4 bg-slate-50">
-        <div class="w-16 h-16 rounded-full bg-rose-500 text-white flex items-center justify-center text-2xl animate-pulse shadow-lg">
-          <i class="fa-solid fa-microphone"></i>
-        </div>
-        <span class="text-xs font-bold text-slate-600">Recording in progress... Speak clearly into your mic.</span>
+      <div class="pt-4 flex items-center justify-center gap-4">
+        <button
+          (click)="backToPrepare()"
+          class="px-6 py-2.5 rounded-md font-semibold text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+        >
+          Trang chuẩn bị
+        </button>
+        <button
+          (click)="currentPartIndex = 0; currentQuestionIndex = 0; currentStep = 'preview'"
+          class="px-6 py-2.5 rounded-md font-semibold text-sm bg-[#2B1756] hover:bg-[#3E1F7A] text-white shadow-sm transition-colors"
+        >
+          Làm lại bài thi
+        </button>
       </div>
     </div>
+
   </main>
 
-  <!-- Fixed Bottom Bar for Instructions & Test Steps (Matching media_1788626053785.png) -->
+  <!-- ======================================================== -->
+  <!-- FIXED BOTTOM TOOLBAR (Matching Images 3 & 4)             -->
+  <!-- ======================================================== -->
   <footer
-    *ngIf="currentStep !== 'preview'"
-    class="fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-slate-200 px-6 flex items-center justify-between z-30"
+    *ngIf="currentStep !== 'preview' && currentStep !== 'summary'"
+    class="fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-slate-200 px-6 sm:px-12 flex items-center justify-between z-30"
   >
-    <!-- Left 3 Utility Buttons -->
-    <div class="flex items-center gap-2">
-      <!-- Menu Button -->
+    <!-- Left 3 Utility Buttons (Image 3/4) -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <!-- Menu Button [☰] -->
       <button
-        class="w-9 h-9 border border-slate-300 rounded-md flex items-center justify-center text-slate-600 hover:bg-slate-50 text-xs transition-colors"
+        (click)="toggleMenuDrawer()"
+        class="w-9 h-9 border border-slate-300 rounded-md flex items-center justify-center text-slate-700 hover:bg-slate-50 text-sm transition-colors"
         title="Question list / Menu"
       >
         <i class="fa-solid fa-bars"></i>
       </button>
 
-      <!-- Info Button -->
+      <!-- Info Button [ℹ] -->
       <button
-        class="w-9 h-9 border border-slate-300 rounded-md flex items-center justify-center text-slate-600 hover:bg-slate-50 text-xs transition-colors"
+        (click)="toggleInfoModal()"
+        class="w-9 h-9 border border-slate-300 rounded-md flex items-center justify-center text-slate-700 hover:bg-slate-50 text-sm transition-colors"
         title="Information"
       >
         <i class="fa-solid fa-info"></i>
       </button>
 
-      <!-- Accessibility Button -->
+      <!-- Accessibility Button [♿] -->
       <button
-        class="w-9 h-9 border border-slate-300 rounded-md flex items-center justify-center text-slate-600 hover:bg-slate-50 text-xs transition-colors"
+        (click)="toggleAccessibilityModal()"
+        class="w-9 h-9 border border-slate-300 rounded-md flex items-center justify-center text-slate-700 hover:bg-slate-50 text-sm transition-colors"
         title="Accessibility options"
       >
         <i class="fa-solid fa-person"></i>
       </button>
     </div>
 
-    <!-- Right Controls -->
+    <!-- Right Controls: Fullscreen [⛶] & Next Button (Image 3/4) -->
     <div class="flex items-center gap-3">
       <!-- Fullscreen Toggle -->
       <button
         (click)="toggleFullscreen()"
-        class="w-9 h-9 border border-slate-300 rounded-md flex items-center justify-center text-slate-600 hover:bg-slate-50 text-xs transition-colors"
+        class="w-9 h-9 border border-slate-300 rounded-md flex items-center justify-center text-slate-700 hover:bg-slate-50 text-sm transition-colors"
         title="Toggle fullscreen"
       >
         <i [class]="isFullscreen ? 'fa-solid fa-compress' : 'fa-solid fa-expand'"></i>
@@ -233,11 +349,106 @@
       <button
         (click)="nextStep()"
         [disabled]="isTransitioning"
-        class="inline-flex items-center justify-center gap-2 bg-[#2b1756] hover:bg-[#3e1f7a] active:scale-[0.98] text-white font-semibold text-sm px-6 py-2 rounded-md shadow-sm transition-all cursor-pointer"
+        class="inline-flex items-center justify-center gap-2 bg-[#2B1756] hover:bg-[#3E1F7A] active:scale-[0.98] text-white font-semibold text-sm px-6 sm:px-7 py-2 rounded-md shadow-sm transition-all cursor-pointer disabled:opacity-50"
       >
         <span>Next</span>
         <i class="fa-solid fa-arrow-right text-xs"></i>
       </button>
     </div>
   </footer>
+
+  <!-- ======================================================== -->
+  <!-- MODALS & DRAWERS                                         -->
+  <!-- ======================================================== -->
+
+  <!-- Question List Drawer [☰] -->
+  <div *ngIf="showMenuDrawer" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex justify-start animate-fade-in" (click)="toggleMenuDrawer()">
+    <div class="w-80 sm:w-96 bg-white h-full shadow-2xl p-6 flex flex-col justify-between" (click)="$event.stopPropagation()">
+      <div>
+        <div class="flex items-center justify-between pb-4 border-b border-slate-200 mb-4">
+          <h3 class="font-bold text-slate-900 text-base">Danh sách câu hỏi Speaking</h3>
+          <button (click)="toggleMenuDrawer()" class="text-slate-400 hover:text-slate-700 text-lg">×</button>
+        </div>
+
+        <div class="space-y-4">
+          @for (part of parts; track part.partIndex) {
+            <div>
+              <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                Part {{ part.partIndex }}: {{ part.partTitle }}
+              </div>
+              <div class="grid grid-cols-3 gap-2">
+                @for (q of part.questions; track q.questionNumber) {
+                  <button
+                    (click)="selectQuestion(part.partIndex - 1, q.questionNumber - 1)"
+                    class="py-2 px-3 rounded-lg text-xs font-semibold border transition-all text-center"
+                    [class.bg-purple-900]="currentPartIndex === part.partIndex - 1 && currentQuestionIndex === q.questionNumber - 1"
+                    [class.text-white]="currentPartIndex === part.partIndex - 1 && currentQuestionIndex === q.questionNumber - 1"
+                    [class.border-purple-900]="currentPartIndex === part.partIndex - 1 && currentQuestionIndex === q.questionNumber - 1"
+                    [class.bg-slate-50]="!(currentPartIndex === part.partIndex - 1 && currentQuestionIndex === q.questionNumber - 1)"
+                    [class.text-slate-700]="!(currentPartIndex === part.partIndex - 1 && currentQuestionIndex === q.questionNumber - 1)"
+                    [class.border-slate-200]="!(currentPartIndex === part.partIndex - 1 && currentQuestionIndex === q.questionNumber - 1)"
+                  >
+                    Câu {{ q.questionNumber }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <button (click)="toggleMenuDrawer()" class="w-full py-2.5 rounded-lg font-semibold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">
+        Đóng danh sách
+      </button>
+    </div>
+  </div>
+
+  <!-- Info Modal [ℹ] -->
+  <div *ngIf="showInfoModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" (click)="toggleInfoModal()">
+    <div class="max-w-md w-full bg-white rounded-2xl p-6 shadow-2xl space-y-4" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <h3 class="font-bold text-slate-900 text-base">Thông tin bài thi Speaking</h3>
+        <button (click)="toggleInfoModal()" class="text-slate-400 hover:text-slate-700 text-lg">×</button>
+      </div>
+      <div class="text-xs text-slate-600 space-y-2 leading-relaxed">
+        <p>• <strong>Bài thi:</strong> Aptis General Speaking Practice Test Version 001</p>
+        <p>• <strong>Thời lượng:</strong> Khoảng 12 phút</p>
+        <p>• <strong>Cấu trúc:</strong> 3 phần thi với tổng cộng 9 câu hỏi ghi âm giọng nói.</p>
+        <p>• <strong>Yêu cầu:</strong> Kết nối micro ổn định, nói to rõ ràng vào mic khi có tín hiệu.</p>
+      </div>
+      <button (click)="toggleInfoModal()" class="w-full py-2 bg-[#2B1756] text-white rounded-lg text-xs font-semibold hover:bg-[#3E1F7A] transition-colors">
+        Đã hiểu
+      </button>
+    </div>
+  </div>
+
+  <!-- Accessibility Modal [♿] -->
+  <div *ngIf="showAccessibilityModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" (click)="toggleAccessibilityModal()">
+    <div class="max-w-md w-full bg-white rounded-2xl p-6 shadow-2xl space-y-4" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <h3 class="font-bold text-slate-900 text-base">Tùy chọn trợ năng (Accessibility)</h3>
+        <button (click)="toggleAccessibilityModal()" class="text-slate-400 hover:text-slate-700 text-lg">×</button>
+      </div>
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-700">Chế độ tương phản cao:</span>
+          <button 
+            (click)="contrastMode = (contrastMode === 'normal' ? 'high' : 'normal')"
+            class="px-3 py-1 rounded text-xs font-bold transition-colors"
+            [class.bg-purple-900]="contrastMode === 'high'"
+            [class.text-white]="contrastMode === 'high'"
+            [class.bg-slate-100]="contrastMode === 'normal'"
+            [class.text-slate-700]="contrastMode === 'normal'"
+          >
+            {{ contrastMode === 'high' ? 'Bật' : 'Tắt' }}
+          </button>
+        </div>
+      </div>
+      <button (click)="toggleAccessibilityModal()" class="w-full py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800 transition-colors">
+        Xong
+      </button>
+    </div>
+  </div>
+
 </div>
+

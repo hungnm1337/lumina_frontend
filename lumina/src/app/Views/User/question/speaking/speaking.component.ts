@@ -384,16 +384,8 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   private checkQuotaAccess(): void {
-    this.quotaService.checkQuota('speaking').subscribe({
-      next: (result) => {
-        if (!result.isPremium) {
-          this.showQuotaModal = true;
-        }
-      },
-      error: (err) => {
-        console.error(' Failed to check quota:', err);
-      },
-    });
+    // Tạm thời vô hiệu hóa luồng nạp tiền
+    this.showQuotaModal = false;
   }
 
   closeQuotaModal(): void {
