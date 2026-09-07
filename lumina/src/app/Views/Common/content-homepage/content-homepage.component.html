@@ -39,14 +39,7 @@
           Tham gia bài kiểm tra 150 phút để biết trình độ hiện tại của bạn
         </p>
 
-        <div class="hero-skills">
-          <div *ngFor="let skill of heroSkills" class="hero-skill hero-skill--{{ skill.tone }}">
-            <span class="hero-skill__icon">
-              <i class="fas {{ skill.icon }}"></i>
-            </span>
-            <span class="hero-skill__label">{{ skill.title }}</span>
-          </div>
-        </div>
+        <app-skill-list></app-skill-list>
 
         <button class="btn btn--gold btn--full" (click)="startTest()">
           <i class="fas fa-rocket"></i>

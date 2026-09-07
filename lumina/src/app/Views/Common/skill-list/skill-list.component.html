@@ -1,0 +1,8 @@
+<div class="skills-container">
+  <div *ngFor="let skill of skills" class="skill-item" (click)="onSelectSkill(skill)">
+    <span class="skill-item__icon">
+      <img [src]="skill.icon" [alt]="skill.title" class="skill-item__img" />
+    </span>
+    <span class="skill-item__label">{{ skill.title }}</span>
+  </div>
+</div>

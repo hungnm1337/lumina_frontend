@@ -31,10 +31,12 @@ interface SkillProgress {
   percentage: number;
 }
 
+import { SkillListComponent } from '../skill-list/skill-list.component';
+
 @Component({
   selector: 'app-content-homepage',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, SkillListComponent],
   templateUrl: './content-homepage.component.html',
   styleUrl: './content-homepage.component.scss',
 })
@@ -42,10 +44,10 @@ export class ContentHomepageComponent implements OnInit {
 
   /* ── Hero skills ── */
   heroSkills = [
-    { key: 'listening', title: 'Listening', icon: 'fa-headphones', tone: 'blue' },
-    { key: 'reading', title: 'Reading', icon: 'fa-book-open', tone: 'orange' },
-    { key: 'writing', title: 'Writing', icon: 'fa-pen-fancy', tone: 'green' },
-    { key: 'speaking', title: 'Speaking', icon: 'fa-microphone', tone: 'purple' },
+    { key: 'listening', title: 'Listening', icon: 'assets/Icon/Icon_Listening.png' },
+    { key: 'reading', title: 'Reading', icon: 'assets/Icon/Icon_Reading.png' },
+    { key: 'writing', title: 'Writing', icon: 'assets/Icon/Icon_Writing.png' },
+    { key: 'speaking', title: 'Speaking', icon: 'assets/Icon/Icon_Speaking.png' },
   ];
 
   /* ── Features strip ── */
