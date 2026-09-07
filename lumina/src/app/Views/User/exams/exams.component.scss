@@ -382,11 +382,16 @@
 
   &__icon-wrap {
     display: grid;
-    width: 3rem;
-    height: 3rem;
+    width: 2.75rem;
+    height: 2.75rem;
     place-items: center;
-    border-radius: .9rem;
-    font-size: 1.2rem;
+    background: transparent;
+  }
+
+  &__img {
+    width: 2.25rem;
+    height: 2.25rem;
+    object-fit: contain;
   }
 
   &__content {
@@ -421,11 +426,14 @@
   }
 
   // Color variants
-  &--blue .skill-overview-card__icon-wrap { color: var(--c-blue); background: var(--c-blue-soft); }
-  &--green .skill-overview-card__icon-wrap { color: var(--c-green); background: var(--c-green-soft); }
-  &--purple .skill-overview-card__icon-wrap { color: var(--c-purple); background: var(--c-purple-soft); }
-  &--orange .skill-overview-card__icon-wrap { color: var(--c-orange); background: var(--c-orange-soft); }
-  &--gray .skill-overview-card__icon-wrap { color: var(--c-gray); background: #f1f5f9; }
+  &--blue .skill-overview-card__icon-wrap,
+  &--green .skill-overview-card__icon-wrap,
+  &--purple .skill-overview-card__icon-wrap,
+  &--orange .skill-overview-card__icon-wrap,
+  &--gray .skill-overview-card__icon-wrap {
+    color: inherit;
+    background: transparent;
+  }
 }
 
 // ── EXPLORE SECTION ───────────────────────────────────────
@@ -552,6 +560,11 @@
     &--orange { color: var(--c-orange); background: var(--c-orange-soft); }
     &--gray { color: var(--c-gray); background: #f1f5f9; }
     i { font-size: .6rem; }
+    img, .exam-card__skill-img {
+      width: 0.85rem;
+      height: 0.85rem;
+      object-fit: contain;
+    }
   }
 
   &__title {

@@ -103,7 +103,14 @@ export class UserEventsDashboardComponent implements OnInit {
 
   // Get event image (placeholder if not available)
   getEventImage(event: EventDTO): string {
-    // SỬA: EventDTO không có imageUrl, dùng placeholder
-    return 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80';
+    const images = [
+      'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&q=80',
+      'assets/student-laptop.png',
+      'assets/student-studying.png',
+      'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=600&q=80',
+    ];
+    const index = Math.abs(event.eventId || 0) % images.length;
+    return images[index];
   }
 }

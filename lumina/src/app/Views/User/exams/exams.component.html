@@ -153,7 +153,7 @@
           <div *ngFor="let skillGroup of filteredSkillGroups" class="skill-overview-card"
             [class]="'skill-overview-card--' + skillGroup.color">
             <div class="skill-overview-card__icon-wrap">
-              <i [class]="skillGroup.icon" aria-hidden="true"></i>
+              <img [src]="skillGroup.icon" [alt]="skillGroup.skillName" class="skill-overview-card__img" />
             </div>
             <div class="skill-overview-card__content">
               <h3>{{ skillGroup.skillName }}</h3>
@@ -221,7 +221,7 @@
               <article *ngFor="let exam of getPaginatedExams(skillGroup)" class="exam-card"
                 [class.exam-card--completed]="exam.completionStatus?.isCompleted">
                 <div class="exam-card__skill-badge" [class]="'exam-card__skill-badge--' + skillGroup.color">
-                  <i [class]="skillGroup.icon" aria-hidden="true"></i>
+                  <img [src]="skillGroup.icon" [alt]="skillGroup.skillName" class="exam-card__skill-img" />
                   {{ skillGroup.skillName }}
                 </div>
 

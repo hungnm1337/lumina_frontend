@@ -43,18 +43,42 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     // Khởi tạo Google Sign-In
-    google.accounts.id.initialize({
-      client_id: environment.googleClientId,
-      callback: this.handleGoogleSignIn.bind(this),
-    });
+    try {
+      if (typeof google !== 'undefined' && google.accounts) {
+        google.accounts.id.initialize({
+          client_id: environment.googleClientId,
+          callback: this.handleGoogleSignIn.bind(this),
+        });
 
-    // Render nút Google
-    google.accounts.id.renderButton(document.getElementById('googleBtn'), {
-      theme: 'outline',
-      size: 'large',
-      width: '300',
-      text: 'signin_with',
-    });
+        // Render hidden nút Google SDK
+        const googleBtnEl = document.getElementById('googleBtn');
+        if (googleBtnEl) {
+          google.accounts.id.renderButton(googleBtnEl, {
+            theme: 'outline',
+            size: 'large',
+            width: '300',
+            text: 'signin_with',
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('Google SDK not loaded yet', e);
+    }
+  }
+
+  triggerGoogleSelect(): void {
+    try {
+      if (typeof google !== 'undefined' && google.accounts) {
+        const btn = document.getElementById('googleBtn')?.querySelector('div[role="button"]') as HTMLElement;
+        if (btn) {
+          btn.click();
+        } else {
+          google.accounts.id.prompt();
+        }
+      }
+    } catch (e) {
+      this.toastService.error('Không thể kết nối đến Google Sign-In.');
+    }
   }
 
   // === PHẦN ĐƯỢC SỬA LẠI CHO ĐÚNG ===

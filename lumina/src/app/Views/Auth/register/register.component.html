@@ -1,205 +1,147 @@
-<app-header></app-header>
-<body class="min-h-screen bg-slate-50">
-  <main class="max-w-6xl mx-auto px-4 py-10">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
-      <!-- Left: Hero -->
-      <div
-        class="flex md:flex relative rounded-2xl overflow-hidden shadow-lg h-48 md:h-auto"
-      >
-        <img
-          src="/assets/images/lumina-toeic.png"
-          alt="Lumina TOEIC"
-          class="w-full h-auto object-cover"
-          loading="lazy"
-        />
+<div class="register-wrapper">
+  <app-header></app-header>
+
+  <!-- Decorative Background Blobs & Dots -->
+  <div class="bg-decorations" aria-hidden="true">
+    <div class="blob blob--top-left"></div>
+    <div class="blob blob--bottom-right"></div>
+    <div class="dot-grid"></div>
+  </div>
+
+  <main class="register-main">
+    <div class="register-container">
+      
+      <!-- ═══════════════════════════ LEFT PANEL: HERO BANNER ═══════════════════════════ -->
+      <div class="register-banner">
+        <img src="assets/images/login-left-banner.png" alt="Lumina TOEIC Banner" class="full-banner-img" />
       </div>
 
-      <!-- Right: Register/Verify Card -->
-      <div
-        class="glass rounded-2xl border border-white/60 shadow-xl p-6 md:p-8"
-      >
-        <!-- STEP 1: Register Form -->
-        <div *ngIf="currentStep === 'register'">
-          <div class="flex items-center gap-3 mb-6">
-            <div>
-              <h2
-                style="margin-left: 125px"
-                class="text-xl font-bold text-slate-900"
-              >
-                Đăng ký tài khoản
-              </h2>
-              <p style="margin-left: 125px" class="text-sm text-slate-600 mt-1">
-                Nhập thông tin đăng ký
-              </p>
-            </div>
+      <!-- ═══════════════════════════ RIGHT PANEL: REGISTER / VERIFY CARD ═══════════════════════════ -->
+      <div class="register-card">
+        
+        <!-- STEP 1: REGISTER FORM -->
+        <div *ngIf="currentStep === 'register'" class="step-wrapper">
+          <div class="register-card__header">
+            <h2 class="register-card__title">Đăng ký tài khoản</h2>
+            <p class="register-card__subtitle">Bắt đầu hành trình chinh phục TOEIC cùng Lumina</p>
           </div>
 
-          <form
-            [formGroup]="registerForm"
-            (ngSubmit)="onSubmit()"
-            class="space-y-4"
-          >
-            <!-- Name -->
-            <div>
-              <label
-                for="name"
-                class="block text-sm font-medium text-slate-700 mb-1"
-              >
-                Họ và tên
-              </label>
-              <input
-                id="name"
-                formControlName="name"
-                type="text"
-                placeholder="Nguyễn Văn A"
-                class="w-full rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2 outline-none"
-              />
-              @if (f['name'].invalid && (f['name'].dirty || f['name'].touched))
-              {
-              <div class="text-xs text-red-500 mt-1">
-                @if (f['name'].errors?.['required']) {
-                <div>Họ và tên là bắt buộc.</div>
-                }
+          <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+            <!-- Full Name -->
+            <div class="form-field">
+              <label for="name" class="form-label">Họ và tên</label>
+              <div class="input-container">
+                <i class="far fa-id-card input-icon"></i>
+                <input
+                  id="name"
+                  formControlName="name"
+                  type="text"
+                  class="form-input"
+                  placeholder="Nhập họ và tên của bạn"
+                />
               </div>
-              }
+              <div *ngIf="f['name'].invalid && (f['name'].dirty || f['name'].touched)" class="field-error">
+                <span *ngIf="f['name'].errors?.['required']">Họ và tên là bắt buộc.</span>
+              </div>
             </div>
 
             <!-- Username -->
-            <div>
-              <label
-                for="username"
-                class="block text-sm font-medium text-slate-700 mb-1"
-              >
-                Tên đăng nhập
-              </label>
-              <input
-                id="username"
-                formControlName="username"
-                type="text"
-                placeholder="nguyenvana"
-                class="w-full rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2 outline-none"
-              />
-              @if (f['username'].invalid && (f['username'].dirty ||
-              f['username'].touched)) {
-              <div class="text-xs text-red-500 mt-1">
-                @if (f['username'].errors?.['required']) {
-                <div>Tên đăng nhập là bắt buộc.</div>
-                } @if (f['username'].errors?.['pattern']) {
-                <div>Tên đăng nhập chỉ chứa chữ, số, và ký tự ._-</div>
-                }
+            <div class="form-field">
+              <label for="username" class="form-label">Tên đăng nhập</label>
+              <div class="input-container">
+                <i class="far fa-user input-icon"></i>
+                <input
+                  id="username"
+                  formControlName="username"
+                  type="text"
+                  class="form-input"
+                  placeholder="Nhập tên đăng nhập"
+                />
               </div>
-              }
+              <div *ngIf="f['username'].invalid && (f['username'].dirty || f['username'].touched)" class="field-error">
+                <span *ngIf="f['username'].errors?.['required']">Tên đăng nhập là bắt buộc.</span>
+                <span *ngIf="f['username'].errors?.['pattern']">Tên đăng nhập chỉ chứa chữ, số, và ký tự ._-</span>
+              </div>
             </div>
 
             <!-- Email -->
-            <div>
-              <label
-                for="email"
-                class="block text-sm font-medium text-slate-700 mb-1"
-              >
-                Email
-              </label>
-              <input
-                id="email"
-                formControlName="email"
-                type="email"
-                placeholder="you@example.com"
-                class="w-full rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2 outline-none"
-              />
-              @if (f['email'].invalid && (f['email'].dirty ||
-              f['email'].touched)) {
-              <div class="text-xs text-red-500 mt-1">
-                @if (f['email'].errors?.['required']) {
-                <div>Email là bắt buộc.</div>
-                } @if (f['email'].errors?.['email']) {
-                <div>Email không đúng định dạng.</div>
-                }
+            <div class="form-field">
+              <label for="email" class="form-label">Email</label>
+              <div class="input-container">
+                <i class="far fa-envelope input-icon"></i>
+                <input
+                  id="email"
+                  formControlName="email"
+                  type="email"
+                  class="form-input"
+                  placeholder="name@example.com"
+                />
               </div>
-              }
+              <div *ngIf="f['email'].invalid && (f['email'].dirty || f['email'].touched)" class="field-error">
+                <span *ngIf="f['email'].errors?.['required']">Email là bắt buộc.</span>
+                <span *ngIf="f['email'].errors?.['email']">Email không đúng định dạng.</span>
+              </div>
             </div>
 
-            <!-- Password Fields -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Passwords Row -->
+            <div class="form-row">
               <!-- Password -->
-              <div>
-                <div class="flex items-center justify-between">
-                  <label
-                    for="password"
-                    class="block text-sm font-medium text-slate-700 mb-1"
-                  >
-                    Mật khẩu
-                  </label>
+              <div class="form-field">
+                <label for="password" class="form-label">Mật khẩu</label>
+                <div class="input-container">
+                  <i class="fas fa-lock input-icon"></i>
+                  <input
+                    id="password"
+                    formControlName="password"
+                    [type]="passwordVisible ? 'text' : 'password'"
+                    class="form-input"
+                    placeholder="Mật khẩu (ít nhất 8 ký tự)"
+                  />
                   <button
                     type="button"
-                    class="text-xs text-indigo-600 hover:underline"
+                    class="btn-toggle-eye"
                     (click)="passwordVisible = !passwordVisible"
+                    aria-label="Ẩn/Hiện mật khẩu"
                   >
-                    <i
-                      class="far"
-                      [ngClass]="passwordVisible ? 'fa-eye-slash' : 'fa-eye'"
-                    ></i>
-                    Ẩn/Hiện
+                    <i class="far" [ngClass]="passwordVisible ? 'fa-eye-slash' : 'fa-eye'"></i>
                   </button>
                 </div>
-                <input
-                  id="password"
-                  formControlName="password"
-                  [type]="passwordVisible ? 'text' : 'password'"
-                  placeholder="Ví dụ: Pass@123"
-                  class="w-full rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2 outline-none"
-                />
-                @if (f['password'].invalid && (f['password'].dirty ||
-                f['password'].touched)) {
-                <div class="text-xs text-red-500 mt-1">
-                  @if (f['password'].errors?.['required']) {
-                  <div>Mật khẩu là bắt buộc.</div>
-                  } @if (f['password'].errors?.['minlength']) {
-                  <div>Mật khẩu phải có ít nhất 8 ký tự.</div>
-                  } @if (f['password'].errors?.['pattern']) {
-                  <div>
-                    Mật khẩu phải bao gồm: chữ hoa, chữ thường, số và ký tự đặc
-                    biệt (&#64;$!%*?&amp;#).
-                  </div>
-                  }
-                </div>
-                }
-                <div class="mt-2">
-                  <div class="w-full bg-slate-200 meter">
+                
+                <!-- Password Strength Meter -->
+                <div class="strength-meter">
+                  <div class="meter-bar">
                     <div
-                      class="meter transition-all duration-300"
+                      class="meter-fill"
                       [style.width]="passwordStrength.width"
                       [ngClass]="passwordStrength.color"
                     ></div>
                   </div>
-                  <div class="text-xs text-slate-500 mt-1">
-                    Độ mạnh: {{ passwordStrength.text }}
-                  </div>
+                  <span class="meter-text">Độ mạnh: <strong>{{ passwordStrength.text }}</strong></span>
+                </div>
+
+                <div *ngIf="f['password'].invalid && (f['password'].dirty || f['password'].touched)" class="field-error">
+                  <span *ngIf="f['password'].errors?.['required']">Mật khẩu là bắt buộc.</span>
+                  <span *ngIf="f['password'].errors?.['minlength']">Mật khẩu phải có ít nhất 8 ký tự.</span>
+                  <span *ngIf="f['password'].errors?.['pattern']">Mật khẩu phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt.</span>
                 </div>
               </div>
 
               <!-- Confirm Password -->
-              <div>
-                <div class="flex items-center justify-between">
-                  <label
-                    for="confirmPassword"
-                    class="block text-sm font-medium text-slate-700 mb-1"
-                  >
-                    Nhập lại mật khẩu
-                  </label>
+              <div class="form-field">
+                <label for="confirmPassword" class="form-label">Nhập lại mật khẩu</label>
+                <div class="input-container">
+                  <i class="fas fa-check-double input-icon"></i>
+                  <input
+                    id="confirmPassword"
+                    formControlName="confirmPassword"
+                    [type]="passwordVisible ? 'text' : 'password'"
+                    class="form-input"
+                    placeholder="Xác nhận lại mật khẩu"
+                  />
                 </div>
-                <input
-                  id="confirmPassword"
-                  formControlName="confirmPassword"
-                  [type]="passwordVisible ? 'text' : 'password'"
-                  placeholder="Nhập lại mật khẩu"
-                  class="w-full rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2 outline-none"
-                />
-                @if (registerForm.errors?.['passwordMismatch'] &&
-                f['confirmPassword'].touched) {
-                <div class="text-xs text-red-500 mt-1">
-                  Mật khẩu nhập lại không khớp.
+                <div *ngIf="registerForm.errors?.['passwordMismatch'] && f['confirmPassword'].touched" class="field-error">
+                  <span>Mật khẩu nhập lại không khớp.</span>
                 </div>
-                }
               </div>
             </div>
 
@@ -207,51 +149,40 @@
             <button
               type="submit"
               [disabled]="isLoading || registerForm.invalid"
-              class="w-full brand-gradient hover:opacity-95 text-white font-semibold rounded-lg px-4 py-2.5 shadow flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="btn-submit"
             >
-              @if (!isLoading) {
-              <i class="fas fa-user-plus"></i>
-              } @else {
-              <i class="fas fa-spinner animate-spin"></i>
-              }
-              <span class="ml-2">{{
-                isLoading ? "Đang xử lý..." : "Đăng ký"
-              }}</span>
+              <i *ngIf="isLoading" class="fas fa-spinner animate-spin"></i>
+              <i *ngIf="!isLoading" class="fas fa-user-plus"></i>
+              <span>{{ isLoading ? "Đang xử lý..." : "Đăng ký tài khoản" }}</span>
+              <i *ngIf="!isLoading" class="fas fa-arrow-right"></i>
             </button>
 
-            <div class="text-center text-sm text-slate-600">
-              Đã có tài khoản?
-              <a
-                routerLink="/login"
-                class="text-indigo-600 font-semibold hover:underline"
-                >Đăng nhập</a
-              >
+            <!-- Login Footer Link -->
+            <div class="form-footer">
+              <span>Đã có tài khoản? </span>
+              <a routerLink="/login" class="login-link">Đăng nhập ngay</a>
             </div>
           </form>
         </div>
 
-        <!-- STEP 2: OTP Verification -->
-        <div *ngIf="currentStep === 'verify'">
-          <div class="text-center mb-6">
-            <div
-              class="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-4"
-            >
-              <i class="fas fa-envelope text-indigo-600 text-2xl"></i>
+        <!-- STEP 2: OTP VERIFICATION -->
+        <div *ngIf="currentStep === 'verify'" class="step-wrapper otp-step">
+          <div class="register-card__header text-center">
+            <div class="otp-icon-badge">
+              <i class="fas fa-envelope-open-text"></i>
             </div>
-            <h2 class="text-xl font-bold text-slate-900">Xác minh Email</h2>
-            <p class="text-sm text-slate-600 mt-2">
-              Chúng tôi đã gửi mã OTP gồm 6 chữ số đến email của bạn
+            <h2 class="register-card__title">Xác minh Email</h2>
+            <p class="register-card__subtitle">
+              Mã xác minh 6 chữ số đã được gửi đến email
             </p>
-            <p class="text-sm font-medium text-indigo-600 mt-1">
-              {{ registrationData?.email }}
-            </p>
+            <div class="user-email-tag">{{ registrationData?.email }}</div>
           </div>
 
-          <!-- OTP Input -->
-          <div class="mb-6">
-            <div class="flex justify-center gap-2 mb-4">
-              @for (item of [0,1,2,3,4,5]; track item) {
+          <!-- OTP Input Form -->
+          <div class="otp-form-body">
+            <div class="otp-inputs-grid">
               <input
+                *ngFor="let item of [0,1,2,3,4,5]"
                 [id]="'otp-' + item"
                 type="text"
                 maxlength="1"
@@ -259,20 +190,15 @@
                 (input)="onOtpInput($event, item)"
                 (keydown)="onOtpKeydown($event, item)"
                 (paste)="item === 0 ? onOtpPaste($event) : null"
-                class="w-12 h-14 text-center text-2xl font-bold border-2 border-slate-300 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                class="otp-box"
                 [disabled]="isLoading"
               />
-              }
             </div>
 
             <!-- Countdown Timer -->
-            <div class="text-center mb-4">
-              <p class="text-sm text-slate-600">
-                Mã OTP sẽ hết hạn sau:
-                <span class="font-bold text-indigo-600">{{
-                  formattedCountdown
-                }}</span>
-              </p>
+            <div class="otp-timer">
+              <i class="far fa-clock mr-1"></i>
+              <span>Mã hết hạn sau: <strong>{{ formattedCountdown }}</strong></span>
             </div>
 
             <!-- Verify Button -->
@@ -280,48 +206,36 @@
               type="button"
               (click)="verifyOtp()"
               [disabled]="isLoading || hasEmptyOtpInputs"
-              class="w-full brand-gradient hover:opacity-95 text-white font-semibold rounded-lg px-4 py-2.5 shadow flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mb-3"
+              class="btn-submit"
             >
-              @if (!isLoading) {
-              <i class="fas fa-check-circle"></i>
-              } @else {
-              <i class="fas fa-spinner animate-spin"></i>
-              }
-              <span>{{ isLoading ? "Đang xác minh..." : "Xác minh" }}</span>
+              <i *ngIf="isLoading" class="fas fa-spinner animate-spin"></i>
+              <i *ngIf="!isLoading" class="fas fa-check-circle"></i>
+              <span>{{ isLoading ? "Đang xác minh..." : "Hoàn tất đăng ký" }}</span>
             </button>
 
-            <!-- Resend OTP -->
-            <div class="text-center">
-              <p class="text-sm text-slate-600 mb-2">
-                Không nhận được mã? @if (resendCountdown > 0) {
-                <span class="text-slate-500"
-                  >(Gửi lại sau {{ resendCountdown }}s)</span
+            <!-- Resend & Back controls -->
+            <div class="otp-actions">
+              <p class="resend-text">
+                Chưa nhận được mã?
+                <button
+                  type="button"
+                  (click)="resendOtp()"
+                  [disabled]="!canResend || resendCountdown > 0 || isLoading"
+                  class="btn-resend"
                 >
-                }
+                  Gửi lại mã OTP <span *ngIf="resendCountdown > 0">({{ resendCountdown }}s)</span>
+                </button>
               </p>
-              <button
-                type="button"
-                (click)="resendOtp()"
-                [disabled]="!canResend || resendCountdown > 0 || isLoading"
-                class="text-indigo-600 font-semibold hover:underline disabled:text-slate-400 disabled:no-underline disabled:cursor-not-allowed"
-              >
-                Gửi lại mã OTP
-              </button>
-            </div>
 
-            <!-- Back to Register -->
-            <div class="text-center mt-4">
-              <button
-                type="button"
-                (click)="backToRegister()"
-                class="text-sm text-slate-600 hover:text-slate-900"
-              >
-                <i class="fas fa-arrow-left mr-1"></i> Quay lại đăng ký
+              <button type="button" (click)="backToRegister()" class="btn-back">
+                <i class="fas fa-arrow-left mr-1"></i> Quay lại sửa thông tin
               </button>
             </div>
           </div>
         </div>
+
       </div>
+
     </div>
   </main>
-</body>
+</div>

@@ -13,11 +13,13 @@ interface Feature {
 interface EventItem {
   tag: string;
   tagType: 'sale' | 'event' | 'workshop';
+  status: string;
+  statusType: 'active' | 'upcoming' | 'hot';
   title: string;
   description: string;
   date: string;
+  duration: string;
   image: string;
-  gradient: string;
 }
 
 interface Testimonial {
@@ -106,32 +108,38 @@ export class ContentHomepageComponent implements OnInit {
     {
       tag: 'ƯU ĐÃI',
       tagType: 'sale',
-      title: 'Black Friday 2026\nGiảm giá sốc',
+      status: 'Đang diễn ra',
+      statusType: 'active',
+      title: 'Black Friday 2026 - Giảm giá sốc',
       description:
         'Giảm đến 60% cho tất cả các khóa học TOEIC. Chỉ diễn ra trong 3 ngày duy nhất!',
-      date: '03/08/2026 - 04/08/2026',
-      image: '',
-      gradient: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+      date: '02/08/2026',
+      duration: '3 ngày',
+      image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&q=80',
     },
     {
       tag: 'SỰ KIỆN',
       tagType: 'event',
-      title: 'Tuần lễ luyện thi\nmiễn phí',
+      status: 'Đang diễn ra',
+      statusType: 'active',
+      title: 'Tuần lễ luyện thi TOEIC miễn phí',
       description:
         '7 ngày trải nghiệm miễn phí toàn bộ tính năng premium. Học thử không giới hạn!',
-      date: '05/08/2026 - 11/08/2026',
-      image: '',
-      gradient: 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)',
+      date: '05/08/2026',
+      duration: '7 ngày',
+      image: 'assets/student-laptop.png',
     },
     {
       tag: 'WORKSHOP',
       tagType: 'workshop',
-      title: 'Workshop: Chiến lược\nlàm bài TOEIC hiệu quả',
+      status: 'Sắp diễn ra',
+      statusType: 'upcoming',
+      title: 'Workshop: Chiến lược làm bài TOEIC',
       description:
-        'Buổi workshop trực tuyến với giảng viên chuyên gia. Chia sẻ bí quyết đạt điểm cao trong từng phần thi.',
-      date: '10/08/2026 - 20:00 - 21:30',
-      image: '',
-      gradient: 'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)',
+        'Buổi workshop trực tuyến với giảng viên chuyên gia. Chia sẻ bí quyết đạt điểm cao 900+ TOEIC.',
+      date: '10/08/2026',
+      duration: '2 giờ',
+      image: 'assets/student-studying.png',
     },
   ];
 

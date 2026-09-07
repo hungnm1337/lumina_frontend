@@ -50,11 +50,10 @@
     <div *ngIf="!isLoading && !errorMessage && events.length > 0" class="events-grid">
       <div *ngFor="let event of events; let i = index" 
            class="event-card"
-           [class.featured]="i === 0"
            [attr.data-aos]="'fade-up'"
            [attr.data-aos-delay]="i * 100">
         
-        <!-- Event Image - SỬA: Dùng method getEventImage() -->
+        <!-- Event Image Banner with Status Pill -->
         <div class="event-image">
           <img 
             [src]="getEventImage(event)" 
@@ -62,7 +61,7 @@
             loading="lazy">
           <div class="event-overlay">
             <div class="event-status" [class.active]="isEventActive(event)" [class.upcoming]="isEventUpcoming(event)" [class.past]="!isEventActive(event) && !isEventUpcoming(event)">
-              <i class="fas fa-circle"></i>
+              <span class="status-dot"></span>
               <span>{{ getEventStatus(event) }}</span>
             </div>
           </div>
@@ -73,11 +72,11 @@
           <!-- Event Meta -->
           <div class="event-meta">
             <div class="meta-item">
-              <i class="fas fa-calendar"></i>
+              <i class="far fa-calendar-alt"></i>
               <span>{{ event.startDate | date:'dd/MM/yyyy' }}</span>
             </div>
             <div class="meta-item">
-              <i class="fas fa-clock"></i>
+              <i class="far fa-clock"></i>
               <span>{{ getDuration(event) }}</span>
             </div>
           </div>
@@ -93,16 +92,12 @@
           <!-- Event Footer -->
           <div class="event-footer">
             <div class="event-date">
-              <i class="fas fa-calendar-day"></i>
+              <i class="far fa-calendar"></i>
               <span>{{ event.startDate | date:'dd/MM/yyyy' }}</span>
             </div>
- 
-          </div>
-
-          <!-- Featured Badge (cho card đầu tiên) -->
-          <div *ngIf="i === 0" class="featured-badge">
-            <i class="fas fa-star"></i>
-            <span>Nổi bật</span>
+            <a class="event-link">
+              Xem chi tiết <i class="fas fa-arrow-right"></i>
+            </a>
           </div>
         </div>
       </div>

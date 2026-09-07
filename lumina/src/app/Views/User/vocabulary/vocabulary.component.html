@@ -1,349 +1,508 @@
 <app-header></app-header>
-<!-- Main Content -->
-<div class="min-h-screen">
-  <!-- Hero Section -->
-  <section class="bg-gradient-to-br from-purple-600 to-blue-700 text-white py-16 relative overflow-hidden">
-    <div class="absolute inset-0">
-      <div class="floating-element absolute top-10 left-10 w-16 h-16 bg-white/10 rounded-full"></div>
-      <div class="floating-element absolute top-20 right-20 w-12 h-12 bg-white/10 rounded-full"
-        style="animation-delay: -2s;"></div>
-      <div class="floating-element absolute bottom-20 left-1/4 w-20 h-20 bg-white/10 rounded-full"
-        style="animation-delay: -4s;"></div>
-    </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-      <div class="text-center">
-        <h1 class="text-5xl font-bold mb-6">Từ vựng TOEIC</h1>
-        <p class="text-xl text-purple-100 mb-8 max-w-3xl mx-auto">
-          Học và luyện tập từ vựng TOEIC hiệu quả với hệ thống thẻ ghi nhớ thông minh và các bài tập đa dạng
+<div class="vocab-page">
+  
+  <!-- ═══════════════════════════ 1. HERO BANNER SECTION ═══════════════════════════ -->
+  <section class="hero-section">
+    <div class="hero-container">
+      
+      <!-- Hero Left Content -->
+      <div class="hero-left">
+        <div class="hero-pill">
+          <i class="fas fa-book-open"></i>
+          <span>Từ vựng</span>
+        </div>
+        
+        <h1 class="hero-title">
+          Từ vựng TOEIC<br>
+          Xây dựng vốn từ vựng vững chắc mỗi ngày
+        </h1>
+        
+        <p class="hero-subtitle">
+          Học từ vựng theo chủ đề, với phương pháp khoa học và công cụ hỗ trợ thông minh giúp bạn ghi nhớ lâu hơn.
         </p>
+        
+        <button class="btn-hero-cta" (click)="startFlashcards()">
+          <span>Bắt đầu học ngay</span>
+          <i class="fas fa-arrow-right"></i>
+        </button>
       </div>
-    </div>
-  </section>
 
-
-  <!-- Learning Methods -->
-  <section class="py-16">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-12">
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">Phương pháp học</h2>
-        <p class="text-lg text-gray-600">Chọn phương pháp học phù hợp với bạn</p>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <!-- Flashcards Card -->
-        <div class="vocab-card flex flex-col">
-          <div class="bg-gradient-to-br from-blue-500 to-blue-700 p-6 text-white flex flex-col"
-            style="min-height: 180px;">
-            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4"><i
-                class="fas fa-layer-group text-2xl"></i></div>
-            <h3 class="text-2xl font-bold mb-2">Thẻ ghi nhớ</h3>
-            <p class="text-blue-100">Học từ vựng với thẻ ghi nhớ</p>
-          </div>
-          <div class="p-6 flex flex-col flex-grow">
-            <div class="space-y-3 mb-6 flex-grow">
-              <div class="flex items-center space-x-3"><i class="fas fa-eye text-blue-600"></i><span>Xem từ và
-                  nghĩa</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-volume-up text-blue-600"></i><span>Nghe phát âm
-                  chuẩn</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-repeat text-blue-600"></i><span>Lặp lại thông
-                  minh</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-heart text-blue-600"></i><span>Lưu từ yêu
-                  thích</span></div>
-            </div>
-            <button class="w-full btn-primary" (click)="startFlashcards()"><i class="fas fa-play mr-2"></i>Bắt đầu
-              học</button>
-          </div>
-        </div>
-        <!-- Quiz Card -->
-        <div class="vocab-card flex flex-col">
-          <div class="bg-gradient-to-br from-green-500 to-green-700 p-6 text-white flex flex-col"
-            style="min-height: 180px;">
-            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4"><i
-                class="fas fa-question-circle text-2xl"></i></div>
-            <h3 class="text-2xl font-bold mb-2">Câu đố</h3>
-            <p class="text-green-100">Kiểm tra kiến thức từ vựng của bạn</p>
-          </div>
-          <div class="p-6 flex flex-col flex-grow">
-            <div class="space-y-3 mb-6 flex-grow">
-              <div class="flex items-center space-x-3"><i class="fas fa-list text-green-600"></i><span>Câu hỏi trắc
-                  nghiệm</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-clock text-green-600"></i><span>Có giới hạn thời
-                  gian</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-chart-bar text-green-600"></i><span>Xem kết quả
-                  chi tiết</span></div>
-              <div class="flex items-center space-x-3"><i class="fas fa-trophy text-green-600"></i><span>Kiếm
-                  điểm</span></div>
-            </div>
-            <button class="w-full btn-primary bg-gradient-to-r from-green-500 to-green-700" (click)="startQuiz()"><i
-                class="fas fa-play mr-2"></i>Làm bài kiểm tra</button>
-          </div>
-        </div>
-        <!-- Word Lists Card with Spaced Repetition Dashboard -->
-        <div class="vocab-card flex flex-col">
-          <div class="bg-gradient-to-br from-purple-500 to-purple-700 p-6 text-white flex flex-col"
-            style="min-height: 180px;">
-            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
-              <i class="fas fa-brain text-2xl"></i>
-            </div>
-            <h3 class="text-2xl font-bold mb-2">Học thông minh</h3>
-            <p class="text-purple-100">Theo dõi và ôn tập từ vựng với Lặp lại ngắt quãng</p>
-          </div>
-
-          <div class="p-6 flex flex-col flex-grow">
-            <!-- Features List -->
-            <div class="space-y-3 mb-6 flex-grow">
-              <div class="flex items-center space-x-3">
-                <i class="fas fa-bell text-purple-600"></i>
-                <span>Nhắc nhở ôn tập tự động</span>
-              </div>
-              <div class="flex items-center space-x-3">
-                <i class="fas fa-chart-line text-purple-600"></i>
-                <span>Theo dõi tiến độ học tập</span>
-              </div>
-              <div class="flex items-center space-x-3">
-                <i class="fas fa-clock text-purple-600"></i>
-                <span>Lịch ôn tập thông minh</span>
-              </div>
-              <div class="flex items-center space-x-3">
-                <i class="fas fa-star text-purple-600"></i>
-                <span>Đánh giá mức độ ghi nhớ</span>
-              </div>
+      <!-- Hero Right Card & Graphic -->
+      <div class="hero-right">
+        <!-- Progress Card -->
+        <div class="progress-card">
+          <h3 class="progress-card__title">Tiến độ từ vựng của bạn</h3>
+          
+          <div class="progress-card__body">
+            <!-- Circular Chart -->
+            <div class="donut-chart">
+              <svg viewBox="0 0 36 36" class="donut">
+                <path class="donut-ring" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                <path class="donut-segment" stroke-dasharray="32, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              </svg>
+              <div class="donut-number">32%</div>
             </div>
 
-            <!-- Action Button -->
-            <button
-              class="w-full btn-primary bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800"
-              (click)="viewAllProgress()">
-              <i class="fas fa-chart-bar mr-2"></i>Xem tất cả tiến độ
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Categories Section -->
-  <section class="py-12 bg-white border-b border-gray-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-center mb-6">
-        <div class="text-center mb-12">
-          <div class="flex items-center justify-center gap-4 mb-4">
-            <h2 class="text-3xl font-bold text-gray-900">Chủ đề từ vựng</h2>
-            <button class="btn-primary flex items-center gap-2 px-4 py-2 text-sm" (click)="openCreateListModal()"
-              title="Tạo folder vocabulary mới">
-              <i class="fas fa-folder-plus"></i>
-              <span>Thêm thư mục</span>
-            </button>
-          </div>
-          <p class="text-lg text-gray-600">Học từ vựng theo các chủ đề TOEIC phổ biến</p>
-        </div>
-      </div>
-      <div *ngIf="isLoadingLists" class="text-gray-600">Đang tải danh sách...</div>
-      <div *ngIf="!isLoadingLists && userLists.length === 0" class="text-gray-500">Chưa có danh sách. Tạo từ trò chuyện
-        AI và lưu vào thư mục để bắt đầu.</div>
-      <div *ngIf="!isLoadingLists && userLists.length > 0">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div *ngFor="let list of showLimitedUserLists" class="vocab-card cursor-pointer relative"
-            (click)="navigateToVocabularyList(list)">
-            <div class="p-6">
-              <div class="flex items-center justify-between mb-3">
-                <h3 class="font-bold text-gray-900">{{ list.name }}</h3>
-                <div class="flex items-center gap-2">
-                  <span class="text-xs text-gray-500">{{ list.createAt | date:'dd/MM/yyyy' }}</span>
-                  <button class="delete-btn" (click)="openDeleteModal(list, $event)" title="Xóa folder">
-                    <i class="fas fa-trash"></i>
-                  </button>
+            <!-- Stats Info -->
+            <div class="progress-info">
+              <div class="stat-main font-bold">
+                <span class="stat-big text-2xl">320</span> <span class="stat-total text-slate-400">/ 1.000 từ</span>
+              </div>
+              <div class="stat-inc text-emerald-400 text-xs mt-1">
+                <i class="fas fa-arrow-up mr-1"></i>+20 từ hôm nay
+              </div>
+              
+              <div class="stat-rows mt-4 space-y-2">
+                <div class="stat-row">
+                  <span class="row-label"><i class="fas fa-book-reader mr-1 text-amber-400"></i> Danh sách từ đã học</span>
+                  <div class="row-bar-wrap"><div class="row-bar bg-amber-400" style="width: 32%;"></div></div>
+                  <span class="row-val">320</span>
+                </div>
+                <div class="stat-row">
+                  <span class="row-label"><i class="fas fa-redo-alt mr-1 text-teal-400"></i> Từ cần ôn lại</span>
+                  <div class="row-bar-wrap"><div class="row-bar bg-teal-400" style="width: 12%;"></div></div>
+                  <span class="row-val">120</span>
+                </div>
+                <div class="stat-row">
+                  <span class="row-label"><i class="fas fa-database mr-1 text-amber-500"></i> Tổng số từ</span>
+                  <div class="row-bar-wrap"><div class="row-bar bg-amber-500" style="width: 100%;"></div></div>
+                  <span class="row-val">1.000</span>
                 </div>
               </div>
-              <p class="text-gray-600 text-sm mb-3">{{ list.vocabularyCount }} từ</p>
-              <div class="progress-bar mb-2">
-                <div class="progress-fill" [style.width]="(Math.min(list.vocabularyCount,100)) + '%'"></div>
-              </div>
             </div>
           </div>
         </div>
-        <!-- Pagination controls when viewing all and count > pageSize -->
-        <div *ngIf="showAllLists && userLists.length > pageSize" class="flex items-center justify-center gap-2 mt-8">
-          <button
-            class="px-4 py-2 rounded-lg border border-gray-300 bg-blue-50 text-blue-400 hover:bg-blue-100 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-            (click)="prevPage()" [disabled]="currentPage === 1">
-            Trước
-          </button>
 
-          <button *ngFor="let page of getPageNumbers()" type="button" (click)="goToPage(page)" [class]="'px-4 py-2 rounded-lg border transition font-medium ' +
-                     (currentPage === page 
-                       ? 'bg-blue-400 border-blue-400 text-blue-800' 
-                       : 'bg-white border-gray-300 text-blue-600 hover:bg-gray-50')">
-            {{ page }}
-          </button>
-
-          <button
-            class="px-4 py-2 rounded-lg border border-gray-300 bg-blue-50 text-blue-600 hover:bg-blue-100 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-            (click)="nextPage()" [disabled]="currentPage === totalPages">
-            Tiếp theo
-          </button>
-        </div>
-        <div class="flex justify-center mt-8" *ngIf="userLists.length > 6">
-          <button class="btn-primary px-6 py-2 rounded shadow text-white bg-blue-500 hover:bg-blue-600 transition"
-            (click)="toggleShowAllLists()">
-            {{ showAllLists ? 'Ẩn bớt' : 'Xem thêm' }}
-          </button>
-
-        </div>
-
-      </div>
-      <!-- Overlay displaying list detail as modal -->
-      <div *ngIf="selectedVocabularyListDetail" class="fixed inset-0 z-50 bg-black/30 flex items-center justify-center"
-        (click)="closeVocabularyListDetail()">
-        <div class="relative bg-white rounded-2xl w-[90vw] max-w-[900px] max-h-[90vh] overflow-auto p-6"
-          (click)="$event.stopPropagation()">
-          <button (click)="closeVocabularyListDetail()" class="absolute top-4 right-4 btn-primary">Đóng</button>
-          <app-vocabulary-list-detail [vocabularyList]="selectedVocabularyListDetail"
-            (close)="closeVocabularyListDetail()"></app-vocabulary-list-detail>
+        <!-- Decorative Books Graphic -->
+        <div class="books-graphic">
+          <div class="book book-blue"><span>TOEIC</span></div>
+          <div class="book book-yellow"></div>
         </div>
       </div>
 
-      <!-- Modal for creating new vocabulary folder -->
-      <div *ngIf="isListModalOpen" class="modal-overlay" (click)="closeCreateListModal()">
-        <div class="modal-content" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <div class="modal-header-content">
-              <div class="modal-icon">
-                <i class="fas fa-folder-plus"></i>
-              </div>
-              <div class="modal-title-section">
-                <h2>Tạo Folder Vocabulary Mới</h2>
-                <p>Bắt đầu một bộ sưu tập từ vựng mới</p>
-              </div>
-            </div>
-            <button class="btn-close" (click)="closeCreateListModal()">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-          <form [formGroup]="listForm" (ngSubmit)="saveNewList()" class="modal-form">
-            <div class="form-group">
-              <label for="list-name">Tên Folder *</label>
-              <input id="list-name" type="text" formControlName="name" placeholder="Ví dụ: TOEIC Business Vocabulary"
-                class="form-input">
-              <div *ngIf="listForm.get('name')?.invalid && listForm.get('name')?.touched" class="error-message">
-                Tên folder là bắt buộc.
-              </div>
-            </div>
-            <div class="modal-actions">
-              <button type="button" class="btn-secondary" (click)="closeCreateListModal()">Hủy</button>
-              <button type="submit" class="btn-primary" [disabled]="listForm.invalid || isSubmitting">
-                <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin"></i>
-                <span *ngIf="!isSubmitting">Tạo Folder</span>
-                <span *ngIf="isSubmitting">Đang tạo...</span>
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <!-- Delete Confirmation Modal -->
-      <div *ngIf="showDeleteModal" class="modal-overlay" (click)="closeDeleteModal()">
-        <div class="modal-content" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <div class="modal-header-content">
-              <div class="modal-icon"
-                style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #dc2626;">
-                <i class="fas fa-exclamation-triangle"></i>
-              </div>
-              <div class="modal-title-section">
-                <h2>Xác nhận xóa folder</h2>
-                <p>Bạn có chắc chắn muốn xóa folder này?</p>
-              </div>
-            </div>
-            <button class="btn-close" (click)="closeDeleteModal()">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-
-          <div class="modal-body">
-            <div class="delete-warning">
-              <p class="warning-text">
-                Folder <strong>"{{ listToDelete?.name }}"</strong> sẽ bị xóa vĩnh viễn.
-              </p>
-              <p class="warning-subtext">
-                Tất cả từ vựng trong folder này cũng sẽ bị xóa. Hành động này không thể hoàn tác.
-              </p>
-            </div>
-          </div>
-
-          <div class="modal-actions">
-            <button type="button" class="btn-secondary" (click)="closeDeleteModal()" [disabled]="isDeleting">
-              Hủy
-            </button>
-            <button type="button" class="btn-danger" (click)="confirmDeleteList()" [disabled]="isDeleting">
-              <i *ngIf="isDeleting" class="fas fa-spinner fa-spin"></i>
-              <i *ngIf="!isDeleting" class="fas fa-trash"></i>
-              <span *ngIf="!isDeleting">Xóa folder</span>
-              <span *ngIf="isDeleting">Đang xóa...</span>
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   </section>
 
-  <!-- Daily Challenge Section -->
-  <section class="py-16">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl p-8 text-white text-center">
-        <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6"><i
-            class="fas fa-fire text-4xl"></i></div>
-        <h2 class="text-3xl font-bold mb-4">Thử thách hàng ngày</h2>
-        <p class="text-xl text-orange-100 mb-6">Học 10 từ mới mỗi ngày để duy trì chuỗi học tập của bạn</p>
-        <div class="flex items-center justify-center space-x-8 mb-8">
-          <div class="text-center">
-            <div class="text-3xl font-bold">{{ getConsecutiveDays() }}</div>
-            <div class="text-orange-200 text-sm">Ngày liên tiếp</div>
-          </div>
-          <div class="text-center">
-            <div class="text-3xl font-bold">{{ getStreakEmoji() }}</div>
-            <div class="text-orange-200 text-sm">Chuỗi</div>
-          </div>
-        </div>
-        <button class="btn-primary bg-white text-orange-600 hover:bg-gray-100" (click)="startDailyChallenge()">
-          <i class="fas fa-play mr-2"></i>Tiếp tục thử thách
+  <div class="page-content-wrapper">
+    
+    <!-- ═══════════════════════════ 2. FILTER TABS & SEARCH BAR ═══════════════════════════ -->
+    <div class="toolbar-section">
+      <div class="tabs-group">
+        <button class="tab-btn active">
+          <i class="fas fa-th-large"></i> Tất cả
         </button>
+        <button class="tab-btn">
+          <i class="fas fa-fire"></i> Chủ đề phổ biến
+        </button>
+        <button class="tab-btn">
+          <i class="fas fa-check-circle"></i> Từ đã học
+        </button>
+        <button class="tab-btn">
+          <i class="fas fa-sync-alt"></i> Từ cần ôn lại
+        </button>
+      </div>
+
+      <div class="search-box">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" placeholder="Tìm kiếm từ vựng..." class="search-input" />
       </div>
     </div>
-  </section>
 
-  <!-- Login Required Modal -->
-  <div *ngIf="showLoginRequiredModal" class="modal-overlay" (click)="closeLoginModal()">
-    <div class="modal-content login-modal" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <div class="modal-header-content">
-          <div class="modal-icon"
-            style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); color: #f59e0b;">
-            <i class="fas fa-lock"></i>
-          </div>
-          <div class="modal-title-section">
-            <h2>Yêu cầu đăng nhập</h2>
-            <p>{{ loginRequiredMessage }}</p>
-          </div>
+    <!-- ═══════════════════════════ 3. LEARNING METHODS ═══════════════════════════ -->
+    <section class="section-block">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Phương pháp học</h2>
+          <p class="section-subtitle">Lựa chọn phương pháp phù hợp với mục tiêu của bạn</p>
         </div>
-        <button class="btn-close" (click)="closeLoginModal()">
-          <i class="fas fa-times"></i>
-        </button>
+        <a href="javascript:void(0)" class="link-more">Tìm hiểu thêm <i class="fas fa-arrow-right"></i></a>
       </div>
 
-      <div class="modal-body">
-        <p class="login-message">
-          Bạn cần đăng nhập để sử dụng tính năng này. Vui lòng đăng nhập để tiếp tục.
+      <div class="methods-grid">
+        
+        <!-- Flashcard -->
+        <div class="method-card">
+          <div class="method-badge method-badge--blue">
+            <i class="fas fa-clone"></i>
+          </div>
+          <h3 class="method-title">Thẻ ghi nhớ</h3>
+          <p class="method-desc">Học từ vựng với hệ thống flashcard hiệu quả.</p>
+          <ul class="method-features">
+            <li><i class="fas fa-check-circle text-blue-600"></i> Xem từ và nghĩa</li>
+            <li><i class="fas fa-check-circle text-blue-600"></i> Nghe phát âm chuẩn</li>
+            <li><i class="fas fa-check-circle text-blue-600"></i> Lặp lại thông minh</li>
+          </ul>
+          <button class="btn-method-cta" (click)="startFlashcards()">
+            <span>Bắt đầu học</span>
+            <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+
+        <!-- Quiz -->
+        <div class="method-card">
+          <div class="method-badge method-badge--teal">
+            <i class="fas fa-puzzle-piece"></i>
+          </div>
+          <h3 class="method-title">Câu đố</h3>
+          <p class="method-desc">Kiểm tra kiến thức từ vựng của bạn qua các trò chơi thú vị.</p>
+          <ul class="method-features">
+            <li><i class="fas fa-check-circle text-teal-600"></i> Câu hỏi trắc nghiệm</li>
+            <li><i class="fas fa-check-circle text-teal-600"></i> Có giới hạn thời gian</li>
+            <li><i class="fas fa-check-circle text-teal-600"></i> Xem kết quả chi tiết</li>
+          </ul>
+          <button class="btn-method-cta" (click)="startQuiz()">
+            <span>Làm bài kiểm tra</span>
+            <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+
+        <!-- Smart AI SRS -->
+        <div class="method-card">
+          <div class="method-badge method-badge--purple">
+            <i class="fas fa-brain"></i>
+          </div>
+          <h3 class="method-title">Học thông minh</h3>
+          <p class="method-desc">Theo dõi và ôn tập từ vựng với thuật toán AI.</p>
+          <ul class="method-features">
+            <li><i class="fas fa-star text-purple-600"></i> Nhắc nhở ôn tập tự động</li>
+            <li><i class="fas fa-star text-purple-600"></i> Theo dõi tiến độ học tập</li>
+            <li><i class="fas fa-star text-purple-600"></i> Đánh giá mức độ ghi nhớ</li>
+          </ul>
+          <button class="btn-method-cta" (click)="viewAllProgress()">
+            <span>Xem tất cả tính năng</span>
+            <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ 4. TOPIC CATEGORIES ═══════════════════════════ -->
+    <section class="section-block">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Chủ đề từ vựng</h2>
+          <p class="section-subtitle">Khám phá các chủ đề từ vựng phổ biến trong kỳ thi TOEIC</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button class="btn-add-folder" (click)="openCreateListModal()">
+            <i class="fas fa-folder-plus"></i> Thêm thư mục
+          </button>
+          <a href="javascript:void(0)" class="link-more">Xem tất cả chủ đề <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Categories Grid -->
+      <div class="topics-grid">
+        
+        <!-- Static Demo Topics Matching 100% Mockup -->
+        <div class="topic-card">
+          <div class="topic-icon topic-icon--blue"><i class="fas fa-building"></i></div>
+          <div class="topic-info">
+            <h4 class="topic-name">Business</h4>
+            <span class="topic-count">120 từ vựng</span>
+          </div>
+          <i class="fas fa-chevron-right topic-arrow"></i>
+          <div class="topic-progress-bar"><div class="topic-progress-fill" style="width: 75%;"></div></div>
+          <span class="topic-pct">75%</span>
+        </div>
+
+        <div class="topic-card">
+          <div class="topic-icon topic-icon--blue"><i class="fas fa-plane"></i></div>
+          <div class="topic-info">
+            <h4 class="topic-name">Travel</h4>
+            <span class="topic-count">98 từ vựng</span>
+          </div>
+          <i class="fas fa-chevron-right topic-arrow"></i>
+          <div class="topic-progress-bar"><div class="topic-progress-fill" style="width: 60%;"></div></div>
+          <span class="topic-pct">60%</span>
+        </div>
+
+        <div class="topic-card">
+          <div class="topic-icon topic-icon--gold"><i class="fas fa-utensils"></i></div>
+          <div class="topic-info">
+            <h4 class="topic-name">Restaurant</h4>
+            <span class="topic-count">85 từ vựng</span>
+          </div>
+          <i class="fas fa-chevron-right topic-arrow"></i>
+          <div class="topic-progress-bar"><div class="topic-progress-fill bg-amber-500" style="width: 45%;"></div></div>
+          <span class="topic-pct">45%</span>
+        </div>
+
+        <div class="topic-card">
+          <div class="topic-icon topic-icon--blue"><i class="fas fa-hotel"></i></div>
+          <div class="topic-info">
+            <h4 class="topic-name">Hotel</h4>
+            <span class="topic-count">76 từ vựng</span>
+          </div>
+          <i class="fas fa-chevron-right topic-arrow"></i>
+          <div class="topic-progress-bar"><div class="topic-progress-fill bg-slate-500" style="width: 30%;"></div></div>
+          <span class="topic-pct">30%</span>
+        </div>
+
+        <div class="topic-card">
+          <div class="topic-icon topic-icon--blue"><i class="fas fa-plane-departure"></i></div>
+          <div class="topic-info">
+            <h4 class="topic-name">Airport</h4>
+            <span class="topic-count">68 từ vựng</span>
+          </div>
+          <i class="fas fa-chevron-right topic-arrow"></i>
+          <div class="topic-progress-bar"><div class="topic-progress-fill" style="width: 40%;"></div></div>
+          <span class="topic-pct">40%</span>
+        </div>
+
+        <div class="topic-card">
+          <div class="topic-icon topic-icon--purple"><i class="fas fa-briefcase"></i></div>
+          <div class="topic-info">
+            <h4 class="topic-name">Office</h4>
+            <span class="topic-count">92 từ vựng</span>
+          </div>
+          <i class="fas fa-chevron-right topic-arrow"></i>
+          <div class="topic-progress-bar"><div class="topic-progress-fill" style="width: 55%;"></div></div>
+          <span class="topic-pct">55%</span>
+        </div>
+
+        <div class="topic-card">
+          <div class="topic-icon topic-icon--gold"><i class="fas fa-shopping-bag"></i></div>
+          <div class="topic-info">
+            <h4 class="topic-name">Shopping</h4>
+            <span class="topic-count">74 từ vựng</span>
+          </div>
+          <i class="fas fa-chevron-right topic-arrow"></i>
+          <div class="topic-progress-bar"><div class="topic-progress-fill bg-amber-500" style="width: 35%;"></div></div>
+          <span class="topic-pct">35%</span>
+        </div>
+
+        <div class="topic-card">
+          <div class="topic-icon topic-icon--blue"><i class="fas fa-comments"></i></div>
+          <div class="topic-info">
+            <h4 class="topic-name">Communication</h4>
+            <span class="topic-count">60 từ vựng</span>
+          </div>
+          <i class="fas fa-chevron-right topic-arrow"></i>
+          <div class="topic-progress-bar"><div class="topic-progress-fill bg-slate-500" style="width: 25%;"></div></div>
+          <span class="topic-pct">25%</span>
+        </div>
+
+      </div>
+
+      <!-- User Created Dynamic Lists -->
+      <div *ngIf="userLists.length > 0" class="mt-8">
+        <h3 class="text-lg font-bold text-slate-800 mb-4">Thư mục của bạn</h3>
+        <div class="topics-grid">
+          <div *ngFor="let list of showLimitedUserLists" class="topic-card cursor-pointer" (click)="navigateToVocabularyList(list)">
+            <div class="topic-icon topic-icon--gold"><i class="fas fa-folder"></i></div>
+            <div class="topic-info">
+              <h4 class="topic-name">{{ list.name }}</h4>
+              <span class="topic-count">{{ list.vocabularyCount }} từ vựng</span>
+            </div>
+            <button class="text-red-400 hover:text-red-600 mr-2" (click)="openDeleteModal(list, $event)" title="Xóa">
+              <i class="far fa-trash-alt"></i>
+            </button>
+            <i class="fas fa-chevron-right topic-arrow"></i>
+            <div class="topic-progress-bar"><div class="topic-progress-fill bg-amber-500" [style.width]="(Math.min(list.vocabularyCount,100)) + '%'"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ 5. CONTINUE LEARNING BANNER ═══════════════════════════ -->
+    <section class="continue-banner">
+      <div class="continue-head">
+        <div class="continue-badge"><i class="fas fa-user-graduate"></i></div>
+        <div>
+          <h3 class="continue-title">Tiếp tục hành trình của bạn</h3>
+          <p class="continue-sub">Bạn đang học chủ đề Business. Hãy tiếp tục để hoàn thành mục tiêu nhé!</p>
+        </div>
+      </div>
+
+      <div class="continue-card">
+        <div class="topic-icon topic-icon--blue"><i class="fas fa-building"></i></div>
+        <div class="continue-info">
+          <h4 class="font-bold text-slate-900">Business Vocabulary</h4>
+          <span class="text-xs text-slate-500">120 từ vựng • 75% hoàn thành</span>
+          <div class="topic-progress-bar mt-2"><div class="topic-progress-fill" style="width: 75%;"></div></div>
+        </div>
+        <button class="btn-continue-cta" (click)="startFlashcards()">
+          <span>Tiếp tục học</span>
+          <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ 6. DAILY STREAK BANNER ═══════════════════════════ -->
+    <section class="streak-banner">
+      <div class="streak-banner__left">
+        <div class="streak-flame">
+          <i class="fas fa-fire"></i>
+        </div>
+        <div>
+          <h3 class="streak-title">Thử thách hàng ngày</h3>
+          <p class="streak-sub">Học 10 từ mới mỗi ngày để duy trì chuỗi học tập của bạn</p>
+          
+          <div class="streak-metrics">
+            <div class="metric-item">
+              <i class="fas fa-fire text-amber-500"></i>
+              <div>
+                <span class="metric-val">{{ getConsecutiveDays() }}</span>
+                <span class="metric-lbl">Ngày liên tiếp</span>
+              </div>
+            </div>
+
+            <div class="metric-item">
+              <i class="fas fa-star text-amber-500"></i>
+              <div>
+                <span class="metric-val">120</span>
+                <span class="metric-lbl">Từ đã học</span>
+              </div>
+            </div>
+
+            <div class="metric-item">
+              <i class="fas fa-medal text-amber-500"></i>
+              <div>
+                <span class="metric-val">Top 15%</span>
+                <span class="metric-lbl">Học viên xuất sắc</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="streak-banner__right">
+        <button class="btn-hero-cta" (click)="startDailyChallenge()">
+          <span>Bắt đầu thử thách</span>
+          <i class="fas fa-arrow-right"></i>
+        </button>
+        <div class="calendar-graphic">
+          <i class="fas fa-calendar-alt"></i>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- Modal Create Folder -->
+<div *ngIf="isListModalOpen" class="modal-overlay" (click)="closeCreateListModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-card__header">
+      <div class="modal-icon-badge">
+        <i class="fas fa-folder-plus"></i>
+      </div>
+      <div>
+        <h2>Tạo Thư Mục Từ Vựng Mới</h2>
+        <p>Khởi tạo bộ sưu tập chủ đề riêng của bạn</p>
+      </div>
+      <button class="btn-close" (click)="closeCreateListModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <form [formGroup]="listForm" (ngSubmit)="saveNewList()" class="modal-card__body">
+      <div class="form-field">
+        <label for="list-name" class="form-label">Tên Thư Mục *</label>
+        <div class="input-container">
+          <i class="far fa-folder input-icon"></i>
+          <input
+            id="list-name"
+            type="text"
+            formControlName="name"
+            placeholder="Ví dụ: TOEIC Business & Economy"
+            class="form-input"
+          >
+        </div>
+        <div *ngIf="listForm.get('name')?.invalid && listForm.get('name')?.touched" class="field-error">
+          Tên thư mục là bắt buộc.
+        </div>
+      </div>
+      <div class="modal-card__actions">
+        <button type="button" class="btn-cancel" (click)="closeCreateListModal()">Hủy bỏ</button>
+        <button type="submit" class="btn-gold-primary" [disabled]="listForm.invalid || isSubmitting">
+          <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin"></i>
+          <span>{{ isSubmitting ? 'Đang khởi tạo...' : 'Tạo Thư Mục' }}</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete Folder Confirmation Modal -->
+<div *ngIf="showDeleteModal" class="modal-overlay" (click)="closeDeleteModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-card__header">
+      <div class="modal-icon-badge modal-icon-badge--danger">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <div>
+        <h2>Xác Nhận Xóa Thư Mục</h2>
+        <p>Hành động này sẽ xóa dữ liệu vĩnh viễn</p>
+      </div>
+      <button class="btn-close" (click)="closeDeleteModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-card__body">
+      <div class="delete-warning-box">
+        <p class="warning-title">
+          Thư mục <strong>"{{ listToDelete?.name }}"</strong> sẽ bị xóa vĩnh viễn!
+        </p>
+        <p class="warning-desc">
+          Tất cả thẻ từ vựng và tiến độ luyện tập liên quan trong thư mục này sẽ bị xóa khỏi hệ thống.
         </p>
       </div>
-
-      <div class="modal-actions">
-        <button type="button" class="btn-secondary" (click)="closeLoginModal()">
+      <div class="modal-card__actions mt-6">
+        <button type="button" class="btn-cancel" (click)="closeDeleteModal()" [disabled]="isDeleting">
           Hủy
         </button>
-        <button type="button" class="btn-primary" (click)="navigateToLogin()">
-          <i class="fas fa-sign-in-alt mr-2"></i>
-          Đăng nhập
+        <button type="button" class="btn-danger-action" (click)="confirmDeleteList()" [disabled]="isDeleting">
+          <i *ngIf="isDeleting" class="fas fa-spinner fa-spin"></i>
+          <i *ngIf="!isDeleting" class="far fa-trash-alt"></i>
+          <span>{{ isDeleting ? 'Đang xóa...' : 'Xóa Thư Mục' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal Overlay -->
+<div *ngIf="selectedVocabularyListDetail" class="modal-overlay" (click)="closeVocabularyListDetail()">
+  <div class="modal-detail-box" (click)="$event.stopPropagation()">
+    <button (click)="closeVocabularyListDetail()" class="btn-close-detail">
+      <i class="fas fa-times"></i>
+    </button>
+    <app-vocabulary-list-detail
+      [vocabularyList]="selectedVocabularyListDetail"
+      (close)="closeVocabularyListDetail()"
+    ></app-vocabulary-list-detail>
+  </div>
+</div>
+
+<!-- Login Required Modal -->
+<div *ngIf="showLoginRequiredModal" class="modal-overlay" (click)="closeLoginModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-card__header">
+      <div class="modal-icon-badge modal-icon-badge--warning">
+        <i class="fas fa-lock"></i>
+      </div>
+      <div>
+        <h2>Yêu Cầu Đăng Nhập</h2>
+        <p>{{ loginRequiredMessage }}</p>
+      </div>
+      <button class="btn-close" (click)="closeLoginModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-card__body">
+      <p class="text-slate-600 font-medium">
+        Bạn cần đăng nhập tài khoản Lumina TOEIC để sử dụng đầy đủ các tính năng lưu từ vựng và theo dõi tiến độ.
+      </p>
+      <div class="modal-card__actions mt-6">
+        <button type="button" class="btn-cancel" (click)="closeLoginModal()">Hủy</button>
+        <button type="button" class="btn-gold-primary" (click)="navigateToLogin()">
+          <i class="fas fa-sign-in-alt"></i>
+          <span>Đăng nhập ngay</span>
         </button>
       </div>
     </div>

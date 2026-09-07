@@ -117,19 +117,19 @@ export class ExamsComponent {
       {
         skillName: 'Listening',
         skillCodes: ['LISTENING', 'TOEIC_LISTENING', 'TOEIC_LISTENING_TEST'],
-        icon: 'fas fa-headphones',
+        icon: 'assets/Icon/Icon_Listening.png',
         color: 'blue',
       },
       {
         skillName: 'Reading',
         skillCodes: ['READING', 'TOEIC_READING', 'TOEIC_READING_TEST'],
-        icon: 'fas fa-book-open',
+        icon: 'assets/Icon/Icon_Reading.png',
         color: 'green',
       },
       {
         skillName: 'Speaking',
         skillCodes: ['SPEAKING', 'TOEIC_SPEAKING', 'TOEIC_SPEAKING_TEST'],
-        icon: 'fas fa-microphone',
+        icon: 'assets/Icon/Icon_Speaking.png',
         color: 'purple',
       },
       {
@@ -143,7 +143,7 @@ export class ExamsComponent {
           'TOEIC_WRITING_TEST',
           'TOEIC_WRITTING_TEST',
         ],
-        icon: 'fas fa-pen',
+        icon: 'assets/Icon/Icon_Writing.png',
         color: 'orange',
       },
     ];
