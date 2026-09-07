@@ -1,20 +1,31 @@
 <div class="min-h-screen bg-white text-slate-900 font-sans flex flex-col justify-between select-none">
   <!-- Top Navigation Bar (TestReach Style) -->
   <header class="h-14 border-b border-slate-200 bg-white px-6 flex items-center justify-between sticky top-0 z-40">
-    <!-- Left: TestReach Logo -->
-    <div class="flex items-center gap-3 cursor-pointer" (click)="backToPrepare()">
-      <div class="w-7 h-7 flex items-center justify-center">
-        <!-- 4-dot petal SVG logo matching TestReach -->
-        <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="6" cy="6" r="4.5" fill="#2b1756"/>
-          <circle cx="18" cy="6" r="4.5" fill="#2b1756"/>
-          <circle cx="6" cy="18" r="4.5" fill="#2b1756"/>
-          <circle cx="18" cy="18" r="4.5" fill="#2b1756"/>
-        </svg>
+    <!-- Left: TestReach Logo & Back Button -->
+    <div class="flex items-center gap-4">
+      <button
+        type="button"
+        (click)="backToPrepare()"
+        class="text-xs font-semibold text-slate-500 hover:text-purple-900 flex items-center gap-1.5 transition-colors cursor-pointer bg-transparent border-0 p-0"
+        title="Quay lại trang chuẩn bị"
+      >
+        <i class="fa-solid fa-arrow-left"></i> Quay lại
+      </button>
+      <span class="text-slate-200">|</span>
+      <div class="flex items-center gap-2.5 cursor-pointer" (click)="backToPrepare()">
+        <div class="w-7 h-7 flex items-center justify-center">
+          <!-- 4-dot petal SVG logo matching TestReach -->
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="6" cy="6" r="4.5" fill="#2b1756"/>
+            <circle cx="18" cy="6" r="4.5" fill="#2b1756"/>
+            <circle cx="6" cy="18" r="4.5" fill="#2b1756"/>
+            <circle cx="18" cy="18" r="4.5" fill="#2b1756"/>
+          </svg>
+        </div>
+        <span class="text-xs text-slate-400 font-medium hover:text-slate-600 transition-colors">
+          Aptis by British Council
+        </span>
       </div>
-      <span class="text-xs text-slate-400 font-medium hover:text-slate-600 transition-colors">
-        Aptis by British Council
-      </span>
     </div>
 
     <!-- Right: User Avatar -->

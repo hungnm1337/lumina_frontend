@@ -23,6 +23,10 @@ interface AccordionItem {
 export class AptisPrepareComponent {
   private router = inject(Router);
 
+  goBack(): void {
+    this.router.navigate(['/homepage']);
+  }
+
   accordions: AccordionItem[] = [
     {
       id: 'grammar',
