@@ -63,7 +63,9 @@
         <app-preview-panel 
           *ngIf="previewData"
           [previewData]="previewData"
-          (savingStateChange)="onSavingStateChange($event)">
+          [currentPreviewId]="currentPreviewId"
+          (savingStateChange)="onSavingStateChange($event)"
+          (examSaved)="onExamSaved($event)">
         </app-preview-panel>
         
         <div *ngIf="!previewData" style="text-align: center; color: #94a3b8; padding: 40px 20px;">
@@ -99,6 +101,7 @@
         <app-chat-panel 
           [messages]="messages"
           [isLoading]="isLoading"
+          [savedPreviewIds]="savedPreviewIds"
           (messageSent)="sendMessage($event)"
           (previewClicked)="viewPreview($event)">
         </app-chat-panel>

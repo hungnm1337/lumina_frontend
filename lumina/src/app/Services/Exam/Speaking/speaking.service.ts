@@ -10,9 +10,9 @@ export type { SpeakingScoringResult };
   providedIn: 'root',
 })
 export class SpeakingService {
-  private apiUrl = `${environment.apiUrl}/Speaking`; 
+  private apiUrl = `${environment.apiUrl}/Speaking`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('lumina_token');
@@ -34,9 +34,6 @@ export class SpeakingService {
 
     if (attemptId && attemptId > 0) {
       formData.append('attemptId', attemptId.toString());
-      console.log(
-        `[SpeakingService] Submitting answer with attemptId: ${attemptId}`
-      );
     }
 
     return this.http.post<SpeakingScoringResult>(

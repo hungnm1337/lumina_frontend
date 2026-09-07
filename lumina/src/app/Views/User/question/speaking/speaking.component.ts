@@ -13,6 +13,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReportPopupComponent } from '../../Report/report-popup/report-popup.component';
+import { PopupComponent } from '../../../Common/popup/popup.component';
 import { Router, NavigationStart } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -38,6 +39,7 @@ import { ExamCoordinationService } from '../../../../Services/exam-coordination.
 import { ToastService } from '../../../../Services/Toast/toast.service';
 import { SidebarService } from '../../../../Services/sidebar.service';
 import { MicrophonePermissionModalComponent } from '../../microphone-permission-modal/microphone-permission-modal.component';
+import { TeacherContactModalComponent } from '../../teacher-contact-modal/teacher-contact-modal.component';
 
 interface QuestionResult {
   questionNumber: number;
@@ -58,6 +60,8 @@ interface QuestionResult {
     QuotaLimitModalComponent,
     ReportPopupComponent,
     MicrophonePermissionModalComponent,
+    TeacherContactModalComponent,
+    PopupComponent,
   ],
   templateUrl: './speaking.component.html',
   styleUrl: './speaking.component.scss',
@@ -102,6 +106,14 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   // Microphone permission tracking
   showMicPermissionModal = false;
   hasMicrophonePermission = false;
+
+  // Teacher contact modal visibility
+  showTeacherModal: boolean = false;
+
+  // Submit confirmation popup
+  showSubmitConfirmPopup = false;
+  submitConfirmMessage = '';
+  submitConfirmTitle = 'Xác nhận nộp bài sớm';
 
   constructor(
     private router: Router,
@@ -170,28 +182,12 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       const newAttemptId = changes['mockTestAttemptId'].currentValue;
       if (newAttemptId && newAttemptId > 0) {
         this.attemptId = newAttemptId;
-        console.log(
-          '[SpeakingComponent] mockTestAttemptId updated:',
-          this.attemptId
-        );
       }
     }
 
     if (changes['questions']) {
       const previousQuestions = changes['questions'].previousValue;
       const currentQuestions = changes['questions'].currentValue;
-
-      console.log('[SpeakingComponent] ngOnChanges - questions changed:', {
-        previousCount: previousQuestions?.length || 0,
-        currentCount: currentQuestions?.length || 0,
-        previousIds:
-          previousQuestions?.map((q: QuestionDTO) => q.questionId) || [],
-        currentIds:
-          currentQuestions?.map((q: QuestionDTO) => q.questionId) || [],
-        isInMockTest: this.isInMockTest,
-        speakingResultsSize: this.speakingResults.size,
-        speakingResultsKeys: Array.from(this.speakingResults.keys()),
-      });
 
       // FIX: Reset speaking results when questions change (different part)
       // Check if this is a different set of questions (different part)
@@ -206,9 +202,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         !Array.from(currentIds).some((id) => previousIds.has(id));
 
       if (isDifferentPart && this.isInMockTest) {
-        console.log(
-          '[SpeakingComponent] Detected part change in MockTest - clearing speakingResults'
-        );
         this.speakingResults.clear();
         this.speakingQuestionResults = [];
         this.speakingStateService.resetAllStates();
@@ -312,10 +305,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         this.mockTestAttemptId > 0
       ) {
         this.attemptId = this.mockTestAttemptId;
-        console.log(
-          '[Speaking] Using mockTestAttemptId from parent:',
-          this.attemptId
-        );
+
         return;
       }
 
@@ -323,9 +313,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
       if (!stored) {
         if (this.isInMockTest) {
-          console.warn(
-            '[Speaking]  In mock test mode - waiting for mock test to create attempt'
-          );
           return;
         }
 
@@ -359,15 +346,14 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
   private createNewAttempt(): void {
     if (!this.partInfo || !this.partInfo.examId || !this.partInfo.partId) {
-      console.error('[Speaking]  Cannot create attempt: Missing partInfo');
-      alert('Lỗi: Không thể khởi tạo bài thi. Vui lòng quay lại và thử lại.');
+      console.error('[Speaking] Cannot create attempt: Missing partInfo');
+      this.router.navigate(['/homepage/user-dashboard/exams']);
       return;
     }
 
     const userStr = localStorage.getItem('lumina_user');
     if (!userStr) {
-      console.error('[Speaking]  No user found in localStorage');
-      alert('Vui lòng đăng nhập lại.');
+      console.error('[Speaking] No user found in localStorage');
       this.router.navigate(['/auth/login']);
       return;
     }
@@ -391,8 +377,8 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         this.attemptId = response.attemptID;
       },
       error: (error) => {
-        console.error('[Speaking]  Failed to create attempt:', error);
-        alert('Lỗi khi khởi tạo bài thi. Vui lòng thử lại.');
+        console.error('[Speaking] Failed to create attempt:', error);
+        this.router.navigate(['/homepage/user-dashboard/exams']);
       },
     });
   }
@@ -427,7 +413,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       stream.getTracks().forEach((track) => track.stop());
 
       this.hasMicrophonePermission = true;
-      console.log(' Microphone permission granted');
     } catch (error: any) {
       console.error(' Microphone permission denied:', error);
       this.hasMicrophonePermission = false;
@@ -485,14 +470,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }): void {
     const { questionId, result } = event;
 
-    console.log('[SpeakingComponent] onSpeakingResult received:', {
-      questionId: questionId,
-      overallScore: result?.overallScore,
-      currentQuestionsIds: this.questions.map((q) => q.questionId),
-      isInMockTest: this.isInMockTest,
-      speakingResultsBeforeUpdate: Array.from(this.speakingResults.keys()),
-    });
-
     const q = this.questions.find((q) => q.questionId === questionId);
 
     if (!q) {
@@ -508,17 +485,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
     if (result.overallScore !== null && result.overallScore !== undefined) {
       this.speakingResults.set(q.questionId, result);
 
-      console.log(
-        '[SpeakingComponent] Result stored for questionId:',
-        q.questionId,
-        {
-          speakingResultsAfterUpdate: Array.from(this.speakingResults.keys()),
-          areAllQuestionsNowScored: this.questions.every((q) =>
-            this.speakingResults.has(q.questionId)
-          ),
-        }
-      );
-
       const questionIndex = this.questions.findIndex(
         (q) => q.questionId === questionId
       );
@@ -529,7 +495,8 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         questionNumber: questionIndex + 1,
         questionText: q.stemText,
         result: result,
-        sampleAnswer: q.sampleAnswer,
+        // Use sampleAnswer from API response (available after scoring), fallback to question if not available
+        sampleAnswer: result.sampleAnswer || q.sampleAnswer,
       };
       if (existingIndex >= 0) {
         this.speakingQuestionResults[existingIndex] = item;
@@ -564,9 +531,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   // Mock test helper methods
   areAllQuestionsScored(): boolean {
     if (!this.questions || this.questions.length === 0) {
-      console.log(
-        '[SpeakingComponent] areAllQuestionsScored: No questions, returning false'
-      );
       return false;
     }
 
@@ -574,51 +538,26 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       this.speakingResults.has(q.questionId)
     );
 
-    console.log('[SpeakingComponent] areAllQuestionsScored check:', {
-      questionIds: this.questions.map((q) => q.questionId),
-      speakingResultsKeys: Array.from(this.speakingResults.keys()),
-      speakingResultsSize: this.speakingResults.size,
-      questionsLength: this.questions.length,
-      allScored: allScored,
-      eachQuestionStatus: this.questions.map((q) => ({
-        questionId: q.questionId,
-        hasResult: this.speakingResults.has(q.questionId),
-      })),
-    });
-
     return allScored;
   }
 
   getScoredCount(): number {
-    // Only count results for current questions
-    const count = this.questions.filter((q) =>
-      this.speakingResults.has(q.questionId)
-    ).length;
-    console.log('[SpeakingComponent] getScoredCount:', {
-      totalQuestions: this.questions.length,
-      scoredCount: count,
-      speakingResultsSize: this.speakingResults.size,
-    });
+    // Count questions that have been scored (including 0 score)
+    // Use state service to check if question is in 'scored' state
+    const count = this.questions.filter((q) => {
+      const state = this.speakingStateService.getQuestionState(q.questionId);
+      return state?.state === 'scored';
+    }).length;
+
     return count;
   }
 
   onNextPartClicked(): void {
-    console.log('[SpeakingComponent] onNextPartClicked called:', {
-      areAllQuestionsScored: this.areAllQuestionsScored(),
-      isInMockTest: this.isInMockTest,
-    });
-
     if (this.isInMockTest) {
       if (this.areAllQuestionsScored()) {
-        console.log(
-          '[SpeakingComponent] onNextPartClicked: All scored in MockTest, emitting speakingPartCompleted'
-        );
         this.baseQuestionService.finishQuiz();
         this.speakingPartCompleted.emit();
       } else {
-        console.log(
-          '[SpeakingComponent] onNextPartClicked: Not all scored yet, waiting...'
-        );
       }
     } else {
       // Ngoài MockTest, gọi finishSpeakingExam bình thường
@@ -655,13 +594,24 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
       };
     }
 
-    const questionNumber = this.getQuestionNumber(currentQuestion.questionId);
-    return this.speakingStateService.getQuestionTiming(questionNumber);
+    // Use the service to get timing based on global question number
+    const globalQuestionNumber = this.getQuestionNumber(
+      currentQuestion.questionId
+    );
+    return this.speakingStateService.getQuestionTiming(globalQuestionNumber);
   }
 
   private getQuestionNumber(questionId: number): number {
     const index = this.questions.findIndex((q) => q.questionId === questionId);
-    return index >= 0 ? index + 1 : 1;
+    const calculatedNumber = index >= 0 ? index + 1 : 1;
+
+    // Check if the question has a questionNumber property from database
+    const currentQuestion = this.questions[index];
+    if (currentQuestion && currentQuestion.questionNumber) {
+      return currentQuestion.questionNumber;
+    }
+
+    return calculatedNumber;
   }
 
   onAutoAdvanceNext(): void {
@@ -674,9 +624,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         this.resetCounter++;
       } else {
         if (this.isInMockTest && this.areAllQuestionsScored()) {
-          console.log(
-            '[SpeakingComponent] onAutoAdvanceNext: Last question scored in MockTest, auto-finishing'
-          );
           this.finishSpeakingExam();
         } else if (!this.isInMockTest) {
           this.finishSpeakingExam();
@@ -722,10 +669,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   private updateSpeakingResults(states: Map<number, any>): void {
     const newResults: QuestionResult[] = [];
 
-    console.log('[updateSpeakingResults] Starting update...');
-    console.log('[updateSpeakingResults] States:', states);
-    console.log('[updateSpeakingResults] Questions array:', this.questions);
-
     states.forEach((state, questionId) => {
       if (state.result) {
         // Use questionId from the Map key, not from state.result
@@ -733,22 +676,10 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
           (q) => q.questionId === questionId
         );
 
-        console.log(
-          `[updateSpeakingResults] Processing questionId ${questionId}:`,
-          {
-            found: !!question,
-            questionData: question,
-            sampleAnswer: question?.sampleAnswer,
-            resultQuestionId: state.result.questionId,
-          }
-        );
-
         if (question) {
-          const sampleAnswerValue = question.sampleAnswer;
-          console.log(
-            `[updateSpeakingResults] Question ${questionId} sampleAnswer value:`,
-            sampleAnswerValue
-          );
+          // Prioritize sampleAnswer from API result (available after scoring), fallback to question
+          const sampleAnswerValue =
+            state.result.sampleAnswer || question.sampleAnswer;
 
           const resultItem: QuestionResult = {
             questionNumber: this.questions.indexOf(question) + 1,
@@ -757,25 +688,7 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
             sampleAnswer: sampleAnswerValue,
           };
 
-          console.log(
-            `[updateSpeakingResults] Created result item for question ${questionId}:`,
-            resultItem
-          );
-          console.log(
-            `[updateSpeakingResults] Result item sampleAnswer:`,
-            resultItem.sampleAnswer
-          );
-
           newResults.push(resultItem);
-
-          console.log(
-            `[updateSpeakingResults] After push, newResults length:`,
-            newResults.length
-          );
-          console.log(
-            `[updateSpeakingResults] Last item in newResults:`,
-            newResults[newResults.length - 1]
-          );
         } else {
           console.error(
             `[updateSpeakingResults] Question not found for questionId ${questionId}`
@@ -783,12 +696,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         }
       }
     });
-
-    console.log('[updateSpeakingResults] Final newResults:', newResults);
-    console.log(
-      '[updateSpeakingResults] Final newResults COUNT:',
-      newResults.length
-    );
 
     const hasChanges =
       newResults.length !== this.speakingQuestionResults.length ||
@@ -801,32 +708,9 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         );
       });
 
-    console.log('[updateSpeakingResults] hasChanges:', hasChanges);
-    console.log(
-      '[updateSpeakingResults] Current speakingQuestionResults length:',
-      this.speakingQuestionResults.length
-    );
-    console.log(
-      '[updateSpeakingResults] New results length:',
-      newResults.length
-    );
-
     if (hasChanges) {
-      console.log(
-        '[updateSpeakingResults] BEFORE assignment:',
-        JSON.parse(JSON.stringify(this.speakingQuestionResults))
-      );
       this.speakingQuestionResults = [...newResults]; // Use spread to create new array
-      console.log(
-        '[updateSpeakingResults] AFTER assignment:',
-        JSON.parse(JSON.stringify(this.speakingQuestionResults))
-      );
-      console.log(
-        '[updateSpeakingResults] Updated speakingQuestionResults:',
-        this.speakingQuestionResults
-      );
     } else {
-      console.log('[updateSpeakingResults] NO CHANGES - skipping update');
     }
   }
 
@@ -884,43 +768,20 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
   }
 
   async finishSpeakingExam(): Promise<void> {
-    console.log('[SpeakingComponent] finishSpeakingExam called:', {
-      showSpeakingSummary: this.showSpeakingSummary,
-      hasSpeakingQuestions: this.hasSpeakingQuestions(),
-      isInMockTest: this.isInMockTest,
-      questionsCount: this.questions.length,
-      speakingResultsSize: this.speakingResults.size,
-      questionIds: this.questions.map((q) => q.questionId),
-      speakingResultsKeys: Array.from(this.speakingResults.keys()),
-    });
-
     if (this.isInMockTest) {
-      console.log(
-        '[SpeakingComponent] finishSpeakingExam: In MockTest mode, skipping summary and emitting speakingPartCompleted'
-      );
-
       // Chỉ finish quiz và emit event để ExamComponent xử lý chuyển part
       this.baseQuestionService.finishQuiz();
       this.speakingPartCompleted.emit();
 
-      console.log(
-        '[SpeakingComponent] finishSpeakingExam: speakingPartCompleted emitted successfully'
-      );
       return;
     }
 
     // Phần code dưới đây chỉ chạy khi KHÔNG phải MockTest mode
     if (this.showSpeakingSummary) {
-      console.log(
-        '[SpeakingComponent] finishSpeakingExam: Already showing summary, returning'
-      );
       return;
     }
 
     if (!this.hasSpeakingQuestions()) {
-      console.log(
-        '[SpeakingComponent] finishSpeakingExam: No speaking questions, returning'
-      );
       return;
     }
 
@@ -940,23 +801,8 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
 
     const allScored = questionStates.every((qs) => qs.state === 'scored');
 
-    if (!allScored) {
-      const incompleteQuestions = this.questions.filter((q) => {
-        const state = this.speakingStateService.getQuestionState(q.questionId);
-        return (
-          state?.state !== 'scored' &&
-          state?.state !== 'scoring' &&
-          state?.state !== 'submitted'
-        );
-      });
-
-      if (incompleteQuestions.length > 0) {
-        alert(
-          `Bạn còn ${incompleteQuestions.length} câu chưa hoàn thành. Vui lòng hoàn thành tất cả câu hỏi trước khi nộp bài.`
-        );
-        return;
-      }
-    }
+    // Allow early submission - no longer block if not all questions are scored
+    // User will be warned via popup before calling this method
 
     if (this.attemptId === null || this.attemptId <= 0) {
       this.loadAttemptId();
@@ -977,11 +823,6 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         if (summary.totalScore !== undefined) {
           this.baseQuestionService.setTotalScore(summary.totalScore);
         }
-
-        console.log(
-          '[finishSpeakingExam] Final speakingQuestionResults:',
-          this.speakingQuestionResults
-        );
 
         this.showSpeakingSummary = true;
         this.baseQuestionService.finishQuiz();
@@ -1164,5 +1005,64 @@ export class SpeakingComponent implements OnChanges, OnDestroy, OnInit {
         sessionStorage.removeItem(submissionKey);
       });
     }
+  }
+
+  /**
+   * Handle early submit button click - show confirmation popup
+   */
+  onEarlySubmitClick(): void {
+    const scoredCount = this.getScoredCount();
+    const totalQuestions = this.questions.length;
+
+    if (scoredCount === 0) {
+      this.submitConfirmMessage =
+        `Bạn chưa hoàn thành câu nào.\n\n` +
+        `Bạn có chắc chắn muốn ${
+          this.isInMockTest ? 'chuyển sang phần tiếp theo' : 'nộp bài'
+        } không?\n\n` +
+        `Lưu ý: ${this.isInMockTest ? 'Phần này' : 'Bài thi'} sẽ được ${
+          this.isInMockTest ? 'tính' : 'nộp'
+        } với 0 điểm.`;
+    } else if (scoredCount < totalQuestions) {
+      this.submitConfirmMessage =
+        `Đã chấm được ${scoredCount}/${totalQuestions} câu.\n\n` +
+        `Bạn có chắc chắn muốn ${
+          this.isInMockTest ? 'chuyển sang phần tiếp theo' : 'nộp bài sớm'
+        } không?\n\n` +
+        `Lưu ý: Các câu chưa chấm sẽ không được tính điểm.`;
+    } else {
+      this.submitConfirmMessage =
+        `Đã chấm được ${scoredCount}/${totalQuestions} câu.\n\n` +
+        `Bạn có muốn ${
+          this.isInMockTest ? 'chuyển sang phần tiếp theo' : 'nộp bài ngay'
+        } không?`;
+    }
+
+    this.showSubmitConfirmPopup = true;
+  }
+
+  /**
+   * Handle submit confirmation - proceed with finishing exam
+   */
+  onSubmitConfirmed(): void {
+    this.showSubmitConfirmPopup = false;
+    this.finishSpeakingExam();
+  }
+
+  /**
+   * Handle submit cancellation - close popup and continue
+   */
+  onSubmitCancelled(): void {
+    this.showSubmitConfirmPopup = false;
+  }
+
+  // Open teacher contact modal
+  openTeacherModal(): void {
+    this.showTeacherModal = true;
+  }
+
+  // Close teacher contact modal
+  closeTeacherModal(): void {
+    this.showTeacherModal = false;
   }
 }

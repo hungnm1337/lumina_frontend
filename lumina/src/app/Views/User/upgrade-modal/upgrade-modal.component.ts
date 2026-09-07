@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { PaymentService } from '../../../Services/Payment/payment.service';
 import { PackagesService, Package } from '../../../Services/Packages/packages.service';
 import { Router } from '@angular/router';
@@ -7,7 +8,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-upgrade-modal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './upgrade-modal.component.html',
   styleUrls: ['./upgrade-modal.component.scss'],
 })
@@ -18,6 +19,7 @@ export class UpgradeModalComponent implements OnChanges {
 
   isLoading = false;
   errorMessage = '';
+  termsAgreed = false;
 
   // Package selection
   packages: Package[] = [];
@@ -35,7 +37,7 @@ export class UpgradeModalComponent implements OnChanges {
     private paymentService: PaymentService,
     private packagesService: PackagesService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isVisible'] && this.isVisible && this.packages.length === 0) {

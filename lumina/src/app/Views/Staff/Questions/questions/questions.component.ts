@@ -243,7 +243,7 @@ export class QuestionsComponent implements OnInit {
       stemText: ['', [Validators.required, noWhitespaceValidator(), meaningfulContentValidator()]],
       questionExplain: ['', [meaningfulContentValidator()]],
       scoreWeight: [1, [Validators.required, Validators.min(1)]],
-      time: [30, Validators.required],
+      time: [30, [Validators.required, Validators.min(1)]],
     };
 
     if (this.selectedSkill !== 'Speaking' && this.selectedSkill !== 'Writing') {
@@ -608,7 +608,7 @@ export class QuestionsComponent implements OnInit {
 
     this.questionService.createPromptWithQuestions(dto).subscribe({
       next: (res) => {
-        this.showMessage('Prompt created successfully!', 'success');
+        this.showMessage('Thêm mới thành công!', 'success');
         this.resetPromptForm();
         this.closeModal();
         this.loadPrompts();
@@ -754,7 +754,7 @@ export class QuestionsComponent implements OnInit {
       stemText: ['', [Validators.required, noWhitespaceValidator(), meaningfulContentValidator()]],
       questionExplain: ['', [meaningfulContentValidator()]],
       scoreWeight: [1, [Validators.required, Validators.min(1)]],
-      time: [30, Validators.required],
+      time: [30, [Validators.required, Validators.min(1)]],
     };
 
     if (
@@ -802,7 +802,7 @@ export class QuestionsComponent implements OnInit {
         q.scoreWeight ?? 1,
         [Validators.required, Validators.min(1)],
       ],
-      time: [q.time ?? 30, Validators.required],
+      time: [q.time ?? 30, [Validators.required, Validators.min(1)]],
     };
 
     // Thêm Sample Answer cho Speaking questions

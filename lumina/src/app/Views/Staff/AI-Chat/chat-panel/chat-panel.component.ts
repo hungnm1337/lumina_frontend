@@ -13,6 +13,7 @@ import { MessageItemComponent } from '../message-item/message-item.component';
 export class ChatPanelComponent implements AfterViewChecked {
   @Input() messages: any[] = [];
   @Input() isLoading = false;
+  @Input() savedPreviewIds: Set<string> = new Set();
   @Output() messageSent = new EventEmitter<string>();
   @Output() previewClicked = new EventEmitter<string>();
 
@@ -38,6 +39,11 @@ export class ChatPanelComponent implements AfterViewChecked {
   // Emit event khi click vào preview
   onPreviewClick(previewId: string) {
     this.previewClicked.emit(previewId);
+  }
+
+  // Check if preview has been saved
+  isPreviewSaved(previewId: string | undefined): boolean {
+    return previewId ? this.savedPreviewIds.has(previewId) : false;
   }
 
   ngAfterViewChecked() {

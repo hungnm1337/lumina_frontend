@@ -31,7 +31,10 @@
         }
         </p>
       </div>
-      @if (details.examAttemptInfo?.score !== null) {
+      @if (details.examAttemptInfo?.examPartName === null||details.examAttemptInfo?.examPartName=== "") {
+        
+        }@else {
+                @if (details.examAttemptInfo?.score !== null) {
       <div class="bg-white bg-opacity-20 rounded-lg px-6 py-3 text-center">
         <div class="text-sm text-blue-100 mb-1">Điểm</div>
         <div class="text-3xl font-bold">
@@ -39,6 +42,8 @@
         </div>
       </div>
       }
+        }
+
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
@@ -379,7 +384,8 @@
                     d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
                     clip-rule="evenodd" />
                 </svg>
-                AI Feedback Analysis
+                AI Feedback Analysis 
+                <p class="ml-2 text-xs text-white">( Điểm số và phản hồi chỉ mang tính chất tham khảo )</p>
               </h4>
             </div>
 

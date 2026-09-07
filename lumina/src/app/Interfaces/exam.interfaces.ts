@@ -32,7 +32,7 @@ export interface QuestionDTO {
   questionId: number;
   partId: number;
   questionType?: string;
-  partCode:string;
+  partCode: string;
   stemText: string;
   promptId?: number;
   scoreWeight: number;
@@ -86,6 +86,7 @@ export interface SpeakingScoringResult {
   grammarScore: number;
   vocabularyScore: number;
   contentScore: number;
+  sampleAnswer?: string; // Sample answer for reference after submission
 }
 
 // ============ COMPLETION STATUS INTERFACES ============

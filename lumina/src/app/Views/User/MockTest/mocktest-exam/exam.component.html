@@ -34,26 +34,37 @@
 
       <!-- Main Content Area (9/12 = 75%) -->
       <div class="col-span-9 bg-white rounded-lg shadow-md p-4">
-        <!-- Compact Header: Part Info + Timer + Exit -->
+        <!-- Compact Header: 3-column layout (2-4-2) -->
         <div
-          class="mb-3 p-3 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg text-white"
+          class="mb-3 p-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg text-white shadow-lg"
         >
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div>
-                <h2 class="text-lg font-semibold">{{ currentPart.title }}</h2>
-                <p class="text-xs opacity-90">
-                  Part {{ currentPartIndex + 1 }}/{{
-                    exampartDetailsAndQustions.length
-                  }}
-                  • Câu {{ currentQuestionIndex + 1 }}/{{
-                    currentPart.questions.length
-                  }}
-                </p>
-              </div>
+          <div class="grid grid-cols-8 gap-4 items-center">
+            <!-- Left: Part Info (2/8) -->
+            <div class="col-span-2 flex flex-col">
+              <h2 class="text-lg font-bold mb-1">{{ currentPart.title }}</h2>
+              <p class="text-sm opacity-90" *ngIf="!isPart4">
+                Part {{ currentPartIndex + 1 }}/{{
+                  exampartDetailsAndQustions.length
+                }}
+                • Câu {{ currentQuestionIndex + 1 }}/{{
+                  currentPart.questions.length
+                }}
+              </p>
+              <p class="text-sm opacity-90" *ngIf="isPart4">
+                Part {{ currentPartIndex + 1 }}/{{
+                  exampartDetailsAndQustions.length
+                }}
+                • Nhóm {{ currentPromptIndex + 1 }}/{{ questionGroups.length }}
+              </p>
+            </div>
+
+            <!-- Center: Timer (4/8) -->
+            <div
+              *ngIf="currentPartTime > 0"
+              class="col-span-4 flex justify-center"
+            >
               <div
-                *ngIf="currentPartTime > 0"
-                class="bg-white/20 px-3 py-1 rounded-md"
+                class="w-full bg-white backdrop-blur-sm px-4 py-2 rounded-lg"
               >
                 <app-time
                   [time]="currentPartTime"
@@ -64,12 +75,16 @@
                 </app-time>
               </div>
             </div>
-            <button
-              (click)="confirmExit()"
-              class="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-md text-sm font-medium transition-colors"
-            >
-              <i class="fas fa-sign-out-alt mr-1.5"></i>Thoát
-            </button>
+
+            <!-- Right: Exit Button (2/8) -->
+            <div class="col-span-2 flex justify-end">
+              <button
+                (click)="confirmExit()"
+                class="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg text-sm font-semibold transition-all hover:scale-105"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i>Thoát
+              </button>
+            </div>
           </div>
         </div>
 
@@ -133,7 +148,9 @@
           </div>
         </div>
 
-        <!-- Main Content: Prompt (6/9) và Options (3/9) -->
+        <!-- Main Content: Conditional rendering based on isPart4 -->
+        @if (!isPart4) {
+        <!-- Parts 1-3: Single question display (ORIGINAL LAYOUT) -->
         <div class="grid grid-cols-9 gap-4 mb-2">
           <!-- Left Column: Prompt -->
           <div class="col-span-6 flex flex-col">
@@ -172,7 +189,7 @@
           </div>
         </div>
 
-        <!-- Navigation -->
+        <!-- Navigation for Parts 1-3 -->
         <div class="mt-4 flex items-center justify-between">
           <button
             (click)="previousQuestion()"
@@ -196,6 +213,67 @@
             <i class="fas fa-arrow-right ml-1.5"></i>
           </button>
         </div>
+        } @else {
+        <!-- Part 4: Group of 3 questions display (NEW LAYOUT) -->
+        <div class="mb-4">
+          <!-- Display all 3 questions in the current group -->
+          @for (question of getCurrentPromptQuestions(); track
+          question.questionId; let qIdx = $index) {
+          <div class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <!-- Question Header -->
+            <div class="mb-3 flex items-center gap-2">
+              <span
+                class="inline-flex items-center justify-center w-8 h-8 bg-purple-600 text-white rounded-full text-sm font-bold"
+              >
+                {{
+                  question.questionNumber || currentPromptIndex * 3 + qIdx + 1
+                }}
+              </span>
+              <h3 class="text-base font-semibold text-gray-800">
+                {{ question.stemText }}
+              </h3>
+            </div>
+
+            <!-- Question Options -->
+            <app-options
+              [options]="question.options || []"
+              [resetAt]="currentPromptIndex"
+              [preSelectedOptionId]="getSelectedOptionId(question.questionId)"
+              (answered)="onOptionAnsweredPart4(question.questionId, $event)"
+            ></app-options>
+          </div>
+          }
+        </div>
+
+        <!-- Navigation for Part 4 (Prompt-based) -->
+        <div class="mt-4 flex items-center justify-between">
+          <button
+            (click)="previousPrompt()"
+            [disabled]="currentPromptIndex === 0"
+            class="px-3 py-1.5 rounded-md bg-gray-500 text-white hover:bg-gray-600 disabled:opacity-50 text-sm font-medium shadow-sm"
+          >
+            <i class="fas fa-arrow-left mr-1.5"></i>Nhóm câu trước
+          </button>
+
+          <div class="text-sm text-gray-600 font-medium">
+            Nhóm {{ currentPromptIndex + 1 }}/{{ questionGroups.length }}
+          </div>
+
+          <button
+            (click)="nextPrompt()"
+            class="px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 text-sm font-medium shadow-sm"
+          >
+            {{
+              isLastPartInExam() && isLastPromptInPart()
+                ? "Hoàn thành"
+                : isLastPromptInPart()
+                ? "Part tiếp"
+                : "Nhóm câu sau"
+            }}
+            <i class="fas fa-arrow-right ml-1.5"></i>
+          </button>
+        </div>
+        }
       </div>
     </div>
 
@@ -218,26 +296,31 @@
 
       <!-- Main Content Area (9/12 = 75%) -->
       <div class="col-span-9 bg-white rounded-lg shadow-md p-4">
-        <!-- Compact Header: Part Info + Timer + Exit -->
+        <!-- Compact Header: 3-column layout (2-4-2) -->
         <div
-          class="mb-3 p-3 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-lg text-white"
+          class="mb-3 p-4 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-lg text-white shadow-lg"
         >
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div>
-                <h2 class="text-lg font-semibold">{{ currentPart.title }}</h2>
-                <p class="text-xs opacity-90">
-                  Part {{ currentPartIndex + 1 }}/{{
-                    exampartDetailsAndQustions.length
-                  }}
-                  • Câu {{ currentQuestionIndex + 1 }}/{{
-                    currentPart.questions.length
-                  }}
-                </p>
-              </div>
+          <div class="grid grid-cols-8 gap-4 items-center">
+            <!-- Left: Part Info (2/8) -->
+            <div class="col-span-2 flex flex-col">
+              <h2 class="text-lg font-bold mb-1">{{ currentPart.title }}</h2>
+              <p class="text-sm opacity-90">
+                Part {{ currentPartIndex + 1 }}/{{
+                  exampartDetailsAndQustions.length
+                }}
+                • Câu {{ currentQuestionIndex + 1 }}/{{
+                  currentPart.questions.length
+                }}
+              </p>
+            </div>
+
+            <!-- Center: Timer (4/8) -->
+            <div
+              *ngIf="currentPartTime > 0"
+              class="col-span-4 flex justify-center"
+            >
               <div
-                *ngIf="currentPartTime > 0"
-                class="bg-white/20 px-3 py-1 rounded-md"
+                class="w-full bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg"
               >
                 <app-time
                   [time]="currentPartTime"
@@ -248,12 +331,16 @@
                 </app-time>
               </div>
             </div>
-            <button
-              (click)="confirmExit()"
-              class="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-md text-sm font-medium transition-colors"
-            >
-              <i class="fas fa-sign-out-alt mr-1.5"></i>Thoát
-            </button>
+
+            <!-- Right: Exit Button (2/8) -->
+            <div class="col-span-2 flex justify-end">
+              <button
+                (click)="confirmExit()"
+                class="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg text-sm font-semibold transition-all hover:scale-105"
+              >
+                <i class="fas fa-sign-out-alt mr-2"></i>Thoát
+              </button>
+            </div>
           </div>
         </div>
 
@@ -476,4 +563,11 @@
       </div>
     </div>
   </div>
+
+  <!-- Confirm Exit Modal -->
+  <app-confirm-exit-modal
+    [isVisible]="showExitModal"
+    (confirm)="onExitConfirmed()"
+    (cancel)="onExitCancelled()"
+  ></app-confirm-exit-modal>
 </div>
