@@ -10,40 +10,8 @@ class QuotaGuardService {
   constructor(private quotaService: QuotaService, private router: Router) {}
 
   async canActivate(route: ActivatedRouteSnapshot): Promise<boolean> {
-    const skill = route.data['skill'] as string;
-
-    if (!skill) {
-      console.error('QuotaGuard: skill not specified in route data');
-      return false;
-    }
-
-    try {
-      const result = await firstValueFrom(this.quotaService.checkQuota(skill));
-
-      if (result.requiresUpgrade) {
-        // Show upgrade modal/notification
-        this.showUpgradeNotification(skill);
-        this.router.navigate(['/homepage/user-dashboard/upgrade'], {
-          queryParams: { reason: 'premium-required', skill },
-        });
-        return false;
-      }
-
-      if (!result.canAccess) {
-        // Show quota exhausted notification
-        this.showQuotaExhaustedNotification(result.remainingAttempts);
-        this.router.navigate(['/homepage/user-dashboard/exams'], {
-          queryParams: { reason: 'quota-exhausted', skill },
-        });
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      console.error('QuotaGuard: Error checking quota', error);
-      // On error, allow access (fail open) or redirect based on your preference
-      return true;
-    }
+    // Tạm thời cho phép truy cập toàn bộ không giới hạn
+    return true;
   }
 
   private showUpgradeNotification(skill: string): void {

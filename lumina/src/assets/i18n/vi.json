@@ -1,0 +1,138 @@
+{
+  "common": {
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "search": "Tìm kiếm...",
+    "viewDetails": "Xem chi tiết",
+    "viewAll": "Xem tất cả",
+    "loading": "Đang tải...",
+    "save": "Lưu lại",
+    "cancel": "Hủy bỏ",
+    "close": "Đóng",
+    "back": "Quay lại",
+    "next": "Tiếp theo",
+    "previous": "Trước",
+    "errorOccurred": "Có lỗi xảy ra, vui lòng thử lại.",
+    "noData": "Không có dữ liệu hiển thị."
+  },
+  "nav": {
+    "home": "Trang chủ",
+    "practice": "Luyện tập",
+    "vocabulary": "Từ vựng",
+    "articles": "Bài viết",
+    "leaderboard": "Bảng xếp hạng",
+    "about": "Giới thiệu"
+  },
+  "landing": {
+    "hero": {
+      "headlinePrefix": "TOEIC",
+      "headlineHighlight": "990",
+      "headlineSuffix": "cùng chúng tôi",
+      "subheading": "Lumina đồng hành cùng bạn trên hành trình chinh phục TOEIC với lộ trình cá nhân hóa, nội dung chuẩn ETS và công nghệ AI thông minh.",
+      "startNow": "Bắt đầu học ngay",
+      "learnMore": "Tìm hiểu thêm"
+    },
+    "testCard": {
+      "title": "Kiểm tra trình độ miễn phí",
+      "description": "Tham gia bài kiểm tra 150 phút để biết trình độ hiện tại của bạn",
+      "skills": {
+        "listening": "Listening",
+        "reading": "Reading",
+        "writing": "Writing",
+        "speaking": "Speaking"
+      },
+      "startTest": "Bắt đầu kiểm tra"
+    },
+    "features": {
+      "personalized": {
+        "title": "Lộ trình cá nhân hóa",
+        "desc": "AI phân tích & thiết kế lộ trình phù hợp với bạn"
+      },
+      "ets": {
+        "title": "Kho đề chuẩn ETS",
+        "desc": "Cập nhật liên tục các đề thi mới nhất"
+      },
+      "detailedExplanation": {
+        "title": "Giải thích chi tiết",
+        "desc": "Phân tích đáp án kỹ càng, dễ hiểu"
+      },
+      "progressTracking": {
+        "title": "Theo dõi tiến độ",
+        "desc": "Biểu đồ trực quan giúp bạn nhìn thấy sự tiến bộ"
+      }
+    },
+    "valueBanner": {
+      "badge": "NÂNG TẦM KỸ NĂNG – VƯỢT MỌI GIỚI HẠN",
+      "title": "Chào mừng bạn đến với",
+      "brand": "Lumina TOEIC",
+      "desc": "Nền tảng luyện thi TOEIC hàng đầu tại Việt Nam được tin dùng bởi hàng nghìn học viên mỗi ngày.",
+      "stats": {
+        "students": "15.000+",
+        "studentsLabel": "Học viên",
+        "satisfaction": "98%",
+        "satisfactionLabel": "Hài lòng",
+        "tests": "2000+",
+        "testsLabel": "Đề thi"
+      },
+      "exploreRoadmap": "Khám phá lộ trình học",
+      "weeklyProgress": {
+        "title": "Tiến độ tuần này",
+        "completion": "76%",
+        "completionLabel": "Hoàn thành",
+        "listening": "Listening 85%",
+        "reading": "Reading 70%",
+        "writing": "Writing 65%",
+        "speaking": "Speaking 80%"
+      }
+    },
+    "events": {
+      "title": "Sự kiện & hoạt động",
+      "viewAll": "Xem tất cả sự kiện",
+      "card1": {
+        "tag": "ƯU ĐÃI",
+        "title": "Black Friday 2026 Giảm giá sốc",
+        "desc": "Giảm đến 60% cho tất cả các khóa học TOEIC. Chỉ diễn ra trong 3 ngày duy nhất!",
+        "date": "02/08/2026 - 04/08/2026"
+      },
+      "card2": {
+        "tag": "SỰ KIỆN",
+        "title": "Tuần lễ luyện thi miễn phí",
+        "desc": "7 ngày trải nghiệm miễn phí toàn bộ tính năng premium. Học thử không giới hạn!",
+        "date": "05/08/2026 - 11/08/2026"
+      },
+      "card3": {
+        "tag": "WORKSHOP",
+        "title": "Workshop: Chiến lược làm bài TOEIC hiệu quả",
+        "desc": "Buổi workshop trực tuyến với giảng viên chuyên gia. Chia sẻ bí quyết đạt điểm cao trong từng phần thi.",
+        "date": "10/08/2026 · 20:00 - 21:30"
+      }
+    },
+    "testimonial": {
+      "quote": "Lumina không chỉ giúp mình nâng cao điểm số mà còn xây dựng sự tự tin trong giao tiếp tiếng Anh. Lộ trình học rất khoa học và phù hợp với người bận rộn như mình.",
+      "author": "Nguyễn Minh Anh",
+      "score": "TOEIC 955"
+    },
+    "footer": {
+      "about": "Lumina - Nền tảng luyện thi TOEIC hiệu quả và đáng tin cậy tại Việt Nam.",
+      "products": "Sản phẩm",
+      "practice": "Luyện tập",
+      "mockTests": "Đề thi",
+      "vocab": "Từ vựng",
+      "roadmap": "Lộ trình học",
+      "support": "Hỗ trợ",
+      "userGuide": "Hướng dẫn sử dụng",
+      "faq": "FAQ",
+      "contact": "Liên hệ",
+      "privacy": "Chính sách bảo mật",
+      "aboutUs": "Về chúng tôi",
+      "intro": "Giới thiệu",
+      "news": "Tin tức",
+      "careers": "Tuyển dụng",
+      "terms": "Điều khoản sử dụng",
+      "newsletterTitle": "Nhận tài liệu miễn phí",
+      "newsletterDesc": "Đăng ký để nhận tài liệu học TOEIC miễn phí và các ưu đãi mới nhất!",
+      "emailPlaceholder": "Nhập email của bạn",
+      "copyright": "© 2024 Lumina TOEIC. Tất cả quyền được bảo lưu."
+    }
+  }
+}

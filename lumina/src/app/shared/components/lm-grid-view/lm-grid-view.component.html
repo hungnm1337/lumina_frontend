@@ -1,0 +1,141 @@
+<div class="lm-grid-container bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+  <!-- Search & Toolbar -->
+  <div *ngIf="showSearch" class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="relative flex-1 max-w-md">
+      <input
+        type="text"
+        [(ngModel)]="keyword"
+        (keyup.enter)="onSearch()"
+        [placeholder]="searchPlaceholder"
+        class="w-full pl-10 pr-10 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+      />
+      <span class="absolute left-3 top-2.5 text-slate-400">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </span>
+      <button
+        *ngIf="keyword"
+        (click)="onClearSearch()"
+        class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="flex items-center gap-2 text-sm text-slate-500">
+      <span>Hiển thị:</span>
+      <select
+        [ngModel]="pageSize"
+        (ngModelChange)="onPageSizeChange($event)"
+        class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }} dòng</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Table Content -->
+  <div class="overflow-x-auto relative">
+    <!-- Loading Overlay -->
+    <div *ngIf="loading" class="absolute inset-0 bg-white/70 backdrop-blur-xs flex items-center justify-center z-10">
+      <div class="flex items-center gap-3 text-blue-600 font-medium text-sm">
+        <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
+        <span>Đang tải dữ liệu...</span>
+      </div>
+    </div>
+
+    <table class="w-full text-left text-sm text-slate-700">
+      <thead class="bg-slate-50/80 text-xs uppercase font-semibold text-slate-500 border-b border-slate-200 tracking-wider">
+        <tr>
+          <th
+            *ngFor="let col of columns"
+            [style.width]="col.width"
+            [class.cursor-pointer]="col.sortable"
+            (click)="onSort(col)"
+            class="px-5 py-3.5 select-none hover:bg-slate-100/60 transition-colors"
+          >
+            <div class="flex items-center gap-1.5" [ngClass]="{
+              'justify-center': col.align === 'center',
+              'justify-end': col.align === 'right'
+            }">
+              <span>{{ col.title }}</span>
+              <span *ngIf="col.sortable" class="text-xs text-slate-400">
+                <i *ngIf="currentSortKey !== col.key" class="fa-solid fa-sort"></i>
+                <i *ngIf="currentSortKey === col.key && isAscending" class="fa-solid fa-arrow-up-short-wide text-blue-600"></i>
+                <i *ngIf="currentSortKey === col.key && !isAscending" class="fa-solid fa-arrow-down-wide-short text-blue-600"></i>
+              </span>
+            </div>
+          </th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y divide-slate-100">
+        <tr *ngFor="let row of data; let i = index" class="hover:bg-slate-50/60 transition-colors">
+          <td
+            *ngFor="let col of columns"
+            [ngClass]="{
+              'text-center': col.align === 'center',
+              'text-right': col.align === 'right'
+            }"
+            class="px-5 py-4"
+          >
+            <span *ngIf="col.badgeClass" [class]="col.badgeClass(row[col.key])" class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold">
+              {{ row[col.key] }}
+            </span>
+            <span *ngIf="!col.badgeClass">
+              {{ row[col.key] }}
+            </span>
+          </td>
+        </tr>
+
+        <!-- Empty State -->
+        <tr *ngIf="!loading && (!data || data.length === 0)">
+          <td [attr.colspan]="columns.length" class="text-center py-12 text-slate-400">
+            <div class="flex flex-col items-center justify-center gap-2">
+              <i class="fa-regular fa-folder-open text-3xl text-slate-300"></i>
+              <span>{{ emptyText }}</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination Footer -->
+  <div *ngIf="totalItems > 0" class="px-5 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500">
+    <div>
+      Tổng cộng: <span class="font-semibold text-slate-700">{{ totalItems }}</span> bản ghi
+    </div>
+
+    <div class="flex items-center gap-1">
+      <button
+        [disabled]="pageNumber <= 1"
+        (click)="changePage(pageNumber - 1)"
+        class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+      >
+        <i class="fa-solid fa-chevron-left text-xs"></i>
+      </button>
+
+      <button
+        *ngFor="let p of pages"
+        (click)="changePage(p)"
+        [class.bg-blue-600]="p === pageNumber"
+        [class.text-white]="p === pageNumber"
+        [class.border-blue-600]="p === pageNumber"
+        class="px-3.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs font-medium transition-colors"
+      >
+        {{ p }}
+      </button>
+
+      <button
+        [disabled]="pageNumber >= totalPages"
+        (click)="changePage(pageNumber + 1)"
+        class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+      >
+        <i class="fa-solid fa-chevron-right text-xs"></i>
+      </button>
+    </div>
+  </div>
+</div>

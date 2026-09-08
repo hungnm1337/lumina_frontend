@@ -1,0 +1,454 @@
+<div class="min-h-screen bg-[#fcfcfd] text-slate-800 font-sans selection:bg-amber-100 selection:text-amber-900">
+  <!-- 1. Header Navigation -->
+  <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <!-- Logo -->
+      <div class="flex items-center gap-2 cursor-pointer" routerLink="/">
+        <span class="text-amber-500 text-2xl font-black">✦</span>
+        <span class="text-2xl font-extrabold tracking-tight text-slate-900">Lumina</span>
+      </div>
+
+      <!-- Nav Links -->
+      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+        <a class="text-slate-900 hover:text-blue-600 transition-colors cursor-pointer border-b-2 border-slate-900 pb-0.5">
+          {{ 'nav.home' | translate }}
+        </a>
+        <a class="hover:text-blue-600 transition-colors cursor-pointer">{{ 'nav.practice' | translate }}</a>
+        <a class="hover:text-blue-600 transition-colors cursor-pointer">{{ 'nav.vocabulary' | translate }}</a>
+        <a class="hover:text-blue-600 transition-colors cursor-pointer">{{ 'nav.articles' | translate }}</a>
+        <a class="hover:text-blue-600 transition-colors cursor-pointer">{{ 'nav.leaderboard' | translate }}</a>
+        <a class="hover:text-blue-600 transition-colors cursor-pointer">{{ 'nav.about' | translate }}</a>
+      </nav>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-4">
+        <!-- Language Switcher -->
+        <button
+          (click)="toggleLanguage()"
+          class="px-2.5 py-1 text-xs font-bold rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors uppercase"
+          title="Chuyển đổi ngôn ngữ"
+        >
+          {{ translationService.currentLang }}
+        </button>
+
+        <!-- Search Icon Button -->
+        <button class="p-2 text-slate-500 hover:text-slate-900 transition-colors" title="Tìm kiếm">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+
+        <!-- Login -->
+        <button
+          (click)="startLearning()"
+          class="text-sm font-semibold text-slate-700 hover:text-slate-900 px-3 py-2 transition-colors"
+        >
+          {{ 'common.login' | translate }}
+        </button>
+
+        <!-- Register Button (LMButton) -->
+        <lm-button variant="primary" size="sm" (onClick)="startLearning()">
+          {{ 'common.register' | translate }}
+        </lm-button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. Hero Section -->
+  <section class="relative pt-12 pb-20 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-12 gap-12 items-center">
+      <!-- Left: Headline & CTAs -->
+      <div class="lg:col-span-7 space-y-6">
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 leading-[1.15] tracking-tight">
+          {{ 'landing.hero.headlinePrefix' | translate }}
+          <span class="relative inline-block text-amber-500 px-1">
+            {{ 'landing.hero.headlineHighlight' | translate }}
+            <!-- Cute rays/sparks decoration -->
+            <svg class="absolute -top-4 -right-4 w-7 h-7 text-amber-400 animate-pulse" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z"/>
+            </svg>
+          </span>
+          <br />
+          {{ 'landing.hero.headlineSuffix' | translate }}
+        </h1>
+
+        <p class="text-base sm:text-lg text-slate-600 leading-relaxed max-w-xl">
+          {{ 'landing.hero.subheading' | translate }}
+        </p>
+
+        <div class="flex flex-wrap items-center gap-4 pt-2">
+          <lm-button variant="primary" size="lg" (onClick)="startLearning()">
+            {{ 'landing.hero.startNow' | translate }}
+            <i class="fa-solid fa-arrow-right ml-1"></i>
+          </lm-button>
+
+          <lm-button variant="outline" size="lg">
+            {{ 'landing.hero.learnMore' | translate }}
+            <i class="fa-regular fa-circle-play ml-1"></i>
+          </lm-button>
+        </div>
+      </div>
+
+      <!-- Right: Placement Test Interactive Card -->
+      <div class="lg:col-span-5">
+        <div class="bg-[#0b1938] text-white rounded-3xl p-8 sm:p-10 shadow-2xl shadow-blue-950/30 border border-slate-800 relative">
+          <h2 class="text-2xl font-bold text-center mb-2 tracking-tight">
+            {{ 'landing.testCard.title' | translate }}
+          </h2>
+          <p class="text-slate-300 text-xs sm:text-sm text-center mb-8">
+            {{ 'landing.testCard.description' | translate }}
+          </p>
+
+          <!-- 4 Skills Grid -->
+          <div class="grid grid-cols-2 gap-4 mb-8">
+            <div
+              *ngFor="let s of skills"
+              class="bg-white rounded-2xl p-5 flex flex-col items-center justify-center text-slate-800 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer"
+            >
+              <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl mb-2.5" [ngClass]="[s.color, s.bg]">
+                <i [class]="s.icon"></i>
+              </div>
+              <span class="text-sm font-bold capitalize">{{ 'landing.testCard.skills.' + s.key | translate }}</span>
+            </div>
+          </div>
+
+          <!-- Rocket Start Button -->
+          <lm-button
+            variant="accent"
+            size="lg"
+            customClass="w-full py-4 text-slate-900 font-extrabold text-base shadow-lg shadow-amber-500/20"
+            (onClick)="startPlacementTest()"
+          >
+            🚀 {{ 'landing.testCard.startTest' | translate }}
+          </lm-button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Key Features Strip (4 Items) -->
+  <section class="py-12 border-y border-slate-100 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div *ngFor="let f of features" class="flex items-start gap-4">
+          <div class="w-12 h-12 rounded-2xl flex-shrink-0 flex items-center justify-center text-xl" [ngClass]="[f.color, f.bg]">
+            <i [class]="f.icon"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-slate-900 text-base mb-1">
+              {{ 'landing.features.' + f.key + '.title' | translate }}
+            </h4>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              {{ 'landing.features.' + f.key + '.desc' | translate }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Value Proposition Navy Banner -->
+  <section class="py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-[#0c1e3d] text-white rounded-[2.5rem] p-8 sm:p-12 lg:p-16 relative overflow-hidden shadow-2xl shadow-blue-950/20">
+        <!-- Background decorative wave -->
+        <div class="absolute -right-20 -bottom-20 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="grid lg:grid-cols-12 gap-12 items-center relative z-10">
+          <!-- Left Info -->
+          <div class="lg:col-span-7 space-y-6">
+            <span class="inline-block px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider text-sky-400 bg-sky-950/60 border border-sky-800/60 rounded-full">
+              {{ 'landing.valueBanner.badge' | translate }}
+            </span>
+
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
+              {{ 'landing.valueBanner.title' | translate }}<br />
+              <span class="text-amber-400">{{ 'landing.valueBanner.brand' | translate }}</span>
+            </h2>
+
+            <p class="text-slate-300 text-base max-w-lg leading-relaxed">
+              {{ 'landing.valueBanner.desc' | translate }}
+            </p>
+
+            <!-- Metrics Counter -->
+            <div class="grid grid-cols-3 gap-6 pt-4 border-t border-slate-700/60 max-w-md">
+              <div>
+                <div class="text-2xl sm:text-3xl font-black text-white">
+                  {{ 'landing.valueBanner.stats.students' | translate }}
+                </div>
+                <div class="text-xs text-slate-400 mt-1">
+                  {{ 'landing.valueBanner.stats.studentsLabel' | translate }}
+                </div>
+              </div>
+              <div>
+                <div class="text-2xl sm:text-3xl font-black text-white">
+                  {{ 'landing.valueBanner.stats.satisfaction' | translate }}
+                </div>
+                <div class="text-xs text-slate-400 mt-1">
+                  {{ 'landing.valueBanner.stats.satisfactionLabel' | translate }}
+                </div>
+              </div>
+              <div>
+                <div class="text-2xl sm:text-3xl font-black text-white">
+                  {{ 'landing.valueBanner.stats.tests' | translate }}
+                </div>
+                <div class="text-xs text-slate-400 mt-1">
+                  {{ 'landing.valueBanner.stats.testsLabel' | translate }}
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-4">
+              <lm-button variant="accent" size="md" (onClick)="startLearning()">
+                {{ 'landing.valueBanner.exploreRoadmap' | translate }}
+                <i class="fa-solid fa-arrow-right ml-1"></i>
+              </lm-button>
+            </div>
+          </div>
+
+          <!-- Right: Visual Student & Weekly Progress Floating Widget -->
+          <div class="lg:col-span-5 flex justify-center relative">
+            <div class="relative w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-700/40">
+              <img
+                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=700&q=80"
+                alt="Student studying"
+                class="w-full h-80 object-cover"
+              />
+
+              <!-- Floating Progress Card -->
+              <div class="absolute bottom-4 right-4 left-4 bg-white/95 backdrop-blur-md rounded-2xl p-4 text-slate-800 shadow-xl border border-white/40">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-xs font-bold text-slate-700">
+                    {{ 'landing.valueBanner.weeklyProgress.title' | translate }}
+                  </span>
+                  <span class="text-xs font-black text-teal-600 bg-teal-50 px-2 py-0.5 rounded-md">
+                    {{ 'landing.valueBanner.weeklyProgress.completion' | translate }}
+                  </span>
+                </div>
+
+                <!-- Skill Mini Badges -->
+                <div class="grid grid-cols-2 gap-2 text-[11px] font-semibold text-slate-600">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                    <span>Listening 85%</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                    <span>Reading 70%</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                    <span>Writing 65%</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-teal-500"></span>
+                    <span>Speaking 80%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Events & Activities Strip -->
+  <section class="py-16 bg-[#fafbfc]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between mb-10">
+        <div class="flex items-center gap-3">
+          <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">
+            {{ 'landing.events.title' | translate }}
+          </h2>
+          <!-- Squiggle indicator -->
+          <span class="text-amber-400 font-black text-2xl">〰</span>
+        </div>
+
+        <a class="text-sm font-bold text-slate-600 hover:text-blue-600 flex items-center gap-1 cursor-pointer">
+          {{ 'landing.events.viewAll' | translate }}
+          <i class="fa-solid fa-chevron-right text-xs"></i>
+        </a>
+      </div>
+
+      <!-- 3 Event Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Card 1: Ưu đãi -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all border border-slate-100 flex flex-col justify-between group">
+          <div>
+            <span class="inline-block px-3 py-1 rounded-full text-xs font-extrabold text-purple-700 bg-purple-50 mb-4">
+              {{ 'landing.events.card1.tag' | translate }}
+            </span>
+            <h3 class="text-lg font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
+              {{ 'landing.events.card1.title' | translate }}
+            </h3>
+            <p class="text-xs text-slate-500 leading-relaxed mb-6">
+              {{ 'landing.events.card1.desc' | translate }}
+            </p>
+          </div>
+
+          <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
+            <span><i class="fa-regular fa-calendar mr-1"></i> {{ 'landing.events.card1.date' | translate }}</span>
+            <span class="font-bold text-blue-600 group-hover:translate-x-1 transition-transform">
+              {{ 'common.viewDetails' | translate }} →
+            </span>
+          </div>
+        </div>
+
+        <!-- Card 2: Sự kiện -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all border border-slate-100 flex flex-col justify-between group">
+          <div>
+            <span class="inline-block px-3 py-1 rounded-full text-xs font-extrabold text-emerald-700 bg-emerald-50 mb-4">
+              {{ 'landing.events.card2.tag' | translate }}
+            </span>
+            <h3 class="text-lg font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
+              {{ 'landing.events.card2.title' | translate }}
+            </h3>
+            <p class="text-xs text-slate-500 leading-relaxed mb-6">
+              {{ 'landing.events.card2.desc' | translate }}
+            </p>
+          </div>
+
+          <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
+            <span><i class="fa-regular fa-calendar mr-1"></i> {{ 'landing.events.card2.date' | translate }}</span>
+            <span class="font-bold text-blue-600 group-hover:translate-x-1 transition-transform">
+              {{ 'common.viewDetails' | translate }} →
+            </span>
+          </div>
+        </div>
+
+        <!-- Card 3: Workshop -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all border border-slate-100 flex flex-col justify-between group">
+          <div>
+            <span class="inline-block px-3 py-1 rounded-full text-xs font-extrabold text-sky-700 bg-sky-50 mb-4">
+              {{ 'landing.events.card3.tag' | translate }}
+            </span>
+            <h3 class="text-lg font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
+              {{ 'landing.events.card3.title' | translate }}
+            </h3>
+            <p class="text-xs text-slate-500 leading-relaxed mb-6">
+              {{ 'landing.events.card3.desc' | translate }}
+            </p>
+          </div>
+
+          <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
+            <span><i class="fa-regular fa-clock mr-1"></i> {{ 'landing.events.card3.date' | translate }}</span>
+            <span class="font-bold text-blue-600 group-hover:translate-x-1 transition-transform">
+              {{ 'common.viewDetails' | translate }} →
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Testimonial Quote -->
+  <section class="py-14 bg-white border-t border-slate-100">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-amber-50/70 border border-amber-200/60 rounded-3xl p-8 sm:p-10 flex flex-col sm:flex-row items-center gap-6 shadow-sm">
+        <span class="text-5xl font-serif text-amber-500 select-none">“</span>
+        <div class="flex-1 text-center sm:text-left">
+          <p class="text-sm sm:text-base text-slate-700 leading-relaxed font-medium italic mb-4">
+            {{ 'landing.testimonial.quote' | translate }}
+          </p>
+          <div class="flex items-center justify-center sm:justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-amber-200 flex items-center justify-center font-bold text-amber-800 text-sm">
+                MA
+              </div>
+              <div class="text-left">
+                <div class="font-bold text-sm text-slate-900">{{ 'landing.testimonial.author' | translate }}</div>
+                <div class="text-xs text-amber-600 font-semibold">{{ 'landing.testimonial.score' | translate }}</div>
+              </div>
+            </div>
+
+            <div class="hidden sm:flex items-center gap-2 text-slate-400">
+              <button class="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center hover:bg-white text-xs transition-colors">
+                <i class="fa-solid fa-chevron-left"></i>
+              </button>
+              <button class="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center hover:bg-white text-xs transition-colors">
+                <i class="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Footer -->
+  <footer class="bg-slate-50 border-t border-slate-200 pt-16 pb-12 text-sm text-slate-600">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 pb-12">
+      <!-- Col 1: Brand & Social -->
+      <div class="space-y-4 lg:col-span-1">
+        <div class="flex items-center gap-2">
+          <span class="text-amber-500 text-2xl font-black">✦</span>
+          <span class="text-2xl font-extrabold text-slate-900">Lumina</span>
+        </div>
+        <p class="text-xs text-slate-500 leading-relaxed">
+          {{ 'landing.footer.about' | translate }}
+        </p>
+        <div class="flex items-center gap-3 text-slate-400 pt-2">
+          <a class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:text-blue-600 transition-colors"><i class="fa-brands fa-facebook-f text-xs"></i></a>
+          <a class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:text-red-600 transition-colors"><i class="fa-brands fa-youtube text-xs"></i></a>
+          <a class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:text-slate-900 transition-colors"><i class="fa-brands fa-tiktok text-xs"></i></a>
+          <a class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:text-blue-500 transition-colors"><i class="fa-regular fa-envelope text-xs"></i></a>
+        </div>
+      </div>
+
+      <!-- Col 2: Sản phẩm -->
+      <div>
+        <h5 class="font-bold text-slate-900 mb-4 text-xs uppercase tracking-wider">{{ 'landing.footer.products' | translate }}</h5>
+        <ul class="space-y-2.5 text-xs text-slate-500">
+          <li><a class="hover:text-blue-600 transition-colors cursor-pointer">{{ 'landing.footer.practice' | translate }}</a></li>
+          <li><a class="hover:text-blue-600 transition-colors cursor-pointer">{{ 'landing.footer.mockTests' | translate }}</a></li>
+          <li><a class="hover:text-blue-600 transition-colors cursor-pointer">{{ 'landing.footer.vocab' | translate }}</a></li>
+          <li><a class="hover:text-blue-600 transition-colors cursor-pointer">{{ 'landing.footer.roadmap' | translate }}</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 3: Hỗ trợ -->
+      <div>
+        <h5 class="font-bold text-slate-900 mb-4 text-xs uppercase tracking-wider">{{ 'landing.footer.support' | translate }}</h5>
+        <ul class="space-y-2.5 text-xs text-slate-500">
+          <li><a class="hover:text-blue-600 transition-colors cursor-pointer">{{ 'landing.footer.userGuide' | translate }}</a></li>
+          <li><a class="hover:text-blue-600 transition-colors cursor-pointer">{{ 'landing.footer.faq' | translate }}</a></li>
+          <li><a class="hover:text-blue-600 transition-colors cursor-pointer">{{ 'landing.footer.contact' | translate }}</a></li>
+          <li><a class="hover:text-blue-600 transition-colors cursor-pointer">{{ 'landing.footer.privacy' | translate }}</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 4: Về chúng tôi -->
+      <div>
+        <h5 class="font-bold text-slate-900 mb-4 text-xs uppercase tracking-wider">{{ 'landing.footer.aboutUs' | translate }}</h5>
+        <ul class="space-y-2.5 text-xs text-slate-500">
+          <li><a class="hover:text-blue-600 transition-colors cursor-pointer">{{ 'landing.footer.intro' | translate }}</a></li>
+          <li><a class="hover:text-blue-600 transition-colors cursor-pointer">{{ 'landing.footer.news' | translate }}</a></li>
+          <li><a class="hover:text-blue-600 transition-colors cursor-pointer">{{ 'landing.footer.careers' | translate }}</a></li>
+          <li><a class="hover:text-blue-600 transition-colors cursor-pointer">{{ 'landing.footer.terms' | translate }}</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 5: Newsletter -->
+      <div>
+        <h5 class="font-bold text-slate-900 mb-4 text-xs uppercase tracking-wider">{{ 'landing.footer.newsletterTitle' | translate }}</h5>
+        <p class="text-xs text-slate-500 mb-3 leading-relaxed">
+          {{ 'landing.footer.newsletterDesc' | translate }}
+        </p>
+        <div class="flex items-center gap-2">
+          <input
+            type="email"
+            [placeholder]="'landing.footer.emailPlaceholder' | translate"
+            class="flex-1 px-3 py-2 text-xs rounded-xl bg-white border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <lm-button variant="primary" size="sm">
+            <i class="fa-solid fa-arrow-right"></i>
+          </lm-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Copyright -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 border-t border-slate-200/60 text-center text-xs text-slate-400">
+      {{ 'landing.footer.copyright' | translate }}
+    </div>
+  </footer>
+</div>

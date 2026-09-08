@@ -253,6 +253,20 @@ export const routes: Routes = [
     canActivate: [RoleGuard],
     data: { roles: [4] }
   },
+  {
+    path: 'aptis/prepare-general',
+    loadComponent: () =>
+      import('./Views/User/aptis/aptis-prepare/aptis-prepare.component').then(
+        (m) => m.AptisPrepareComponent
+      )
+  },
+  {
+    path: 'aptis/speaking-test',
+    loadComponent: () =>
+      import('./Views/User/aptis/aptis-speaking-exam/aptis-speaking-exam.component').then(
+        (m) => m.AptisSpeakingExamComponent
+      )
+  },
   { path: '', redirectTo: '/homepage', pathMatch: 'full' },
   { path: '**', component: ErrorComponent },
 ];

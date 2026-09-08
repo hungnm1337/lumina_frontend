@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, map, BehaviorSubject, tap } from 'rxjs';
+import { Observable, of, catchError, map, BehaviorSubject, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   QuotaCheckResponse,
@@ -22,7 +22,15 @@ export class QuotaService {
    * @param skill - 'reading', 'listening', 'speaking', or 'writing'
    */
   checkQuota(skill: string): Observable<QuotaCheckResponse> {
-    return this.http.get<QuotaCheckResponse>(`${this.apiUrl}/check/${skill}`);
+    // Tạm thời bỏ giới hạn nạp tiền theo yêu cầu
+    return of({
+      canAccess: true,
+      isPremium: true,
+      requiresUpgrade: false,
+      remainingAttempts: 999,
+      subscriptionType: 'PREMIUM' as const,
+      message: 'Access granted'
+    });
   }
 
   /**

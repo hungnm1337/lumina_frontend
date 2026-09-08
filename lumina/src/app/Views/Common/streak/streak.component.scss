@@ -1,101 +1,48 @@
-.streak-page {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 2rem 1rem;
+:host {
+  display: block;
 }
 
-.streak-container {
-  max-width: 1200px;
-  margin: 0 auto;
+/* Radiant flame animation */
+@keyframes flameAura {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
 }
 
-/* ============================ */
-/* 📋 HEADER */
-/* ============================ */
-
-.streak-header {
-  margin-bottom: 2rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+.flame-glow {
+  animation: flameAura 2.5s ease-in-out infinite;
 }
 
-.btn-back {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  color: white;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
+/* Card hover lift */
+.stat-card-hover {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   &:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateX(-4px);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.08);
   }
 }
 
-.page-title {
-  flex: 1;
-  font-size: 2rem;
-  font-weight: 700;
-  color: white;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin: 0;
-
-  .fire-icon {
-    font-size: 2.5rem;
-    animation: fireFlicker 1.5s ease-in-out infinite;
-  }
-}
-
-/* ============================ */
-/* 📊 STATS GRID */
-/* ============================ */
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.stat-card {
-  background: white;
-  border-radius: 20px;
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  border: 3px solid transparent;
-
+/* Calendar Day streak markers */
+.calendar-day-streak {
+  position: relative;
+  transition: all 0.2s ease;
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-  }
-
-  &.current-streak {
-    border-width: 3px;
-    animation: cardGlow 2s ease-in-out infinite;
+    transform: scale(1.1);
   }
 }
 
-.stat-icon {
-  font-size: 3rem;
-  line-height: 1;
+@keyframes floatLight {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
 }
 
-.stat-content {
-  flex: 1;
+.animate-float {
+  animation: floatLight 3s ease-in-out infinite;
 }
 
 .stat-label {
